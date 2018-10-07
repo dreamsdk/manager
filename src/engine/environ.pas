@@ -12,8 +12,14 @@ type
   TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
   private
     fApplicationPath: TFileName;
+    fGCCExecutable: TFileName;
+    fGDBExecutable: TFileName;
     fInstallPath: string;
-    fMSYSExecutable: string;
+
+    fMSYSExecutable: TFileName;
+    fMinGWGetExecutable: TFileName;
+    fBinutilsExecutable: TFileName;
+
     fUseMintty: Boolean;
     function GetApplicationPath: TFileName;
     function GetConfigurationFileName: TFileName;
@@ -22,10 +28,23 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+
     property InstallPath: string
       read fInstallPath;
-    property MSYSExecutable: string
+
+    property MSYSExecutable: TFileName
       read fMSYSExecutable write fMSYSExecutable;
+
+    property MinGWGetExecutable: TFileName
+      read fMinGWGetExecutable write fMinGWGetExecutable;
+
+    property BinutilsExecutable: TFileName
+      read fBinutilsExecutable write fBinutilsExecutable;
+    property GCCExecutable: TFileName
+      read fGCCExecutable write fGCCExecutable;
+    property GDBExecutable: TFileName
+      read fGDBExecutable write fGDBExecutable;
+
     property UseMintty: Boolean
       read fUseMintty write fUseMintty;
   end;
@@ -69,13 +88,27 @@ end;
 procedure TDreamcastSoftwareDevelopmentEnvironment.LoadConfig;
 var
   IniFile: TIniFile;
+  MSYSBase,
+  ToolchainBase: TFileName;
 
 begin
   IniFile := TIniFile.Create(GetConfigurationFileName);
   try
-    fInstallPath := IniFile.ReadString('General', 'InstallPath', ExpandFileName(GetApplicationPath + '..\..\..\..\'));
-    fMSYSExecutable := IniFile.ReadString('General', 'MSYSExecutable', ExpandFileName(GetApplicationPath + '..\..\msys.bat'));
-    fUseMintty := IniFile.ReadBool('General', 'UseMintty', False);
+    fInstallPath := IncludeTrailingPathDelimiter(
+      IniFile.ReadString('General', 'InstallPath',
+      ExpandFileName(GetApplicationPath + '..\..\..\..\')));
+
+    MSYSBase := fInstallPath + 'msys\1.0\';
+
+    ToolchainBase := MSYSBase + 'opt\toolchains\dc\sh-elf\';
+
+    fMSYSExecutable := IniFile.ReadString('General', 'MSYSExecutable', MSYSBase + 'msys.bat');
+    fMinGWGetExecutable := IniFile.ReadString('General', 'MinGWGetExecutable', fInstallPath + 'bin\mingw-get.exe');
+    fBinutilsExecutable := IniFile.ReadString('General', 'BinutilsExecutable', ToolchainBase + 'bin\sh-elf-ld.exe');
+    fGCCExecutable := IniFile.ReadString('General', 'GCCExecutable', ToolchainBase + 'bin\sh-elf-gcc.exe');
+    fGDBExecutable := IniFile.ReadString('General', 'GDBExecutable', ToolchainBase + 'bin\sh-elf-gdb.exe');
+
+    fUseMintty := IniFile.ReadBool('General', 'UseMinTTY', False);
   finally
     IniFile.Free;
   end;
@@ -89,8 +122,14 @@ begin
   IniFile := TIniFile.Create(GetConfigurationFileName);
   try
     IniFile.WriteString('General', 'InstallPath', fInstallPath);
+
     IniFile.WriteString('General', 'MSYSExecutable', fMSYSExecutable);
-    IniFile.WriteBool('General', 'UseMintty', fUseMintty);
+    IniFile.WriteString('General', 'MinGWGetExecutable', fMinGWGetExecutable);
+    IniFile.WriteString('General', 'BinutilsExecutable', fBinutilsExecutable);
+    IniFile.WriteString('General', 'GCCExecutable', fGCCExecutable);
+    IniFile.WriteString('General', 'GDBExecutable', fGDBExecutable);
+
+    IniFile.WriteBool('General', 'UseMinTTY', fUseMintty);
   finally
     IniFile.Free;
   end;

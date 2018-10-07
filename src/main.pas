@@ -40,6 +40,7 @@ type
     tsKallistiOS: TTabSheet;
     tsKallistiPorts: TTabSheet;
     procedure btnCloseClick(Sender: TObject);
+    procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure rgxTerminalOptionClick(Sender: TObject);
   private
@@ -82,6 +83,10 @@ begin
   lblVersionSVN.Caption := VersionRetriever.SVN;
   lblVersionPython.Caption := VersionRetriever.Python;
   lblVersionMinGW.Caption := VersionRetriever.MinGW;
+  lblVersionBinutils.Caption := VersionRetriever.Binutils;
+  lblVersionGCC.Caption := VersionRetriever.GCC;
+  lblVersionGDB.Caption := VersionRetriever.GDB;
+  lblVersionNewlib.Caption := VersionRetriever.Newlib;
 end;
 
 procedure TfrmMain.LoadConfiguration;
@@ -95,9 +100,14 @@ begin
   Close;
 end;
 
+procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
+begin
+
+end;
+
 initialization
   DreamcastSoftwareDevelopmentEnvironment := TDreamcastSoftwareDevelopmentEnvironment.Create;
-  VersionRetriever := TVersionRetriever.Create(DreamcastSoftwareDevelopmentEnvironment.InstallPath);
+  VersionRetriever := TVersionRetriever.Create(DreamcastSoftwareDevelopmentEnvironment);
 
 finalization
   VersionRetriever.Free;

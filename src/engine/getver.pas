@@ -5,7 +5,7 @@ unit GetVer;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Environ;
 
 type
 
@@ -13,9 +13,13 @@ type
 
   TVersionRetriever = class(TObject)
   private
-    fInstallPath: TFileName;
+    fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+    fVersionGDB: string;
+    fVersionBinutils: string;
+    fVersionGCC: string;
     fVersionGit: string;
     fVersionMinGW: string;
+    fVersionNewlib: string;
     fVersionPython: string;
     fVersionSVN: string;
     function Execute(Executable, CommandLine: string): string;
@@ -23,11 +27,15 @@ type
       StartTag, EndTag: string): string;
     procedure RetrieveVersions;
   public
-    constructor Create(const AInstallPath: TFileName);
+    constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
     property Git: string read fVersionGit;
     property MinGW: string read fVersionMinGW;
     property SVN: string read fVersionSVN;
     property Python: string read fVersionPython;
+    property Binutils: string read fVersionBinutils;
+    property Newlib: string read fVersionNewlib;
+    property GCC: string read fVersionGCC;
+    property GDB: string read fVersionGDB;
   end;
 
 implementation
@@ -137,7 +145,8 @@ begin
     Buffer := Execute(Executable, CommandLine);
     Result := Trim(ExtractStr(StartTag, EndTag, Buffer));
   except
-    Result := Format(ComponentNotFound, [Executable]);
+    Result := Format(ComponentNotFound,
+      [ExtractFileName(ChangeFileExt(Executable, ''))]);
   end;
 end;
 
@@ -146,12 +155,21 @@ begin
   fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak);
   fVersionSVN := RetrieveVersion('svn', '--version', 'svn, version', sLineBreak);
   fVersionPython := RetrieveVersion('python', '--version', 'Python', sLineBreak);
-  fVersionMinGW := RetrieveVersion(fInstallPath + 'bin\mingw-get', '--version', 'mingw-get version', sLineBreak);
+  fVersionMinGW := RetrieveVersion(fEnvironment.MinGWGetExecutable,
+    '--version', 'mingw-get version', sLineBreak);
+
+  fVersionBinutils := RetrieveVersion(fEnvironment.BinutilsExecutable,
+    '--version', 'GNU ld (GNU Binutils)', sLineBreak);
+  fVersionGCC := RetrieveVersion(fEnvironment.GCCExecutable,
+    '--version', ' (GCC)', sLineBreak);
+  fVersionGDB := RetrieveVersion(fEnvironment.GDBExecutable,
+    '--version', ' (GDB)', sLineBreak);
 end;
 
-constructor TVersionRetriever.Create(const AInstallPath: TFileName);
+constructor TVersionRetriever.Create(
+  Environment: TDreamcastSoftwareDevelopmentEnvironment);
 begin
-  fInstallPath := IncludeTrailingPathDelimiter(AInstallPath);
+  fEnvironment := Environment;
   RetrieveVersions;
 end;
 
