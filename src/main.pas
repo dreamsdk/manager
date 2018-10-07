@@ -41,8 +41,10 @@ type
     tsKallistiPorts: TTabSheet;
     procedure btnCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure rgxTerminalOptionClick(Sender: TObject);
   private
     procedure DisplayEnvironmentComponentVersions;
+    procedure LoadConfiguration;
   public
   end;
 
@@ -54,10 +56,11 @@ implementation
 {$R *.lfm}
 
 uses
-  GetVer;
+  GetVer, Environ;
 
 var
   VersionRetriever: TVersionRetriever;
+  DreamcastSoftwareDevelopmentEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
 
 { TfrmMain }
 
@@ -65,6 +68,12 @@ procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   Application.Title := Caption;
   DisplayEnvironmentComponentVersions;
+  LoadConfiguration;
+end;
+
+procedure TfrmMain.rgxTerminalOptionClick(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentEnvironment.UseMintty := (rgxTerminalOption.ItemIndex = 1);
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
@@ -72,6 +81,13 @@ begin
   lblVersionGit.Caption := VersionRetriever.Git;
   lblVersionSVN.Caption := VersionRetriever.SVN;
   lblVersionPython.Caption := VersionRetriever.Python;
+  lblVersionMinGW.Caption := VersionRetriever.MinGW;
+end;
+
+procedure TfrmMain.LoadConfiguration;
+begin
+  if DreamcastSoftwareDevelopmentEnvironment.UseMintty then
+    rgxTerminalOption.ItemIndex := 1;
 end;
 
 procedure TfrmMain.btnCloseClick(Sender: TObject);
@@ -80,10 +96,12 @@ begin
 end;
 
 initialization
-  VersionRetriever := TVersionRetriever.Create;
+  DreamcastSoftwareDevelopmentEnvironment := TDreamcastSoftwareDevelopmentEnvironment.Create;
+  VersionRetriever := TVersionRetriever.Create(DreamcastSoftwareDevelopmentEnvironment.InstallPath);
 
 finalization
   VersionRetriever.Free;
+  DreamcastSoftwareDevelopmentEnvironment.Free;
 
 end.
 

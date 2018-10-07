@@ -13,6 +13,7 @@ type
 
   TVersionRetriever = class(TObject)
   private
+    fInstallPath: TFileName;
     fVersionGit: string;
     fVersionMinGW: string;
     fVersionPython: string;
@@ -22,7 +23,7 @@ type
       StartTag, EndTag: string): string;
     procedure RetrieveVersions;
   public
-    constructor Create;
+    constructor Create(const AInstallPath: TFileName);
     property Git: string read fVersionGit;
     property MinGW: string read fVersionMinGW;
     property SVN: string read fVersionSVN;
@@ -145,10 +146,12 @@ begin
   fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak);
   fVersionSVN := RetrieveVersion('svn', '--version', 'svn, version', sLineBreak);
   fVersionPython := RetrieveVersion('python', '--version', 'Python', sLineBreak);
+  fVersionMinGW := RetrieveVersion(fInstallPath + 'bin\mingw-get', '--version', 'mingw-get version', sLineBreak);
 end;
 
-constructor TVersionRetriever.Create;
+constructor TVersionRetriever.Create(const AInstallPath: TFileName);
 begin
+  fInstallPath := IncludeTrailingPathDelimiter(AInstallPath);
   RetrieveVersions;
 end;
 

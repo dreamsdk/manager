@@ -69,7 +69,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="5">
       <Unit0>
         <Filename Value="manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -92,6 +92,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="SysTools"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="engine\environ.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Environ"/>
+      </Unit4>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
