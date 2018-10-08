@@ -18,11 +18,22 @@ type
     btnPortUninstall: TButton;
     btnUpdateKallistiOS: TButton;
     btnPortInstall: TButton;
+    btnAbout: TButton;
     gbxAvailablePorts: TGroupBox;
     gbxPortInformation: TGroupBox;
     gbxToolchain: TGroupBox;
     gbxDependencies: TGroupBox;
     gbxDreamcastTool: TGroupBox;
+    lblTextBinutils: TLabel;
+    lblTextGit: TLabel;
+    lblTextPython: TLabel;
+    lblTextSVN: TLabel;
+    lblTextMinGW: TLabel;
+    lblTextToolSerial: TLabel;
+    lblTextGCC: TLabel;
+    lblTextNewlib: TLabel;
+    lblTextGDB: TLabel;
+    lblTextToolIP: TLabel;
     lblVersionToolSerial: TLabel;
     lblVersionToolIP: TLabel;
     lblVersionKallistiOS: TLabel;
@@ -36,12 +47,14 @@ type
     lblVersionSVN: TLabel;
     lbxPorts: TListBox;
     PageControl1: TPageControl;
+    pnlActions: TPanel;
     rgxTerminalOption: TRadioGroup;
     tsAbout: TTabSheet;
     tsOptions: TTabSheet;
     tsEnvironment: TTabSheet;
     tsKallistiOS: TTabSheet;
     tsKallistiPorts: TTabSheet;
+    procedure btnAboutClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure btnPortInstallClick(Sender: TObject);
@@ -103,6 +116,11 @@ end;
 procedure TfrmMain.btnCloseClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TfrmMain.btnAboutClick(Sender: TObject);
+begin
+
 end;
 
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
