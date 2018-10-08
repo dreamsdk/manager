@@ -12,8 +12,11 @@ type
   TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
   private
     fApplicationPath: TFileName;
+    fDCToolIPExecutable: TFileName;
+    fDCToolSerialExecutable: TFileName;
     fGCCExecutable: TFileName;
     fGDBExecutable: TFileName;
+    fNewlibBinary: TFileName;
     fInstallPath: string;
 
     fMSYSExecutable: TFileName;
@@ -44,6 +47,14 @@ type
       read fGCCExecutable write fGCCExecutable;
     property GDBExecutable: TFileName
       read fGDBExecutable write fGDBExecutable;
+
+    property NewlibBinary: TFileName
+      read fNewlibBinary write fNewlibBinary;
+
+    property DreamcastToolSerialExecutable: TFileName
+      read fDCToolSerialExecutable write fDCToolSerialExecutable;
+    property DreamcastToolIPExecutable: TFileName
+      read fDCToolIPExecutable write fDCToolIPExecutable;
 
     property UseMintty: Boolean
       read fUseMintty write fUseMintty;
@@ -100,13 +111,18 @@ begin
 
     MSYSBase := fInstallPath + 'msys\1.0\';
 
-    ToolchainBase := MSYSBase + 'opt\toolchains\dc\sh-elf\';
+    ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
 
     fMSYSExecutable := IniFile.ReadString('General', 'MSYSExecutable', MSYSBase + 'msys.bat');
     fMinGWGetExecutable := IniFile.ReadString('General', 'MinGWGetExecutable', fInstallPath + 'bin\mingw-get.exe');
-    fBinutilsExecutable := IniFile.ReadString('General', 'BinutilsExecutable', ToolchainBase + 'bin\sh-elf-ld.exe');
-    fGCCExecutable := IniFile.ReadString('General', 'GCCExecutable', ToolchainBase + 'bin\sh-elf-gcc.exe');
-    fGDBExecutable := IniFile.ReadString('General', 'GDBExecutable', ToolchainBase + 'bin\sh-elf-gdb.exe');
+    fBinutilsExecutable := IniFile.ReadString('General', 'BinutilsExecutable', ToolchainBase + 'sh-elf\bin\sh-elf-ld.exe');
+    fGCCExecutable := IniFile.ReadString('General', 'GCCExecutable', ToolchainBase + 'sh-elf\bin\sh-elf-gcc.exe');
+    fGDBExecutable := IniFile.ReadString('General', 'GDBExecutable', ToolchainBase + 'sh-elf\bin\sh-elf-gdb.exe');
+
+    fNewlibBinary := IniFile.ReadString('General', 'NewlibBinary', ToolchainBase + 'sh-elf\sh-elf\lib\libnosys.a');
+
+    fDCToolSerialExecutable := ToolchainBase + 'bin\dc-tool.exe';
+    fDCToolIPExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
 
     fUseMintty := IniFile.ReadBool('General', 'UseMinTTY', False);
   finally
@@ -128,6 +144,10 @@ begin
     IniFile.WriteString('General', 'BinutilsExecutable', fBinutilsExecutable);
     IniFile.WriteString('General', 'GCCExecutable', fGCCExecutable);
     IniFile.WriteString('General', 'GDBExecutable', fGDBExecutable);
+
+    IniFile.WriteString('General', 'NewlibBinary', fNewlibBinary);
+    IniFile.WriteString('General', 'DCToolSerialExecutable', fDCToolSerialExecutable);
+    IniFile.WriteString('General', 'DCToolIPExecutable', fDCToolIPExecutable);
 
     IniFile.WriteBool('General', 'UseMinTTY', fUseMintty);
   finally

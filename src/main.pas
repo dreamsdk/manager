@@ -22,6 +22,9 @@ type
     gbxPortInformation: TGroupBox;
     gbxToolchain: TGroupBox;
     gbxDependencies: TGroupBox;
+    gbxDreamcastTool: TGroupBox;
+    lblVersionToolSerial: TLabel;
+    lblVersionToolIP: TLabel;
     lblKallistiOS: TLabel;
     lblVersionBinutils: TLabel;
     lblVersionGCC: TLabel;
@@ -57,7 +60,7 @@ implementation
 {$R *.lfm}
 
 uses
-  GetVer, Environ;
+  GetVer, Environ, SysTools;
 
 var
   VersionRetriever: TVersionRetriever;
@@ -87,6 +90,8 @@ begin
   lblVersionGCC.Caption := VersionRetriever.GCC;
   lblVersionGDB.Caption := VersionRetriever.GDB;
   lblVersionNewlib.Caption := VersionRetriever.Newlib;
+  lblVersionToolSerial.Caption := VersionRetriever.ToolSerial;
+  lblVersionToolIP.Caption := VersionRetriever.ToolIP;
 end;
 
 procedure TfrmMain.LoadConfiguration;
@@ -102,7 +107,7 @@ end;
 
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
 begin
-
+  RunNoWait(DreamcastSoftwareDevelopmentEnvironment.MinGWGetExecutable);
 end;
 
 initialization

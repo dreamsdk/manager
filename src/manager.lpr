@@ -1,4 +1,4 @@
-program manager;
+program Manager;
 
 {$mode objfpc}{$H+}
 

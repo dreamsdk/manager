@@ -22,9 +22,12 @@ type
     fVersionNewlib: string;
     fVersionPython: string;
     fVersionSVN: string;
+    fVersionToolIP: string;
+    fVersionToolSerial: string;
     function Execute(Executable, CommandLine: string): string;
     function RetrieveVersion(Executable, CommandLine,
       StartTag, EndTag: string): string;
+    function RetrieveVersionNewlib: string;
     procedure RetrieveVersions;
   public
     constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
@@ -36,6 +39,8 @@ type
     property Newlib: string read fVersionNewlib;
     property GCC: string read fVersionGCC;
     property GDB: string read fVersionGDB;
+    property ToolSerial: string read fVersionToolSerial;
+    property ToolIP: string read fVersionToolIP;
   end;
 
 implementation
@@ -150,6 +155,17 @@ begin
   end;
 end;
 
+function TVersionRetriever.RetrieveVersionNewlib: string;
+var
+  NewlibFileName: TFileName;
+
+begin
+  NewlibFileName := Format('"dc-chain/newlib" %s', [fEnvironment.NewlibBinary]);
+  Result := RetrieveVersion('find', NewlibFileName, '/dc-chain/newlib-', '/newlib/libc/');
+  if Result = '' then
+    Result := Format(ComponentNotFound, ['newlib']);
+end;
+
 procedure TVersionRetriever.RetrieveVersions;
 begin
   fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak);
@@ -159,11 +175,16 @@ begin
     '--version', 'mingw-get version', sLineBreak);
 
   fVersionBinutils := RetrieveVersion(fEnvironment.BinutilsExecutable,
-    '--version', 'GNU ld (GNU Binutils)', sLineBreak);
+    '--version', ' (GNU Binutils)', sLineBreak);
   fVersionGCC := RetrieveVersion(fEnvironment.GCCExecutable,
     '--version', ' (GCC)', sLineBreak);
   fVersionGDB := RetrieveVersion(fEnvironment.GDBExecutable,
     '--version', ' (GDB)', sLineBreak);
+
+  fVersionNewlib := RetrieveVersionNewlib;
+
+  fVersionToolSerial := RetrieveVersion(fEnvironment.DreamcastToolSerialExecutable, '-h', 'dc-tool', 'by <andrewk');
+  fVersionToolIP := RetrieveVersion(fEnvironment.DreamcastToolIPExecutable, '-h', 'dc-tool-ip', 'by <andrewk');
 end;
 
 constructor TVersionRetriever.Create(

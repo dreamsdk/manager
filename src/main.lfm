@@ -92,7 +92,7 @@ object frmMain: TfrmMain
       ClientHeight = 230
       ClientWidth = 480
       object btnOpenMinGWManager: TButton
-        Left = 168
+        Left = 254
         Height = 25
         Top = 168
         Width = 139
@@ -181,6 +181,32 @@ object frmMain: TfrmMain
           Top = 80
           Width = 142
           Caption = '(MinGW Installation Manager)'
+          ParentColor = False
+        end
+      end
+      object gbxDreamcastTool: TGroupBox
+        Left = 8
+        Height = 73
+        Top = 144
+        Width = 185
+        Caption = 'gbxDreamcastTool'
+        ClientHeight = 55
+        ClientWidth = 181
+        TabOrder = 3
+        object lblVersionToolSerial: TLabel
+          Left = 8
+          Height = 13
+          Top = 8
+          Width = 82
+          Caption = '(DC-TOOL Serial)'
+          ParentColor = False
+        end
+        object lblVersionToolIP: TLabel
+          Left = 8
+          Height = 13
+          Top = 32
+          Width = 66
+          Caption = '(DC-TOOL IP)'
           ParentColor = False
         end
       end

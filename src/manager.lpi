@@ -21,29 +21,42 @@
       <Attributes pvaDebug="True"/>
     </VersionInfo>
     <BuildModes Count="2">
-      <Item1 Name="Default" Default="True"/>
-      <Item2 Name="Release">
+      <Item1 Name="Release" Default="True"/>
+      <Item2 Name="Debug">
         <CompilerOptions>
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="manager"/>
+            <Filename Value="..\bin\manager"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+            <OtherUnitFiles Value="engine"/>
+            <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <IncludeAssertionCode Value="True"/>
+            </SyntaxOptions>
+          </Parsing>
           <CodeGeneration>
-            <SmartLinkUnit Value="True"/>
-            <Optimizations>
-              <OptimizationLevel Value="3"/>
-            </Optimizations>
+            <Checks>
+              <IOChecks Value="True"/>
+              <RangeChecks Value="True"/>
+              <OverflowChecks Value="True"/>
+              <StackChecks Value="True"/>
+            </Checks>
+            <VerifyObjMethodCallValidity Value="True"/>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="win32"/>
           </CodeGeneration>
           <Linking>
             <Debugging>
-              <GenerateDebugInfo Value="False"/>
+              <DebugInfoType Value="dsDwarf2Set"/>
+              <UseHeaptrc Value="True"/>
+              <TrashVariables Value="True"/>
+              <UseExternalDbgSyms Value="True"/>
             </Debugging>
-            <LinkSmart Value="True"/>
             <Options>
               <Win32>
                 <GraphicApplication Value="True"/>
@@ -51,7 +64,7 @@
             </Options>
           </Linking>
           <Other>
-            <CustomOptions Value="-dRELEASE"/>
+            <CustomOptions Value="-dDEBUG"/>
           </Other>
         </CompilerOptions>
       </Item2>
@@ -103,19 +116,33 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="manager"/>
+      <Filename Value="..\bin\manager"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+      <OtherUnitFiles Value="engine"/>
+      <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
+    <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+      <Optimizations>
+        <OptimizationLevel Value="3"/>
+      </Optimizations>
+    </CodeGeneration>
     <Linking>
+      <Debugging>
+        <GenerateDebugInfo Value="False"/>
+      </Debugging>
+      <LinkSmart Value="True"/>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>
         </Win32>
       </Options>
     </Linking>
+    <Other>
+      <CustomOptions Value="-dRELEASE"/>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">
