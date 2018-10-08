@@ -8,9 +8,22 @@ uses
   Classes, SysUtils, Environ;
 
 type
+  { TComponentName }
+  TComponentName = (
+    cnGit,
+    cnSVN,
+    cnPython,
+    cnMinGW,
+    cnBinutils,
+    cnGCC,
+    cnGDB,
+    cnNewlib,
+    cnToolSerial,
+    cnToolIP,
+    cnKallistiOS
+  );
 
   { TVersionRetriever }
-
   TVersionRetriever = class(TObject)
   private
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
@@ -18,6 +31,7 @@ type
     fVersionBinutils: string;
     fVersionGCC: string;
     fVersionGit: string;
+    fVersionKallistiOS: string;
     fVersionMinGW: string;
     fVersionNewlib: string;
     fVersionPython: string;
@@ -27,10 +41,14 @@ type
     function Execute(Executable, CommandLine: string): string;
     function RetrieveVersion(Executable, CommandLine,
       StartTag, EndTag: string): string;
-    function RetrieveVersionNewlib: string;
+    function RetrieveVersionWithFind(ComponentName: string;
+      FindTargetFileName: TFileName; StartTag, EndTag: string): string;
     procedure RetrieveVersions;
   public
     constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
+
+    function GetComponentVersion(const ComponentName: TComponentName): string;
+
     property Git: string read fVersionGit;
     property MinGW: string read fVersionMinGW;
     property SVN: string read fVersionSVN;
@@ -41,7 +59,10 @@ type
     property GDB: string read fVersionGDB;
     property ToolSerial: string read fVersionToolSerial;
     property ToolIP: string read fVersionToolIP;
+    property KallistiOS: string read fVersionKallistiOS;
   end;
+
+function ComponentNameToString(const ComponentName: TComponentName): string;
 
 implementation
 
@@ -58,6 +79,26 @@ uses
 
 resourcestring
   ComponentNotFound = '(Component not found: %s)';
+
+function ComponentNameToString(const ComponentName: TComponentName): string;
+const
+  COMPONENTS_NAME: array[0..10] of string = (
+    'Git',
+    'SVN',
+    'Python',
+    'MinGW',
+    'Binutils',
+    'GCC',
+    'GDB',
+    'Newlib',
+    'ToolSerial',
+    'ToolIP',
+    'KallistiOS'
+  );
+
+begin
+  Result := COMPONENTS_NAME[Integer(ComponentName)];
+end;
 
 { TVersionRetriever }
 
@@ -155,15 +196,16 @@ begin
   end;
 end;
 
-function TVersionRetriever.RetrieveVersionNewlib: string;
+function TVersionRetriever.RetrieveVersionWithFind(ComponentName: string;
+  FindTargetFileName: TFileName; StartTag, EndTag: string): string;
 var
-  NewlibFileName: TFileName;
+  CommandLine: string;
 
 begin
-  NewlibFileName := Format('"dc-chain/newlib" %s', [fEnvironment.NewlibBinary]);
-  Result := RetrieveVersion('find', NewlibFileName, '/dc-chain/newlib-', '/newlib/libc/');
-  if Result = '' then
-    Result := Format(ComponentNotFound, ['newlib']);
+  CommandLine := Format('"%s" %s', [StartTag, FindTargetFileName]);
+  Result := RetrieveVersion('find', CommandLine, StartTag, EndTag);
+  if (Result = '') then
+    Result := Format(ComponentNotFound, [ComponentName]);
 end;
 
 procedure TVersionRetriever.RetrieveVersions;
@@ -181,10 +223,16 @@ begin
   fVersionGDB := RetrieveVersion(fEnvironment.GDBExecutable,
     '--version', ' (GDB)', sLineBreak);
 
-  fVersionNewlib := RetrieveVersionNewlib;
+  fVersionNewlib := RetrieveVersionWithFind('newlib',
+    fEnvironment.NewlibBinary, '/dc-chain/newlib-', '/newlib/libc/');
 
-  fVersionToolSerial := RetrieveVersion(fEnvironment.DreamcastToolSerialExecutable, '-h', 'dc-tool', 'by <andrewk');
-  fVersionToolIP := RetrieveVersion(fEnvironment.DreamcastToolIPExecutable, '-h', 'dc-tool-ip', 'by <andrewk');
+  fVersionKallistiOS := RetrieveVersionWithFind('kos',
+    fEnvironment.KallistiOSVersionFile, 'KallistiOS version ', ' -----');
+
+  fVersionToolSerial := RetrieveVersion(fEnvironment.DreamcastToolSerialExecutable,
+    '-h', 'dc-tool', 'by <andrewk');
+  fVersionToolIP := RetrieveVersion(fEnvironment.DreamcastToolIPExecutable,
+    '-h', 'dc-tool-ip', 'by <andrewk');
 end;
 
 constructor TVersionRetriever.Create(
@@ -192,6 +240,36 @@ constructor TVersionRetriever.Create(
 begin
   fEnvironment := Environment;
   RetrieveVersions;
+end;
+
+function TVersionRetriever.GetComponentVersion(
+  const ComponentName: TComponentName): string;
+begin
+  Result := '';
+  case ComponentName of
+    cnGit:
+      Result := fVersionGit;
+    cnSVN:
+      Result := fVersionSVN;
+    cnPython:
+      Result := fVersionPython;
+    cnMinGW:
+      Result := fVersionMinGW;
+    cnBinutils:
+      Result := fVersionBinutils;
+    cnGCC:
+      Result := fVersionGCC;
+    cnGDB:
+      Result := fVersionGDB;
+    cnNewlib:
+      Result := fVersionNewlib;
+    cnToolSerial:
+      Result := fVersionToolSerial;
+    cnToolIP:
+      Result := fVersionToolIP;
+    cnKallistiOS:
+      Result := fVersionKallistiOS;
+  end;
 end;
 
 end.

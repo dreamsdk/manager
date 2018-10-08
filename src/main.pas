@@ -25,7 +25,7 @@ type
     gbxDreamcastTool: TGroupBox;
     lblVersionToolSerial: TLabel;
     lblVersionToolIP: TLabel;
-    lblKallistiOS: TLabel;
+    lblVersionKallistiOS: TLabel;
     lblVersionBinutils: TLabel;
     lblVersionGCC: TLabel;
     lblVersionGDB: TLabel;
@@ -44,6 +44,7 @@ type
     tsKallistiPorts: TTabSheet;
     procedure btnCloseClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
+    procedure btnPortInstallClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure rgxTerminalOptionClick(Sender: TObject);
   private
@@ -60,11 +61,10 @@ implementation
 {$R *.lfm}
 
 uses
-  GetVer, Environ, SysTools;
+  DCSDKMgr, GetVer, SysTools;
 
 var
-  VersionRetriever: TVersionRetriever;
-  DreamcastSoftwareDevelopmentEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+  DreamcastSoftwareDevelopmentKitManager: TDreamcastSoftwareDevelopmentKitManager;
 
 { TfrmMain }
 
@@ -77,26 +77,26 @@ end;
 
 procedure TfrmMain.rgxTerminalOptionClick(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentEnvironment.UseMintty := (rgxTerminalOption.ItemIndex = 1);
+  DreamcastSoftwareDevelopmentKitManager.Environment.UseMinTTY := (rgxTerminalOption.ItemIndex = 1);
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
+var
+  ComponentName: TComponentName;
+  ComponentNameString: string;
+
 begin
-  lblVersionGit.Caption := VersionRetriever.Git;
-  lblVersionSVN.Caption := VersionRetriever.SVN;
-  lblVersionPython.Caption := VersionRetriever.Python;
-  lblVersionMinGW.Caption := VersionRetriever.MinGW;
-  lblVersionBinutils.Caption := VersionRetriever.Binutils;
-  lblVersionGCC.Caption := VersionRetriever.GCC;
-  lblVersionGDB.Caption := VersionRetriever.GDB;
-  lblVersionNewlib.Caption := VersionRetriever.Newlib;
-  lblVersionToolSerial.Caption := VersionRetriever.ToolSerial;
-  lblVersionToolIP.Caption := VersionRetriever.ToolIP;
+  for ComponentName := Low(TComponentName) to High(TComponentName) do
+  begin
+    ComponentNameString := ComponentNameToString(ComponentName);
+    (FindComponent('lblVersion' + ComponentNameString) as TLabel).Caption :=
+      DreamcastSoftwareDevelopmentKitManager.Versions.GetComponentVersion(ComponentName);
+  end;
 end;
 
 procedure TfrmMain.LoadConfiguration;
 begin
-  if DreamcastSoftwareDevelopmentEnvironment.UseMintty then
+  if DreamcastSoftwareDevelopmentKitManager.Environment.UseMinTTY then
     rgxTerminalOption.ItemIndex := 1;
 end;
 
@@ -107,16 +107,19 @@ end;
 
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
 begin
-  RunNoWait(DreamcastSoftwareDevelopmentEnvironment.MinGWGetExecutable);
+  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.MinGWGetExecutable);
+end;
+
+procedure TfrmMain.btnPortInstallClick(Sender: TObject);
+begin
+  ShowMessage(DreamcastSoftwareDevelopmentKitManager.Environment.KallistiPorts);
 end;
 
 initialization
-  DreamcastSoftwareDevelopmentEnvironment := TDreamcastSoftwareDevelopmentEnvironment.Create;
-  VersionRetriever := TVersionRetriever.Create(DreamcastSoftwareDevelopmentEnvironment);
+  DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
 
 finalization
-  VersionRetriever.Free;
-  DreamcastSoftwareDevelopmentEnvironment.Free;
+  DreamcastSoftwareDevelopmentKitManager.Free;
 
 end.
 

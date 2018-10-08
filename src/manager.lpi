@@ -82,7 +82,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="5">
+    <Units Count="7">
       <Unit0>
         <Filename Value="manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -110,6 +110,16 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Environ"/>
       </Unit4>
+      <Unit5>
+        <Filename Value="engine\portmgr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="PortMgr"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="engine\dcsdkmgr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DCSDKMgr"/>
+      </Unit6>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -16,6 +16,9 @@ type
     fDCToolSerialExecutable: TFileName;
     fGCCExecutable: TFileName;
     fGDBExecutable: TFileName;
+    fKallistiOS: TFileName;
+    fKallistiOSVersionFile: TFileName;
+    fKallistiPorts: TFileName;
     fNewlibBinary: TFileName;
     fInstallPath: string;
 
@@ -55,6 +58,15 @@ type
       read fDCToolSerialExecutable write fDCToolSerialExecutable;
     property DreamcastToolIPExecutable: TFileName
       read fDCToolIPExecutable write fDCToolIPExecutable;
+
+    property KallistiPorts: TFileName
+      read fKallistiPorts write fKallistiPorts;
+
+    property KallistiOS: TFileName
+      read fKallistiOS write fKallistiOS;
+
+    property KallistiOSVersionFile: TFileName
+      read fKallistiOSVersionFile write fKallistiOSVersionFile;
 
     property UseMintty: Boolean
       read fUseMintty write fUseMintty;
@@ -124,6 +136,10 @@ begin
     fDCToolSerialExecutable := ToolchainBase + 'bin\dc-tool.exe';
     fDCToolIPExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
 
+    fKallistiPorts := IniFile.ReadString('General', 'KallistiPorts', ToolchainBase + 'kos-ports\');
+    fKallistiOS := IniFile.ReadString('General', 'KallistiOS', ToolchainBase + 'kos\');
+    fKallistiOSVersionFile := IniFile.ReadString('General', 'KallistiOSVersionFile', KallistiOS + 'doc\CHANGELOG');
+
     fUseMintty := IniFile.ReadBool('General', 'UseMinTTY', False);
   finally
     IniFile.Free;
@@ -148,6 +164,10 @@ begin
     IniFile.WriteString('General', 'NewlibBinary', fNewlibBinary);
     IniFile.WriteString('General', 'DCToolSerialExecutable', fDCToolSerialExecutable);
     IniFile.WriteString('General', 'DCToolIPExecutable', fDCToolIPExecutable);
+
+    IniFile.WriteString('General', 'KallistiPorts', fKallistiPorts);
+    IniFile.WriteString('General', 'KallistiOS', fKallistiOS);
+    IniFile.WriteString('General', 'KallistiOSVersionFile', fKallistiOSVersionFile);
 
     IniFile.WriteBool('General', 'UseMinTTY', fUseMintty);
   finally

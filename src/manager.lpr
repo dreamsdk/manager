@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Main, getver, systools, Environ;
+  Forms, Main, getver, systools, Environ, portmgr, dcsdkmgr;
 
 {$R *.res}
 
