@@ -2,12 +2,12 @@ object frmMain: TfrmMain
   Left = 928
   Height = 300
   Top = 461
-  Width = 500
+  Width = 520
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'frmMain'
+  Caption = 'DreamSDK Manager'
   ClientHeight = 300
-  ClientWidth = 500
+  ClientWidth = 520
   OnCreate = FormCreate
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
@@ -15,7 +15,7 @@ object frmMain: TfrmMain
     Left = 8
     Height = 256
     Top = 8
-    Width = 488
+    Width = 508
     ActivePage = tsKallistiPorts
     TabIndex = 1
     TabOrder = 0
@@ -43,21 +43,21 @@ object frmMain: TfrmMain
     object tsKallistiPorts: TTabSheet
       Caption = 'KallistiOS Ports'
       ClientHeight = 230
-      ClientWidth = 480
+      ClientWidth = 500
       object gbxAvailablePorts: TGroupBox
         Left = 8
         Height = 216
         Top = 8
-        Width = 144
+        Width = 140
         Caption = ' Ports: '
         ClientHeight = 198
-        ClientWidth = 140
+        ClientWidth = 136
         TabOrder = 0
         object lbxPorts: TCheckListBox
           Left = 2
           Height = 194
           Top = 2
-          Width = 136
+          Width = 132
           Align = alClient
           AllowGrayed = True
           BorderSpacing.Around = 2
@@ -70,127 +70,176 @@ object frmMain: TfrmMain
         end
       end
       object btnPortInstall: TButton
-        Left = 196
+        Left = 152
         Height = 25
-        Top = 199
+        Top = 196
         Width = 75
         Caption = 'Install'
         OnClick = btnPortInstallClick
         TabOrder = 1
       end
       object btnPortUninstall: TButton
-        Left = 280
+        Left = 232
         Height = 25
-        Top = 199
+        Top = 196
         Width = 75
         Caption = 'Uninstall'
         TabOrder = 2
       end
       object pcPortDetails: TPageControl
-        Left = 160
+        Left = 152
         Height = 180
-        Top = 12
-        Width = 316
+        Top = 8
+        Width = 344
         ActivePage = tsPortInformation
         TabIndex = 0
         TabOrder = 3
         object tsPortInformation: TTabSheet
           Caption = 'Information'
           ClientHeight = 154
-          ClientWidth = 308
-          object lblPortURL: TLabel
-            Left = 72
+          ClientWidth = 336
+          object edtPortMaintainer: TLabeledEdit
+            Left = 71
             Height = 13
-            Top = 64
-            Width = 49
-            Caption = 'lblPortURL'
-            ParentColor = False
-          end
-          object lblPortShortDescription: TLabel
-            Left = 4
-            Height = 61
             Top = 88
-            Width = 300
-            AutoSize = False
-            Caption = 'lblPortShortDescription'
-            ParentColor = False
-            WordWrap = True
+            Width = 263
+            BorderStyle = bsNone
+            Color = clForm
+            EditLabel.AnchorSideTop.Control = edtPortMaintainer
+            EditLabel.AnchorSideTop.Side = asrCenter
+            EditLabel.AnchorSideRight.Control = edtPortMaintainer
+            EditLabel.AnchorSideBottom.Control = edtPortMaintainer
+            EditLabel.AnchorSideBottom.Side = asrBottom
+            EditLabel.Left = 7
+            EditLabel.Height = 13
+            EditLabel.Top = 88
+            EditLabel.Width = 61
+            EditLabel.Caption = 'Maintainer'
+            EditLabel.ParentColor = False
+            EditLabel.ParentFont = False
+            EditLabel.Font.Style = [fsBold]
+            LabelPosition = lpLeft
+            ReadOnly = True
+            TabOrder = 0
+            Text = 'edtPortMaintainer'
+            OnClick = edtPortMaintainerClick
+            OnMouseEnter = edtPortURLMouseEnter
+            OnMouseLeave = edtPortURLMouseLeave
           end
-          object lblPortMaintainer: TLabel
-            Left = 72
+          object edtPortLicense: TLabeledEdit
+            Left = 71
             Height = 13
-            Top = 44
-            Width = 80
-            Caption = 'lblPortMaintainer'
-            ParentColor = False
+            Top = 112
+            Width = 263
+            BorderStyle = bsNone
+            Color = clForm
+            EditLabel.AnchorSideTop.Control = edtPortLicense
+            EditLabel.AnchorSideTop.Side = asrCenter
+            EditLabel.AnchorSideRight.Control = edtPortLicense
+            EditLabel.AnchorSideBottom.Control = edtPortLicense
+            EditLabel.AnchorSideBottom.Side = asrBottom
+            EditLabel.Left = 26
+            EditLabel.Height = 13
+            EditLabel.Top = 112
+            EditLabel.Width = 42
+            EditLabel.Caption = 'License'
+            EditLabel.ParentColor = False
+            EditLabel.ParentFont = False
+            EditLabel.Font.Style = [fsBold]
+            LabelPosition = lpLeft
+            ReadOnly = True
+            TabOrder = 1
+            Text = 'edtPortLicense'
           end
-          object lblPortVersion: TLabel
-            Left = 52
-            Height = 13
-            Top = 24
-            Width = 65
-            Caption = 'lblPortVersion'
-            ParentColor = False
+          object memPortShortDescription: TMemo
+            Left = 8
+            Height = 28
+            Top = 28
+            Width = 326
+            BorderStyle = bsNone
+            Color = clForm
+            Lines.Strings = (
+              'memPortShortDescription'
+            )
+            ReadOnly = True
+            TabOrder = 2
           end
           object lblPortName: TLabel
-            Left = 4
-            Height = 13
+            Left = 8
+            Height = 19
             Top = 4
-            Width = 69
+            Width = 326
+            Alignment = taCenter
+            AutoSize = False
             Caption = 'lblPortName'
+            Font.Height = -16
             Font.Style = [fsBold]
             ParentColor = False
             ParentFont = False
           end
-          object lblTextPortMaintainer: TLabel
-            Left = 4
+          object edtPortVersion: TLabeledEdit
+            Left = 71
             Height = 13
-            Top = 44
-            Width = 61
-            Caption = 'Maintainer'
-            Font.Style = [fsBold]
-            ParentColor = False
-            ParentFont = False
+            Top = 64
+            Width = 263
+            BorderStyle = bsNone
+            Color = clForm
+            EditLabel.AnchorSideTop.Control = edtPortVersion
+            EditLabel.AnchorSideTop.Side = asrCenter
+            EditLabel.AnchorSideRight.Control = edtPortVersion
+            EditLabel.AnchorSideBottom.Control = edtPortVersion
+            EditLabel.AnchorSideBottom.Side = asrBottom
+            EditLabel.Left = 26
+            EditLabel.Height = 13
+            EditLabel.Top = 64
+            EditLabel.Width = 42
+            EditLabel.Caption = 'Version'
+            EditLabel.ParentColor = False
+            EditLabel.ParentFont = False
+            EditLabel.Font.Style = [fsBold]
+            LabelPosition = lpLeft
+            ReadOnly = True
+            TabOrder = 3
+            Text = 'edtPortVersion'
           end
-          object lblTextPortVersion: TLabel
-            Left = 4
+          object edtPortURL: TLabeledEdit
+            Left = 71
             Height = 13
-            Top = 24
-            Width = 42
-            Caption = 'Version'
-            Font.Style = [fsBold]
-            ParentColor = False
-            ParentFont = False
+            Top = 136
+            Width = 263
+            BorderStyle = bsNone
+            Color = clForm
+            EditLabel.AnchorSideTop.Control = edtPortURL
+            EditLabel.AnchorSideTop.Side = asrCenter
+            EditLabel.AnchorSideRight.Control = edtPortURL
+            EditLabel.AnchorSideBottom.Control = edtPortURL
+            EditLabel.AnchorSideBottom.Side = asrBottom
+            EditLabel.Left = 46
+            EditLabel.Height = 13
+            EditLabel.Top = 136
+            EditLabel.Width = 22
+            EditLabel.Caption = 'URL'
+            EditLabel.ParentColor = False
+            EditLabel.ParentFont = False
+            EditLabel.Font.Style = [fsBold]
+            LabelPosition = lpLeft
+            ReadOnly = True
+            TabOrder = 4
+            Text = 'edtPortURL'
+            OnClick = edtPortURLClick
+            OnMouseEnter = edtPortURLMouseEnter
+            OnMouseLeave = edtPortURLMouseLeave
           end
         end
         object tsPortDescription: TTabSheet
           Caption = 'Description'
           ClientHeight = 154
-          ClientWidth = 312
+          ClientWidth = 308
           object memPortDescription: TMemo
             Left = 2
             Height = 150
             Top = 2
-            Width = 308
-            Align = alClient
-            BorderSpacing.Around = 2
-            Lines.Strings = (
-              'memPortDescription'
-            )
-            ReadOnly = True
-            ScrollBars = ssAutoVertical
-            TabOrder = 0
-          end
-        end
-        object tsPortLicense: TTabSheet
-          Caption = 'License'
-          ClientHeight = 154
-          ClientWidth = 312
-          object memPortLicense: TMemo
-            Left = 2
-            Height = 150
-            Top = 2
-            Width = 308
+            Width = 304
             Align = alClient
             BorderSpacing.Around = 2
             Lines.Strings = (
@@ -517,21 +566,12 @@ object frmMain: TfrmMain
     end
   end
   object btnClose: TButton
-    Left = 376
+    Left = 200
     Height = 25
-    Top = 269
+    Top = 270
     Width = 120
     Caption = '&Close'
     OnClick = btnCloseClick
     TabOrder = 1
-  end
-  object btnAbout: TButton
-    Left = 8
-    Height = 25
-    Top = 269
-    Width = 123
-    Caption = '&About...'
-    OnClick = btnAboutClick
-    TabOrder = 2
   end
 end

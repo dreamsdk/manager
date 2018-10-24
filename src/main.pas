@@ -18,15 +18,12 @@ type
     btnPortUninstall: TButton;
     btnUpdateKallistiOS: TButton;
     btnPortInstall: TButton;
-    btnAbout: TButton;
+    edtPortLicense: TLabeledEdit;
+    edtPortURL: TLabeledEdit;
+    edtPortMaintainer: TLabeledEdit;
+    edtPortVersion: TLabeledEdit;
     gbxToolchainInstalled: TGroupBox;
-    lblTextPortVersion: TLabel;
-    lblTextPortMaintainer: TLabel;
-    lblPortMaintainer: TLabel;
     lblPortName: TLabel;
-    lblPortShortDescription: TLabel;
-    lblPortURL: TLabel;
-    lblPortVersion: TLabel;
     lblTextToolchainInstalledSH4: TLabel;
     lblTextToolchainInstalledARM: TLabel;
     lblToolchainInstalledSH4: TLabel;
@@ -58,12 +55,11 @@ type
     lblVersionMinGW: TLabel;
     lblVersionSVN: TLabel;
     memPortDescription: TMemo;
-    memPortLicense: TMemo;
+    memPortShortDescription: TMemo;
     PageControl1: TPageControl;
     pcPortDetails: TPageControl;
     pnlActions: TPanel;
     rgxTerminalOption: TRadioGroup;
-    tsPortLicense: TTabSheet;
     tsPortInformation: TTabSheet;
     tsPortDescription: TTabSheet;
     tsAbout: TTabSheet;
@@ -71,14 +67,16 @@ type
     tsEnvironment: TTabSheet;
     tsKallistiOS: TTabSheet;
     tsKallistiPorts: TTabSheet;
-    procedure btnAboutClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure btnPortInstallClick(Sender: TObject);
-    procedure lbxPortsClick(Sender: TObject);
+    procedure edtPortMaintainerClick(Sender: TObject);
+    procedure edtPortURLClick(Sender: TObject);
+    procedure edtPortURLMouseEnter(Sender: TObject);
+    procedure edtPortURLMouseLeave(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
-    procedure lbxPortsSelectionChange(Sender: TObject; User: boolean);
+    procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
     procedure rgxTerminalOptionClick(Sender: TObject);
   private
     procedure DisplayEnvironmentToolchainStatus;
@@ -103,7 +101,7 @@ implementation
 {$R *.lfm}
 
 uses
-  DCSDKMgr, GetVer, SysTools;
+  LCLIntf, DCSDKMgr, GetVer, SysTools;
 
 var
   DreamcastSoftwareDevelopmentKitManager: TDreamcastSoftwareDevelopmentKitManager;
@@ -133,16 +131,16 @@ begin
   end;
 end;
 
-procedure TfrmMain.lbxPortsSelectionChange(Sender: TObject; User: boolean);
+procedure TfrmMain.lbxPortsSelectionChange(Sender: TObject; User: Boolean);
 begin
-  if Assigned(SelectedKallistiPort) then
+  if Assigned(SelectedKallistiPort) and User then
   begin
     lblPortName.Caption := SelectedKallistiPort.Name;
-    lblPortVersion.Caption := SelectedKallistiPort.Version;
-    memPortLicense.Text := SelectedKallistiPort.License;
-    lblPortMaintainer.Caption := SelectedKallistiPort.Maintainer;
-    lblPortShortDescription.Caption := SelectedKallistiPort.ShortDescription;
-    lblPortURL.Caption := SelectedKallistiPort.URL;
+    edtPortVersion.Caption := SelectedKallistiPort.Version;
+    edtPortLicense.Text := SelectedKallistiPort.License;
+    edtPortMaintainer.Caption := SelectedKallistiPort.Maintainer;
+    memPortShortDescription.Caption := SelectedKallistiPort.ShortDescription;
+    edtPortURL.Caption := SelectedKallistiPort.URL;
     memPortDescription.Text := SelectedKallistiPort.Description;
   end;
 end;
@@ -226,11 +224,6 @@ begin
   Close;
 end;
 
-procedure TfrmMain.btnAboutClick(Sender: TObject);
-begin
-
-end;
-
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
 begin
   RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.MinGWGetExecutable);
@@ -241,9 +234,45 @@ begin
   ShowMessage(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.KallistiPorts);
 end;
 
-procedure TfrmMain.lbxPortsClick(Sender: TObject);
-begin
+procedure TfrmMain.edtPortMaintainerClick(Sender: TObject);
+var
+  MailTo, Subject: string;
 
+begin
+  if IsInString('@', edtPortMaintainer.Text) then
+  begin
+    MailTo := StringReplace(edtPortMaintainer.Text, ' ', '%20', [rfReplaceAll]);
+    Subject := '[KallistiOS]%20Question%20about%20the%20'
+      + SelectedKallistiPort.Name + '%20KallistiOS%20port';
+    OpenURL('mailto:' + MailTo + '?subject=' + Subject);
+  end;
+end;
+
+procedure TfrmMain.edtPortURLClick(Sender: TObject);
+begin
+  if IsInString('http', edtPortURL.Text) then
+    OpenURL(edtPortURL.Text);
+end;
+
+procedure TfrmMain.edtPortURLMouseEnter(Sender: TObject);
+begin
+  with (Sender as TLabeledEdit) do
+    if IsInString('@', Text) or IsInString('http', Text) then
+    begin
+      Font.Underline := True;
+      Font.Color := clHotLight;
+      Cursor := crHandPoint;
+    end;
+end;
+
+procedure TfrmMain.edtPortURLMouseLeave(Sender: TObject);
+begin
+  with (Sender as TLabeledEdit) do
+  begin
+    Font.Underline := False;
+    Font.Color := clDefault;
+    Cursor := crDefault;
+  end;
 end;
 
 initialization

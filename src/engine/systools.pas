@@ -110,8 +110,8 @@ begin
   Result := Run(Executable, '');
 end;
 
-{ Thanks to Marc Weustink and contributors
-  http://wiki.freepascal.org/Executing_External_Programs }
+// Thanks to Marc Weustink and contributors
+// http://wiki.freepascal.org/Executing_External_Programs
 function Run(Executable, CommandLine: string): string;
 const
   READ_BYTES = 2048;
