@@ -16,8 +16,8 @@ object frmMain: TfrmMain
     Height = 256
     Top = 8
     Width = 488
-    ActivePage = tsEnvironment
-    TabIndex = 2
+    ActivePage = tsKallistiPorts
+    TabIndex = 1
     TabOrder = 0
     object tsKallistiOS: TTabSheet
       Caption = 'KallistiOS'
@@ -48,44 +48,159 @@ object frmMain: TfrmMain
         Left = 8
         Height = 216
         Top = 8
-        Width = 184
+        Width = 144
         Caption = ' Ports: '
         ClientHeight = 198
-        ClientWidth = 180
+        ClientWidth = 140
         TabOrder = 0
-        object lbxPorts: TListBox
-          Left = 8
-          Height = 184
-          Top = 8
-          Width = 164
+        object lbxPorts: TCheckListBox
+          Left = 2
+          Height = 194
+          Top = 2
+          Width = 136
+          Align = alClient
+          AllowGrayed = True
+          BorderSpacing.Around = 2
+          ExtendedSelect = False
           ItemHeight = 0
+          OnClickCheck = lbxPortsClickCheck
+          OnSelectionChange = lbxPortsSelectionChange
+          Sorted = True
           TabOrder = 0
         end
       end
-      object gbxPortInformation: TGroupBox
-        Left = 200
-        Height = 185
-        Top = 8
-        Width = 272
-        Caption = ' Information: '
-        TabOrder = 1
-      end
       object btnPortInstall: TButton
-        Left = 200
+        Left = 196
         Height = 25
         Top = 199
         Width = 75
         Caption = 'Install'
         OnClick = btnPortInstallClick
-        TabOrder = 2
+        TabOrder = 1
       end
       object btnPortUninstall: TButton
-        Left = 288
+        Left = 280
         Height = 25
         Top = 199
         Width = 75
         Caption = 'Uninstall'
+        TabOrder = 2
+      end
+      object pcPortDetails: TPageControl
+        Left = 160
+        Height = 180
+        Top = 12
+        Width = 316
+        ActivePage = tsPortInformation
+        TabIndex = 0
         TabOrder = 3
+        object tsPortInformation: TTabSheet
+          Caption = 'Information'
+          ClientHeight = 154
+          ClientWidth = 308
+          object lblPortURL: TLabel
+            Left = 72
+            Height = 13
+            Top = 64
+            Width = 49
+            Caption = 'lblPortURL'
+            ParentColor = False
+          end
+          object lblPortShortDescription: TLabel
+            Left = 4
+            Height = 61
+            Top = 88
+            Width = 300
+            AutoSize = False
+            Caption = 'lblPortShortDescription'
+            ParentColor = False
+            WordWrap = True
+          end
+          object lblPortMaintainer: TLabel
+            Left = 72
+            Height = 13
+            Top = 44
+            Width = 80
+            Caption = 'lblPortMaintainer'
+            ParentColor = False
+          end
+          object lblPortVersion: TLabel
+            Left = 52
+            Height = 13
+            Top = 24
+            Width = 65
+            Caption = 'lblPortVersion'
+            ParentColor = False
+          end
+          object lblPortName: TLabel
+            Left = 4
+            Height = 13
+            Top = 4
+            Width = 69
+            Caption = 'lblPortName'
+            Font.Style = [fsBold]
+            ParentColor = False
+            ParentFont = False
+          end
+          object lblTextPortMaintainer: TLabel
+            Left = 4
+            Height = 13
+            Top = 44
+            Width = 61
+            Caption = 'Maintainer'
+            Font.Style = [fsBold]
+            ParentColor = False
+            ParentFont = False
+          end
+          object lblTextPortVersion: TLabel
+            Left = 4
+            Height = 13
+            Top = 24
+            Width = 42
+            Caption = 'Version'
+            Font.Style = [fsBold]
+            ParentColor = False
+            ParentFont = False
+          end
+        end
+        object tsPortDescription: TTabSheet
+          Caption = 'Description'
+          ClientHeight = 154
+          ClientWidth = 312
+          object memPortDescription: TMemo
+            Left = 2
+            Height = 150
+            Top = 2
+            Width = 308
+            Align = alClient
+            BorderSpacing.Around = 2
+            Lines.Strings = (
+              'memPortDescription'
+            )
+            ReadOnly = True
+            ScrollBars = ssAutoVertical
+            TabOrder = 0
+          end
+        end
+        object tsPortLicense: TTabSheet
+          Caption = 'License'
+          ClientHeight = 154
+          ClientWidth = 312
+          object memPortLicense: TMemo
+            Left = 2
+            Height = 150
+            Top = 2
+            Width = 308
+            Align = alClient
+            BorderSpacing.Around = 2
+            Lines.Strings = (
+              'memPortDescription'
+            )
+            ReadOnly = True
+            ScrollBars = ssAutoVertical
+            TabOrder = 0
+          end
+        end
       end
     end
     object tsEnvironment: TTabSheet
@@ -102,15 +217,15 @@ object frmMain: TfrmMain
         ClientWidth = 212
         TabOrder = 0
         object lblVersionBinutils: TLabel
-          Left = 70
+          Left = 68
           Height = 13
-          Top = 8
+          Top = 10
           Width = 41
           Caption = '(Binutils)'
           ParentColor = False
         end
         object lblVersionGCC: TLabel
-          Left = 72
+          Left = 68
           Height = 13
           Top = 57
           Width = 29
@@ -118,17 +233,17 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionNewlib: TLabel
-          Left = 72
+          Left = 68
           Height = 13
-          Top = 33
+          Top = 34
           Width = 39
           Caption = '(Newlib)'
           ParentColor = False
         end
         object lblVersionGDB: TLabel
-          Left = 72
+          Left = 68
           Height = 13
-          Top = 80
+          Top = 81
           Width = 28
           Caption = '(GDB)'
           ParentColor = False
@@ -136,9 +251,9 @@ object frmMain: TfrmMain
         object lblTextBinutils: TLabel
           Left = 8
           Height = 13
-          Top = 8
-          Width = 44
-          Caption = 'Binutils:'
+          Top = 10
+          Width = 41
+          Caption = 'Binutils'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -147,8 +262,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 57
-          Width = 25
-          Caption = 'GCC:'
+          Width = 22
+          Caption = 'GCC'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -157,8 +272,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 33
-          Width = 39
-          Caption = 'Newlib:'
+          Width = 36
+          Caption = 'Newlib'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -166,9 +281,9 @@ object frmMain: TfrmMain
         object lblTextGDB: TLabel
           Left = 8
           Height = 13
-          Top = 80
-          Width = 26
-          Caption = 'GDB:'
+          Top = 81
+          Width = 23
+          Caption = 'GDB'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -184,7 +299,7 @@ object frmMain: TfrmMain
         ClientWidth = 237
         TabOrder = 1
         object lblVersionSVN: TLabel
-          Left = 80
+          Left = 78
           Height = 13
           Top = 32
           Width = 27
@@ -192,15 +307,15 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionGit: TLabel
-          Left = 80
+          Left = 78
           Height = 13
-          Top = 8
+          Top = 9
           Width = 21
           Caption = '(Git)'
           ParentColor = False
         end
         object lblVersionPython: TLabel
-          Left = 80
+          Left = 78
           Height = 13
           Top = 56
           Width = 42
@@ -208,7 +323,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionMinGW: TLabel
-          Left = 80
+          Left = 78
           Height = 13
           Top = 80
           Width = 61
@@ -219,8 +334,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 8
-          Width = 19
-          Caption = 'Git:'
+          Width = 16
+          Caption = 'Git'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -229,8 +344,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 56
-          Width = 43
-          Caption = 'Python:'
+          Width = 40
+          Caption = 'Python'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -239,8 +354,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 32
-          Width = 24
-          Caption = 'SVN:'
+          Width = 21
+          Caption = 'SVN'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -249,24 +364,24 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 80
-          Width = 42
-          Caption = 'MinGW:'
+          Width = 39
+          Caption = 'MinGW'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
         end
       end
       object gbxDreamcastTool: TGroupBox
-        Left = 8
+        Left = 232
         Height = 73
-        Top = 144
-        Width = 216
+        Top = 148
+        Width = 241
         Caption = 'Dreamcast Tool:'
         ClientHeight = 55
-        ClientWidth = 212
+        ClientWidth = 237
         TabOrder = 2
         object lblVersionToolSerial: TLabel
-          Left = 72
+          Left = 78
           Height = 13
           Top = 8
           Width = 82
@@ -274,7 +389,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionToolIP: TLabel
-          Left = 72
+          Left = 78
           Height = 13
           Top = 32
           Width = 66
@@ -285,8 +400,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 8
-          Width = 35
-          Caption = 'Serial:'
+          Width = 32
+          Caption = 'Serial'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -295,30 +410,57 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 32
-          Width = 15
-          Caption = 'IP:'
+          Width = 12
+          Caption = 'IP'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
         end
       end
-      object pnlActions: TPanel
-        Left = 232
-        Height = 66
-        Top = 151
-        Width = 240
-        BevelOuter = bvLowered
-        ClientHeight = 66
-        ClientWidth = 240
+      object gbxToolchainInstalled: TGroupBox
+        Left = 8
+        Height = 73
+        Top = 148
+        Width = 217
+        Caption = 'Toolchain Installed:'
+        ClientHeight = 55
+        ClientWidth = 213
         TabOrder = 3
-        object btnOpenMinGWManager: TButton
-          Left = 16
-          Height = 25
-          Top = 22
-          Width = 209
-          Caption = 'MinGW Installation Manager'
-          OnClick = btnOpenMinGWManagerClick
-          TabOrder = 0
+        object lblTextToolchainInstalledARM: TLabel
+          Left = 8
+          Height = 13
+          Top = 8
+          Width = 26
+          Caption = 'ARM'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object lblTextToolchainInstalledSH4: TLabel
+          Left = 8
+          Height = 13
+          Top = 32
+          Width = 46
+          Caption = 'Super-H'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object lblToolchainInstalledARM: TLabel
+          Left = 68
+          Height = 13
+          Top = 8
+          Width = 74
+          Caption = '(ARM Installed)'
+          ParentColor = False
+        end
+        object lblToolchainInstalledSH4: TLabel
+          Left = 68
+          Height = 13
+          Top = 32
+          Width = 91
+          Caption = '(Super-H Installed)'
+          ParentColor = False
         end
       end
     end
@@ -349,6 +491,25 @@ object frmMain: TfrmMain
         )
         OnClick = rgxTerminalOptionClick
         TabOrder = 0
+      end
+      object pnlActions: TPanel
+        Left = 232
+        Height = 66
+        Top = 151
+        Width = 240
+        BevelOuter = bvLowered
+        ClientHeight = 66
+        ClientWidth = 240
+        TabOrder = 1
+        object btnOpenMinGWManager: TButton
+          Left = 16
+          Height = 25
+          Top = 22
+          Width = 209
+          Caption = 'MinGW Installation Manager'
+          OnClick = btnOpenMinGWManagerClick
+          TabOrder = 0
+        end
       end
     end
     object tsAbout: TTabSheet

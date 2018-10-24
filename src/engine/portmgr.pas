@@ -5,34 +5,196 @@ unit PortMgr;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Environ;
 
 type
+  { TKallistiPortItem }
+  TKallistiPortItem = class(TObject)
+  private
+    fDirectory: TFileName;
+    fDescription: string;
+    fLicense: string;
+    fMaintainer: string;
+    fName: string;
+    fShortDescription: string;
+    fURL: string;
+    fVersion: string;
+    function IsPortInstalled: Boolean;
+  public
+    property Name: string read fName;
+    property Description: string read fDescription;
+    property Installed: Boolean read IsPortInstalled;
+    property Maintainer: string read fMaintainer;
+    property License: string read fLicense;
+    property ShortDescription: string read fShortDescription;
+    property URL: string read fURL;
+    property Version: string read fVersion;
+  end;
+
   { TKallistiPortsManager }
   TKallistiPortsManager = class(TObject)
   private
+    fList: TList;
+    fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+    function GetCount: Integer;
+    function GetItem(Index: Integer): TKallistiPortItem;
+    function Add: TKallistiPortItem;
+    procedure Clear;
+    procedure ProcessPort(const PackagingDescriptionFilename: TFileName);
     procedure RetrieveAvailablePorts;
   public
+    constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
+    destructor Destroy; override;
+    property Count: Integer read GetCount;
+    property Items[Index: Integer]: TKallistiPortItem read GetItem; default;
   end;
 
 implementation
 
 uses
-  FileUtil;
+  FileUtil, SysTools;
+
+{ TKallistiPortItem }
+
+function TKallistiPortItem.IsPortInstalled: Boolean;
+begin
+  Result := FileExists(fDirectory + '..\lib\.kos-ports\' + Name);
+end;
 
 { TKallistiPortsManager }
 
 procedure TKallistiPortsManager.RetrieveAvailablePorts;
 var
-  PascalFiles: TStringList;
+  PortsAvailable: TStringList;
+  i: Integer;
 
 begin
-  PascalFiles := TStringList.Create;
+  PortsAvailable := TStringList.Create;
   try
-    FindAllFiles(PascalFiles, '', '*.pas;*.pp;*.p;*.inc', True);
+    FindAllFiles(PortsAvailable, fEnvironment.FileSystem.KallistiPorts, 'pkg-descr', True);
+    for i := 0 to PortsAvailable.Count - 1 do
+      ProcessPort(PortsAvailable[i]);
   finally
-    PascalFiles.Free;
+    PortsAvailable.Free;
   end;
+end;
+
+function TKallistiPortsManager.GetItem(Index: Integer): TKallistiPortItem;
+begin
+  Result := TKallistiPortItem(fList[Index]);
+end;
+
+function TKallistiPortsManager.GetCount: Integer;
+begin
+  Result := fList.Count;
+end;
+
+function TKallistiPortsManager.Add: TKallistiPortItem;
+begin
+  Result := TKallistiPortItem.Create;
+  fList.Add(Result);
+end;
+
+procedure TKallistiPortsManager.Clear;
+var
+  i: Integer;
+
+begin
+  for i := 0 to fList.Count - 1 do
+    TKallistiPortItem(fList[i]).Free;
+  fList.Clear;
+end;
+
+procedure TKallistiPortsManager.ProcessPort(const PackagingDescriptionFilename: TFileName);
+var
+  MakefileContent: TStringList;
+  MakefileContentText, ExtractedURL: string;
+  PortDirectory: TFileName;
+
+  function GetPackageString(const Key: string): string;
+  var
+    S: string;
+
+  begin
+    Result := '';
+    S := Right(Key, MakefileContentText);
+    if S <> '' then
+      Result := Trim(ExtractStr('=', #10, S));
+  end;
+
+  function SanitizeText(Text: string): string;
+  begin
+    Text := StringReplace(Text, #13#10, #10, [rfReplaceAll]);
+    Text := StringReplace(Text, #13, #10, [rfReplaceAll]);
+    Text := StringReplace(Text, #9, '', [rfReplaceAll]);
+    Result := Text;
+  end;
+
+  function GetPackageDescription(var URL: string): string;
+  const
+    URL_TAG = ' URL: ';
+
+  var
+    DescriptionContent: TStringList;
+
+  begin
+    Result := '';
+    DescriptionContent := TStringList.Create;
+    try
+      if FileExists(PackagingDescriptionFilename) then
+      begin
+        DescriptionContent.LoadFromFile(PackagingDescriptionFilename);
+        Result := SanitizeText(DescriptionContent.Text);
+        Result := StringReplace(Result, #10, ' ', [rfReplaceAll]);
+        Result := StringReplace(Result, '  ', ' ', [rfReplaceAll]);
+        if IsInString(URL_TAG, Result) then
+        begin
+          URL := Trim(Right(URL_TAG, Result));
+          Result := Left(URL_TAG, Result);
+        end;
+        Result := Trim(Result);
+      end;
+    finally
+      DescriptionContent.Free;
+    end;
+  end;
+
+begin
+  PortDirectory := IncludeTrailingPathDelimiter(ExtractFilePath(PackagingDescriptionFilename));
+  MakefileContent := TStringList.Create;
+  try
+    MakefileContent.LoadFromFile(PortDirectory + 'Makefile');
+    MakefileContentText := SanitizeText(MakefileContent.Text);
+
+    with Add do
+    begin
+      fDirectory := PortDirectory;
+      fName := GetPackageString('PORTNAME');
+      fVersion := GetPackageString('PORTVERSION');
+      fMaintainer := GetPackageString('MAINTAINER');
+      fLicense := GetPackageString('LICENSE');
+      fShortDescription := GetPackageString('SHORT_DESC');
+      fDescription := GetPackageDescription(ExtractedURL);
+      fURL := ExtractedURL;
+    end;
+  finally
+    MakefileContent.Free;
+  end;
+end;
+
+constructor TKallistiPortsManager.Create(
+  Environment: TDreamcastSoftwareDevelopmentEnvironment);
+begin
+  fEnvironment := Environment;
+  fList := TList.Create;
+  RetrieveAvailablePorts;
+end;
+
+destructor TKallistiPortsManager.Destroy;
+begin
+  Clear;
+  fList.Free;
+  inherited Destroy;
 end;
 
 end.

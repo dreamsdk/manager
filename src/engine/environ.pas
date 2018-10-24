@@ -8,10 +8,11 @@ uses
   Classes, SysUtils;
 
 type
-  { TDreamcastSoftwareDevelopmentEnvironment }
-  TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
+
+  { TDreamcastSoftwareDevelopmentFileSystemObject }
+
+  TDreamcastSoftwareDevelopmentFileSystemObject = class(TObject)
   private
-    fApplicationPath: TFileName;
     fDCToolIPExecutable: TFileName;
     fDCToolSerialExecutable: TFileName;
     fGCCExecutable: TFileName;
@@ -20,12 +21,35 @@ type
     fKallistiOSVersionFile: TFileName;
     fKallistiPorts: TFileName;
     fNewlibBinary: TFileName;
-    fInstallPath: string;
-
     fMSYSExecutable: TFileName;
     fMinGWGetExecutable: TFileName;
     fBinutilsExecutable: TFileName;
+    fToolchainInstalledARM: Boolean;
+    fToolchainInstalledSH4: Boolean;
+  protected
+    procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
+  public
+    property MSYSExecutable: TFileName read fMSYSExecutable;
+    property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
+    property BinutilsExecutable: TFileName read fBinutilsExecutable;
+    property GCCExecutable: TFileName read fGCCExecutable;
+    property GDBExecutable: TFileName read fGDBExecutable;
+    property NewlibBinary: TFileName read fNewlibBinary;
+    property DreamcastToolSerialExecutable: TFileName read fDCToolSerialExecutable;
+    property DreamcastToolIPExecutable: TFileName read fDCToolIPExecutable;
+    property KallistiPorts: TFileName read fKallistiPorts;
+    property KallistiOS: TFileName read fKallistiOS;
+    property KallistiOSVersionFile: TFileName read fKallistiOSVersionFile;
+    property ToolchainInstalledARM: Boolean read fToolchainInstalledARM;
+    property ToolchainInstalledSH4: Boolean read fToolchainInstalledSH4;
+  end;
 
+  { TDreamcastSoftwareDevelopmentEnvironment }
+  TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
+  private
+    fApplicationPath: TFileName;
+    fFileSystem: TDreamcastSoftwareDevelopmentFileSystemObject;
+    fInstallPath: TFileName;
     fUseMintty: Boolean;
     function GetApplicationPath: TFileName;
     function GetConfigurationFileName: TFileName;
@@ -34,48 +58,47 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-
-    property InstallPath: string
-      read fInstallPath;
-
-    property MSYSExecutable: TFileName
-      read fMSYSExecutable write fMSYSExecutable;
-
-    property MinGWGetExecutable: TFileName
-      read fMinGWGetExecutable write fMinGWGetExecutable;
-
-    property BinutilsExecutable: TFileName
-      read fBinutilsExecutable write fBinutilsExecutable;
-    property GCCExecutable: TFileName
-      read fGCCExecutable write fGCCExecutable;
-    property GDBExecutable: TFileName
-      read fGDBExecutable write fGDBExecutable;
-
-    property NewlibBinary: TFileName
-      read fNewlibBinary write fNewlibBinary;
-
-    property DreamcastToolSerialExecutable: TFileName
-      read fDCToolSerialExecutable write fDCToolSerialExecutable;
-    property DreamcastToolIPExecutable: TFileName
-      read fDCToolIPExecutable write fDCToolIPExecutable;
-
-    property KallistiPorts: TFileName
-      read fKallistiPorts write fKallistiPorts;
-
-    property KallistiOS: TFileName
-      read fKallistiOS write fKallistiOS;
-
-    property KallistiOSVersionFile: TFileName
-      read fKallistiOSVersionFile write fKallistiOSVersionFile;
-
-    property UseMintty: Boolean
-      read fUseMintty write fUseMintty;
+    property FileSystem: TDreamcastSoftwareDevelopmentFileSystemObject read fFileSystem;
+    property InstallPath: TFileName read fInstallPath;
+    property UseMintty: Boolean read fUseMintty write fUseMintty;
   end;
 
 implementation
 
 uses
   IniFiles;
+
+{ TDreamcastSoftwareDevelopmentFileSystemObject }
+
+procedure TDreamcastSoftwareDevelopmentFileSystemObject.ComputeFileSystemObjectValues(
+  InstallPath: TFileName);
+var
+  MSYSBase, ToolchainBase: TFileName;
+begin
+  MSYSBase := InstallPath + 'msys\1.0\';
+  ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
+
+  // MinGW/MSYS
+  fMSYSExecutable := MSYSBase + 'msys.bat';
+  fMinGWGetExecutable := InstallPath + 'bin\mingw-get.exe';
+
+  // Toolchain
+  fToolchainInstalledARM := DirectoryExists(ToolchainBase + 'arm-eabi');
+  fToolchainInstalledSH4 := DirectoryExists(ToolchainBase + 'sh-elf');
+  fBinutilsExecutable := ToolchainBase + 'sh-elf\bin\sh-elf-ld.exe';
+  fGCCExecutable := ToolchainBase + 'sh-elf\bin\sh-elf-gcc.exe';
+  fGDBExecutable := ToolchainBase + 'sh-elf\bin\sh-elf-gdb.exe';
+  fNewlibBinary := ToolchainBase + 'sh-elf\sh-elf\lib\libnosys.a';
+
+  // dcload
+  fDCToolSerialExecutable := ToolchainBase + 'bin\dc-tool.exe';
+  fDCToolIPExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
+
+  // KallistiOS
+  fKallistiPorts := ToolchainBase + 'kos-ports\';
+  fKallistiOS := ToolchainBase + 'kos\';
+  fKallistiOSVersionFile := KallistiOS + 'doc\CHANGELOG';
+end;
 
 { TDreamcastSoftwareDevelopmentEnvironment }
 
@@ -111,35 +134,15 @@ end;
 procedure TDreamcastSoftwareDevelopmentEnvironment.LoadConfig;
 var
   IniFile: TIniFile;
-  MSYSBase,
-  ToolchainBase: TFileName;
+  DefaultInstallationPath: TFileName;
 
 begin
   IniFile := TIniFile.Create(GetConfigurationFileName);
   try
-    fInstallPath := IncludeTrailingPathDelimiter(
-      IniFile.ReadString('General', 'InstallPath',
-      ExpandFileName(GetApplicationPath + '..\..\..\..\')));
-
-    MSYSBase := fInstallPath + 'msys\1.0\';
-
-    ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
-
-    fMSYSExecutable := IniFile.ReadString('General', 'MSYSExecutable', MSYSBase + 'msys.bat');
-    fMinGWGetExecutable := IniFile.ReadString('General', 'MinGWGetExecutable', fInstallPath + 'bin\mingw-get.exe');
-    fBinutilsExecutable := IniFile.ReadString('General', 'BinutilsExecutable', ToolchainBase + 'sh-elf\bin\sh-elf-ld.exe');
-    fGCCExecutable := IniFile.ReadString('General', 'GCCExecutable', ToolchainBase + 'sh-elf\bin\sh-elf-gcc.exe');
-    fGDBExecutable := IniFile.ReadString('General', 'GDBExecutable', ToolchainBase + 'sh-elf\bin\sh-elf-gdb.exe');
-
-    fNewlibBinary := IniFile.ReadString('General', 'NewlibBinary', ToolchainBase + 'sh-elf\sh-elf\lib\libnosys.a');
-
-    fDCToolSerialExecutable := ToolchainBase + 'bin\dc-tool.exe';
-    fDCToolIPExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
-
-    fKallistiPorts := IniFile.ReadString('General', 'KallistiPorts', ToolchainBase + 'kos-ports\');
-    fKallistiOS := IniFile.ReadString('General', 'KallistiOS', ToolchainBase + 'kos\');
-    fKallistiOSVersionFile := IniFile.ReadString('General', 'KallistiOSVersionFile', KallistiOS + 'doc\CHANGELOG');
-
+    DefaultInstallationPath := ExpandFileName(GetApplicationPath + '..\..\..\..\');
+    fInstallPath := IncludeTrailingPathDelimiter(IniFile.ReadString('General',
+      'InstallPath', DefaultInstallationPath));
+    FileSystem.ComputeFileSystemObjectValues(fInstallPath);
     fUseMintty := IniFile.ReadBool('General', 'UseMinTTY', False);
   finally
     IniFile.Free;
@@ -154,21 +157,6 @@ begin
   IniFile := TIniFile.Create(GetConfigurationFileName);
   try
     IniFile.WriteString('General', 'InstallPath', fInstallPath);
-
-    IniFile.WriteString('General', 'MSYSExecutable', fMSYSExecutable);
-    IniFile.WriteString('General', 'MinGWGetExecutable', fMinGWGetExecutable);
-    IniFile.WriteString('General', 'BinutilsExecutable', fBinutilsExecutable);
-    IniFile.WriteString('General', 'GCCExecutable', fGCCExecutable);
-    IniFile.WriteString('General', 'GDBExecutable', fGDBExecutable);
-
-    IniFile.WriteString('General', 'NewlibBinary', fNewlibBinary);
-    IniFile.WriteString('General', 'DCToolSerialExecutable', fDCToolSerialExecutable);
-    IniFile.WriteString('General', 'DCToolIPExecutable', fDCToolIPExecutable);
-
-    IniFile.WriteString('General', 'KallistiPorts', fKallistiPorts);
-    IniFile.WriteString('General', 'KallistiOS', fKallistiOS);
-    IniFile.WriteString('General', 'KallistiOSVersionFile', fKallistiOSVersionFile);
-
     IniFile.WriteBool('General', 'UseMinTTY', fUseMintty);
   finally
     IniFile.Free;
@@ -177,11 +165,13 @@ end;
 
 constructor TDreamcastSoftwareDevelopmentEnvironment.Create;
 begin
+  fFileSystem := TDreamcastSoftwareDevelopmentFileSystemObject.Create;
   LoadConfig;
 end;
 
 destructor TDreamcastSoftwareDevelopmentEnvironment.Destroy;
 begin
+  fFileSystem.Free;
   SaveConfig;
   inherited Destroy;
 end;
