@@ -23,6 +23,7 @@ type
   public
     property Name: string read fName;
     property Description: string read fDescription;
+    property Directory: TFileName read fDirectory;
     property Installed: Boolean read IsPortInstalled;
     property Maintainer: string read fMaintainer;
     property License: string read fLicense;

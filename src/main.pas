@@ -70,6 +70,7 @@ type
     procedure btnCloseClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure btnPortInstallClick(Sender: TObject);
+    procedure btnPortUninstallClick(Sender: TObject);
     procedure edtPortMaintainerClick(Sender: TObject);
     procedure edtPortURLClick(Sender: TObject);
     procedure edtPortURLMouseEnter(Sender: TObject);
@@ -86,6 +87,7 @@ type
     function GetSelectedKallistiPortItemIndex: Integer;
     procedure LoadConfiguration;
     function BooleanToCaption(Value: Boolean): string;
+    function ExecuteKallistiPortCommand(): string;
   public
     property SelectedKallistiPortItemIndex: Integer
       read GetSelectedKallistiPortItemIndex;
@@ -219,6 +221,25 @@ begin
     Result := 'Installed';
 end;
 
+function TfrmMain.ExecuteKallistiPortCommand(): string;
+var
+  CurrentDir, ShellLauncher: TFileName;
+
+begin
+  if Assigned(SelectedKallistiPort) then
+  begin
+    CurrentDir := GetCurrentDir;
+    SetCurrentDir(SelectedKallistiPort.Directory);
+
+    ShellLauncher := DreamcastSoftwareDevelopmentKitManager.Environment.
+      FileSystem.ShellLauncherExecutable;
+
+    Result := RunShadow(ShellLauncher, 'make portinfo --dcsdk-automated-call');
+
+    SetCurrentDir(CurrentDir);
+  end;
+end;
+
 procedure TfrmMain.btnCloseClick(Sender: TObject);
 begin
   Close;
@@ -231,7 +252,12 @@ end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
 begin
-  ShowMessage(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.KallistiPorts);
+  ShowMessage(ExecuteKallistiPortCommand());
+end;
+
+procedure TfrmMain.btnPortUninstallClick(Sender: TObject);
+begin
+  ExecuteKallistiPortCommand();
 end;
 
 procedure TfrmMain.edtPortMaintainerClick(Sender: TObject);

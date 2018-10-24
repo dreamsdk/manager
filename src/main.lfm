@@ -84,6 +84,7 @@ object frmMain: TfrmMain
         Top = 196
         Width = 75
         Caption = 'Uninstall'
+        OnClick = btnPortUninstallClick
         TabOrder = 2
       end
       object pcPortDetails: TPageControl

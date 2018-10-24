@@ -24,11 +24,13 @@ type
     fMSYSExecutable: TFileName;
     fMinGWGetExecutable: TFileName;
     fBinutilsExecutable: TFileName;
+    fShellLauncherExecutable: TFileName;
     fToolchainInstalledARM: Boolean;
     fToolchainInstalledSH4: Boolean;
   protected
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
   public
+    property ShellLauncherExecutable: TFileName read fShellLauncherExecutable;
     property MSYSExecutable: TFileName read fMSYSExecutable;
     property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
     property BinutilsExecutable: TFileName read fBinutilsExecutable;
@@ -77,6 +79,9 @@ var
 begin
   MSYSBase := InstallPath + 'msys\1.0\';
   ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
+
+  // DreamSDK
+  fShellLauncherExecutable := MSYSBase + 'opt\dcsdk\dcsdk.exe';
 
   // MinGW/MSYS
   fMSYSExecutable := MSYSBase + 'msys.bat';

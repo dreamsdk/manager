@@ -18,6 +18,7 @@ function Run(Executable: string): string; overload;
 function Run(Executable, CommandLine: string): string; overload;
 function RunNoWait(Executable: string): Boolean; overload;
 function RunNoWait(Executable, CommandLine: string): Boolean; overload;
+function RunShadow(Executable, CommandLine: string): string;
 
 implementation
 
@@ -96,7 +97,7 @@ begin
   try
     OurProcess.Executable := Executable;
     if CommandLine <> '' then
-      OurProcess.Parameters.Add(CommandLine);
+      OurProcess.Parameters.Text := StringReplace(CommandLine, ' ', sLineBreak, [rfReplaceAll]);
     OurProcess.ShowWindow := swoHide;
     OurProcess.Execute;
     Result := (OurProcess.ExitCode = 0);
@@ -142,7 +143,7 @@ begin
       OurProcess.Executable := Executable;
 
       if Length(CommandLine) > 0 then
-        OurProcess.Parameters.Add(CommandLine);
+        OurProcess.Parameters.Text := StringReplace(CommandLine, ' ', sLineBreak, [rfReplaceAll]);
 
       { We cannot use poWaitOnExit here since we don't know the size of the output.
         On Linux the size of the output pipe is 2 kB; if the output data is more, we
@@ -192,6 +193,46 @@ end;
 function IsInString(const SubStr, S: string): Boolean;
 begin
   Result := Pos(LowerCase(SubStr), LowerCase(S)) > 0;
+end;
+
+function RunShadow(Executable, CommandLine: string): string;
+var
+  OurProcess: {$IFDEF Windows}TProcess{$ELSE}TProcessUTF8{$ENDIF};
+  ExecutableDirectory,
+  OutputFileName: TFileName;
+  Buffer: TStringList;
+
+begin
+  ExecutableDirectory := ExtractFilePath(Executable);
+{$IFDEF Windows}
+  OurProcess := TProcess.Create(nil);
+{$ELSE}
+  OurProcess := TProcessUTF8.Create(nil);
+{$ENDIF}
+  try
+    OurProcess.Executable := Executable;
+
+    if Length(CommandLine) > 0 then
+      OurProcess.Parameters.Text := StringReplace(CommandLine, ' ', sLineBreak, [rfReplaceAll]);
+
+    OurProcess.Options := [poWaitOnExit];
+    OurProcess.Execute;
+
+    OutputFileName := ExecutableDirectory + IntToStr(OurProcess.ProcessID) + '.tmp';
+    if FileExists(OutputFileName) then
+    begin
+      Buffer := TStringList.Create;
+      try
+        Buffer.LoadFromFile(OutputFileName);
+        Result := Buffer.Text;
+        DeleteFile(OutputFileName);
+      finally
+        Buffer.Free;
+      end;
+    end;
+  finally
+    OurProcess.Free;
+  end;
 end;
 
 end.
