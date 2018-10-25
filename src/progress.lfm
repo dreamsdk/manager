@@ -1,0 +1,21 @@
+object frmProgress: TfrmProgress
+  Left = 811
+  Height = 40
+  Top = 524
+  Width = 300
+  BorderIcons = []
+  BorderStyle = bsToolWindow
+  Caption = 'Operation in progress...'
+  ClientHeight = 40
+  ClientWidth = 300
+  Position = poScreenCenter
+  LCLVersion = '1.8.4.0'
+  object pgbOperationProgress: TProgressBar
+    Left = 4
+    Height = 20
+    Top = 10
+    Width = 292
+    Style = pbstMarquee
+    TabOrder = 0
+  end
+end

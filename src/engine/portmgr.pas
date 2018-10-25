@@ -8,9 +8,12 @@ uses
   Classes, SysUtils, Environ;
 
 type
+  TKallistiPortsManager = class;
+
   { TKallistiPortItem }
   TKallistiPortItem = class(TObject)
   private
+    fOwner: TKallistiPortsManager;
     fDirectory: TFileName;
     fDescription: string;
     fLicense: string;
@@ -19,8 +22,16 @@ type
     fShortDescription: string;
     fURL: string;
     fVersion: string;
+    function GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     function IsPortInstalled: Boolean;
+  protected
+    function ExecuteShellCommand(const CommandLine: string): string;
+    property Environment: TDreamcastSoftwareDevelopmentEnvironment
+      read GetEnvironment;
   public
+    constructor Create(AOwner: TKallistiPortsManager);
+    function Install: Boolean;
+    function Uninstall: Boolean;
     property Name: string read fName;
     property Description: string read fDescription;
     property Directory: TFileName read fDirectory;
@@ -62,6 +73,48 @@ begin
   Result := FileExists(fDirectory + '..\lib\.kos-ports\' + Name);
 end;
 
+function TKallistiPortItem.ExecuteShellCommand(
+  const CommandLine: string): string;
+begin
+  Result := Environment.ExecuteShellCommand(CommandLine, Directory);
+end;
+
+function TKallistiPortItem.GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+begin
+  Result := fOwner.fEnvironment;
+end;
+
+constructor TKallistiPortItem.Create(AOwner: TKallistiPortsManager);
+begin
+  fOwner := AOwner;
+end;
+
+function TKallistiPortItem.Install: Boolean;
+const
+  SUCCESS_TAG = 'Marking %s %s as installed.';
+
+var
+  Buffer, SuccessTag: string;
+
+begin
+  SuccessTag := Format(SUCCESS_TAG, [Name, Version]);
+  Buffer := ExecuteShellCommand('make install && make clean');
+  Result := IsInString(SuccessTag, Buffer);
+end;
+
+function TKallistiPortItem.Uninstall: Boolean;
+const
+  SUCCESS_TAG = 'Uninstalled %s.';
+
+var
+  Buffer, SuccessTag: string;
+
+begin
+  SuccessTag := Format(SUCCESS_TAG, [Name]);
+  Buffer := ExecuteShellCommand('make uninstall');
+  Result := IsInString(SuccessTag, Buffer);
+end;
+
 { TKallistiPortsManager }
 
 procedure TKallistiPortsManager.RetrieveAvailablePorts;
@@ -92,7 +145,7 @@ end;
 
 function TKallistiPortsManager.Add: TKallistiPortItem;
 begin
-  Result := TKallistiPortItem.Create;
+  Result := TKallistiPortItem.Create(Self);
   fList.Add(Result);
 end;
 

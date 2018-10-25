@@ -87,7 +87,8 @@ type
     function GetSelectedKallistiPortItemIndex: Integer;
     procedure LoadConfiguration;
     function BooleanToCaption(Value: Boolean): string;
-    function ExecuteKallistiPortCommand(): string;
+  protected
+    procedure OnCommandTerminateThread(ResultOutput: string);
   public
     property SelectedKallistiPortItemIndex: Integer
       read GetSelectedKallistiPortItemIndex;
@@ -103,10 +104,74 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, DCSDKMgr, GetVer, SysTools;
+  LCLIntf, DCSDKMgr, GetVer, SysTools, Progress;
+
+type
+  TShellThreadCommandTerminateEvent = procedure(ResultOutput: string) of object;
+
+  { TShellThread }
+
+  TShellThread = class(TThread)
+  private
+    fResultOutput: string;
+    fCommandTerminate: TShellThreadCommandTerminateEvent;
+    fSelectedKallistiPort: TKallistiPortItem;
+    procedure HideProgressWindow;
+    procedure TriggerCommandTerminate;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(CreateSuspended: Boolean);
+    property SelectedKallistiPort: TKallistiPortItem
+      read fSelectedKallistiPort write fSelectedKallistiPort;
+    property OnCommandTerminate: TShellThreadCommandTerminateEvent
+      read fCommandTerminate write fCommandTerminate;
+  end;
 
 var
   DreamcastSoftwareDevelopmentKitManager: TDreamcastSoftwareDevelopmentKitManager;
+
+procedure ExecuteThreadOperation();
+var
+  MyThread: TShellThread;
+
+begin
+  MyThread := TShellThread.Create(True);
+  MyThread.SelectedKallistiPort := frmMain.SelectedKallistiPort;
+  MyThread.OnCommandTerminate := @frmMain.OnCommandTerminateThread;
+  MyThread.Start;
+  frmProgress.ShowModal;
+end;
+
+{ TShellThread }
+
+constructor TShellThread.Create(CreateSuspended: Boolean);
+begin
+  inherited Create(CreateSuspended);
+  FreeOnTerminate := True;
+end;
+
+procedure TShellThread.HideProgressWindow;
+begin
+  frmProgress.Close;
+end;
+
+procedure TShellThread.TriggerCommandTerminate;
+begin
+  if Assigned(fCommandTerminate) then
+    fCommandTerminate(fResultOutput);
+end;
+
+procedure TShellThread.Execute;
+var
+  Result: Boolean;
+
+begin
+  Result := SelectedKallistiPort.Install;
+  Synchronize(@HideProgressWindow);
+  fResultOutput := 'YEAH';
+  Synchronize(@TriggerCommandTerminate);
+end;
 
 { TfrmMain }
 
@@ -221,23 +286,9 @@ begin
     Result := 'Installed';
 end;
 
-function TfrmMain.ExecuteKallistiPortCommand(): string;
-var
-  CurrentDir, ShellLauncher: TFileName;
-
+procedure TfrmMain.OnCommandTerminateThread(ResultOutput: string);
 begin
-  if Assigned(SelectedKallistiPort) then
-  begin
-    CurrentDir := GetCurrentDir;
-    SetCurrentDir(SelectedKallistiPort.Directory);
-
-    ShellLauncher := DreamcastSoftwareDevelopmentKitManager.Environment.
-      FileSystem.ShellLauncherExecutable;
-
-    Result := RunShadow(ShellLauncher, 'make portinfo --dcsdk-automated-call');
-
-    SetCurrentDir(CurrentDir);
-  end;
+  ShowMessage(ResultOutput);
 end;
 
 procedure TfrmMain.btnCloseClick(Sender: TObject);
@@ -252,12 +303,13 @@ end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
 begin
-  ShowMessage(ExecuteKallistiPortCommand());
+  ExecuteThreadOperation;
 end;
 
 procedure TfrmMain.btnPortUninstallClick(Sender: TObject);
 begin
-  ExecuteKallistiPortCommand();
+  if Assigned(SelectedKallistiPort) then
+    SelectedKallistiPort.Uninstall;
 end;
 
 procedure TfrmMain.edtPortMaintainerClick(Sender: TObject);

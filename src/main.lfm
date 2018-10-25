@@ -22,7 +22,7 @@ object frmMain: TfrmMain
     object tsKallistiOS: TTabSheet
       Caption = 'KallistiOS'
       ClientHeight = 230
-      ClientWidth = 480
+      ClientWidth = 500
       object lblVersionKallistiOS: TLabel
         Left = 8
         Height = 13

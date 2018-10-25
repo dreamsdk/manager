@@ -26,9 +26,6 @@ type
 
 implementation
 
-uses
-  SysTools;
-
 { TDreamcastSoftwareDevelopmentKitManager }
 
 constructor TDreamcastSoftwareDevelopmentKitManager.Create;

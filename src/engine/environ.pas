@@ -60,6 +60,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    function ExecuteShellCommand(CommandLine: string;
+      WorkingDirectory: TFileName): string;
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystemObject read fFileSystem;
     property InstallPath: TFileName read fInstallPath;
     property UseMintty: Boolean read fUseMintty write fUseMintty;
@@ -68,7 +70,7 @@ type
 implementation
 
 uses
-  IniFiles;
+  IniFiles, SysTools;
 
 { TDreamcastSoftwareDevelopmentFileSystemObject }
 
@@ -179,6 +181,22 @@ begin
   fFileSystem.Free;
   SaveConfig;
   inherited Destroy;
+end;
+
+function TDreamcastSoftwareDevelopmentEnvironment.ExecuteShellCommand(
+  CommandLine: string; WorkingDirectory: TFileName): string;
+var
+  CurrentDir, ShellLauncher: TFileName;
+
+begin
+  CurrentDir := GetCurrentDir;
+  SetCurrentDir(WorkingDirectory);
+
+  ShellLauncher := FileSystem.ShellLauncherExecutable;
+  CommandLine := Format('%s --dcsdk-automated-call', [CommandLine]);
+  Result := RunShadow(ShellLauncher, CommandLine);
+
+  SetCurrentDir(CurrentDir);
 end;
 
 end.

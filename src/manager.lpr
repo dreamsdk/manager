@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Main, getver, systools, Environ, portmgr, dcsdkmgr;
+  Forms, Main, getver, systools, Environ, portmgr, dcsdkmgr, Progress;
 
 {$R *.res}
 
@@ -16,6 +16,7 @@ begin
   RequireDerivedFormResource:=True;
   Application.Initialize;
   Application.CreateForm(TfrmMain, frmMain);
+  Application.CreateForm(TfrmProgress, frmProgress);
   Application.Run;
 end.
 
