@@ -69,35 +69,17 @@ object frmMain: TfrmMain
           TabOrder = 0
         end
       end
-      object btnPortInstall: TButton
-        Left = 152
-        Height = 25
-        Top = 196
-        Width = 75
-        Caption = 'Install'
-        OnClick = btnPortInstallClick
-        TabOrder = 1
-      end
-      object btnPortUninstall: TButton
-        Left = 232
-        Height = 25
-        Top = 196
-        Width = 75
-        Caption = 'Uninstall'
-        OnClick = btnPortUninstallClick
-        TabOrder = 2
-      end
       object pcPortDetails: TPageControl
         Left = 152
-        Height = 180
-        Top = 8
+        Height = 184
+        Top = 12
         Width = 344
         ActivePage = tsPortInformation
         TabIndex = 0
-        TabOrder = 3
+        TabOrder = 1
         object tsPortInformation: TTabSheet
           Caption = 'Information'
-          ClientHeight = 154
+          ClientHeight = 158
           ClientWidth = 336
           object edtPortMaintainer: TLabeledEdit
             Left = 71
@@ -235,12 +217,12 @@ object frmMain: TfrmMain
         object tsPortDescription: TTabSheet
           Caption = 'Description'
           ClientHeight = 154
-          ClientWidth = 308
+          ClientWidth = 336
           object memPortDescription: TMemo
             Left = 2
             Height = 150
             Top = 2
-            Width = 304
+            Width = 332
             Align = alClient
             BorderSpacing.Around = 2
             Lines.Strings = (
@@ -252,11 +234,38 @@ object frmMain: TfrmMain
           end
         end
       end
+      object btnPortUninstall: TButton
+        Left = 384
+        Height = 25
+        Top = 200
+        Width = 112
+        Caption = 'Uninstall'
+        OnClick = btnPortUninstallClick
+        TabOrder = 2
+      end
+      object btnPortInstall: TButton
+        Left = 152
+        Height = 25
+        Top = 200
+        Width = 110
+        Caption = 'Install'
+        OnClick = btnPortInstallClick
+        TabOrder = 3
+      end
+      object btnPortUpdate: TButton
+        Left = 264
+        Height = 25
+        Top = 200
+        Width = 118
+        Caption = 'Update'
+        OnClick = btnPortUpdateClick
+        TabOrder = 4
+      end
     end
     object tsEnvironment: TTabSheet
       Caption = 'Environment'
       ClientHeight = 230
-      ClientWidth = 480
+      ClientWidth = 500
       object gbxToolchain: TGroupBox
         Left = 8
         Height = 129
@@ -517,7 +526,7 @@ object frmMain: TfrmMain
     object tsOptions: TTabSheet
       Caption = 'Options'
       ClientHeight = 230
-      ClientWidth = 480
+      ClientWidth = 500
       object rgxTerminalOption: TRadioGroup
         Left = 8
         Height = 81

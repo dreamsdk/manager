@@ -6,18 +6,17 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  StdCtrls, ExtCtrls, CheckLst, PortMgr;
+  StdCtrls, ExtCtrls, CheckLst, PortMgr, ShellThd;
 
 type
-
   { TfrmMain }
-
   TfrmMain = class(TForm)
     btnClose: TButton;
     btnOpenMinGWManager: TButton;
+    btnPortInstall: TButton;
     btnPortUninstall: TButton;
     btnUpdateKallistiOS: TButton;
-    btnPortInstall: TButton;
+    btnPortUpdate: TButton;
     edtPortLicense: TLabeledEdit;
     edtPortURL: TLabeledEdit;
     edtPortMaintainer: TLabeledEdit;
@@ -71,6 +70,7 @@ type
     procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure btnPortInstallClick(Sender: TObject);
     procedure btnPortUninstallClick(Sender: TObject);
+    procedure btnPortUpdateClick(Sender: TObject);
     procedure edtPortMaintainerClick(Sender: TObject);
     procedure edtPortURLClick(Sender: TObject);
     procedure edtPortURLMouseEnter(Sender: TObject);
@@ -87,9 +87,13 @@ type
     function GetSelectedKallistiPortItemIndex: Integer;
     procedure LoadConfiguration;
     function BooleanToCaption(Value: Boolean): string;
-  protected
-    procedure OnCommandTerminateThread(ResultOutput: string);
+    function BooleanToCheckboxState(State: Boolean): TCheckBoxState;
+    procedure ClearKallistiPortPanel;
+    procedure UpdateKallistiPortControls;
   public
+    procedure OnCommandTerminateThread(Operation: TShellThreadOperation;
+      Success: Boolean; ResultOutput: string;
+      KallistiPortUpdateState: TKallistiPortUpdateState);
     property SelectedKallistiPortItemIndex: Integer
       read GetSelectedKallistiPortItemIndex;
     property SelectedKallistiPort: TKallistiPortItem
@@ -104,74 +108,10 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, DCSDKMgr, GetVer, SysTools, Progress;
-
-type
-  TShellThreadCommandTerminateEvent = procedure(ResultOutput: string) of object;
-
-  { TShellThread }
-
-  TShellThread = class(TThread)
-  private
-    fResultOutput: string;
-    fCommandTerminate: TShellThreadCommandTerminateEvent;
-    fSelectedKallistiPort: TKallistiPortItem;
-    procedure HideProgressWindow;
-    procedure TriggerCommandTerminate;
-  protected
-    procedure Execute; override;
-  public
-    constructor Create(CreateSuspended: Boolean);
-    property SelectedKallistiPort: TKallistiPortItem
-      read fSelectedKallistiPort write fSelectedKallistiPort;
-    property OnCommandTerminate: TShellThreadCommandTerminateEvent
-      read fCommandTerminate write fCommandTerminate;
-  end;
+  LCLIntf, DCSDKMgr, GetVer, SysTools, Output;
 
 var
   DreamcastSoftwareDevelopmentKitManager: TDreamcastSoftwareDevelopmentKitManager;
-
-procedure ExecuteThreadOperation();
-var
-  MyThread: TShellThread;
-
-begin
-  MyThread := TShellThread.Create(True);
-  MyThread.SelectedKallistiPort := frmMain.SelectedKallistiPort;
-  MyThread.OnCommandTerminate := @frmMain.OnCommandTerminateThread;
-  MyThread.Start;
-  frmProgress.ShowModal;
-end;
-
-{ TShellThread }
-
-constructor TShellThread.Create(CreateSuspended: Boolean);
-begin
-  inherited Create(CreateSuspended);
-  FreeOnTerminate := True;
-end;
-
-procedure TShellThread.HideProgressWindow;
-begin
-  frmProgress.Close;
-end;
-
-procedure TShellThread.TriggerCommandTerminate;
-begin
-  if Assigned(fCommandTerminate) then
-    fCommandTerminate(fResultOutput);
-end;
-
-procedure TShellThread.Execute;
-var
-  Result: Boolean;
-
-begin
-  Result := SelectedKallistiPort.Install;
-  Synchronize(@HideProgressWindow);
-  fResultOutput := 'YEAH';
-  Synchronize(@TriggerCommandTerminate);
-end;
 
 { TfrmMain }
 
@@ -185,17 +125,10 @@ begin
 end;
 
 procedure TfrmMain.lbxPortsClickCheck(Sender: TObject);
-var
-  State: TCheckBoxState;
-
 begin
   if Assigned(SelectedKallistiPort) then
-  begin
-    State := cbUnchecked;
-    if SelectedKallistiPort.Installed then
-      State := cbGrayed;
-    lbxPorts.State[lbxPorts.ItemIndex] := State;
-  end;
+    lbxPorts.State[lbxPorts.ItemIndex] :=
+      BooleanToCheckboxState(SelectedKallistiPort.Installed);
 end;
 
 procedure TfrmMain.lbxPortsSelectionChange(Sender: TObject; User: Boolean);
@@ -203,12 +136,13 @@ begin
   if Assigned(SelectedKallistiPort) and User then
   begin
     lblPortName.Caption := SelectedKallistiPort.Name;
-    edtPortVersion.Caption := SelectedKallistiPort.Version;
+    edtPortVersion.Text := SelectedKallistiPort.Version;
     edtPortLicense.Text := SelectedKallistiPort.License;
-    edtPortMaintainer.Caption := SelectedKallistiPort.Maintainer;
-    memPortShortDescription.Caption := SelectedKallistiPort.ShortDescription;
-    edtPortURL.Caption := SelectedKallistiPort.URL;
+    edtPortMaintainer.Text := SelectedKallistiPort.Maintainer;
+    memPortShortDescription.Text := SelectedKallistiPort.ShortDescription;
+    edtPortURL.Text := SelectedKallistiPort.URL;
     memPortDescription.Text := SelectedKallistiPort.Description;
+    UpdateKallistiPortControls;
   end;
 end;
 
@@ -253,6 +187,14 @@ begin
     if PortInfo.Installed then
       lbxPorts.State[j] := cbGrayed;
   end;
+
+  if lbxPorts.Count > 0 then
+  begin
+    lbxPorts.ItemIndex := 0;
+    lbxPortsSelectionChange(Self, True);
+  end
+  else
+    ClearKallistiPortPanel;
 end;
 
 function TfrmMain.GetSelectedKallistiPort: TKallistiPortItem;
@@ -286,9 +228,67 @@ begin
     Result := 'Installed';
 end;
 
-procedure TfrmMain.OnCommandTerminateThread(ResultOutput: string);
+function TfrmMain.BooleanToCheckboxState(State: Boolean): TCheckBoxState;
 begin
-  ShowMessage(ResultOutput);
+  Result := cbUnchecked;
+  if State then
+    Result := cbGrayed;
+end;
+
+procedure TfrmMain.ClearKallistiPortPanel;
+begin
+  lblPortName.Caption := '';
+  edtPortVersion.Clear;
+  edtPortLicense.Clear;
+  edtPortMaintainer.Clear;
+  memPortShortDescription.Clear;
+  edtPortURL.Clear;
+  memPortDescription.Clear;
+  btnPortInstall.Enabled := False;
+  btnPortUninstall.Enabled := False;
+end;
+
+procedure TfrmMain.UpdateKallistiPortControls;
+begin
+  btnPortInstall.Enabled := not SelectedKallistiPort.Installed;
+  btnPortUninstall.Enabled := SelectedKallistiPort.Installed;
+  btnPortUpdate.Enabled := SelectedKallistiPort.Installed;
+end;
+
+procedure TfrmMain.OnCommandTerminateThread(Operation: TShellThreadOperation;
+  Success: Boolean; ResultOutput: string;
+  KallistiPortUpdateState: TKallistiPortUpdateState);
+var
+  ErrorState: Boolean;
+
+begin
+  ErrorState := False;
+
+  // KallistiPort: Update
+  if Operation = stoPortUpdate then
+    case KallistiPortUpdateState of
+      usUpdated:
+        MessageDlg('Information', Format('%s was successfully updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+      usUpdateNotNeeded:
+        MessageDlg('Information', Format('%s doesn''t need to be updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+      usUpdateFailed:
+        ErrorState := True;
+    end;
+
+  // KallistiPort: Install/Uninstall
+  if (Operation = stoPortInstall) or (Operation = stoPortUninstall) then
+    if Success then
+    begin
+      // Update the view
+      lbxPorts.State[lbxPorts.ItemIndex] := BooleanToCheckboxState(Operation = stoPortInstall);
+      UpdateKallistiPortControls;
+    end
+    else
+      ErrorState := True;
+
+    // Display the error if needed...
+    if ErrorState then
+      ShowShellOutputWindow(ResultOutput);
 end;
 
 procedure TfrmMain.btnCloseClick(Sender: TObject);
@@ -303,13 +303,17 @@ end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
 begin
-  ExecuteThreadOperation;
+  ExecuteThreadOperation(stoPortInstall);
 end;
 
 procedure TfrmMain.btnPortUninstallClick(Sender: TObject);
 begin
-  if Assigned(SelectedKallistiPort) then
-    SelectedKallistiPort.Uninstall;
+  ExecuteThreadOperation(stoPortUninstall);
+end;
+
+procedure TfrmMain.btnPortUpdateClick(Sender: TObject);
+begin
+  ExecuteThreadOperation(stoPortUpdate);
 end;
 
 procedure TfrmMain.edtPortMaintainerClick(Sender: TObject);

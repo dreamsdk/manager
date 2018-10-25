@@ -14,9 +14,7 @@ type
   TfrmProgress = class(TForm)
     pgbOperationProgress: TProgressBar;
   private
-
   public
-
   end;
 
 var

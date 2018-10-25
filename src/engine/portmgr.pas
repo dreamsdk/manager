@@ -8,6 +8,8 @@ uses
   Classes, SysUtils, Environ;
 
 type
+  TKallistiPortUpdateState = (usUndefined, usUpdated, usUpdateNotNeeded, usUpdateFailed);
+
   TKallistiPortsManager = class;
 
   { TKallistiPortItem }
@@ -30,8 +32,9 @@ type
       read GetEnvironment;
   public
     constructor Create(AOwner: TKallistiPortsManager);
-    function Install: Boolean;
-    function Uninstall: Boolean;
+    function Install(var BufferOutput: string): Boolean;
+    function Uninstall(var BufferOutput: string): Boolean;
+    function Update(var BufferOutput: string): TKallistiPortUpdateState;
     property Name: string read fName;
     property Description: string read fDescription;
     property Directory: TFileName read fDirectory;
@@ -89,30 +92,52 @@ begin
   fOwner := AOwner;
 end;
 
-function TKallistiPortItem.Install: Boolean;
+function TKallistiPortItem.Install(var BufferOutput: string): Boolean;
 const
   SUCCESS_TAG = 'Marking %s %s as installed.';
 
 var
-  Buffer, SuccessTag: string;
+  SuccessTag: string;
 
 begin
   SuccessTag := Format(SUCCESS_TAG, [Name, Version]);
-  Buffer := ExecuteShellCommand('make install && make clean');
-  Result := IsInString(SuccessTag, Buffer);
+  BufferOutput := ExecuteShellCommand('make install');
+  ExecuteShellCommand('make clean');
+  Result := IsInString(SuccessTag, BufferOutput);
 end;
 
-function TKallistiPortItem.Uninstall: Boolean;
+function TKallistiPortItem.Uninstall(var BufferOutput: string): Boolean;
 const
   SUCCESS_TAG = 'Uninstalled %s.';
 
 var
-  Buffer, SuccessTag: string;
+  SuccessTag: string;
 
 begin
   SuccessTag := Format(SUCCESS_TAG, [Name]);
-  Buffer := ExecuteShellCommand('make uninstall');
-  Result := IsInString(SuccessTag, Buffer);
+  BufferOutput := ExecuteShellCommand('make uninstall');
+  Result := IsInString(SuccessTag, BufferOutput);
+end;
+
+function TKallistiPortItem.Update(var BufferOutput: string): TKallistiPortUpdateState;
+const
+  SUCCESS_TAG = '%s is already installed';
+
+var
+  SuccessTag: string;
+
+begin
+  Result := usUndefined;
+
+  SuccessTag := Format(SUCCESS_TAG, [Name]);
+
+  if Install(BufferOutput) then
+    Result := usUpdated
+  else
+    if IsInString(SuccessTag, BufferOutput) then
+      Result := usUpdateNotNeeded
+    else
+      Result := usUpdateFailed;
 end;
 
 { TKallistiPortsManager }
