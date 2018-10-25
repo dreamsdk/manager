@@ -21,7 +21,6 @@ type
     fKallistiOSVersionFile: TFileName;
     fKallistiPorts: TFileName;
     fNewlibBinary: TFileName;
-    fMSYSExecutable: TFileName;
     fMinGWGetExecutable: TFileName;
     fBinutilsExecutable: TFileName;
     fShellLauncherExecutable: TFileName;
@@ -31,7 +30,6 @@ type
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
   public
     property ShellLauncherExecutable: TFileName read fShellLauncherExecutable;
-    property MSYSExecutable: TFileName read fMSYSExecutable;
     property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
     property BinutilsExecutable: TFileName read fBinutilsExecutable;
     property GCCExecutable: TFileName read fGCCExecutable;
@@ -62,6 +60,7 @@ type
     destructor Destroy; override;
     function ExecuteShellCommand(CommandLine: string;
       WorkingDirectory: TFileName): string;
+    procedure RefreshConfig;
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystemObject read fFileSystem;
     property InstallPath: TFileName read fInstallPath;
     property UseMintty: Boolean read fUseMintty write fUseMintty;
@@ -86,7 +85,6 @@ begin
   fShellLauncherExecutable := MSYSBase + 'opt\dcsdk\dcsdk.exe';
 
   // MinGW/MSYS
-  fMSYSExecutable := MSYSBase + 'msys.bat';
   fMinGWGetExecutable := InstallPath + 'bin\mingw-get.exe';
 
   // Toolchain
@@ -197,6 +195,11 @@ begin
   Result := RunShadow(ShellLauncher, CommandLine);
 
   SetCurrentDir(CurrentDir);
+end;
+
+procedure TDreamcastSoftwareDevelopmentEnvironment.RefreshConfig;
+begin
+  SaveConfig;
 end;
 
 end.

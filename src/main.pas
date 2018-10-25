@@ -13,6 +13,7 @@ type
   TfrmMain = class(TForm)
     btnClose: TButton;
     btnOpenMinGWManager: TButton;
+    btnOpenMSYS: TButton;
     btnPortInstall: TButton;
     btnPortUninstall: TButton;
     btnUpdateKallistiOS: TButton;
@@ -58,6 +59,7 @@ type
     PageControl1: TPageControl;
     pcPortDetails: TPageControl;
     pnlActions: TPanel;
+    pnlActions1: TPanel;
     rgxTerminalOption: TRadioGroup;
     tsPortInformation: TTabSheet;
     tsPortDescription: TTabSheet;
@@ -68,6 +70,7 @@ type
     tsKallistiPorts: TTabSheet;
     procedure btnCloseClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
+    procedure btnOpenMSYSClick(Sender: TObject);
     procedure btnPortInstallClick(Sender: TObject);
     procedure btnPortUninstallClick(Sender: TObject);
     procedure btnPortUpdateClick(Sender: TObject);
@@ -299,6 +302,12 @@ end;
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
 begin
   RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.MinGWGetExecutable);
+end;
+
+procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.RefreshConfig;
+  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ShellLauncherExecutable);
 end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);

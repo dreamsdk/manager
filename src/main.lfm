@@ -16,8 +16,8 @@ object frmMain: TfrmMain
     Height = 256
     Top = 8
     Width = 508
-    ActivePage = tsKallistiPorts
-    TabIndex = 1
+    ActivePage = tsOptions
+    TabIndex = 3
     TabOrder = 0
     object tsKallistiOS: TTabSheet
       Caption = 'KallistiOS'
@@ -567,6 +567,25 @@ object frmMain: TfrmMain
           Width = 209
           Caption = 'MinGW Installation Manager'
           OnClick = btnOpenMinGWManagerClick
+          TabOrder = 0
+        end
+      end
+      object pnlActions1: TPanel
+        Left = 232
+        Height = 66
+        Top = 72
+        Width = 240
+        BevelOuter = bvLowered
+        ClientHeight = 66
+        ClientWidth = 240
+        TabOrder = 2
+        object btnOpenMSYS: TButton
+          Left = 16
+          Height = 25
+          Top = 22
+          Width = 209
+          Caption = 'MSYS Shell'
+          OnClick = btnOpenMSYSClick
           TabOrder = 0
         end
       end
