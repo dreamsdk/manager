@@ -45,15 +45,20 @@ uses
 
 procedure TfrmProgress.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
-
+  if not Finished and AbortOperation then
+  begin
+    CloseAction := caNone;
+    PauseThreadOperation;
+    if MessageDlg('Warning', 'Cancel?', mtWarning, [mbYes, mbNo], 0) = mrYes then
+      AbortThreadOperation
+    else
+      ResumeThreadOperation;
+  end;
 end;
 
 procedure TfrmProgress.btnAbortClick(Sender: TObject);
 begin
-  if AbortOperation then
-    AbortThreadOperation
-  else
-    Close;
+  Close;
 end;
 
 procedure TfrmProgress.FormShow(Sender: TObject);

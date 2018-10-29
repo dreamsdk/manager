@@ -261,12 +261,7 @@ end;
 procedure TfrmMain.OnCommandTerminateThread(Operation: TShellThreadOperation;
   Success: Boolean; ResultOutput: string;
   KallistiPortUpdateState: TUpdateOperationState);
-var
-  ErrorState: Boolean;
-
 begin
-  ErrorState := False;
-
   // KallistiPort: Update
   if Operation = stoPortUpdate then
     case KallistiPortUpdateState of
@@ -274,8 +269,6 @@ begin
         MessageDlg('Information', Format('%s was successfully updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
       uosUpdateUseless:
         MessageDlg('Information', Format('%s doesn''t need to be updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
-      uosUpdateFailed:
-        ErrorState := True;
     end;
 
   // KallistiPort: Install/Uninstall
@@ -285,13 +278,7 @@ begin
       // Update the view
       lbxPorts.State[lbxPorts.ItemIndex] := BooleanToCheckboxState(Operation = stoPortInstall);
       UpdateKallistiPortControls;
-    end
-    else
-      ErrorState := True;
-
-    // Display the error if needed...
-//    if ErrorState then
-//      ShowShellOutputWindow(ResultOutput);
+    end;
 end;
 
 procedure TfrmMain.btnCloseClick(Sender: TObject);

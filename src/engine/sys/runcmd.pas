@@ -33,6 +33,8 @@ type
     constructor Create(CreateSuspended: Boolean);
     destructor Destroy; override;
     procedure Abort;
+    procedure Pause;
+    procedure Resume;
     property BufferOutput: TStringList read fBufferOutput;
     property Environment: TStringList read fEnvironment;
     property Executable: TFileName read fExecutable write fExecutable;
@@ -83,6 +85,7 @@ begin
   fProcess.Parameters.AddStrings(Parameters);
   fProcess.Environment.AddStrings(fEnvironment);
   fProcess.Options := [poUsePipes, poStderrToOutPut];
+  fProcess.ShowWindow := swoHide;
   fProcess.Execute;
 
   repeat
@@ -128,6 +131,18 @@ procedure TRunCommand.Abort;
 begin
   KillRunningProcess;
   Terminate;
+end;
+
+procedure TRunCommand.Pause;
+begin
+  if Assigned(fProcess) then
+    fProcess.Suspend;
+end;
+
+procedure TRunCommand.Resume;
+begin
+  if Assigned(fProcess) then
+    fProcess.Resume;
 end;
 
 end.

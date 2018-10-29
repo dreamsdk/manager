@@ -76,13 +76,14 @@ type
     procedure HandleShellCommandRunnerNewLine(Sender: TObject; NewLine: string);
     procedure HandleShellCommandRunnerTerminate(Sender: TObject);
     function ExecuteShellCommandRunner(const CommandLine: string): string;
-    procedure AbortShellCommandRunner;
   public
     constructor Create;
     destructor Destroy; override;
     procedure AbortShellCommand;
     function ExecuteShellCommand(CommandLine: string;
       WorkingDirectory: TFileName): string;
+    procedure PauseShellCommand;
+    procedure ResumeShellCommand;
     function CloneRepository(const URL: string; const TargetDirectoryName,
       WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
@@ -232,7 +233,7 @@ var
 
 begin
   Result := '';
-  AbortShellCommandRunner;
+  AbortShellCommand;
 
   fShellCommandRunner := TRunCommand.Create(True);
   with fShellCommandRunner do
@@ -258,12 +259,6 @@ begin
   end;
 end;
 
-procedure TDreamcastSoftwareDevelopmentEnvironment.AbortShellCommandRunner;
-begin
-  if Assigned(fShellCommandRunner) then
-    fShellCommandRunner.Abort;
-end;
-
 constructor TDreamcastSoftwareDevelopmentEnvironment.Create;
 begin
   fFileSystem := TDreamcastSoftwareDevelopmentFileSystemObject.Create;
@@ -272,15 +267,16 @@ end;
 
 destructor TDreamcastSoftwareDevelopmentEnvironment.Destroy;
 begin
-  AbortShellCommandRunner;
-  fFileSystem.Free;
+  AbortShellCommand;
   SaveConfig;
+  fFileSystem.Free;
   inherited Destroy;
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.AbortShellCommand;
 begin
-  AbortShellCommandRunner;
+  if Assigned(fShellCommandRunner) then
+    fShellCommandRunner.Abort;
 end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.ExecuteShellCommand(
@@ -297,6 +293,18 @@ begin
   Result := ExecuteShellCommandRunner(CommandLine);
 
   SetCurrentDir(CurrentDir);
+end;
+
+procedure TDreamcastSoftwareDevelopmentEnvironment.PauseShellCommand;
+begin
+  if Assigned(fShellCommandRunner) then
+    fShellCommandRunner.Pause;
+end;
+
+procedure TDreamcastSoftwareDevelopmentEnvironment.ResumeShellCommand;
+begin
+  if Assigned(fShellCommandRunner) then
+    fShellCommandRunner.Resume;
 end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.CloneRepository(

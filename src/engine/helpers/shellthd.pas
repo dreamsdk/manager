@@ -72,6 +72,8 @@ type
   end;
 
 procedure AbortThreadOperation;
+procedure PauseThreadOperation;
+procedure ResumeThreadOperation;
 procedure ExecuteThreadOperation(const AOperation: TShellThreadOperation);
 
 implementation
@@ -90,6 +92,24 @@ type
 var
   ShellThread: TShellThread;
   ShellThreadHelper: TShellThreadHelper;
+
+procedure PauseThreadOperation;
+begin
+  if Assigned(ShellThread) then
+  begin
+    ShellThread.Manager.Environment.PauseShellCommand;
+    Application.ProcessMessages;
+  end;
+end;
+
+procedure ResumeThreadOperation;
+begin
+  if Assigned(ShellThread) then
+  begin
+    ShellThread.Manager.Environment.ResumeShellCommand;
+    Application.ProcessMessages;
+  end;
+end;
 
 procedure InitializeNewLineHandler;
 begin
@@ -175,6 +195,7 @@ end;
 
 procedure AbortThreadOperation;
 begin
+  ResumeThreadOperation;
   if Assigned(ShellThread) then
   begin
     ShellThread.Aborted := True;
