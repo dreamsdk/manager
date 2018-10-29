@@ -9,6 +9,7 @@ uses
 
 type
   TShellThreadOperation = (
+    stoKallistiManage,
     stoKallistiInstall,
     stoKallistiUpdate,
     stoPortInstall,
@@ -18,16 +19,14 @@ type
 
   TShellThreadContext = (
     stcUndefined,
-    stcKallistiInstall,
-    stcKallistiUpdate,
-    stcSingleKallistiPort
+    stcKallisti,
+    stcKallistiPort
   );
 
   TShellThreadCommandTerminateEvent = procedure(
     Operation: TShellThreadOperation;
     Success: Boolean;
-    ResultOutput: string;
-    KallistiPortUpdateState: TUpdateOperationState
+    UpdateState: TUpdateOperationState
   ) of object;
 
   { TShellThread }
@@ -37,7 +36,7 @@ type
     fManager: TDreamcastSoftwareDevelopmentKitManager;
     fProgressText: string;
     fContext: TShellThreadContext;
-    fOperationSuccessKallistiPortUpdate: TUpdateOperationState;
+    fOperationUpdateState: TUpdateOperationState;
     fOperationSuccess: Boolean;
     fOperationResultOutput: string;
     fOperation: TShellThreadOperation;
@@ -54,7 +53,8 @@ type
     procedure Execute; override;
     procedure UpdateProgressText(const Text: string);
     procedure TriggerCommandTerminate(OutputBuffer: string);
-    procedure ProcessKallistiOS(var OutputBuffer: string);
+    function ProcessKallistiOS: string;
+    function ProcessKallistiPort: string;
     procedure SetOperationSuccess(const Success: Boolean);
   public
     constructor Create(CreateSuspended: Boolean);
@@ -132,12 +132,9 @@ begin
   ValidKallistiPortContext := Assigned(frmMain.SelectedKallistiPort)
     and IsSingleKallistiPortOperation;
 
+  Result := stcKallisti;
   if ValidKallistiPortContext then
-    Result := stcSingleKallistiPort
-  else if (AOperation = stoKallistiInstall) then
-    Result := stcKallistiInstall
-  else if (AOperation = stoKallistiUpdate) then
-    Result := stcKallistiUpdate;
+    Result := stcKallistiPort;
 end;
 
 procedure ExecuteThreadOperation(const AOperation: TShellThreadOperation);
@@ -167,7 +164,7 @@ begin
 
     case ShellThreadContext of
 
-      stcSingleKallistiPort:
+      stcKallistiPort:
         begin
           KallistiPortText := Format('kos-port %s %s', [
             frmMain.SelectedKallistiPort.Name, frmMain.SelectedKallistiPort.Version]);
@@ -181,8 +178,8 @@ begin
           end;
         end;
 
-      stcKallistiInstall:
-        OperationTitle := 'Installation of KallistiOS';
+      stcKallisti:
+        OperationTitle := 'KallistiOS Installation/Update';
     end;
 
     with frmProgress do
@@ -242,13 +239,14 @@ end;
 procedure TShellThread.SyncUpdateProgressText;
 begin
   frmProgress.SetProgressText(fProgressText);
+  Application.ProcessMessages;
 end;
 
 procedure TShellThread.SyncTriggerCommandTerminate;
 begin
+  Application.ProcessMessages;
   if Assigned(fCommandTerminate) then
-    fCommandTerminate(fOperation, fOperationSuccess, fOperationResultOutput,
-      fOperationSuccessKallistiPortUpdate);
+    fCommandTerminate(fOperation, fOperationSuccess, fOperationUpdateState);
 end;
 
 function TShellThread.CanContinue: Boolean;
@@ -274,31 +272,12 @@ begin
   fOperationSuccess := False;
   Buffer := '';
 
-  case Operation of
-    stoKallistiInstall:
-      ProcessKallistiOS(Buffer);
+  case fContext of
+    stcKallisti:
+      Buffer := ProcessKallistiOS;
+    stcKallistiPort:
+      Buffer := ProcessKallistiPort;
   end;
-
-  // Single KallistiPort Management
-  if Assigned(SelectedKallistiPort) then
-    case Operation of
-      stoPortInstall:
-        begin
-          UpdateProgressText('Installing the KallistiOS Port...');
-          fOperationSuccess := SelectedKallistiPort.Install(Buffer);
-        end;
-      stoPortUninstall:
-        begin
-          UpdateProgressText('Uninstalling the KallistiOS Port...');
-          fOperationSuccess := SelectedKallistiPort.Uninstall(Buffer);
-        end;
-      stoPortUpdate:
-        begin
-          UpdateProgressText('Updating the KallistiOS Port...');
-          fOperationSuccessKallistiPortUpdate := SelectedKallistiPort.Update(Buffer);
-          fOperationSuccess := fOperationSuccessKallistiPortUpdate <> uosUpdateFailed;
-        end;
-    end;
 
   // Handle the closing of the window.
   if fOperationSuccess then
@@ -322,53 +301,99 @@ begin
   Synchronize(@SyncTriggerCommandTerminate);
 end;
 
-procedure TShellThread.ProcessKallistiOS(var OutputBuffer: string);
+function TShellThread.ProcessKallistiOS: string;
+var
+  IsKallistiFreshlyInstalled,
+  IsKallistiNeedsToBeUpdated: Boolean;
+
 begin
+  Result := '';
   fOperationSuccess := True;
+  fOperationUpdateState := uosUndefined;
 
   // Handle KallistiOS Repository
   if CanContinue and (not Manager.KallistiOS.Installed) then
   begin
-    UpdateProgressText('Cloning KallistiOS Repository...');
-    SetOperationSuccess(Manager.KallistiOS.CloneRepository(OutputBuffer));
+    fOperation := stoKallistiInstall;
+    UpdateProgressText('Cloning KallistiOS repository...');
+    SetOperationSuccess(Manager.KallistiOS.CloneRepository(Result));
   end
   else
   begin
-    UpdateProgressText('Updating KallistiOS Repository...');
-    SetOperationSuccess(Manager.KallistiOS.UpdateRepository(OutputBuffer) <> uosUpdateFailed);
+    fOperation := stoKallistiUpdate;
+    UpdateProgressText('Updating KallistiOS repository...');
+    fOperationUpdateState := Manager.KallistiOS.UpdateRepository(Result);
+    SetOperationSuccess(fOperationUpdateState <> uosUpdateFailed);
   end;
 
   // Handle KallistiPorts Repository
   if CanContinue and (not Manager.KallistiPorts.Installed) then
   begin
-    UpdateProgressText('Cloning KallistiOS Ports Repository...');
-    SetOperationSuccess(Manager.KallistiPorts.CloneRepository(OutputBuffer));
+    UpdateProgressText('Cloning KallistiOS Ports repository...');
+    SetOperationSuccess(Manager.KallistiPorts.CloneRepository(Result));
   end
   else
   begin
-    UpdateProgressText('Updating KallistiOS Ports Repository...');
-    SetOperationSuccess(Manager.KallistiOS.UpdateRepository(OutputBuffer) <> uosUpdateFailed);
+    UpdateProgressText('Updating KallistiOS Ports repository...');
+    SetOperationSuccess(Manager.KallistiOS.UpdateRepository(Result) <> uosUpdateFailed);
   end;
 
-  // Generate environ.sh file
-  if CanContinue then
+  IsKallistiNeedsToBeUpdated := (fOperationUpdateState = uosUpdateSuccess);
+  IsKallistiFreshlyInstalled := (fOperationUpdateState = uosUndefined) or (not Manager.KallistiOS.Built);
+  if IsKallistiFreshlyInstalled then
   begin
-    UpdateProgressText('Generating Environment Shell Script...');
-    SetOperationSuccess(Manager.KallistiOS.InitializeEnvironShellScript);
+    fOperation := stoKallistiInstall;
+    fOperationUpdateState := uosUndefined;
   end;
 
-  // Making KallistiOS library
-  if CanContinue then
+  if IsKallistiFreshlyInstalled or IsKallistiNeedsToBeUpdated then
   begin
-    UpdateProgressText('Building KallistiOS Library...');
-    SetOperationSuccess(Manager.KallistiOS.BuildKallistiOS(OutputBuffer));
-  end;
+    // Generate environ.sh file, unpacking genromfs and patching config.mk in kos-ports
+    if CanContinue then
+    begin
+      UpdateProgressText('Initialize KallistiOS and KallistiOS Ports environment...');
+      SetOperationSuccess(Manager.KallistiOS.InitializeEnvironment);
+    end;
 
-  // Fixing-up SH-4 Newlib
-  if CanContinue then
-  begin
-    UpdateProgressText('Fixing Hitachi SH-4 Newlib...');
-    SetOperationSuccess(Manager.KallistiOS.FixupHitachiNewlib(OutputBuffer));
+    // Making KallistiOS library
+    if CanContinue then
+    begin
+      UpdateProgressText('Building KallistiOS library...');
+      SetOperationSuccess(Manager.KallistiOS.BuildKallistiOS(Result));
+    end;
+
+    // Fixing-up SH-4 Newlib
+    if CanContinue then
+    begin
+      UpdateProgressText('Fixing SH-4 Newlib...');
+      SetOperationSuccess(Manager.KallistiOS.FixupHitachiNewlib(Result));
+    end;
+  end
+  else
+    UpdateProgressText('KallistiOS is already installed and up-to-date.');
+end;
+
+function TShellThread.ProcessKallistiPort: string;
+begin
+  Result := '';
+
+  case Operation of
+    stoPortInstall:
+      begin
+        UpdateProgressText('Installing the KallistiOS Port...');
+        fOperationSuccess := SelectedKallistiPort.Install(Result);
+      end;
+    stoPortUninstall:
+      begin
+        UpdateProgressText('Uninstalling the KallistiOS Port...');
+        fOperationSuccess := SelectedKallistiPort.Uninstall(Result);
+      end;
+    stoPortUpdate:
+      begin
+        UpdateProgressText('Updating the KallistiOS Port...');
+        fOperationUpdateState := SelectedKallistiPort.Update(Result);
+        fOperationSuccess := fOperationUpdateState <> uosUpdateFailed;
+      end;
   end;
 end;
 

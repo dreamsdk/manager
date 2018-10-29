@@ -21,6 +21,7 @@ type
   private
     fDCToolIPExecutable: TFileName;
     fDCToolSerialExecutable: TFileName;
+    fDreamSDKDirectory: TFileName;
     fDreamSDKExecutable: TFileName;
     fFixupHitachiNewlibExecutable: TFileName;
     fGCCExecutable: TFileName;
@@ -38,6 +39,7 @@ type
   protected
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
   public
+    property DreamSDKDirectory: TFileName read fDreamSDKDirectory;
     property DreamSDKExecutable: TFileName read fDreamSDKExecutable;
     property ShellExecutable: TFileName read fShellExecutable;
     property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
@@ -122,8 +124,9 @@ begin
   fShellExecutable := MSYSBase + 'bin\sh.exe';
 
   // DreamSDK
-  fDreamSDKExecutable := MSYSBase + 'opt\dcsdk\dcsdk.exe';
-  fFixupHitachiNewlibExecutable := MSYSBase + 'opt\dcsdk\fixup-sh4-newlib.sh';
+  fDreamSDKDirectory := MSYSBase + 'opt\dcsdk\';
+  fDreamSDKExecutable := fDreamSDKDirectory + 'dcsdk.exe';
+  fFixupHitachiNewlibExecutable := MSYSBase + 'opt\dcsdk\helpers\fixup-sh4-newlib';
 
   // Toolchain
   fToolchainInstalledARM := DirectoryExists(ToolchainBase + 'arm-eabi');
@@ -140,7 +143,7 @@ begin
   // KallistiOS
   fKallistiPortsDirectory := ToolchainBase + 'kos-ports\';
   fKallistiDirectory := ToolchainBase + 'kos\';
-  fKallistiLibrary := KallistiDirectory + 'lib/dreamcast/libkallisti.a';
+  fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
   fKallistiVersionFile := KallistiDirectory + 'doc\CHANGELOG';
 end;
 

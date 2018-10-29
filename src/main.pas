@@ -96,8 +96,7 @@ type
     procedure UpdateKallistiPortControls;
   public
     procedure OnCommandTerminateThread(Operation: TShellThreadOperation;
-      Success: Boolean; ResultOutput: string;
-      KallistiPortUpdateState: TUpdateOperationState);
+      Success: Boolean; UpdateState: TUpdateOperationState);
     property SelectedKallistiPortItemIndex: Integer
       read GetSelectedKallistiPortItemIndex;
     property SelectedKallistiPort: TKallistiPortItem
@@ -259,26 +258,50 @@ begin
 end;
 
 procedure TfrmMain.OnCommandTerminateThread(Operation: TShellThreadOperation;
-  Success: Boolean; ResultOutput: string;
-  KallistiPortUpdateState: TUpdateOperationState);
+  Success: Boolean; UpdateState: TUpdateOperationState);
+
+  procedure KallistiPortUpdateView;
+  begin
+    lbxPorts.State[lbxPorts.ItemIndex] := BooleanToCheckboxState(Operation = stoPortInstall);
+    UpdateKallistiPortControls;
+  end;
+
 begin
-  // KallistiPort: Update
-  if Operation = stoPortUpdate then
-    case KallistiPortUpdateState of
-      uosUpdateSuccess:
-        MessageDlg('Information', Format('%s was successfully updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
-      uosUpdateUseless:
-        MessageDlg('Information', Format('%s doesn''t need to be updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+  Application.ProcessMessages;
+
+  if Success then
+  begin
+
+    case Operation of
+
+      stoKallistiInstall:
+        MessageDlg('Information', 'KallistiOS was successfully installed.', mtInformation, [mbOk], 0);
+
+      stoKallistiUpdate:
+        case UpdateState of
+          uosUpdateSuccess:
+            MessageDlg('Information', 'KallistiOS was successfully updated.', mtInformation, [mbOk], 0);
+          uosUpdateUseless:
+            MessageDlg('Information', 'KallistiOS is already installed and up-to-date.', mtInformation, [mbOk], 0);
+        end;
+
+      stoPortInstall:
+        KallistiPortUpdateView;
+
+      stoPortUpdate:
+        case UpdateState of
+          uosUpdateSuccess:
+            MessageDlg('Information', Format('%s was successfully updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+          uosUpdateUseless:
+            MessageDlg('Information', Format('%s doesn''t need to be updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+        end;
+
+      stoPortUninstall:
+        KallistiPortUpdateView;
+
     end;
 
-  // KallistiPort: Install/Uninstall
-  if (Operation = stoPortInstall) or (Operation = stoPortUninstall) then
-    if Success then
-    begin
-      // Update the view
-      lbxPorts.State[lbxPorts.ItemIndex] := BooleanToCheckboxState(Operation = stoPortInstall);
-      UpdateKallistiPortControls;
-    end;
+  end;
 end;
 
 procedure TfrmMain.btnCloseClick(Sender: TObject);
@@ -314,8 +337,7 @@ end;
 
 procedure TfrmMain.btnUpdateKallistiOSClick(Sender: TObject);
 begin
-  // frmSetupKallistiOS.ShowModal;
-  ExecuteThreadOperation(stoKallistiInstall);
+  ExecuteThreadOperation(stoKallistiManage);
 end;
 
 procedure TfrmMain.edtPortMaintainerClick(Sender: TObject);
