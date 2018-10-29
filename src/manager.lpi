@@ -31,7 +31,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="engine"/>
+            <OtherUnitFiles Value="engine;engine\sys;engine\helpers"/>
             <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -77,15 +77,19 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="1">
+    <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="FCL"/>
       </Item1>
+      <Item2>
+        <PackageName Value="LCL"/>
+      </Item2>
     </RequiredPackages>
-    <Units Count="10">
+    <Units Count="11">
       <Unit0>
         <Filename Value="manager.lpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Manager"/>
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
@@ -101,45 +105,50 @@
         <UnitName Value="GetVer"/>
       </Unit2>
       <Unit3>
-        <Filename Value="engine\systools.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="SysTools"/>
-      </Unit3>
-      <Unit4>
         <Filename Value="engine\environ.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Environ"/>
-      </Unit4>
-      <Unit5>
+      </Unit3>
+      <Unit4>
         <Filename Value="engine\portmgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="PortMgr"/>
-      </Unit5>
-      <Unit6>
+      </Unit4>
+      <Unit5>
         <Filename Value="engine\dcsdkmgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="DCSDKMgr"/>
-      </Unit6>
-      <Unit7>
+      </Unit5>
+      <Unit6>
         <Filename Value="progress.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmProgress"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Progress"/>
-      </Unit7>
-      <Unit8>
+      </Unit6>
+      <Unit7>
         <Filename Value="output.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmShellOutput"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Output"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="engine\kosmgr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="KOSMgr"/>
       </Unit8>
       <Unit9>
-        <Filename Value="engine\shellthd.pas"/>
+        <Filename Value="engine\sys\runcmd.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ShellThd"/>
+        <UnitName Value="RunCmd"/>
       </Unit9>
+      <Unit10>
+        <Filename Value="engine\sys\systools.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="SysTools"/>
+      </Unit10>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -150,7 +159,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="engine"/>
+      <OtherUnitFiles Value="engine;engine\sys;engine\helpers"/>
       <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>

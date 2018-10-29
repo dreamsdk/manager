@@ -1,14 +1,16 @@
 object frmProgress: TfrmProgress
   Cursor = crHourGlass
   Left = 811
-  Height = 40
+  Height = 441
   Top = 524
-  Width = 300
-  BorderIcons = []
+  Width = 902
+  BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Operation in progress...'
-  ClientHeight = 40
-  ClientWidth = 300
+  ClientHeight = 441
+  ClientWidth = 902
+  OnClose = FormClose
+  OnCreate = FormCreate
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
   object pgbOperationProgress: TProgressBar
@@ -18,5 +20,24 @@ object frmProgress: TfrmProgress
     Width = 292
     Style = pbstMarquee
     TabOrder = 0
+  end
+  object Memo1: TMemo
+    Left = 20
+    Height = 298
+    Top = 48
+    Width = 802
+    Lines.Strings = (
+      'Memo1'
+    )
+    TabOrder = 1
+  end
+  object btnAbort: TButton
+    Left = 359
+    Height = 25
+    Top = 377
+    Width = 75
+    Caption = 'btnAbort'
+    OnClick = btnAbortClick
+    TabOrder = 2
   end
 end

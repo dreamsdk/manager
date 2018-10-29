@@ -8,14 +8,12 @@ uses
   Classes, SysUtils, Environ;
 
 type
-  TKallistiPortUpdateState = (usUndefined, usUpdated, usUpdateNotNeeded, usUpdateFailed);
-
-  TKallistiPortsManager = class;
+  TKallistiPortManager = class;
 
   { TKallistiPortItem }
   TKallistiPortItem = class(TObject)
   private
-    fOwner: TKallistiPortsManager;
+    fOwner: TKallistiPortManager;
     fDirectory: TFileName;
     fDescription: string;
     fLicense: string;
@@ -31,10 +29,10 @@ type
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read GetEnvironment;
   public
-    constructor Create(AOwner: TKallistiPortsManager);
+    constructor Create(AOwner: TKallistiPortManager);
     function Install(var BufferOutput: string): Boolean;
     function Uninstall(var BufferOutput: string): Boolean;
-    function Update(var BufferOutput: string): TKallistiPortUpdateState;
+    function Update(var BufferOutput: string): TUpdateOperationState;
     property Name: string read fName;
     property Description: string read fDescription;
     property Directory: TFileName read fDirectory;
@@ -46,12 +44,13 @@ type
     property Version: string read fVersion;
   end;
 
-  { TKallistiPortsManager }
-  TKallistiPortsManager = class(TObject)
+  { TKallistiPortManager }
+  TKallistiPortManager = class(TObject)
   private
     fList: TList;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     function GetCount: Integer;
+    function GetInstalled: Boolean;
     function GetItem(Index: Integer): TKallistiPortItem;
     function Add: TKallistiPortItem;
     procedure Clear;
@@ -60,7 +59,10 @@ type
   public
     constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
     destructor Destroy; override;
+    function CloneRepository(var BufferOutput: string): Boolean;
+    function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
     property Count: Integer read GetCount;
+    property Installed: Boolean read GetInstalled;
     property Items[Index: Integer]: TKallistiPortItem read GetItem; default;
   end;
 
@@ -76,8 +78,7 @@ begin
   Result := FileExists(fDirectory + '..\lib\.kos-ports\' + Name);
 end;
 
-function TKallistiPortItem.ExecuteShellCommand(
-  const CommandLine: string): string;
+function TKallistiPortItem.ExecuteShellCommand(const CommandLine: string): string;
 begin
   Result := Environment.ExecuteShellCommand(CommandLine, Directory);
 end;
@@ -87,7 +88,7 @@ begin
   Result := fOwner.fEnvironment;
 end;
 
-constructor TKallistiPortItem.Create(AOwner: TKallistiPortsManager);
+constructor TKallistiPortItem.Create(AOwner: TKallistiPortManager);
 begin
   fOwner := AOwner;
 end;
@@ -119,7 +120,7 @@ begin
   Result := IsInString(SuccessTag, BufferOutput);
 end;
 
-function TKallistiPortItem.Update(var BufferOutput: string): TKallistiPortUpdateState;
+function TKallistiPortItem.Update(var BufferOutput: string): TUpdateOperationState;
 const
   SUCCESS_TAG = '%s is already installed';
 
@@ -127,22 +128,22 @@ var
   SuccessTag: string;
 
 begin
-  Result := usUndefined;
+  Result := uosUndefined;
 
   SuccessTag := Format(SUCCESS_TAG, [Name]);
 
   if Install(BufferOutput) then
-    Result := usUpdated
+    Result := uosUpdateSuccess
   else
     if IsInString(SuccessTag, BufferOutput) then
-      Result := usUpdateNotNeeded
+      Result := uosUpdateUseless
     else
-      Result := usUpdateFailed;
+      Result := uosUpdateFailed;
 end;
 
-{ TKallistiPortsManager }
+{ TKallistiPortManager }
 
-procedure TKallistiPortsManager.RetrieveAvailablePorts;
+procedure TKallistiPortManager.RetrieveAvailablePorts;
 var
   PortsAvailable: TStringList;
   i: Integer;
@@ -158,23 +159,28 @@ begin
   end;
 end;
 
-function TKallistiPortsManager.GetItem(Index: Integer): TKallistiPortItem;
+function TKallistiPortManager.GetItem(Index: Integer): TKallistiPortItem;
 begin
   Result := TKallistiPortItem(fList[Index]);
 end;
 
-function TKallistiPortsManager.GetCount: Integer;
+function TKallistiPortManager.GetCount: Integer;
 begin
   Result := fList.Count;
 end;
 
-function TKallistiPortsManager.Add: TKallistiPortItem;
+function TKallistiPortManager.GetInstalled: Boolean;
+begin
+  Result := DirectoryExists(fEnvironment.FileSystem.KallistiPorts);
+end;
+
+function TKallistiPortManager.Add: TKallistiPortItem;
 begin
   Result := TKallistiPortItem.Create(Self);
   fList.Add(Result);
 end;
 
-procedure TKallistiPortsManager.Clear;
+procedure TKallistiPortManager.Clear;
 var
   i: Integer;
 
@@ -184,7 +190,7 @@ begin
   fList.Clear;
 end;
 
-procedure TKallistiPortsManager.ProcessPort(const PackagingDescriptionFilename: TFileName);
+procedure TKallistiPortManager.ProcessPort(const PackagingDescriptionFilename: TFileName);
 var
   MakefileContent: TStringList;
   MakefileContentText, ExtractedURL: string;
@@ -261,7 +267,7 @@ begin
   end;
 end;
 
-constructor TKallistiPortsManager.Create(
+constructor TKallistiPortManager.Create(
   Environment: TDreamcastSoftwareDevelopmentEnvironment);
 begin
   fEnvironment := Environment;
@@ -269,11 +275,23 @@ begin
   RetrieveAvailablePorts;
 end;
 
-destructor TKallistiPortsManager.Destroy;
+destructor TKallistiPortManager.Destroy;
 begin
   Clear;
   fList.Free;
   inherited Destroy;
+end;
+
+function TKallistiPortManager.CloneRepository(var BufferOutput: string): Boolean;
+begin
+  Result := fEnvironment.CloneRepository(fEnvironment.KallistiPortsURL, 'kos-ports',
+    fEnvironment.FileSystem.KallistiPorts + '..\', BufferOutput);
+end;
+
+function TKallistiPortManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
+begin
+  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.KallistiPorts,
+    BufferOutput);
 end;
 
 end.

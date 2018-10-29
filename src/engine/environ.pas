@@ -5,9 +5,15 @@ unit Environ;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, RunCmd, PROGRESS;
 
 type
+  TUpdateOperationState = (
+    uosUndefined,
+    uosUpdateSuccess,
+    uosUpdateUseless,
+    uosUpdateFailed
+  );
 
   { TDreamcastSoftwareDevelopmentFileSystemObject }
 
@@ -23,13 +29,13 @@ type
     fNewlibBinary: TFileName;
     fMinGWGetExecutable: TFileName;
     fBinutilsExecutable: TFileName;
-    fShellLauncherExecutable: TFileName;
+    fShellExecutable: TFileName;
     fToolchainInstalledARM: Boolean;
     fToolchainInstalledSH4: Boolean;
   protected
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
   public
-    property ShellLauncherExecutable: TFileName read fShellLauncherExecutable;
+    property ShellExecutable: TFileName read fShellExecutable;
     property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
     property BinutilsExecutable: TFileName read fBinutilsExecutable;
     property GCCExecutable: TFileName read fGCCExecutable;
@@ -47,22 +53,38 @@ type
   { TDreamcastSoftwareDevelopmentEnvironment }
   TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
   private
+    fShellCommandRunner: TRunCommand;
     fApplicationPath: TFileName;
     fFileSystem: TDreamcastSoftwareDevelopmentFileSystemObject;
+    fKallistiURL: string;
+    fKallistiPortsURL: string;
     fInstallPath: TFileName;
     fUseMintty: Boolean;
+    fShellCommandBufferOutput: string;
     function GetApplicationPath: TFileName;
     function GetConfigurationFileName: TFileName;
     procedure LoadConfig;
     procedure SaveConfig;
+  protected
+    procedure HandleShellCommandRunnerNewLine(Sender: TObject; NewLine: string);
+    procedure HandleShellCommandRunnerTerminate(Sender: TObject);
+    function ExecuteShellCommandRunner(const CommandLine: string): string;
+    procedure AbortShellCommandRunner;
   public
     constructor Create;
     destructor Destroy; override;
+    procedure AbortShellCommand;
     function ExecuteShellCommand(CommandLine: string;
       WorkingDirectory: TFileName): string;
+    function CloneRepository(const URL: string; const TargetDirectoryName,
+      WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
+    function UpdateRepository(const WorkingDirectory: TFileName;
+      var BufferOutput: string): TUpdateOperationState;
     procedure RefreshConfig;
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystemObject read fFileSystem;
     property InstallPath: TFileName read fInstallPath;
+    property KallistiURL: string read fKallistiURL;
+    property KallistiPortsURL: string read fKallistiPortsURL;
     property UseMintty: Boolean read fUseMintty write fUseMintty;
   end;
 
@@ -70,6 +92,10 @@ implementation
 
 uses
   IniFiles, SysTools;
+
+resourcestring
+  DefaultKallistiURL = 'https://github.com/KallistiOS/KallistiOS.git';
+  DefaultKallistiPortsURL = 'https://github.com/KallistiOS/kos-ports.git';
 
 { TDreamcastSoftwareDevelopmentFileSystemObject }
 
@@ -81,11 +107,9 @@ begin
   MSYSBase := InstallPath + 'msys\1.0\';
   ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
 
-  // DreamSDK
-  fShellLauncherExecutable := MSYSBase + 'opt\dcsdk\dcsdk.exe';
-
   // MinGW/MSYS
   fMinGWGetExecutable := InstallPath + 'bin\mingw-get.exe';
+  fShellExecutable := MSYSBase + 'bin\sh.exe';
 
   // Toolchain
   fToolchainInstalledARM := DirectoryExists(ToolchainBase + 'arm-eabi');
@@ -149,6 +173,9 @@ begin
       'InstallPath', DefaultInstallationPath));
     FileSystem.ComputeFileSystemObjectValues(fInstallPath);
     fUseMintty := IniFile.ReadBool('General', 'UseMinTTY', False);
+
+    fKallistiURL := IniFile.ReadString('Repositories', 'KallistiOS', DefaultKallistiURL);
+    fKallistiPortsURL := IniFile.ReadString('Repositories', 'KallistiPorts', DefaultKallistiPortsURL);
   finally
     IniFile.Free;
   end;
@@ -163,9 +190,63 @@ begin
   try
     IniFile.WriteString('General', 'InstallPath', fInstallPath);
     IniFile.WriteBool('General', 'UseMinTTY', fUseMintty);
+    IniFile.WriteString('Repositories', 'KallistiOS', fKallistiURL);
+    IniFile.WriteString('Repositories', 'KallistiPorts', fKallistiPortsURL);
   finally
     IniFile.Free;
   end;
+end;
+
+procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerNewLine(
+  Sender: TObject; NewLine: string);
+begin
+  frmProgress.Memo1.Lines.Add(newline);
+end;
+
+procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerTerminate
+  (Sender: TObject);
+begin
+  fShellCommandBufferOutput := fShellCommandRunner.BufferOutput.Text;
+  fShellCommandRunner := nil;
+end;
+
+function TDreamcastSoftwareDevelopmentEnvironment.ExecuteShellCommandRunner(
+  const CommandLine: string): string;
+var
+  i: Integer;
+
+begin
+  Result := '';
+  AbortShellCommandRunner;
+
+  fShellCommandRunner := TRunCommand.Create(True);
+  with fShellCommandRunner do
+  begin
+    Executable := fFileSystem.ShellExecutable;
+
+    Parameters.Add('--login');
+    Parameters.Add('-i');
+
+    for i := 1 to GetEnvironmentVariableCount do
+      Environment.Add(GetEnvironmentString(i));
+
+    Environment.Add('_EXTERNAL_COMMAND=' + CommandLine);
+    Environment.Add('_AUTOMATED_CALL=1');
+
+    OnNewLine := @HandleShellCommandRunnerNewLine;
+    OnTerminate := @HandleShellCommandRunnerTerminate;
+
+    Start;
+    WaitFor;
+
+    Result := fShellCommandBufferOutput;
+  end;
+end;
+
+procedure TDreamcastSoftwareDevelopmentEnvironment.AbortShellCommandRunner;
+begin
+  if Assigned(fShellCommandRunner) then
+    fShellCommandRunner.Abort;
 end;
 
 constructor TDreamcastSoftwareDevelopmentEnvironment.Create;
@@ -176,25 +257,63 @@ end;
 
 destructor TDreamcastSoftwareDevelopmentEnvironment.Destroy;
 begin
+  AbortShellCommandRunner;
   fFileSystem.Free;
   SaveConfig;
   inherited Destroy;
 end;
 
+procedure TDreamcastSoftwareDevelopmentEnvironment.AbortShellCommand;
+begin
+  AbortShellCommandRunner;
+end;
+
 function TDreamcastSoftwareDevelopmentEnvironment.ExecuteShellCommand(
   CommandLine: string; WorkingDirectory: TFileName): string;
 var
-  CurrentDir, ShellLauncher: TFileName;
+  CurrentDir: TFileName;
 
 begin
   CurrentDir := GetCurrentDir;
   SetCurrentDir(WorkingDirectory);
 
-  ShellLauncher := FileSystem.ShellLauncherExecutable;
-  CommandLine := Format('%s --dcsdk-automated-call', [CommandLine]);
-  Result := RunShadow(ShellLauncher, CommandLine);
+  CommandLine := Format('%s', [CommandLine]);
+
+  Result := ExecuteShellCommandRunner(CommandLine);
 
   SetCurrentDir(CurrentDir);
+end;
+
+function TDreamcastSoftwareDevelopmentEnvironment.CloneRepository(
+  const URL: string; const TargetDirectoryName, WorkingDirectory: TFileName;
+  var BufferOutput: string): Boolean;
+const
+  FAIL_TAG = 'fatal: ';
+
+var
+  CommandLine: string;
+
+begin
+  CommandLine := Format('git clone %s %s --progress', [URL, TargetDirectoryName]);
+  BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
+  Result := not IsInString(FAIL_TAG, BufferOutput);
+end;
+
+function TDreamcastSoftwareDevelopmentEnvironment.UpdateRepository(
+  const WorkingDirectory: TFileName; var BufferOutput: string): TUpdateOperationState;
+const
+  SUCCESS_TAG = 'Updating ';
+  USELESS_TAG = 'Already up to date.';
+
+begin
+  Result := uosUpdateFailed;
+
+  BufferOutput := ExecuteShellCommand('git pull', WorkingDirectory);
+
+  if IsInString(USELESS_TAG, BufferOutput) then
+    Result := uosUpdateUseless
+  else if IsInString(SUCCESS_TAG, BufferOutput) then
+    Result := uosUpdateSuccess;
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.RefreshConfig;

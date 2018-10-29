@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  StdCtrls, ExtCtrls, CheckLst, PortMgr, ShellThd;
+  StdCtrls, ExtCtrls, CheckLst, PortMgr, ShellThd, DCSDKMgr, Environ;
 
 type
   { TfrmMain }
@@ -74,6 +74,7 @@ type
     procedure btnPortInstallClick(Sender: TObject);
     procedure btnPortUninstallClick(Sender: TObject);
     procedure btnPortUpdateClick(Sender: TObject);
+    procedure btnUpdateKallistiOSClick(Sender: TObject);
     procedure edtPortMaintainerClick(Sender: TObject);
     procedure edtPortURLClick(Sender: TObject);
     procedure edtPortURLMouseEnter(Sender: TObject);
@@ -96,7 +97,7 @@ type
   public
     procedure OnCommandTerminateThread(Operation: TShellThreadOperation;
       Success: Boolean; ResultOutput: string;
-      KallistiPortUpdateState: TKallistiPortUpdateState);
+      KallistiPortUpdateState: TUpdateOperationState);
     property SelectedKallistiPortItemIndex: Integer
       read GetSelectedKallistiPortItemIndex;
     property SelectedKallistiPort: TKallistiPortItem
@@ -105,16 +106,14 @@ type
 
 var
   frmMain: TfrmMain;
+  DreamcastSoftwareDevelopmentKitManager: TDreamcastSoftwareDevelopmentKitManager;
 
 implementation
 
 {$R *.lfm}
 
 uses
-  LCLIntf, DCSDKMgr, GetVer, SysTools, Output;
-
-var
-  DreamcastSoftwareDevelopmentKitManager: TDreamcastSoftwareDevelopmentKitManager;
+  LCLIntf, GetVer, SysTools, Output;
 
 { TfrmMain }
 
@@ -182,9 +181,9 @@ var
   PortInfo: TKallistiPortItem;
 
 begin
-  for i := 0 to DreamcastSoftwareDevelopmentKitManager.Ports.Count - 1 do
+  for i := 0 to DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Count - 1 do
   begin
-    PortInfo := DreamcastSoftwareDevelopmentKitManager.Ports[i];
+    PortInfo := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[i];
     j := lbxPorts.Items.Add(PortInfo.Name);
     lbxPorts.Items.Objects[j] := TObject(i);
     if PortInfo.Installed then
@@ -208,7 +207,7 @@ begin
   Result := nil;
   Index := SelectedKallistiPortItemIndex;
   if Index <> -1 then
-    Result := DreamcastSoftwareDevelopmentKitManager.Ports[Index];
+    Result := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[Index];
 end;
 
 function TfrmMain.GetSelectedKallistiPortItemIndex: Integer;
@@ -249,6 +248,7 @@ begin
   memPortDescription.Clear;
   btnPortInstall.Enabled := False;
   btnPortUninstall.Enabled := False;
+  btnPortUpdate.Enabled := False;
 end;
 
 procedure TfrmMain.UpdateKallistiPortControls;
@@ -260,7 +260,7 @@ end;
 
 procedure TfrmMain.OnCommandTerminateThread(Operation: TShellThreadOperation;
   Success: Boolean; ResultOutput: string;
-  KallistiPortUpdateState: TKallistiPortUpdateState);
+  KallistiPortUpdateState: TUpdateOperationState);
 var
   ErrorState: Boolean;
 
@@ -270,11 +270,11 @@ begin
   // KallistiPort: Update
   if Operation = stoPortUpdate then
     case KallistiPortUpdateState of
-      usUpdated:
+      uosUpdateSuccess:
         MessageDlg('Information', Format('%s was successfully updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
-      usUpdateNotNeeded:
+      uosUpdateUseless:
         MessageDlg('Information', Format('%s doesn''t need to be updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
-      usUpdateFailed:
+      uosUpdateFailed:
         ErrorState := True;
     end;
 
@@ -307,7 +307,7 @@ end;
 procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);
 begin
   DreamcastSoftwareDevelopmentKitManager.Environment.RefreshConfig;
-  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ShellLauncherExecutable);
+//  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ShellLauncherExecutable);
 end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
@@ -323,6 +323,12 @@ end;
 procedure TfrmMain.btnPortUpdateClick(Sender: TObject);
 begin
   ExecuteThreadOperation(stoPortUpdate);
+end;
+
+procedure TfrmMain.btnUpdateKallistiOSClick(Sender: TObject);
+begin
+  // frmSetupKallistiOS.ShowModal;
+  ExecuteThreadOperation(stoKallistiInstall);
 end;
 
 procedure TfrmMain.edtPortMaintainerClick(Sender: TObject);
