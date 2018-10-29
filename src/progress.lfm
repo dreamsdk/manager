@@ -1,43 +1,55 @@
 object frmProgress: TfrmProgress
-  Cursor = crHourGlass
   Left = 811
-  Height = 441
+  Height = 380
   Top = 524
-  Width = 902
+  Width = 640
   BorderIcons = [biSystemMenu]
-  BorderStyle = bsToolWindow
+  BorderStyle = bsDialog
   Caption = 'Operation in progress...'
-  ClientHeight = 441
-  ClientWidth = 902
+  ClientHeight = 380
+  ClientWidth = 640
   OnClose = FormClose
-  OnCreate = FormCreate
+  OnShow = FormShow
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
   object pgbOperationProgress: TProgressBar
     Left = 4
     Height = 20
-    Top = 10
-    Width = 292
+    Top = 28
+    Width = 632
     Style = pbstMarquee
     TabOrder = 0
   end
-  object Memo1: TMemo
-    Left = 20
-    Height = 298
-    Top = 48
-    Width = 802
-    Lines.Strings = (
-      'Memo1'
-    )
+  object memBufferOutput: TMemo
+    Left = 4
+    Height = 284
+    Top = 56
+    Width = 632
+    Font.Height = -12
+    Font.Name = 'Courier New'
+    ParentFont = False
+    ReadOnly = True
+    ScrollBars = ssAutoBoth
     TabOrder = 1
+    WordWrap = False
   end
   object btnAbort: TButton
-    Left = 359
+    Left = 252
     Height = 25
-    Top = 377
-    Width = 75
-    Caption = 'btnAbort'
+    Top = 348
+    Width = 140
+    Caption = '(Dynamic)'
     OnClick = btnAbortClick
     TabOrder = 2
+  end
+  object lblProgressStep: TLabel
+    Left = 4
+    Height = 13
+    Top = 8
+    Width = 89
+    Caption = 'lblProgressStep'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
   end
 end

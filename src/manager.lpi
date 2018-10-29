@@ -85,7 +85,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="11">
+    <Units Count="10">
       <Unit0>
         <Filename Value="manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -128,27 +128,20 @@
         <UnitName Value="Progress"/>
       </Unit6>
       <Unit7>
-        <Filename Value="output.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmShellOutput"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="Output"/>
-      </Unit7>
-      <Unit8>
         <Filename Value="engine\kosmgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="KOSMgr"/>
-      </Unit8>
-      <Unit9>
+      </Unit7>
+      <Unit8>
         <Filename Value="engine\sys\runcmd.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="RunCmd"/>
-      </Unit9>
-      <Unit10>
+      </Unit8>
+      <Unit9>
         <Filename Value="engine\sys\systools.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SysTools"/>
-      </Unit10>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

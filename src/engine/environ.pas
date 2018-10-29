@@ -5,7 +5,7 @@ unit Environ;
 interface
 
 uses
-  Classes, SysUtils, RunCmd, PROGRESS;
+  Classes, SysUtils, RunCmd;
 
 type
   TUpdateOperationState = (
@@ -21,11 +21,14 @@ type
   private
     fDCToolIPExecutable: TFileName;
     fDCToolSerialExecutable: TFileName;
+    fDreamSDKExecutable: TFileName;
+    fFixupHitachiNewlibExecutable: TFileName;
     fGCCExecutable: TFileName;
     fGDBExecutable: TFileName;
-    fKallistiOS: TFileName;
-    fKallistiOSVersionFile: TFileName;
-    fKallistiPorts: TFileName;
+    fKallistiDirectory: TFileName;
+    fKallistiLibrary: TFileName;
+    fKallistiVersionFile: TFileName;
+    fKallistiPortsDirectory: TFileName;
     fNewlibBinary: TFileName;
     fMinGWGetExecutable: TFileName;
     fBinutilsExecutable: TFileName;
@@ -35,6 +38,7 @@ type
   protected
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
   public
+    property DreamSDKExecutable: TFileName read fDreamSDKExecutable;
     property ShellExecutable: TFileName read fShellExecutable;
     property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
     property BinutilsExecutable: TFileName read fBinutilsExecutable;
@@ -43,9 +47,11 @@ type
     property NewlibBinary: TFileName read fNewlibBinary;
     property DreamcastToolSerialExecutable: TFileName read fDCToolSerialExecutable;
     property DreamcastToolIPExecutable: TFileName read fDCToolIPExecutable;
-    property KallistiPorts: TFileName read fKallistiPorts;
-    property KallistiOS: TFileName read fKallistiOS;
-    property KallistiOSVersionFile: TFileName read fKallistiOSVersionFile;
+    property FixupHitachiNewlibExecutable: TFileName read fFixupHitachiNewlibExecutable;
+    property KallistiPortsDirectory: TFileName read fKallistiPortsDirectory;
+    property KallistiDirectory: TFileName read fKallistiDirectory;
+    property KallistiLibrary: TFileName read fKallistiLibrary;
+    property KallistiVersionFile: TFileName read fKallistiVersionFile;
     property ToolchainInstalledARM: Boolean read fToolchainInstalledARM;
     property ToolchainInstalledSH4: Boolean read fToolchainInstalledSH4;
   end;
@@ -53,13 +59,14 @@ type
   { TDreamcastSoftwareDevelopmentEnvironment }
   TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
   private
+    fShellCommandNewLine: TNewLineEvent;
     fShellCommandRunner: TRunCommand;
     fApplicationPath: TFileName;
     fFileSystem: TDreamcastSoftwareDevelopmentFileSystemObject;
     fKallistiURL: string;
     fKallistiPortsURL: string;
     fInstallPath: TFileName;
-    fUseMintty: Boolean;
+    fUseMinTTY: Boolean;
     fShellCommandBufferOutput: string;
     function GetApplicationPath: TFileName;
     function GetConfigurationFileName: TFileName;
@@ -85,7 +92,9 @@ type
     property InstallPath: TFileName read fInstallPath;
     property KallistiURL: string read fKallistiURL;
     property KallistiPortsURL: string read fKallistiPortsURL;
-    property UseMintty: Boolean read fUseMintty write fUseMintty;
+    property UseMinTTY: Boolean read fUseMinTTY write fUseMinTTY;
+    property OnShellCommandNewLine: TNewLineEvent read fShellCommandNewLine
+      write fShellCommandNewLine;
   end;
 
 implementation
@@ -111,6 +120,10 @@ begin
   fMinGWGetExecutable := InstallPath + 'bin\mingw-get.exe';
   fShellExecutable := MSYSBase + 'bin\sh.exe';
 
+  // DreamSDK
+  fDreamSDKExecutable := MSYSBase + 'opt\dcsdk\dcsdk.exe';
+  fFixupHitachiNewlibExecutable := MSYSBase + 'opt\dcsdk\fixup-sh4-newlib.sh';
+
   // Toolchain
   fToolchainInstalledARM := DirectoryExists(ToolchainBase + 'arm-eabi');
   fToolchainInstalledSH4 := DirectoryExists(ToolchainBase + 'sh-elf');
@@ -119,14 +132,15 @@ begin
   fGDBExecutable := ToolchainBase + 'sh-elf\bin\sh-elf-gdb.exe';
   fNewlibBinary := ToolchainBase + 'sh-elf\sh-elf\lib\libnosys.a';
 
-  // dcload
+  // dcload/dc-tool
   fDCToolSerialExecutable := ToolchainBase + 'bin\dc-tool.exe';
   fDCToolIPExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
 
   // KallistiOS
-  fKallistiPorts := ToolchainBase + 'kos-ports\';
-  fKallistiOS := ToolchainBase + 'kos\';
-  fKallistiOSVersionFile := KallistiOS + 'doc\CHANGELOG';
+  fKallistiPortsDirectory := ToolchainBase + 'kos-ports\';
+  fKallistiDirectory := ToolchainBase + 'kos\';
+  fKallistiLibrary := KallistiDirectory + 'lib/dreamcast/libkallisti.a';
+  fKallistiVersionFile := KallistiDirectory + 'doc\CHANGELOG';
 end;
 
 { TDreamcastSoftwareDevelopmentEnvironment }
@@ -200,7 +214,8 @@ end;
 procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerNewLine(
   Sender: TObject; NewLine: string);
 begin
-  frmProgress.Memo1.Lines.Add(newline);
+  if Assigned(fShellCommandNewLine) then
+    fShellCommandNewLine(Self, NewLine);
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerTerminate

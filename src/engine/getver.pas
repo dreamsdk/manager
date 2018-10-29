@@ -140,7 +140,7 @@ begin
     fEnvironment.FileSystem.NewlibBinary, '/dc-chain/newlib-', '/newlib/libc/');
 
   fVersionKallistiOS := RetrieveVersionWithFind('kos',
-    fEnvironment.FileSystem.KallistiOSVersionFile, 'KallistiOS version ', ' -----');
+    fEnvironment.FileSystem.KallistiVersionFile, 'KallistiOS version ', ' -----');
 
   fVersionToolSerial := RetrieveVersion(fEnvironment.FileSystem.DreamcastToolSerialExecutable,
     '-h', 'dc-tool', 'by <andrewk');

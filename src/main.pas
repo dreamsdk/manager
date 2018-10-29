@@ -113,7 +113,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, GetVer, SysTools, Output;
+  LCLIntf, GetVer, SysTools;
 
 { TfrmMain }
 
@@ -290,8 +290,8 @@ begin
       ErrorState := True;
 
     // Display the error if needed...
-    if ErrorState then
-      ShowShellOutputWindow(ResultOutput);
+//    if ErrorState then
+//      ShowShellOutputWindow(ResultOutput);
 end;
 
 procedure TfrmMain.btnCloseClick(Sender: TObject);

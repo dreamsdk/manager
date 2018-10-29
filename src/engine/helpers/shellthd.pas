@@ -33,6 +33,7 @@ type
   { TShellThread }
   TShellThread = class(TThread)
   private
+    fAborted: Boolean;
     fManager: TDreamcastSoftwareDevelopmentKitManager;
     fProgressText: string;
     fContext: TShellThreadContext;
@@ -43,17 +44,22 @@ type
     fCommandTerminate: TShellThreadCommandTerminateEvent;
     fSelectedKallistiPort: TKallistiPortItem;
     procedure SyncCloseProgressWindow;
+    procedure SyncSetErrorProgressWindow;
     procedure SyncUpdateProgressText;
     procedure SyncTriggerCommandTerminate;
   protected
     function CanContinue: Boolean;
+    procedure CloseProgressWindow;
+    procedure SetErrorProgressWindow;
     procedure Execute; override;
     procedure UpdateProgressText(const Text: string);
     procedure TriggerCommandTerminate(OutputBuffer: string);
     procedure ProcessKallistiOS(var OutputBuffer: string);
+    procedure SetOperationSuccess(const Success: Boolean);
   public
     constructor Create(CreateSuspended: Boolean);
 
+    property Aborted: Boolean read fAborted write fAborted;
     property Context: TShellThreadContext read fContext write fContext;
     property Operation: TShellThreadOperation read fOperation write fOperation;
     property SelectedKallistiPort: TKallistiPortItem
@@ -78,11 +84,19 @@ type
   TShellThreadHelper = class(TObject)
   public
     procedure HandleTerminate(Sender: TObject);
+    procedure HandleNewLine(Sender: TObject; NewLine: string);
   end;
 
 var
   ShellThread: TShellThread;
   ShellThreadHelper: TShellThreadHelper;
+
+procedure InitializeNewLineHandler;
+begin
+  if not Assigned(DreamcastSoftwareDevelopmentKitManager.Environment.OnShellCommandNewLine) then
+    DreamcastSoftwareDevelopmentKitManager.Environment.OnShellCommandNewLine :=
+      @ShellThreadHelper.HandleNewLine;
+end;
 
 function GetThreadContext(const AOperation: TShellThreadOperation): TShellThreadContext;
 var
@@ -116,9 +130,12 @@ begin
 
   if ShellThreadContext <> stcUndefined then
   begin
+    InitializeNewLineHandler;
+
     ShellThread := TShellThread.Create(True);
     with ShellThread do
     begin
+      Aborted := False;
       Manager := DreamcastSoftwareDevelopmentKitManager;
       SelectedKallistiPort := frmMain.SelectedKallistiPort;
       Context := ShellThreadContext;
@@ -132,26 +149,25 @@ begin
 
       stcSingleKallistiPort:
         begin
-          KallistiPortText := Format('kos-port %s %s...', [
+          KallistiPortText := Format('kos-port %s %s', [
             frmMain.SelectedKallistiPort.Name, frmMain.SelectedKallistiPort.Version]);
           case AOperation of
             stoPortInstall:
-              OperationTitle := Format('Installing %s', [KallistiPortText]);
+              OperationTitle := Format('Installation of %s', [KallistiPortText]);
             stoPortUpdate:
-              OperationTitle := Format('Updating %s', [KallistiPortText]);
+              OperationTitle := Format('Update of %s', [KallistiPortText]);
             stoPortUninstall:
-              OperationTitle := Format('Uninstalling %s', [KallistiPortText]);
+              OperationTitle := Format('Uninstallation of %s', [KallistiPortText]);
           end;
         end;
 
       stcKallistiInstall:
-        OperationTitle := 'Installing KallistiOS...';
+        OperationTitle := 'Installation of KallistiOS';
     end;
 
     with frmProgress do
     begin
       Caption := OperationTitle;
-      Finished := False;
       ShowModal;
     end;
   end;
@@ -159,9 +175,13 @@ end;
 
 procedure AbortThreadOperation;
 begin
-  ShellThread.Manager.Environment.AbortShellCommand;
-  Application.ProcessMessages;
-  ShellThread.Terminate;
+  if Assigned(ShellThread) then
+  begin
+    ShellThread.Aborted := True;
+    ShellThread.Manager.Environment.AbortShellCommand;
+    Application.ProcessMessages;
+    ShellThread.Terminate;
+  end;
 end;
 
 { TShellThreadHelper }
@@ -169,6 +189,11 @@ end;
 procedure TShellThreadHelper.HandleTerminate(Sender: TObject);
 begin
   ShellThread := nil;
+end;
+
+procedure TShellThreadHelper.HandleNewLine(Sender: TObject; NewLine: string);
+begin
+  frmProgress.memBufferOutput.Lines.Add(NewLine);
 end;
 
 { TShellThread }
@@ -186,9 +211,16 @@ begin
   Application.ProcessMessages;
 end;
 
+procedure TShellThread.SyncSetErrorProgressWindow;
+begin
+  frmProgress.Finished := True;
+  frmProgress.SetTerminateErrorState(Aborted);
+  Application.ProcessMessages;
+end;
+
 procedure TShellThread.SyncUpdateProgressText;
 begin
-  frmProgress.Caption := fProgressText;
+  frmProgress.SetProgressText(fProgressText);
 end;
 
 procedure TShellThread.SyncTriggerCommandTerminate;
@@ -201,6 +233,16 @@ end;
 function TShellThread.CanContinue: Boolean;
 begin
   Result := fOperationSuccess and not Terminated;
+end;
+
+procedure TShellThread.CloseProgressWindow;
+begin
+  Synchronize(@SyncCloseProgressWindow);
+end;
+
+procedure TShellThread.SetErrorProgressWindow;
+begin
+  Synchronize(@SyncSetErrorProgressWindow);
 end;
 
 procedure TShellThread.Execute;
@@ -220,13 +262,30 @@ begin
   if Assigned(SelectedKallistiPort) then
     case Operation of
       stoPortInstall:
-         fOperationSuccess := SelectedKallistiPort.Install(Buffer);
+        begin
+          UpdateProgressText('Installing the KallistiOS Port...');
+          fOperationSuccess := SelectedKallistiPort.Install(Buffer);
+        end;
       stoPortUninstall:
-         fOperationSuccess := SelectedKallistiPort.Uninstall(Buffer);
+        begin
+          UpdateProgressText('Uninstalling the KallistiOS Port...');
+          fOperationSuccess := SelectedKallistiPort.Uninstall(Buffer);
+        end;
       stoPortUpdate:
-         fOperationSuccessKallistiPortUpdate := SelectedKallistiPort.Update(Buffer);
+        begin
+          UpdateProgressText('Updating the KallistiOS Port...');
+          fOperationSuccessKallistiPortUpdate := SelectedKallistiPort.Update(Buffer);
+          fOperationSuccess := fOperationSuccessKallistiPortUpdate <> uosUpdateFailed;
+        end;
     end;
 
+  // Handle the closing of the window.
+  if fOperationSuccess then
+    CloseProgressWindow
+  else
+    SetErrorProgressWindow;
+
+  // Finish
   TriggerCommandTerminate(Buffer);
 end;
 
@@ -238,8 +297,6 @@ end;
 
 procedure TShellThread.TriggerCommandTerminate(OutputBuffer: string);
 begin
-  Synchronize(@SyncCloseProgressWindow);
-
   fOperationResultOutput := OutputBuffer;
   Synchronize(@SyncTriggerCommandTerminate);
 end;
@@ -252,48 +309,51 @@ begin
   if CanContinue and (not Manager.KallistiOS.Installed) then
   begin
     UpdateProgressText('Cloning KallistiOS Repository...');
-    fOperationSuccess := fOperationSuccess
-      and Manager.KallistiOS.CloneRepository(OutputBuffer);
+    SetOperationSuccess(Manager.KallistiOS.CloneRepository(OutputBuffer));
   end
   else
   begin
     UpdateProgressText('Updating KallistiOS Repository...');
-    fOperationSuccess := fOperationSuccess
-      and (Manager.KallistiOS.UpdateRepository(OutputBuffer) <> uosUpdateFailed);
+    SetOperationSuccess(Manager.KallistiOS.UpdateRepository(OutputBuffer) <> uosUpdateFailed);
   end;
 
   // Handle KallistiPorts Repository
   if CanContinue and (not Manager.KallistiPorts.Installed) then
   begin
     UpdateProgressText('Cloning KallistiOS Ports Repository...');
-    fOperationSuccess := fOperationSuccess
-      and Manager.KallistiPorts.CloneRepository(OutputBuffer);
+    SetOperationSuccess(Manager.KallistiPorts.CloneRepository(OutputBuffer));
   end
   else
   begin
     UpdateProgressText('Updating KallistiOS Ports Repository...');
-    fOperationSuccess := fOperationSuccess
-      and (Manager.KallistiOS.UpdateRepository(OutputBuffer) <> uosUpdateFailed);
+    SetOperationSuccess(Manager.KallistiOS.UpdateRepository(OutputBuffer) <> uosUpdateFailed);
   end;
 
   // Generate environ.sh file
   if CanContinue then
   begin
     UpdateProgressText('Generating Environment Shell Script...');
-    fOperationSuccess := fOperationSuccess
-      and Manager.KallistiOS.InitializeEnvironShellScript;
+    SetOperationSuccess(Manager.KallistiOS.InitializeEnvironShellScript);
   end;
 
   // Making KallistiOS library
   if CanContinue then
   begin
     UpdateProgressText('Building KallistiOS Library...');
-    fOperationSuccess := fOperationSuccess
-      and Manager.KallistiOS.BuildKallistiOS(OutputBuffer);
+    SetOperationSuccess(Manager.KallistiOS.BuildKallistiOS(OutputBuffer));
   end;
 
-  // Fixing-up SH-4 Newlib...
+  // Fixing-up SH-4 Newlib
+  if CanContinue then
+  begin
+    UpdateProgressText('Fixing Hitachi SH-4 Newlib...');
+    SetOperationSuccess(Manager.KallistiOS.FixupHitachiNewlib(OutputBuffer));
+  end;
+end;
 
+procedure TShellThread.SetOperationSuccess(const Success: Boolean);
+begin
+  fOperationSuccess := CanContinue and Success;
 end;
 
 initialization

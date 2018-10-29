@@ -22,8 +22,7 @@ type
       read fEnvironment;
     property KallistiOS: TKallistiManager read fKallistiManager;
     property KallistiPorts: TKallistiPortManager read fKallistiPortsManager;
-    property Versions: TVersionRetriever
-      read fVersionRetriever;
+    property Versions: TVersionRetriever read fVersionRetriever;
   end;
 
 implementation

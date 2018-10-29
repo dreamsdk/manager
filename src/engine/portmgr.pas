@@ -151,7 +151,7 @@ var
 begin
   PortsAvailable := TStringList.Create;
   try
-    FindAllFiles(PortsAvailable, fEnvironment.FileSystem.KallistiPorts, 'pkg-descr', True);
+    FindAllFiles(PortsAvailable, fEnvironment.FileSystem.KallistiPortsDirectory, 'pkg-descr', True);
     for i := 0 to PortsAvailable.Count - 1 do
       ProcessPort(PortsAvailable[i]);
   finally
@@ -171,7 +171,7 @@ end;
 
 function TKallistiPortManager.GetInstalled: Boolean;
 begin
-  Result := DirectoryExists(fEnvironment.FileSystem.KallistiPorts);
+  Result := DirectoryExists(fEnvironment.FileSystem.KallistiPortsDirectory);
 end;
 
 function TKallistiPortManager.Add: TKallistiPortItem;
@@ -285,12 +285,12 @@ end;
 function TKallistiPortManager.CloneRepository(var BufferOutput: string): Boolean;
 begin
   Result := fEnvironment.CloneRepository(fEnvironment.KallistiPortsURL, 'kos-ports',
-    fEnvironment.FileSystem.KallistiPorts + '..\', BufferOutput);
+    fEnvironment.FileSystem.KallistiPortsDirectory + '..\', BufferOutput);
 end;
 
 function TKallistiPortManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
 begin
-  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.KallistiPorts,
+  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.KallistiPortsDirectory,
     BufferOutput);
 end;
 

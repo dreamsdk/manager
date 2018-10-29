@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Main, getver, Environ, portmgr, dcsdkmgr, Progress, output,
+  Forms, Main, getver, Environ, portmgr, dcsdkmgr, Progress,
   kosmgr, SysTools, RunCmd;
 
 {$R *.res}
@@ -18,7 +18,6 @@ begin
   Application.Initialize;
   Application.CreateForm(TfrmMain, frmMain);
   Application.CreateForm(TfrmProgress, frmProgress);
-  Application.CreateForm(TfrmShellOutput, frmShellOutput);
   Application.Run;
 end.
 
