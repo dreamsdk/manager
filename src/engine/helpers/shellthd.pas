@@ -214,7 +214,7 @@ end;
 
 procedure TShellThreadHelper.HandleNewLine(Sender: TObject; NewLine: string);
 begin
-  frmProgress.memBufferOutput.Lines.Add(NewLine);
+  frmProgress.AddNewLine(NewLine);
 end;
 
 { TShellThread }

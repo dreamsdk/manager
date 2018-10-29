@@ -28,6 +28,7 @@ type
     property Finished: Boolean read fFinished write fFinished;
     procedure SetTerminateErrorState(Aborted: Boolean);
     procedure SetProgressText(const Message: string);
+    procedure AddNewLine(const Message: string);
     property AbortOperation: Boolean read GetAbortOperation;
   end;
 
@@ -39,7 +40,7 @@ implementation
 {$R *.lfm}
 
 uses
-  ShellThd;
+  ShellThd, SysTools;
 
 { TfrmProgress }
 
@@ -109,6 +110,33 @@ procedure TfrmProgress.SetProgressText(const Message: string);
 begin
   lblProgressStep.Caption := Message;
   frmProgress.memBufferOutput.Lines.Add(Message);
+end;
+
+procedure TfrmProgress.AddNewLine(const Message: string);
+const
+  PROGRESS_LINE = '% (';
+
+var
+  StrExtractedValue: string;
+  Value: Integer;
+
+begin
+  if not IsInString(PROGRESS_LINE, Message) then
+  begin
+    pgbOperationProgress.Position := 0;
+    pgbOperationProgress.Style := pbstMarquee;
+    memBufferOutput.Lines.Add(Message);
+  end
+  else
+  begin
+    StrExtractedValue := Trim(ExtractStr(':', PROGRESS_LINE, Message));
+    Value := StrToIntDef(StrExtractedValue, -1);
+    if Value <> -1 then
+    begin
+      pgbOperationProgress.Position := Value;
+      pgbOperationProgress.Style := pbstNormal;
+    end;
+  end;
 end;
 
 end.
