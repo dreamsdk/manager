@@ -18,12 +18,16 @@ type
     btnPortUninstall: TButton;
     btnUpdateKallistiOS: TButton;
     btnPortUpdate: TButton;
+    edtUrlKallistiOS: TEdit;
     edtPortLicense: TLabeledEdit;
     edtPortURL: TLabeledEdit;
     edtPortMaintainer: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
+    edtUrlKallistiPorts: TEdit;
     gbxToolchainInstalled: TGroupBox;
     gbxKallistiChangeLog: TGroupBox;
+    gbxUrlKallistiOS: TGroupBox;
+    gbxUrlKallistiPorts: TGroupBox;
     lblBuildDateKallistiOS: TLabel;
     lblPortName: TLabel;
     lblTextKallistiOS: TLabel;
@@ -61,10 +65,9 @@ type
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
     memPortShortDescription: TMemo;
-    PageControl1: TPageControl;
+    pcMain: TPageControl;
     pcPortDetails: TPageControl;
     pnlActions: TPanel;
-    pnlActions1: TPanel;
     rgxTerminalOption: TRadioGroup;
     tmrShellThreadTerminate: TTimer;
     tsPortInformation: TTabSheet;
@@ -85,6 +88,8 @@ type
     procedure edtPortURLClick(Sender: TObject);
     procedure edtPortURLMouseEnter(Sender: TObject);
     procedure edtPortURLMouseLeave(Sender: TObject);
+    procedure edtUrlKallistiOSChange(Sender: TObject);
+    procedure edtUrlKallistiPortsChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
@@ -131,6 +136,7 @@ uses
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
+  pcMain.TabIndex := 0;
   Application.Title := Caption;
   DisplayEnvironmentToolchainStatus;
   UpdateDisplay(False);
@@ -306,6 +312,8 @@ procedure TfrmMain.LoadConfiguration;
 begin
   if DreamcastSoftwareDevelopmentKitManager.Environment.UseMinTTY then
     rgxTerminalOption.ItemIndex := 1;
+  edtUrlKallistiOS.Text := DreamcastSoftwareDevelopmentKitManager.Environment.KallistiURL;
+  edtUrlKallistiPorts.Text := DreamcastSoftwareDevelopmentKitManager.Environment.KallistiPortsURL;
 end;
 
 function TfrmMain.BooleanToCaption(Value: Boolean): string;
@@ -406,7 +414,7 @@ end;
 
 procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Environment.RefreshConfig;
+  DreamcastSoftwareDevelopmentKitManager.Environment.SaveConfig;
   RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.DreamSDKExecutable);
 end;
 
@@ -469,6 +477,16 @@ begin
     Font.Color := clDefault;
     Cursor := crDefault;
   end;
+end;
+
+procedure TfrmMain.edtUrlKallistiOSChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.KallistiURL := edtUrlKallistiOS.Text;
+end;
+
+procedure TfrmMain.edtUrlKallistiPortsChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.KallistiPortsURL := edtUrlKallistiPorts.Text;
 end;
 
 procedure TfrmMain.FormActivate(Sender: TObject);

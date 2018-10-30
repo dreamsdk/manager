@@ -80,7 +80,7 @@ end;
 
 function TKallistiManager.InitializeEnvironment: Boolean;
 var
-  CommandLine, BufferOutput: string;
+  CommandLine: string;
   WorkingDirectory: TFileName;
 
   procedure HandleKallistiPortsConfiguration;

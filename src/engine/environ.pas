@@ -72,8 +72,6 @@ type
     fShellCommandBufferOutput: string;
     function GetApplicationPath: TFileName;
     function GetConfigurationFileName: TFileName;
-    procedure LoadConfig;
-    procedure SaveConfig;
   protected
     procedure HandleShellCommandRunnerNewLine(Sender: TObject; NewLine: string);
     procedure HandleShellCommandRunnerTerminate(Sender: TObject);
@@ -86,15 +84,16 @@ type
       WorkingDirectory: TFileName): string;
     procedure PauseShellCommand;
     procedure ResumeShellCommand;
+    procedure LoadConfig;
+    procedure SaveConfig;
     function CloneRepository(const URL: string; const TargetDirectoryName,
       WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
       var BufferOutput: string): TUpdateOperationState;
-    procedure RefreshConfig;
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystemObject read fFileSystem;
     property InstallPath: TFileName read fInstallPath;
-    property KallistiURL: string read fKallistiURL;
-    property KallistiPortsURL: string read fKallistiPortsURL;
+    property KallistiURL: string read fKallistiURL write fKallistiURL;
+    property KallistiPortsURL: string read fKallistiPortsURL write fKallistiPortsURL;
     property UseMinTTY: Boolean read fUseMinTTY write fUseMinTTY;
     property OnShellCommandNewLine: TNewLineEvent read fShellCommandNewLine
       write fShellCommandNewLine;
@@ -340,11 +339,6 @@ begin
     Result := uosUpdateUseless
   else if IsInString(SUCCESS_TAG, BufferOutput) then
     Result := uosUpdateSuccess;
-end;
-
-procedure TDreamcastSoftwareDevelopmentEnvironment.RefreshConfig;
-begin
-  SaveConfig;
 end;
 
 end.

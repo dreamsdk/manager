@@ -12,13 +12,13 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
-  object PageControl1: TPageControl
+  object pcMain: TPageControl
     Left = 8
     Height = 256
     Top = 8
     Width = 508
-    ActivePage = tsKallistiOS
-    TabIndex = 0
+    ActivePage = tsOptions
+    TabIndex = 3
     TabOrder = 0
     object tsKallistiOS: TTabSheet
       Caption = 'KallistiOS'
@@ -582,13 +582,49 @@ object frmMain: TfrmMain
       Caption = 'Options'
       ClientHeight = 230
       ClientWidth = 500
-      object rgxTerminalOption: TRadioGroup
-        Left = 8
-        Height = 81
+      object gbxUrlKallistiOS: TGroupBox
+        Left = 5
+        Height = 48
         Top = 8
-        Width = 185
+        Width = 485
+        Caption = 'KallistiOS Repository URL:'
+        ClientHeight = 30
+        ClientWidth = 481
+        TabOrder = 0
+        object edtUrlKallistiOS: TEdit
+          Left = 4
+          Height = 21
+          Top = 4
+          Width = 468
+          OnChange = edtUrlKallistiOSChange
+          TabOrder = 0
+        end
+      end
+      object gbxUrlKallistiPorts: TGroupBox
+        Left = 4
+        Height = 48
+        Top = 64
+        Width = 485
+        Caption = 'KallistiOS Ports Repository URL:'
+        ClientHeight = 30
+        ClientWidth = 481
+        TabOrder = 1
+        object edtUrlKallistiPorts: TEdit
+          Left = 4
+          Height = 21
+          Top = 4
+          Width = 468
+          OnChange = edtUrlKallistiPortsChange
+          TabOrder = 0
+        end
+      end
+      object rgxTerminalOption: TRadioGroup
+        Left = 4
+        Height = 81
+        Top = 120
+        Width = 201
         AutoFill = True
-        Caption = 'Terminal'
+        Caption = 'Terminal:'
         ChildSizing.LeftRightSpacing = 6
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
         ChildSizing.EnlargeVertical = crsHomogenousChildResize
@@ -597,41 +633,33 @@ object frmMain: TfrmMain
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
         ClientHeight = 63
-        ClientWidth = 181
+        ClientWidth = 197
         ItemIndex = 0
         Items.Strings = (
           'Windows Prompt'
           'MinTTY'
         )
         OnClick = rgxTerminalOptionClick
-        TabOrder = 0
+        TabOrder = 2
       end
       object pnlActions: TPanel
-        Left = 256
-        Height = 66
-        Top = 84
-        Width = 240
+        Left = 220
+        Height = 78
+        Top = 124
+        Width = 268
         BevelOuter = bvLowered
-        ClientHeight = 66
-        ClientWidth = 240
-        TabOrder = 1
+        ClientHeight = 78
+        ClientWidth = 268
+        TabOrder = 3
         object btnOpenMinGWManager: TButton
-          Left = 16
+          Left = 32
           Height = 25
-          Top = 22
+          Top = 28
           Width = 209
           Caption = '&MinGW Installation Manager'
           OnClick = btnOpenMinGWManagerClick
           TabOrder = 0
         end
-      end
-      object pnlActions1: TPanel
-        Left = 256
-        Height = 66
-        Top = 8
-        Width = 240
-        BevelOuter = bvLowered
-        TabOrder = 2
       end
     end
     object tsAbout: TTabSheet
@@ -661,6 +689,6 @@ object frmMain: TfrmMain
     Interval = 50
     OnTimer = tmrShellThreadTerminateTimer
     left = 244
-    top = 240
+    top = 224
   end
 end
