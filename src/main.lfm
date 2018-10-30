@@ -25,21 +25,74 @@ object frmMain: TfrmMain
       ClientHeight = 230
       ClientWidth = 500
       object lblVersionKallistiOS: TLabel
-        Left = 8
+        Left = 72
         Height = 13
-        Top = 16
-        Width = 51
-        Caption = '(KallistiOS)'
+        Top = 8
+        Width = 133
+        Caption = '(KallistiOS Version/Revision)'
         ParentColor = False
       end
       object btnUpdateKallistiOS: TButton
-        Left = 392
+        Left = 387
         Height = 25
-        Top = 192
-        Width = 75
-        Caption = 'Update'
+        Top = 14
+        Width = 110
+        Caption = '&Update'
         OnClick = btnUpdateKallistiOSClick
         TabOrder = 0
+      end
+      object lblBuildDateKallistiOS: TLabel
+        Left = 72
+        Height = 13
+        Top = 28
+        Width = 56
+        Caption = '(Build Date)'
+        ParentColor = False
+      end
+      object gbxKallistiChangeLog: TGroupBox
+        Left = 4
+        Height = 173
+        Top = 52
+        Width = 493
+        Caption = 'Change Log:'
+        ClientHeight = 155
+        ClientWidth = 489
+        TabOrder = 1
+        object memKallistiChangeLog: TMemo
+          Left = 4
+          Height = 147
+          Top = 4
+          Width = 481
+          Align = alClient
+          BorderSpacing.Around = 4
+          Lines.Strings = (
+            'memKallistiChangeLog'
+          )
+          ReadOnly = True
+          ScrollBars = ssAutoBoth
+          TabOrder = 0
+          WordWrap = False
+        end
+      end
+      object lblTextKallistiOS: TLabel
+        Left = 8
+        Height = 13
+        Top = 8
+        Width = 42
+        Caption = 'Version'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
+      object lblTextBuildDateKallistiOS: TLabel
+        Left = 8
+        Height = 13
+        Top = 28
+        Width = 56
+        Caption = 'Build date'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
       end
     end
     object tsKallistiPorts: TTabSheet
@@ -218,11 +271,11 @@ object frmMain: TfrmMain
         end
         object tsPortDescription: TTabSheet
           Caption = 'Description'
-          ClientHeight = 154
+          ClientHeight = 158
           ClientWidth = 336
           object memPortDescription: TMemo
             Left = 2
-            Height = 150
+            Height = 154
             Top = 2
             Width = 332
             Align = alClient
@@ -241,7 +294,7 @@ object frmMain: TfrmMain
         Height = 25
         Top = 200
         Width = 112
-        Caption = 'Uninstall'
+        Caption = 'Uninst&all'
         OnClick = btnPortUninstallClick
         TabOrder = 2
       end
@@ -250,7 +303,7 @@ object frmMain: TfrmMain
         Height = 25
         Top = 200
         Width = 110
-        Caption = 'Install'
+        Caption = '&Install'
         OnClick = btnPortInstallClick
         TabOrder = 3
       end
@@ -259,7 +312,7 @@ object frmMain: TfrmMain
         Height = 25
         Top = 200
         Width = 118
-        Caption = 'Update'
+        Caption = 'U&pdate'
         OnClick = btnPortUpdateClick
         TabOrder = 4
       end
@@ -554,9 +607,9 @@ object frmMain: TfrmMain
         TabOrder = 0
       end
       object pnlActions: TPanel
-        Left = 232
+        Left = 256
         Height = 66
-        Top = 151
+        Top = 84
         Width = 240
         BevelOuter = bvLowered
         ClientHeight = 66
@@ -567,29 +620,18 @@ object frmMain: TfrmMain
           Height = 25
           Top = 22
           Width = 209
-          Caption = 'MinGW Installation Manager'
+          Caption = '&MinGW Installation Manager'
           OnClick = btnOpenMinGWManagerClick
           TabOrder = 0
         end
       end
       object pnlActions1: TPanel
-        Left = 232
+        Left = 256
         Height = 66
-        Top = 72
+        Top = 8
         Width = 240
         BevelOuter = bvLowered
-        ClientHeight = 66
-        ClientWidth = 240
         TabOrder = 2
-        object btnOpenMSYS: TButton
-          Left = 16
-          Height = 25
-          Top = 22
-          Width = 209
-          Caption = 'MSYS Shell'
-          OnClick = btnOpenMSYSClick
-          TabOrder = 0
-        end
       end
     end
     object tsAbout: TTabSheet
@@ -597,19 +639,28 @@ object frmMain: TfrmMain
     end
   end
   object btnClose: TButton
-    Left = 200
+    Left = 396
     Height = 25
     Top = 270
     Width = 120
-    Caption = '&Close'
+    Caption = '&Quit'
     OnClick = btnCloseClick
     TabOrder = 1
+  end
+  object btnOpenMSYS: TButton
+    Left = 8
+    Height = 25
+    Top = 270
+    Width = 121
+    Caption = 'MSYS Shell'
+    OnClick = btnOpenMSYSClick
+    TabOrder = 2
   end
   object tmrShellThreadTerminate: TTimer
     Enabled = False
     Interval = 50
     OnTimer = tmrShellThreadTerminateTimer
-    left = 424
-    top = 8
+    left = 244
+    top = 240
   end
 end

@@ -23,7 +23,11 @@ type
     edtPortMaintainer: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
     gbxToolchainInstalled: TGroupBox;
+    gbxKallistiChangeLog: TGroupBox;
+    lblBuildDateKallistiOS: TLabel;
     lblPortName: TLabel;
+    lblTextKallistiOS: TLabel;
+    lblTextBuildDateKallistiOS: TLabel;
     lblTextToolchainInstalledSH4: TLabel;
     lblTextToolchainInstalledARM: TLabel;
     lblToolchainInstalledSH4: TLabel;
@@ -54,6 +58,7 @@ type
     lblVersionPython: TLabel;
     lblVersionMinGW: TLabel;
     lblVersionSVN: TLabel;
+    memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
     memPortShortDescription: TMemo;
     PageControl1: TPageControl;
@@ -100,6 +105,8 @@ type
     function BooleanToCheckboxState(State: Boolean): TCheckBoxState;
     procedure ClearKallistiPortPanel;
     procedure UpdateKallistiPortControls;
+    procedure SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
+    procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
   public
     procedure UpdateDisplay(ForceRefresh: Boolean);
     procedure OnCommandTerminateThread(Operation: TShellThreadOperation;
@@ -208,25 +215,54 @@ begin
 end;
 
 procedure TfrmMain.DisplayEnvironmentToolchainStatus;
+
+  procedure SetToolchainInstalled(ToolchainLabel: TLabel; Installed: Boolean);
+  begin
+    ToolchainLabel.Caption := BooleanToCaption(Installed);
+    SetVersionLabelState(ToolchainLabel, not Installed);
+  end;
+
 begin
-  lblToolchainInstalledARM.Caption := BooleanToCaption(
+  SetToolchainInstalled(lblToolchainInstalledARM,
     DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ToolchainInstalledARM);
-  lblToolchainInstalledSH4.Caption := BooleanToCaption(
+  SetToolchainInstalled(lblToolchainInstalledSH4,
     DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ToolchainInstalledSH4);
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
 var
   ComponentName: TComponentName;
-  ComponentNameString: string;
+  ComponentVersion, ComponentNameString: string;
 
 begin
+  // Components versions
   for ComponentName := Low(TComponentName) to High(TComponentName) do
   begin
     ComponentNameString := ComponentNameToString(ComponentName);
-    (FindComponent('lblVersion' + ComponentNameString) as TLabel).Caption :=
-      DreamcastSoftwareDevelopmentKitManager.Versions.GetComponentVersion(ComponentName);
+    ComponentVersion := DreamcastSoftwareDevelopmentKitManager.Versions
+      .GetComponentVersion(ComponentName);
+    SetVersionLabel(FindComponent('lblVersion' + ComponentNameString) as TLabel,
+      ComponentVersion);
   end;
+
+  // KallistiOS revision
+  if DreamcastSoftwareDevelopmentKitManager.KallistiOS.Built then
+  begin
+    lblVersionKallistiOS.Caption := Format('%s (%s)', [lblVersionKallistiOS.Caption,
+      DreamcastSoftwareDevelopmentKitManager.Versions.KallistiRevision]);
+  end;
+
+  // KallistiOS build date
+  lblBuildDateKallistiOS.Caption := '';
+  if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.KallistiLibrary) then
+    lblBuildDateKallistiOS.Caption := FormatDateTime('YYYY-MM-DD @ HH:mm:ss',
+      DreamcastSoftwareDevelopmentKitManager.Versions.KallistiBuildDate);
+
+  // KallistiOS changes log
+  memKallistiChangeLog.Lines.Clear;
+  if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.KallistiVersionFile) then
+    memKallistiChangeLog.Lines.LoadFromFile(DreamcastSoftwareDevelopmentKitManager
+      .Environment.FileSystem.KallistiVersionFile);
 end;
 
 procedure TfrmMain.DisplayKallistiPorts;
@@ -279,7 +315,7 @@ end;
 
 function TfrmMain.BooleanToCaption(Value: Boolean): string;
 begin
-  Result := 'Not Installed';
+  Result := 'Not installed';
   if Value then
     Result := 'Installed';
 end;
@@ -310,6 +346,33 @@ begin
   btnPortInstall.Enabled := not SelectedKallistiPort.Installed;
   btnPortUninstall.Enabled := SelectedKallistiPort.Installed;
   btnPortUpdate.Enabled := SelectedKallistiPort.Installed;
+end;
+
+procedure TfrmMain.SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
+begin
+  if Erroneous then
+  begin
+    VersionLabel.Font.Color := clRed;
+    VersionLabel.Font.Style := [fsBold];
+  end
+  else
+  begin
+    VersionLabel.Font.Color := clDefault;
+    VersionLabel.Font.Style := [];
+  end;
+end;
+
+procedure TfrmMain.SetVersionLabel(VersionLabel: TLabel; Version: string);
+var
+  ValidVersion: Boolean;
+
+begin
+  ValidVersion := IsVersionValid(Version);
+  if not ValidVersion then
+    VersionLabel.Caption := BooleanToCaption(False)
+  else
+    VersionLabel.Caption := Version;
+  SetVersionLabelState(VersionLabel, not ValidVersion);
 end;
 
 procedure TfrmMain.UpdateDisplay(ForceRefresh: Boolean);
