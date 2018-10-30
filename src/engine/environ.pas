@@ -105,8 +105,8 @@ uses
   IniFiles, SysTools;
 
 resourcestring
-  DefaultKallistiURL = 'https://github.com/KallistiOS/KallistiOS.git';
-  DefaultKallistiPortsURL = 'https://github.com/KallistiOS/kos-ports.git';
+  DefaultKallistiURL = 'https://git.code.sf.net/p/cadcdev/kallistios';
+  DefaultKallistiPortsURL = 'https://git.code.sf.net/p/cadcdev/kos-ports';
 
 { TDreamcastSoftwareDevelopmentFileSystemObject }
 

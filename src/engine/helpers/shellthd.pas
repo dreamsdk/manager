@@ -91,6 +91,9 @@ var
   ShellThread: TShellThread;
   ShellThreadHelper: TShellThreadHelper;
 
+resourcestring
+  InstallationProblem = 'Your installation have problems!';
+
 procedure PauseThreadOperation;
 begin
   if Assigned(ShellThread) then
@@ -259,11 +262,17 @@ begin
   fOperationSuccess := False;
   Buffer := '';
 
-  case fContext of
-    stcKallisti:
-      Buffer := ProcessKallistiOS;
-    stcKallistiPort:
-      Buffer := ProcessKallistiPort;
+  if FileExists(Manager.Environment.FileSystem.ShellExecutable) then
+    case fContext of
+      stcKallisti:
+        Buffer := ProcessKallistiOS;
+      stcKallistiPort:
+        Buffer := ProcessKallistiPort;
+    end
+  else
+  begin
+    fOperationResultOutput := InstallationProblem;
+    UpdateProgressText(InstallationProblem);
   end;
 
   // Finish
