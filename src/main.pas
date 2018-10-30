@@ -90,7 +90,6 @@ type
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
     procedure rgxTerminalOptionClick(Sender: TObject);
-    procedure tmrShellThreadTerminateStartTimer(Sender: TObject);
     procedure tmrShellThreadTerminateTimer(Sender: TObject);
   private
     fShellThreadOperation: TShellThreadOperation;
@@ -163,11 +162,6 @@ end;
 procedure TfrmMain.rgxTerminalOptionClick(Sender: TObject);
 begin
   DreamcastSoftwareDevelopmentKitManager.Environment.UseMinTTY := (rgxTerminalOption.ItemIndex = 1);
-end;
-
-procedure TfrmMain.tmrShellThreadTerminateStartTimer(Sender: TObject);
-begin
-
 end;
 
 procedure TfrmMain.tmrShellThreadTerminateTimer(Sender: TObject);
@@ -271,6 +265,7 @@ var
   PortInfo: TKallistiPortItem;
 
 begin
+  lbxPorts.Clear;
   for i := 0 to DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Count - 1 do
   begin
     PortInfo := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[i];

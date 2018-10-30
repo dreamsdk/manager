@@ -149,6 +149,7 @@ var
   i: Integer;
 
 begin
+  Clear;
   PortsAvailable := TStringList.Create;
   try
     FindAllFiles(PortsAvailable, fEnvironment.FileSystem.KallistiPortsDirectory, 'pkg-descr', True);
