@@ -16,6 +16,8 @@ type
 
   TRunCommand = class(TThread)
   private
+    fProcessEnd: Boolean;
+    fPartialLine: string;
     fBufferOutput: TStringList;
     fProcess: {$IFDEF Windows}TProcess{$ELSE}TProcessUTF8{$ENDIF};
     fEnvironment: TStringList;
@@ -25,7 +27,7 @@ type
     fParameters: TStringList;
     procedure InitializeProcess;
     procedure SyncSendNewLineEvent;
-    procedure SendNewLine(const NewLine: string);
+    procedure SendNewLine(const NewLine: string; ProcessEnd: Boolean);
   protected
     procedure Execute; override;
     procedure KillRunningProcess;
@@ -44,6 +46,9 @@ type
 
 implementation
 
+uses
+  SysTools;
+
 { TRunCommand }
 
 procedure TRunCommand.InitializeProcess;
@@ -57,15 +62,43 @@ begin
 end;
 
 procedure TRunCommand.SyncSendNewLineEvent;
+var
+  i, LinesCount: Integer;
+
+  procedure SendLine(const Line: string);
+  begin
+    fBufferOutput.Add(Line);
+    fNewLine(Self, Line);
+    fPartialLine := '';
+  end;
+
 begin
   if Assigned(fNewLine) then
-    fNewLine(Self, fNewLineBuffer);
+  begin
+    if not fProcessEnd then
+    begin
+      LinesCount := GetSubStrCount(sLineBreak, fNewLineBuffer);
+      if LinesCount = 0 then
+        fPartialLine := fPartialLine + fNewLineBuffer
+      else
+      begin
+        fPartialLine := fPartialLine + LeftNRight(sLineBreak, fNewLineBuffer, 0);
+        SendLine(fPartialLine);
+        for i := 1 to LinesCount - 1 do
+          SendLine(LeftNRight(sLineBreak, fNewLineBuffer, i));
+        fPartialLine := LeftNRight(sLineBreak, fNewLineBuffer, LinesCount);
+      end;
+    end
+    else
+      SendLine(fNewLineBuffer);
+  end;
 end;
 
-procedure TRunCommand.SendNewLine(const NewLine: string);
+procedure TRunCommand.SendNewLine(const NewLine: string;
+  ProcessEnd: Boolean);
 begin
-  fNewLineBuffer := NewLine;
-  fBufferOutput.Add(AdjustLineBreaks(fNewLineBuffer));
+  fNewLineBuffer := AdjustLineBreaks(NewLine);
+  fProcessEnd := ProcessEnd;
   Synchronize(@SyncSendNewLineEvent);
 end;
 
@@ -91,9 +124,12 @@ begin
   repeat
     BytesRead := fProcess.Output.Read(Buffer, BUF_SIZE);
     SetString(NewLine, PChar(@Buffer[0]), BytesRead);
-    if NewLine <> '' then
-      SendNewLine(NewLine);
+    if Trim(NewLine) <> '' then
+      SendNewLine(NewLine, False);
   until (BytesRead = 0) or (Terminated);
+
+  if Trim(fPartialLine) <> '' then
+    SendNewLine(NewLine, True);
 end;
 
 procedure TRunCommand.KillRunningProcess;

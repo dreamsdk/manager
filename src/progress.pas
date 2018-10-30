@@ -24,6 +24,7 @@ type
     fFinished: Boolean;
     function GetAbortOperation: Boolean;
     procedure SetIdleState(State: Boolean);
+    procedure SetCloseButtonState(State: Boolean);
   public
     property Finished: Boolean read fFinished write fFinished;
     procedure SetTerminateErrorState(Aborted: Boolean);
@@ -40,7 +41,11 @@ implementation
 {$R *.lfm}
 
 uses
-  ShellThd, SysTools;
+{$IFDEF Windows}
+  Windows,
+{$ENDIF}
+  ShellThd,
+  SysTools;
 
 { TfrmProgress }
 
@@ -51,7 +56,10 @@ begin
     CloseAction := caNone;
     PauseThreadOperation;
     if MessageDlg('Warning', 'Cancel?', mtWarning, [mbYes, mbNo], 0) = mrYes then
-      AbortThreadOperation
+    begin
+      AbortThreadOperation;
+      SetCloseButtonState(False);
+    end
     else
       ResumeThreadOperation;
   end;
@@ -67,6 +75,7 @@ begin
   lblProgressStep.Caption := '';
   memBufferOutput.Clear;
   SetIdleState(False);
+  SetCloseButtonState(True);
   Finished := False;
 end;
 
@@ -77,6 +86,7 @@ begin
     btnAbort.Caption := '&Close';
     btnAbort.Tag := 1000;
     pgbOperationProgress.Style := pbstNormal;
+    SetCloseButtonState(True);
   end
   else
   begin
@@ -84,6 +94,26 @@ begin
     btnAbort.Tag := 0;
     pgbOperationProgress.Style := pbstMarquee;
   end;
+end;
+
+// Thanks: https://www.tek-tips.com/faqs.cfm?fid=7515
+procedure TfrmProgress.SetCloseButtonState(State: Boolean);
+{$IFDEF Windows}
+var
+  hSysMenu: HMENU;
+
+begin
+  hSysMenu := GetSystemMenu(Self.Handle, False);
+  if hSysMenu <> 0 then
+  begin
+    if State then
+      EnableMenuItem(hSysMenu, SC_CLOSE, MF_BYCOMMAND or MF_ENABLED)
+    else
+      EnableMenuItem(hSysMenu, SC_CLOSE, MF_BYCOMMAND or MF_GRAYED);
+    DrawMenuBar(Self.Handle);
+  end;
+{$ENDIF}
+  btnAbort.Enabled := State;
 end;
 
 function TfrmProgress.GetAbortOperation: Boolean;
@@ -114,28 +144,53 @@ end;
 
 procedure TfrmProgress.AddNewLine(const Message: string);
 const
-  PROGRESS_LINE = '% (';
+  PROGRESS_LINE = '% ';
 
 var
   StrExtractedValue: string;
   Value: Integer;
 
-begin
-  if not IsInString(PROGRESS_LINE, Message) then
+  procedure PrintLine;
   begin
     pgbOperationProgress.Position := 0;
     pgbOperationProgress.Style := pbstMarquee;
     memBufferOutput.Lines.Add(Message);
-  end
+  end;
+
+  function ParseValue(LeftStr, RightStr, Str: string): Integer;
+  begin
+    StrExtractedValue := Trim(ExtractStr(LeftStr, RightStr, Str));
+    Result := StrToIntDef(StrExtractedValue, -1);
+  end;
+
+  function ExtractValue: Integer;
+  var
+    i: Integer;
+    Buffer: string;
+
+  begin
+    Result := ParseValue(':', PROGRESS_LINE + ' (', Message); // for git
+    if Result = -1 then
+    begin
+      i := Pos(PROGRESS_LINE, Message);
+      Buffer := Copy(Message, i - 4, i - 1);
+      Result := ParseValue(' ', PROGRESS_LINE, Buffer);  // for wget
+    end;
+  end;
+
+begin
+  if not IsInString(PROGRESS_LINE, Message) then
+    PrintLine
   else
   begin
-    StrExtractedValue := Trim(ExtractStr(':', PROGRESS_LINE, Message));
-    Value := StrToIntDef(StrExtractedValue, -1);
+    Value := ExtractValue;
     if Value <> -1 then
     begin
       pgbOperationProgress.Position := Value;
       pgbOperationProgress.Style := pbstNormal;
-    end;
+    end
+    else
+      PrintLine;
   end;
 end;
 

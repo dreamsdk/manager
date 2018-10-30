@@ -95,7 +95,7 @@ var
       Buffer.LoadFromFile(ConfigMK);
       if IsInString('#FETCH_CMD = wget', Buffer.Text) then
       begin
-        Buffer.Text := StringReplace(Buffer.Text, '#FETCH_CMD = wget', 'FETCH_CMD = wget', [rfReplaceAll]);
+        Buffer.Text := StringReplace(Buffer.Text, '#FETCH_CMD = wget', 'FETCH_CMD = wget --no-check-certificate', [rfReplaceAll]);
         Buffer.Text := StringReplace(Buffer.Text, 'FETCH_CMD = curl', '#FETCH_CMD = curl', [rfReplaceAll]);
         Buffer.SaveToFile(ConfigMK);
       end;
