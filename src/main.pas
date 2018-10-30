@@ -80,6 +80,7 @@ type
     procedure edtPortURLClick(Sender: TObject);
     procedure edtPortURLMouseEnter(Sender: TObject);
     procedure edtPortURLMouseLeave(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
@@ -118,7 +119,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, GetVer, SysTools;
+  LCLIntf, GetVer, SysTools, PostInst;
 
 { TfrmMain }
 
@@ -204,7 +205,6 @@ begin
       KallistiPortUpdateView;
 
   end;
-
 end;
 
 procedure TfrmMain.DisplayEnvironmentToolchainStatus;
@@ -411,6 +411,13 @@ begin
     Font.Color := clDefault;
     Cursor := crDefault;
   end;
+end;
+
+procedure TfrmMain.FormActivate(Sender: TObject);
+begin
+  if not IsPostInstallMode and
+    (not DreamcastSoftwareDevelopmentKitManager.KallistiOS.Built) then
+      ExecuteThreadOperation(stoKallistiManage);
 end;
 
 initialization

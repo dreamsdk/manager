@@ -85,7 +85,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="10">
+    <Units Count="12">
       <Unit0>
         <Filename Value="manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -142,6 +142,16 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="SysTools"/>
       </Unit9>
+      <Unit10>
+        <Filename Value="engine\helpers\shellthd.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ShellThd"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="engine\helpers\postinst.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="PostInst"/>
+      </Unit11>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

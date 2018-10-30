@@ -27,7 +27,7 @@ type
     procedure SetCloseButtonState(State: Boolean);
   public
     property Finished: Boolean read fFinished write fFinished;
-    procedure SetTerminateErrorState(Aborted: Boolean);
+    procedure SetTerminateState(Success: Boolean; Aborted: Boolean);
     procedure SetProgressText(const Message: string);
     procedure AddNewLine(const Message: string);
     property AbortOperation: Boolean read GetAbortOperation;
@@ -45,13 +45,16 @@ uses
   Windows,
 {$ENDIF}
   ShellThd,
-  SysTools;
+  SysTools,
+  Main,
+  PostInst;
 
 resourcestring
   CancelDialogCaption = 'Warning';
   CancelDialogText = 'Are you really sure to cancel? This may breaks things!';
   CloseButtonCaption = '&Close';
   CancelButtonCaption = '&Cancel';
+  OperationSuccessfullyTerminated = 'Operation finished.';
   OperationAborted = 'Operation aborted.';
   OperationDoneWithErrors = 'Operation done with errors.';
   OperationErrorMemoText = '*** %s';
@@ -71,7 +74,9 @@ begin
     end
     else
       ResumeThreadOperation;
-  end;
+  end
+  else if Finished and IsPostInstallMode then
+    Application.Terminate;
 end;
 
 procedure TfrmProgress.btnAbortClick(Sender: TObject);
@@ -130,19 +135,29 @@ begin
   Result := btnAbort.Tag <> 1000;
 end;
 
-procedure TfrmProgress.SetTerminateErrorState(Aborted: Boolean);
+procedure TfrmProgress.SetTerminateState(Success: Boolean; Aborted: Boolean);
 var
   Message: string;
 
 begin
   SetIdleState(True);
-  if Aborted then
-    Message := OperationAborted
-  else
-    Message := OperationDoneWithErrors;
 
-  memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [Message]));
-  lblProgressStep.Caption := Message;
+  if not Success then
+  begin
+    if Aborted then
+      Message := OperationAborted
+    else
+      Message := OperationDoneWithErrors;
+
+    memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [Message]));
+    lblProgressStep.Caption := Message;
+  end
+  else
+  begin
+    lblProgressStep.Caption := OperationSuccessfullyTerminated;
+    if not IsPostInstallMode then
+      Close;
+  end;
 end;
 
 procedure TfrmProgress.SetProgressText(const Message: string);

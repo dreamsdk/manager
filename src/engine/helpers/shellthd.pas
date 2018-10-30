@@ -42,14 +42,12 @@ type
     fOperation: TShellThreadOperation;
     fCommandTerminate: TShellThreadCommandTerminateEvent;
     fSelectedKallistiPort: TKallistiPortItem;
-    procedure SyncCloseProgressWindow;
-    procedure SyncSetErrorProgressWindow;
+    procedure SyncSetProgressTerminateState;
     procedure SyncUpdateProgressText;
     procedure SyncTriggerCommandTerminate;
   protected
     function CanContinue: Boolean;
-    procedure CloseProgressWindow;
-    procedure SetErrorProgressWindow;
+    procedure SetProgressTerminateState;
     procedure Execute; override;
     procedure UpdateProgressText(const Text: string);
     procedure TriggerCommandTerminate(OutputBuffer: string);
@@ -79,7 +77,7 @@ procedure ExecuteThreadOperation(const AOperation: TShellThreadOperation);
 implementation
 
 uses
-  Forms, Main, Progress;
+  Forms, Main, Progress, PostInst;
 
 type
   { TShellThreadHelper }
@@ -222,17 +220,10 @@ begin
   FreeOnTerminate := True;
 end;
 
-procedure TShellThread.SyncCloseProgressWindow;
+procedure TShellThread.SyncSetProgressTerminateState;
 begin
   frmProgress.Finished := True;
-  frmProgress.Close;
-  Application.ProcessMessages;
-end;
-
-procedure TShellThread.SyncSetErrorProgressWindow;
-begin
-  frmProgress.Finished := True;
-  frmProgress.SetTerminateErrorState(Aborted);
+  frmProgress.SetTerminateState(fOperationSuccess, Aborted);
   Application.ProcessMessages;
 end;
 
@@ -244,6 +235,7 @@ end;
 
 procedure TShellThread.SyncTriggerCommandTerminate;
 begin
+  SetProgressTerminateState;
   Application.ProcessMessages;
   if Assigned(fCommandTerminate) then
     fCommandTerminate(fOperation, fOperationSuccess, fOperationUpdateState);
@@ -254,14 +246,9 @@ begin
   Result := fOperationSuccess and not Terminated;
 end;
 
-procedure TShellThread.CloseProgressWindow;
+procedure TShellThread.SetProgressTerminateState;
 begin
-  Synchronize(@SyncCloseProgressWindow);
-end;
-
-procedure TShellThread.SetErrorProgressWindow;
-begin
-  Synchronize(@SyncSetErrorProgressWindow);
+  Synchronize(@SyncSetProgressTerminateState);
 end;
 
 procedure TShellThread.Execute;
@@ -278,12 +265,6 @@ begin
     stcKallistiPort:
       Buffer := ProcessKallistiPort;
   end;
-
-  // Handle the closing of the window.
-  if fOperationSuccess then
-    CloseProgressWindow
-  else
-    SetErrorProgressWindow;
 
   // Finish
   TriggerCommandTerminate(Buffer);

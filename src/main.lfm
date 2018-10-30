@@ -8,6 +8,7 @@ object frmMain: TfrmMain
   Caption = 'DreamSDK Manager'
   ClientHeight = 300
   ClientWidth = 520
+  OnActivate = FormActivate
   OnCreate = FormCreate
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
