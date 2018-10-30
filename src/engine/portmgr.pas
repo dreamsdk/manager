@@ -55,12 +55,12 @@ type
     function Add: TKallistiPortItem;
     procedure Clear;
     procedure ProcessPort(const PackagingDescriptionFilename: TFileName);
-    procedure RetrieveAvailablePorts;
   public
     constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
     destructor Destroy; override;
     function CloneRepository(var BufferOutput: string): Boolean;
     function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
+    procedure RetrieveAvailablePorts;
     property Count: Integer read GetCount;
     property Installed: Boolean read GetInstalled;
     property Items[Index: Integer]: TKallistiPortItem read GetItem; default;

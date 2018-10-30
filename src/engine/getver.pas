@@ -42,11 +42,11 @@ type
       StartTag, EndTag: string): string;
     function RetrieveVersionWithFind(ComponentName: string;
       FindTargetFileName: TFileName; StartTag, EndTag: string): string;
-    procedure RetrieveVersions;
   public
     constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
 
     function GetComponentVersion(const ComponentName: TComponentName): string;
+    procedure RetrieveVersions;
 
     property Git: string read fVersionGit;
     property MinGW: string read fVersionMinGW;

@@ -47,6 +47,15 @@ uses
   ShellThd,
   SysTools;
 
+resourcestring
+  CancelDialogCaption = 'Warning';
+  CancelDialogText = 'Are you really sure to cancel? This may breaks things!';
+  CloseButtonCaption = '&Close';
+  CancelButtonCaption = '&Cancel';
+  OperationAborted = 'Operation aborted.';
+  OperationDoneWithErrors = 'Operation done with errors.';
+  OperationErrorMemoText = '*** %s';
+
 { TfrmProgress }
 
 procedure TfrmProgress.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -55,7 +64,7 @@ begin
   begin
     CloseAction := caNone;
     PauseThreadOperation;
-    if MessageDlg('Warning', 'Cancel?', mtWarning, [mbYes, mbNo], 0) = mrYes then
+    if MessageDlg(CancelDialogCaption, CancelDialogText, mtWarning, [mbYes, mbNo], 0) = mrYes then
     begin
       AbortThreadOperation;
       SetCloseButtonState(False);
@@ -83,14 +92,14 @@ procedure TfrmProgress.SetIdleState(State: Boolean);
 begin
   if State then
   begin
-    btnAbort.Caption := '&Close';
+    btnAbort.Caption := CloseButtonCaption;
     btnAbort.Tag := 1000;
     pgbOperationProgress.Style := pbstNormal;
     SetCloseButtonState(True);
   end
   else
   begin
-    btnAbort.Caption := '&Cancel';
+    btnAbort.Caption := CancelButtonCaption;
     btnAbort.Tag := 0;
     pgbOperationProgress.Style := pbstMarquee;
   end;
@@ -128,11 +137,11 @@ var
 begin
   SetIdleState(True);
   if Aborted then
-    Message := 'Operation aborted.'
+    Message := OperationAborted
   else
-    Message := 'Operation done with errors.';
+    Message := OperationDoneWithErrors;
 
-  memBufferOutput.Lines.Add('*** ' + Message);
+  memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [Message]));
   lblProgressStep.Caption := Message;
 end;
 

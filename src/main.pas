@@ -61,6 +61,7 @@ type
     pnlActions: TPanel;
     pnlActions1: TPanel;
     rgxTerminalOption: TRadioGroup;
+    tmrShellThreadTerminate: TTimer;
     tsPortInformation: TTabSheet;
     tsPortDescription: TTabSheet;
     tsAbout: TTabSheet;
@@ -83,7 +84,11 @@ type
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
     procedure rgxTerminalOptionClick(Sender: TObject);
+    procedure tmrShellThreadTerminateStartTimer(Sender: TObject);
+    procedure tmrShellThreadTerminateTimer(Sender: TObject);
   private
+    fShellThreadOperation: TShellThreadOperation;
+    fShellThreadUpdateState: TUpdateOperationState;
     procedure DisplayEnvironmentToolchainStatus;
     procedure DisplayEnvironmentComponentVersions;
     procedure DisplayKallistiPorts;
@@ -95,6 +100,7 @@ type
     procedure ClearKallistiPortPanel;
     procedure UpdateKallistiPortControls;
   public
+    procedure UpdateDisplay(ForceRefresh: Boolean);
     procedure OnCommandTerminateThread(Operation: TShellThreadOperation;
       Success: Boolean; UpdateState: TUpdateOperationState);
     property SelectedKallistiPortItemIndex: Integer
@@ -120,8 +126,7 @@ procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   Application.Title := Caption;
   DisplayEnvironmentToolchainStatus;
-  DisplayEnvironmentComponentVersions;
-  DisplayKallistiPorts;
+  UpdateDisplay(False);
   LoadConfiguration;
 end;
 
@@ -150,6 +155,56 @@ end;
 procedure TfrmMain.rgxTerminalOptionClick(Sender: TObject);
 begin
   DreamcastSoftwareDevelopmentKitManager.Environment.UseMinTTY := (rgxTerminalOption.ItemIndex = 1);
+end;
+
+procedure TfrmMain.tmrShellThreadTerminateStartTimer(Sender: TObject);
+begin
+
+end;
+
+procedure TfrmMain.tmrShellThreadTerminateTimer(Sender: TObject);
+
+  procedure KallistiPortUpdateView;
+  begin
+    lbxPorts.State[lbxPorts.ItemIndex] := BooleanToCheckboxState(fShellThreadOperation = stoPortInstall);
+    UpdateKallistiPortControls;
+  end;
+
+begin
+  tmrShellThreadTerminate.Enabled := False;
+
+  case fShellThreadOperation of
+
+    stoKallistiInstall:
+      begin
+        MessageDlg('Information', 'KallistiOS was successfully installed.', mtInformation, [mbOk], 0);
+        UpdateDisplay(True);
+      end;
+
+    stoKallistiUpdate:
+      case fShellThreadUpdateState of
+        uosUpdateSuccess:
+          MessageDlg('Information', 'KallistiOS was successfully updated.', mtInformation, [mbOk], 0);
+        uosUpdateUseless:
+          MessageDlg('Information', 'KallistiOS is already installed and up-to-date.', mtInformation, [mbOk], 0);
+      end;
+
+    stoPortInstall:
+      KallistiPortUpdateView;
+
+    stoPortUpdate:
+      case fShellThreadUpdateState of
+        uosUpdateSuccess:
+          MessageDlg('Information', Format('%s was successfully updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+        uosUpdateUseless:
+          MessageDlg('Information', Format('%s doesn''t need to be updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+      end;
+
+    stoPortUninstall:
+      KallistiPortUpdateView;
+
+  end;
+
 end;
 
 procedure TfrmMain.DisplayEnvironmentToolchainStatus;
@@ -257,50 +312,27 @@ begin
   btnPortUpdate.Enabled := SelectedKallistiPort.Installed;
 end;
 
+procedure TfrmMain.UpdateDisplay(ForceRefresh: Boolean);
+begin
+  if ForceRefresh then
+  begin
+    DreamcastSoftwareDevelopmentKitManager.KallistiPorts.RetrieveAvailablePorts;
+    DreamcastSoftwareDevelopmentKitManager.Versions.RetrieveVersions;
+  end;
+  DisplayEnvironmentComponentVersions;
+  DisplayKallistiPorts;
+end;
+
 procedure TfrmMain.OnCommandTerminateThread(Operation: TShellThreadOperation;
   Success: Boolean; UpdateState: TUpdateOperationState);
 
-  procedure KallistiPortUpdateView;
-  begin
-    lbxPorts.State[lbxPorts.ItemIndex] := BooleanToCheckboxState(Operation = stoPortInstall);
-    UpdateKallistiPortControls;
-  end;
-
 begin
   Application.ProcessMessages;
-
   if Success then
   begin
-
-    case Operation of
-
-      stoKallistiInstall:
-        MessageDlg('Information', 'KallistiOS was successfully installed.', mtInformation, [mbOk], 0);
-
-      stoKallistiUpdate:
-        case UpdateState of
-          uosUpdateSuccess:
-            MessageDlg('Information', 'KallistiOS was successfully updated.', mtInformation, [mbOk], 0);
-          uosUpdateUseless:
-            MessageDlg('Information', 'KallistiOS is already installed and up-to-date.', mtInformation, [mbOk], 0);
-        end;
-
-      stoPortInstall:
-        KallistiPortUpdateView;
-
-      stoPortUpdate:
-        case UpdateState of
-          uosUpdateSuccess:
-            MessageDlg('Information', Format('%s was successfully updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
-          uosUpdateUseless:
-            MessageDlg('Information', Format('%s doesn''t need to be updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
-        end;
-
-      stoPortUninstall:
-        KallistiPortUpdateView;
-
-    end;
-
+    fShellThreadOperation := Operation;
+    fShellThreadUpdateState := UpdateState;
+    tmrShellThreadTerminate.Enabled := True;
   end;
 end;
 
@@ -317,7 +349,7 @@ end;
 procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);
 begin
   DreamcastSoftwareDevelopmentKitManager.Environment.RefreshConfig;
-//  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ShellLauncherExecutable);
+  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.DreamSDKExecutable);
 end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
