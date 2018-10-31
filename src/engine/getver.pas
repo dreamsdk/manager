@@ -202,9 +202,9 @@ begin
       '/dc-chain/newlib-', '/newlib/libc/');
 
     fVersionToolSerial := RetrieveVersion(DreamcastToolSerialExecutable,
-      '-h', 'dc-tool', 'by <andrewk');
+      '-h', 'dc-tool', 'by <');
     fVersionToolIP := RetrieveVersion(DreamcastToolIPExecutable,
-      '-h', 'dc-tool-ip', 'by <andrewk');
+      '-h', 'dc-tool-ip', 'by <');
 
     RetrieveKallistiInformation;
   end;

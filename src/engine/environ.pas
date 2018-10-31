@@ -166,7 +166,7 @@ begin
   fNewlibBinary := ToolchainBase + 'sh-elf\sh-elf\lib\libnosys.a';
 
   // dcload/dc-tool
-  fDCToolSerialExecutable := ToolchainBase + 'bin\dc-tool.exe';
+  fDCToolSerialExecutable := ToolchainBase + 'bin\dc-tool-ser.exe';
   fDCToolIPExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
 
   // KallistiOS

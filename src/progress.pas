@@ -180,6 +180,9 @@ var
   end;
 
   function ExtractValue: Integer;
+  const
+    FULL = '100%';
+
   var
     i: Integer;
     Buffer: string;
@@ -191,6 +194,8 @@ var
       i := Pos(PROGRESS_LINE, Message);
       Buffer := Copy(Message, i - 4, i - 1);
       Result := ParseValue(' ', PROGRESS_LINE, Buffer);  // for wget
+      if (Result = -1) and (IsInString(FULL, Buffer)) then
+        Result := 100;
     end;
   end;
 
