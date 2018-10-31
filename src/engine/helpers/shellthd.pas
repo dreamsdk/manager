@@ -291,49 +291,88 @@ begin
 end;
 
 function TShellThread.ProcessKallistiOS: string;
+type
+  TRepositoryOperation = (roInstall, roUpdate);
+  TRepositoryKind = (rkKallisti, rkKallistiPorts, rkDreamcastTool);
+
 var
+  IsEverythingUpToDate,
   IsKallistiFreshlyInstalled,
   IsKallistiNeedsToBeUpdated: Boolean;
+
+  function RepositoryKindToString(RepositoryKind: TRepositoryKind): string;
+  begin
+    Result := 'KallistiOS';
+    case RepositoryKind of
+      rkKallistiPorts:
+        Result := 'KallistiOS Ports';
+      rkDreamcastTool:
+        Result := 'Dreamcast Tool';
+    end;
+  end;
+
+  function HandleRepository(Installed: Boolean; RepositoryKind: TRepositoryKind; var BufferOutput: string): TRepositoryOperation;
+  var
+    RepositoryName: string;
+    IsSuccess: Boolean;
+
+  begin
+    Result := roInstall;
+    RepositoryName := RepositoryKindToString(RepositoryKind);
+    if CanContinue and (not Installed) then
+    begin
+      UpdateProgressText(Format('Cloning %s repository...', [RepositoryName]));
+      case RepositoryKind of
+        rkKallisti:
+          IsSuccess := Manager.KallistiOS.CloneRepository(BufferOutput);
+        rkKallistiPorts:
+          IsSuccess := Manager.KallistiPorts.CloneRepository(BufferOutput);
+        rkDreamcastTool:
+          IsSuccess := Manager.DreamcastTool.CloneRepository(BufferOutput);
+      end;
+      SetOperationSuccess(IsSuccess);
+    end
+    else
+    begin
+      Result := roUpdate;
+      UpdateProgressText(Format('Updating %s repository...', [RepositoryName]));
+      case RepositoryKind of
+        rkKallisti:
+          fOperationUpdateState := Manager.KallistiOS.UpdateRepository(BufferOutput);
+        rkKallistiPorts:
+          fOperationUpdateState := Manager.KallistiPorts.UpdateRepository(BufferOutput);
+        rkDreamcastTool:
+          fOperationUpdateState := Manager.DreamcastTool.UpdateRepository(BufferOutput);
+      end;
+      SetOperationSuccess(fOperationUpdateState <> uosUpdateFailed);
+    end;
+  end;
 
 begin
   Result := '';
   fOperationSuccess := True;
+  fOperation := stoKallistiInstall;
   fOperationUpdateState := uosUndefined;
 
   // Handle KallistiOS Repository
-  if CanContinue and (not Manager.KallistiOS.Installed) then
-  begin
-    fOperation := stoKallistiInstall;
-    UpdateProgressText('Cloning KallistiOS repository...');
-    SetOperationSuccess(Manager.KallistiOS.CloneRepository(Result));
-  end
-  else
-  begin
+  if HandleRepository(Manager.KallistiOS.Installed, rkKallisti, Result) = roUpdate then
     fOperation := stoKallistiUpdate;
-    UpdateProgressText('Updating KallistiOS repository...');
-    fOperationUpdateState := Manager.KallistiOS.UpdateRepository(Result);
-    SetOperationSuccess(fOperationUpdateState <> uosUpdateFailed);
-  end;
-
-  // Handle KallistiPorts Repository
-  if CanContinue and (not Manager.KallistiPorts.Installed) then
-  begin
-    UpdateProgressText('Cloning KallistiOS Ports repository...');
-    SetOperationSuccess(Manager.KallistiPorts.CloneRepository(Result));
-  end
-  else
-  begin
-    UpdateProgressText('Updating KallistiOS Ports repository...');
-    SetOperationSuccess(Manager.KallistiOS.UpdateRepository(Result) <> uosUpdateFailed);
-  end;
 
   IsKallistiNeedsToBeUpdated := (fOperationUpdateState = uosUpdateSuccess);
   IsKallistiFreshlyInstalled := (fOperationUpdateState = uosUndefined) or (not Manager.KallistiOS.Built);
+
+  // Handle KallistiPorts Repository
+  HandleRepository(Manager.KallistiPorts.Installed, rkKallistiPorts, Result);
+
   if IsKallistiFreshlyInstalled then
   begin
     fOperation := stoKallistiInstall;
     fOperationUpdateState := uosUndefined;
   end;
+
+  IsEverythingUpToDate := (not IsKallistiFreshlyInstalled)
+    and (not IsKallistiNeedsToBeUpdated)
+    and (Manager.DreamcastTool.Built);
 
   if IsKallistiFreshlyInstalled or IsKallistiNeedsToBeUpdated then
   begin
@@ -348,7 +387,7 @@ begin
     if CanContinue then
     begin
       UpdateProgressText('Building KallistiOS library...');
-      SetOperationSuccess(Manager.KallistiOS.BuildKallistiOS(Result));
+      SetOperationSuccess(Manager.KallistiOS.Build(Result));
     end;
 
     // Fixing-up SH-4 Newlib
@@ -357,8 +396,30 @@ begin
       UpdateProgressText('Fixing SH-4 Newlib...');
       SetOperationSuccess(Manager.KallistiOS.FixupHitachiNewlib(Result));
     end;
-  end
-  else
+  end;
+
+  // Handle Dreamcast Tool
+  if not Manager.DreamcastTool.Built then
+  begin
+    // Handle Dreamcast Tool(dc-tool) repository
+    HandleRepository(Manager.DreamcastTool.Installed, rkDreamcastTool, Result);
+
+   // Generate environ.sh file, unpacking genromfs and patching config.mk in kos-ports
+    if CanContinue then
+    begin
+      UpdateProgressText('Initialize Dreamcast Tool environment...');
+      SetOperationSuccess(Manager.DreamcastTool.InitializeEnvironment);
+    end;
+
+    // Making KallistiOS library
+    if CanContinue then
+    begin
+      UpdateProgressText('Building Dreamcast Tool binaries...');
+      SetOperationSuccess(Manager.DreamcastTool.Build(Result));
+    end;
+  end;
+
+  if IsEverythingUpToDate then
     UpdateProgressText('KallistiOS is already installed and up-to-date.');
 end;
 

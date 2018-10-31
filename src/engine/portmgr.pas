@@ -291,8 +291,7 @@ end;
 
 function TKallistiPortManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
 begin
-  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.KallistiPortsDirectory,
-    BufferOutput);
+  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.KallistiPortsDirectory, BufferOutput);
 end;
 
 end.

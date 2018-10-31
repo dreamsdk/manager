@@ -85,7 +85,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="14">
+    <Units Count="15">
       <Unit0>
         <Filename Value="manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -162,6 +162,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="StrRes"/>
       </Unit13>
+      <Unit14>
+        <Filename Value="engine\toolmgr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ToolMgr"/>
+      </Unit14>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -22,7 +22,7 @@ type
     function CloneRepository(var BufferOutput: string): Boolean;
     function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
     function InitializeEnvironment: Boolean;
-    function BuildKallistiOS(var BufferOutput: string): Boolean;
+    function Build(var BufferOutput: string): Boolean;
     function FixupHitachiNewlib(var BufferOutput: string): Boolean;
     property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
@@ -74,8 +74,7 @@ end;
 
 function TKallistiManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
 begin
-  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.KallistiDirectory,
-    BufferOutput);
+  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.KallistiDirectory, BufferOutput);
 end;
 
 function TKallistiManager.InitializeEnvironment: Boolean;
@@ -85,23 +84,23 @@ var
 
   procedure HandleKallistiPortsConfiguration;
   var
-    ConfigMK: TFileName;
-    Buffer: TStringList;
+    MakefileFileName: TFileName;
 
   begin
-    ConfigMK := fEnvironment.FileSystem.KallistiPortsDirectory + 'config.mk';
-    Buffer := TStringList.Create;
-    try
-      Buffer.LoadFromFile(ConfigMK);
-      if IsInString('#FETCH_CMD = wget', Buffer.Text) then
-      begin
-        Buffer.Text := StringReplace(Buffer.Text, '#FETCH_CMD = wget', 'FETCH_CMD = wget --no-check-certificate', [rfReplaceAll]);
-        Buffer.Text := StringReplace(Buffer.Text, 'FETCH_CMD = curl', '#FETCH_CMD = curl', [rfReplaceAll]);
-        Buffer.SaveToFile(ConfigMK);
-      end;
-    finally
-      Buffer.Free;
-    end;
+    MakefileFileName := fEnvironment.FileSystem.KallistiPortsDirectory
+      + 'config.mk';
+
+    fEnvironment.PatchMakefile(
+      MakefileFileName,
+      '#FETCH_CMD = wget',
+      'FETCH_CMD = wget --no-check-certificate'
+    );
+
+    fEnvironment.PatchMakefile(
+      MakefileFileName,
+      'FETCH_CMD = curl',
+      '#FETCH_CMD = curl'
+    );
   end;
 
 begin
@@ -120,7 +119,7 @@ begin
   HandleKallistiPortsConfiguration;
 end;
 
-function TKallistiManager.BuildKallistiOS(var BufferOutput: string): Boolean;
+function TKallistiManager.Build(var BufferOutput: string): Boolean;
 begin
   BufferOutput := fEnvironment.ExecuteShellCommand('make',
     fEnvironment.FileSystem.KallistiDirectory);

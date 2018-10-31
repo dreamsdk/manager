@@ -201,9 +201,9 @@ begin
     fVersionNewlib := RetrieveVersionWithFind(NewlibBinary,
       '/dc-chain/newlib-', '/newlib/libc/');
 
-    fVersionToolSerial := RetrieveVersion(DreamcastToolSerialExecutable,
+    fVersionToolSerial := RetrieveVersion(DreamcastTool.SerialExecutable,
       '-h', 'dc-tool', 'by <');
-    fVersionToolIP := RetrieveVersion(DreamcastToolIPExecutable,
+    fVersionToolIP := RetrieveVersion(DreamcastTool.InternetProtocolExecutable,
       '-h', 'dc-tool-ip', 'by <');
 
     RetrieveKallistiInformation;

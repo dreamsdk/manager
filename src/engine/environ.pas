@@ -21,12 +21,27 @@ type
     uosUpdateFailed
   );
 
-  { TDreamcastSoftwareDevelopmentFileSystemObject }
+  { TDreamcastSoftwareDevelopmentFileSystemDreamcastTool }
+  TDreamcastSoftwareDevelopmentFileSystemDreamcastTool = class(TObject)
+  private
+    fBaseDirectory: TFileName;
+    fInternetProtocolDirectory: TFileName;
+    fInternetProtocolExecutable: TFileName;
+    fSerialDirectory: TFileName;
+    fSerialExecutable: TFileName;
+  public
+    property BaseDirectory: TFileName read fBaseDirectory;
+    property InternetProtocolDirectory: TFileName read fInternetProtocolDirectory;
+    property InternetProtocolExecutable: TFileName read fInternetProtocolExecutable;
+    property SerialDirectory: TFileName read fSerialDirectory;
+    property SerialExecutable: TFileName read fSerialExecutable;
+  end;
 
+ // DCLOAD_BASE_DIRECTORY = 'dcload\';
+
+  { TDreamcastSoftwareDevelopmentFileSystemObject }
   TDreamcastSoftwareDevelopmentFileSystemObject = class(TObject)
   private
-    fDCToolIPExecutable: TFileName;
-    fDCToolSerialExecutable: TFileName;
     fDreamSDKDirectory: TFileName;
     fDreamSDKExecutable: TFileName;
     fFixupHitachiNewlibExecutable: TFileName;
@@ -42,9 +57,14 @@ type
     fShellExecutable: TFileName;
     fToolchainInstalledARM: Boolean;
     fToolchainInstalledSH4: Boolean;
+    fDreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool;
   protected
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
   public
+    constructor Create;
+    destructor Destroy; override;
+    property DreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool
+      read fDreamcastTool;
     property DreamSDKDirectory: TFileName read fDreamSDKDirectory;
     property DreamSDKExecutable: TFileName read fDreamSDKExecutable;
     property ShellExecutable: TFileName read fShellExecutable;
@@ -53,8 +73,6 @@ type
     property GCCExecutable: TFileName read fGCCExecutable;
     property GDBExecutable: TFileName read fGDBExecutable;
     property NewlibBinary: TFileName read fNewlibBinary;
-    property DreamcastToolSerialExecutable: TFileName read fDCToolSerialExecutable;
-    property DreamcastToolIPExecutable: TFileName read fDCToolIPExecutable;
     property FixupHitachiNewlibExecutable: TFileName read fFixupHitachiNewlibExecutable;
     property KallistiPortsDirectory: TFileName read fKallistiPortsDirectory;
     property KallistiDirectory: TFileName read fKallistiDirectory;
@@ -121,7 +139,9 @@ type
     function CloneRepository(const URL: string; const TargetDirectoryName,
       WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
-      var BufferOutput: string): TUpdateOperationState;
+      var BufferOutput: string): TUpdateOperationState; overload;
+    procedure PatchMakefile(const MakefileFileName: TFileName;
+      OldValue, NewValue: string);
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystemObject read fFileSystem;
     property Repositories: TDreamcastSoftwareDevelopmentRepositories read fRepositories;
     property Settings: TDreamcastSoftwareDevelopmentSettings read fSettings;
@@ -166,14 +186,31 @@ begin
   fNewlibBinary := ToolchainBase + 'sh-elf\sh-elf\lib\libnosys.a';
 
   // dcload/dc-tool
-  fDCToolSerialExecutable := ToolchainBase + 'bin\dc-tool-ser.exe';
-  fDCToolIPExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
+  with fDreamcastTool do
+  begin
+    fBaseDirectory := ToolchainBase + 'dcload\';
+    fInternetProtocolDirectory := fBaseDirectory + 'dcload-ip\';
+    fSerialDirectory := fBaseDirectory + 'dcload-serial\';
+    fSerialExecutable := ToolchainBase + 'bin\dc-tool-ser.exe';
+    fInternetProtocolExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
+  end;
 
   // KallistiOS
   fKallistiPortsDirectory := ToolchainBase + 'kos-ports\';
   fKallistiDirectory := ToolchainBase + 'kos\';
   fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
   fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
+end;
+
+constructor TDreamcastSoftwareDevelopmentFileSystemObject.Create;
+begin
+  fDreamcastTool := TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.Create;
+end;
+
+destructor TDreamcastSoftwareDevelopmentFileSystemObject.Destroy;
+begin
+  fDreamcastTool.Free;
+  inherited Destroy;
 end;
 
 { TDreamcastSoftwareDevelopmentEnvironment }
@@ -434,6 +471,25 @@ begin
     Result := uosUpdateUseless
   else if IsInString(SUCCESS_TAG, BufferOutput) then
     Result := uosUpdateSuccess;
+end;
+
+procedure TDreamcastSoftwareDevelopmentEnvironment.PatchMakefile(
+  const MakefileFileName: TFileName; OldValue, NewValue: string);
+var
+  Buffer: TStringList;
+
+begin
+  Buffer := TStringList.Create;
+  try
+    Buffer.LoadFromFile(MakefileFileName);
+    if IsInString(OldValue, Buffer.Text) then
+    begin
+      Buffer.Text := StringReplace(Buffer.Text, OldValue, NewValue, [rfReplaceAll]);
+      Buffer.SaveToFile(MakefileFileName);
+    end;
+  finally
+    Buffer.Free;
+  end;
 end;
 
 end.

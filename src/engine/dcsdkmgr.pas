@@ -5,12 +5,13 @@ unit DCSDKMgr;
 interface
 
 uses
-  Classes, SysUtils, GetVer, Environ, KOSMgr, PortMgr;
+  Classes, SysUtils, GetVer, Environ, KOSMgr, PortMgr, ToolMgr;
 
 type
   { TDreamcastSoftwareDevelopmentKitManager }
   TDreamcastSoftwareDevelopmentKitManager = class(TObject)
   private
+    fDreamcastTool: TDreamcastToolManager;
     fKallistiManager: TKallistiManager;
     fVersionRetriever: TVersionRetriever;
     fKallistiPortsManager: TKallistiPortManager;
@@ -20,6 +21,7 @@ type
     destructor Destroy; override;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
+    property DreamcastTool: TDreamcastToolManager read fDreamcastTool;
     property KallistiOS: TKallistiManager read fKallistiManager;
     property KallistiPorts: TKallistiPortManager read fKallistiPortsManager;
     property Versions: TVersionRetriever read fVersionRetriever;
@@ -35,10 +37,12 @@ begin
   fVersionRetriever := TVersionRetriever.Create(fEnvironment);
   fKallistiPortsManager := TKallistiPortManager.Create(fEnvironment);
   fKallistiManager := TKallistiManager.Create(fEnvironment);
+  fDreamcastTool := TDreamcastToolManager.Create(fEnvironment);
 end;
 
 destructor TDreamcastSoftwareDevelopmentKitManager.Destroy;
 begin
+  fDreamcastTool.Free;
   fVersionRetriever.Free;
   fEnvironment.Free;
   fKallistiPortsManager.Free;
