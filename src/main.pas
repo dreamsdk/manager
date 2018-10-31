@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  StdCtrls, ExtCtrls, CheckLst, PortMgr, ShellThd, DCSDKMgr, Environ;
+  StdCtrls, ExtCtrls, CheckLst, PortMgr, ShellThd, DCSDKMgr, Environ, StrRes;
 
 type
   { TfrmMain }
@@ -18,18 +18,24 @@ type
     btnPortUninstall: TButton;
     btnUpdateKallistiOS: TButton;
     btnPortUpdate: TButton;
+    btnRestoreDefaults: TButton;
     edtUrlKallistiOS: TEdit;
     edtPortLicense: TLabeledEdit;
     edtPortURL: TLabeledEdit;
     edtPortMaintainer: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
+    edtUrlDreamcastToolSerial: TEdit;
+    edtUrlDreamcastToolIP: TEdit;
     edtUrlKallistiPorts: TEdit;
     gbxToolchainInstalled: TGroupBox;
     gbxKallistiChangeLog: TGroupBox;
     gbxUrlKallistiOS: TGroupBox;
+    gbxUrlDreamcastToolSerial: TGroupBox;
+    gbxUrlDreamcastToolIP: TGroupBox;
     gbxUrlKallistiPorts: TGroupBox;
     lblBuildDateKallistiOS: TLabel;
     lblPortName: TLabel;
+    lblTitleAbout: TLabel;
     lblTextKallistiOS: TLabel;
     lblTextBuildDateKallistiOS: TLabel;
     lblTextToolchainInstalledSH4: TLabel;
@@ -83,11 +89,14 @@ type
     procedure btnPortInstallClick(Sender: TObject);
     procedure btnPortUninstallClick(Sender: TObject);
     procedure btnPortUpdateClick(Sender: TObject);
+    procedure btnRestoreDefaultsClick(Sender: TObject);
     procedure btnUpdateKallistiOSClick(Sender: TObject);
     procedure edtPortMaintainerClick(Sender: TObject);
     procedure edtPortURLClick(Sender: TObject);
     procedure edtPortURLMouseEnter(Sender: TObject);
     procedure edtPortURLMouseLeave(Sender: TObject);
+    procedure edtUrlDreamcastToolIPChange(Sender: TObject);
+    procedure edtUrlDreamcastToolSerialChange(Sender: TObject);
     procedure edtUrlKallistiOSChange(Sender: TObject);
     procedure edtUrlKallistiPortsChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -132,12 +141,16 @@ implementation
 uses
   LCLIntf, GetVer, SysTools, PostInst;
 
+const
+  KALLISTI_BUILD_DATE_FORMAT = 'YYYY-MM-DD @ HH:mm:ss';
+
 { TfrmMain }
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   pcMain.TabIndex := 0;
   Application.Title := Caption;
+  lblTitleAbout.Caption := Format(lblTitleAbout.Caption, [Caption]);
   DisplayEnvironmentToolchainStatus;
   UpdateDisplay(False);
   LoadConfiguration;
@@ -167,7 +180,8 @@ end;
 
 procedure TfrmMain.rgxTerminalOptionClick(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Environment.UseMinTTY := (rgxTerminalOption.ItemIndex = 1);
+  DreamcastSoftwareDevelopmentKitManager.Environment
+    .Settings.UseMinTTY := (rgxTerminalOption.ItemIndex = 1);
 end;
 
 procedure TfrmMain.tmrShellThreadTerminateTimer(Sender: TObject);
@@ -245,24 +259,24 @@ begin
       ComponentVersion);
   end;
 
-  // KallistiOS revision
+  // KallistiOS ChangeLog version
   if DreamcastSoftwareDevelopmentKitManager.KallistiOS.Built then
   begin
     lblVersionKallistiOS.Caption := Format('%s (%s)', [lblVersionKallistiOS.Caption,
-      DreamcastSoftwareDevelopmentKitManager.Versions.KallistiRevision]);
+      DreamcastSoftwareDevelopmentKitManager.Versions.KallistiChangeLog]);
   end;
 
   // KallistiOS build date
   lblBuildDateKallistiOS.Caption := '';
   if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.KallistiLibrary) then
-    lblBuildDateKallistiOS.Caption := FormatDateTime('YYYY-MM-DD @ HH:mm:ss',
+    lblBuildDateKallistiOS.Caption := FormatDateTime(KALLISTI_BUILD_DATE_FORMAT,
       DreamcastSoftwareDevelopmentKitManager.Versions.KallistiBuildDate);
 
-  // KallistiOS changes log
+  // KallistiOS changes log display
   memKallistiChangeLog.Lines.Clear;
-  if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.KallistiVersionFile) then
+  if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.KallistiChangeLogFile) then
     memKallistiChangeLog.Lines.LoadFromFile(DreamcastSoftwareDevelopmentKitManager
-      .Environment.FileSystem.KallistiVersionFile);
+      .Environment.FileSystem.KallistiChangeLogFile);
 end;
 
 procedure TfrmMain.DisplayKallistiPorts;
@@ -310,10 +324,12 @@ end;
 
 procedure TfrmMain.LoadConfiguration;
 begin
-  if DreamcastSoftwareDevelopmentKitManager.Environment.UseMinTTY then
+  if DreamcastSoftwareDevelopmentKitManager.Environment.Settings.UseMinTTY then
     rgxTerminalOption.ItemIndex := 1;
-  edtUrlKallistiOS.Text := DreamcastSoftwareDevelopmentKitManager.Environment.KallistiURL;
-  edtUrlKallistiPorts.Text := DreamcastSoftwareDevelopmentKitManager.Environment.KallistiPortsURL;
+  edtUrlKallistiOS.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.KallistiURL;
+  edtUrlKallistiPorts.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.KallistiPortsURL;
+  edtUrlDreamcastToolSerial.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.DreamcastToolSerialURL;
+  edtUrlDreamcastToolIP.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.DreamcastToolInternetProtocolURL;
 end;
 
 function TfrmMain.BooleanToCaption(Value: Boolean): string;
@@ -433,29 +449,63 @@ begin
   ExecuteThreadOperation(stoPortUpdate);
 end;
 
+procedure TfrmMain.btnRestoreDefaultsClick(Sender: TObject);
+begin
+  if MessageDlg(RestoreDefaultsTitle, RestoreDefaultsText, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  begin
+    rgxTerminalOption.ItemIndex := 0;
+    rgxTerminalOptionClick(Self);
+    edtUrlKallistiOS.Text := DEFAULT_KALLISTI_URL;
+    edtUrlKallistiPorts.Text := DEFAULT_KALLISTI_PORTS_URL;
+    edtUrlDreamcastToolSerial.Text := DEFAULT_DREAMCAST_TOOL_SERIAL_URL;
+    edtUrlDreamcastToolIP.Text := DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL;
+    DreamcastSoftwareDevelopmentKitManager.Environment.SaveConfig;
+  end;
+end;
+
 procedure TfrmMain.btnUpdateKallistiOSClick(Sender: TObject);
 begin
   ExecuteThreadOperation(stoKallistiManage);
 end;
 
 procedure TfrmMain.edtPortMaintainerClick(Sender: TObject);
+const
+  MAIL_TO_URL = 'mailto:%s?subject=%s';
+
 var
-  MailTo, Subject: string;
+  MailTo,
+  Subject: string;
+
+  function EncodeUrl(Value: string): string;
+  begin
+    Result := StringReplace(Value, ' ', '%20', [rfReplaceAll]);
+  end;
 
 begin
   if IsInString('@', edtPortMaintainer.Text) then
   begin
-    MailTo := StringReplace(edtPortMaintainer.Text, ' ', '%20', [rfReplaceAll]);
-    Subject := '[KallistiOS]%20Question%20about%20the%20'
-      + SelectedKallistiPort.Name + '%20KallistiOS%20port';
-    OpenURL('mailto:' + MailTo + '?subject=' + Subject);
+    MailTo := EncodeUrl(edtPortMaintainer.Text);
+    Subject := EncodeUrl(Format(MailToSubject, [SelectedKallistiPort.Name]));
+    OpenURL(Format(MAIL_TO_URL, [MailTo, Subject]));
   end;
 end;
 
 procedure TfrmMain.edtPortURLClick(Sender: TObject);
+var
+  Url: string;
+
 begin
-  if IsInString('http', edtPortURL.Text) then
-    OpenURL(edtPortURL.Text);
+  Url := '';
+
+  if Sender is TEdit then
+    Url := (Sender as TEdit).Text
+  else if Sender is TLabeledEdit then
+    Url := (Sender as TLabeledEdit).Text
+  else
+    Url := (Sender as TLabel).Caption;
+
+  if IsInString('http', Url) then
+    OpenURL(Url);
 end;
 
 procedure TfrmMain.edtPortURLMouseEnter(Sender: TObject);
@@ -479,14 +529,28 @@ begin
   end;
 end;
 
+procedure TfrmMain.edtUrlDreamcastToolIPChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Repositories
+    .DreamcastToolInternetProtocolURL := edtUrlDreamcastToolIP.Text;
+end;
+
+procedure TfrmMain.edtUrlDreamcastToolSerialChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Repositories
+    .DreamcastToolSerialURL := edtUrlDreamcastToolSerial.Text;
+end;
+
 procedure TfrmMain.edtUrlKallistiOSChange(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Environment.KallistiURL := edtUrlKallistiOS.Text;
+  DreamcastSoftwareDevelopmentKitManager.Environment.Repositories
+    .KallistiURL := edtUrlKallistiOS.Text;
 end;
 
 procedure TfrmMain.edtUrlKallistiPortsChange(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Environment.KallistiPortsURL := edtUrlKallistiPorts.Text;
+  DreamcastSoftwareDevelopmentKitManager.Environment.Repositories
+    .KallistiPortsURL := edtUrlKallistiPorts.Text;
 end;
 
 procedure TfrmMain.FormActivate(Sender: TObject);

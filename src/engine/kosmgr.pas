@@ -67,7 +67,7 @@ end;
 
 function TKallistiManager.CloneRepository(var BufferOutput: string): Boolean;
 begin
-  Result := fEnvironment.CloneRepository(fEnvironment.KallistiURL,
+  Result := fEnvironment.CloneRepository(fEnvironment.Repositories.KallistiURL,
     KallistiFileSystemInstallationDirectory,
     fEnvironment.FileSystem.KallistiDirectory + '..\', BufferOutput);
 end;

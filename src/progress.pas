@@ -47,17 +47,8 @@ uses
   ShellThd,
   SysTools,
   Main,
-  PostInst;
-
-resourcestring
-  CancelDialogCaption = 'Warning';
-  CancelDialogText = 'Are you really sure to cancel? This may breaks things!';
-  CloseButtonCaption = '&Close';
-  CancelButtonCaption = '&Cancel';
-  OperationSuccessfullyTerminated = 'Operation finished.';
-  OperationAborted = 'Operation aborted.';
-  OperationDoneWithErrors = 'Operation done with errors.';
-  OperationErrorMemoText = '*** %s';
+  PostInst,
+  StrRes;
 
 { TfrmProgress }
 
@@ -71,6 +62,7 @@ begin
     begin
       AbortThreadOperation;
       SetCloseButtonState(False);
+      memBufferOutput.Lines.Add(SendingCancelSignal);
     end
     else
       ResumeThreadOperation;

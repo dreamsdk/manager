@@ -7,6 +7,12 @@ interface
 uses
   Classes, SysUtils, RunCmd;
 
+const
+  DEFAULT_KALLISTI_URL = 'https://git.code.sf.net/p/cadcdev/kallistios';
+  DEFAULT_KALLISTI_PORTS_URL = 'https://git.code.sf.net/p/cadcdev/kos-ports';
+  DEFAULT_DREAMCAST_TOOL_SERIAL_URL = 'https://github.com/sizious/dcload-serial.git';
+  DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL = 'https://github.com/sizious/dcload-ip.git';
+
 type
   TUpdateOperationState = (
     uosUndefined,
@@ -28,7 +34,7 @@ type
     fGDBExecutable: TFileName;
     fKallistiDirectory: TFileName;
     fKallistiLibrary: TFileName;
-    fKallistiVersionFile: TFileName;
+    fKallistiChangeLogFile: TFileName;
     fKallistiPortsDirectory: TFileName;
     fNewlibBinary: TFileName;
     fMinGWGetExecutable: TFileName;
@@ -53,22 +59,48 @@ type
     property KallistiPortsDirectory: TFileName read fKallistiPortsDirectory;
     property KallistiDirectory: TFileName read fKallistiDirectory;
     property KallistiLibrary: TFileName read fKallistiLibrary;
-    property KallistiVersionFile: TFileName read fKallistiVersionFile;
+    property KallistiChangeLogFile: TFileName read fKallistiChangeLogFile;
     property ToolchainInstalledARM: Boolean read fToolchainInstalledARM;
     property ToolchainInstalledSH4: Boolean read fToolchainInstalledSH4;
+  end;
+
+  { TDreamcastSoftwareDevelopmentRepositories }
+  TDreamcastSoftwareDevelopmentRepositories = class(TObject)
+  private
+    fKallistiPortsURL: string;
+    fKallistiURL: string;
+    fDreamcastToolSerialURL: string;
+    fDreamcastToolInternetProtocolURL: string;
+  public
+    property KallistiURL: string
+      read fKallistiURL write fKallistiURL;
+    property KallistiPortsURL: string
+      read fKallistiPortsURL write fKallistiPortsURL;
+    property DreamcastToolSerialURL: string
+      read fDreamcastToolSerialURL write fDreamcastToolSerialURL;
+    property DreamcastToolInternetProtocolURL: string
+      read fDreamcastToolInternetProtocolURL write fDreamcastToolInternetProtocolURL;
+  end;
+
+  { TDreamcastSoftwareDevelopmentSettings }
+  TDreamcastSoftwareDevelopmentSettings = class(TObject)
+  private
+    fInstallPath: TFileName;
+    fUseMinTTY: Boolean;
+  public
+    property InstallPath: TFileName read fInstallPath;
+    property UseMinTTY: Boolean read fUseMinTTY write fUseMinTTY;
   end;
 
   { TDreamcastSoftwareDevelopmentEnvironment }
   TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
   private
+    fRepositories: TDreamcastSoftwareDevelopmentRepositories;
     fShellCommandNewLine: TNewLineEvent;
     fShellCommandRunner: TRunCommand;
     fApplicationPath: TFileName;
     fFileSystem: TDreamcastSoftwareDevelopmentFileSystemObject;
-    fKallistiURL: string;
-    fKallistiPortsURL: string;
-    fInstallPath: TFileName;
-    fUseMinTTY: Boolean;
+    fSettings: TDreamcastSoftwareDevelopmentSettings;
     fShellCommandBufferOutput: string;
     function GetApplicationPath: TFileName;
     function GetConfigurationFileName: TFileName;
@@ -91,10 +123,8 @@ type
     function UpdateRepository(const WorkingDirectory: TFileName;
       var BufferOutput: string): TUpdateOperationState;
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystemObject read fFileSystem;
-    property InstallPath: TFileName read fInstallPath;
-    property KallistiURL: string read fKallistiURL write fKallistiURL;
-    property KallistiPortsURL: string read fKallistiPortsURL write fKallistiPortsURL;
-    property UseMinTTY: Boolean read fUseMinTTY write fUseMinTTY;
+    property Repositories: TDreamcastSoftwareDevelopmentRepositories read fRepositories;
+    property Settings: TDreamcastSoftwareDevelopmentSettings read fSettings;
     property OnShellCommandNewLine: TNewLineEvent read fShellCommandNewLine
       write fShellCommandNewLine;
   end;
@@ -104,9 +134,9 @@ implementation
 uses
   IniFiles, SysTools;
 
-resourcestring
-  DefaultKallistiURL = 'https://git.code.sf.net/p/cadcdev/kallistios';
-  DefaultKallistiPortsURL = 'https://git.code.sf.net/p/cadcdev/kos-ports';
+const
+  CONFIG_SETTINGS_SECTION_NAME = 'Settings';
+  CONFIG_REPOSITORIES_SECTION_NAME = 'Repositories';
 
 { TDreamcastSoftwareDevelopmentFileSystemObject }
 
@@ -143,7 +173,7 @@ begin
   fKallistiPortsDirectory := ToolchainBase + 'kos-ports\';
   fKallistiDirectory := ToolchainBase + 'kos\';
   fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
-  fKallistiVersionFile := KallistiDirectory + 'doc\CHANGELOG';
+  fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
 end;
 
 { TDreamcastSoftwareDevelopmentEnvironment }
@@ -185,14 +215,44 @@ var
 begin
   IniFile := TIniFile.Create(GetConfigurationFileName);
   try
+    // Settings
     DefaultInstallationPath := ExpandFileName(GetApplicationPath + '..\..\..\..\');
-    fInstallPath := IncludeTrailingPathDelimiter(IniFile.ReadString('General',
-      'InstallPath', DefaultInstallationPath));
-    FileSystem.ComputeFileSystemObjectValues(fInstallPath);
-    fUseMintty := IniFile.ReadBool('General', 'UseMinTTY', False);
+    fSettings.fInstallPath := IncludeTrailingPathDelimiter(
+      IniFile.ReadString(
+        CONFIG_SETTINGS_SECTION_NAME,
+        'InstallPath',
+        DefaultInstallationPath
+      )
+    );
+    FileSystem.ComputeFileSystemObjectValues(fSettings.fInstallPath);
 
-    fKallistiURL := IniFile.ReadString('Repositories', 'KallistiOS', DefaultKallistiURL);
-    fKallistiPortsURL := IniFile.ReadString('Repositories', 'KallistiPorts', DefaultKallistiPortsURL);
+    fSettings.fUseMintty := IniFile.ReadBool(
+      CONFIG_SETTINGS_SECTION_NAME,
+      'UseMinTTY',
+      False
+    );
+
+    // Repositories
+    fRepositories.fKallistiURL := IniFile.ReadString(
+      CONFIG_REPOSITORIES_SECTION_NAME,
+      'KallistiOS',
+      DEFAULT_KALLISTI_URL
+    );
+    fRepositories.fKallistiPortsURL := IniFile.ReadString(
+      CONFIG_REPOSITORIES_SECTION_NAME,
+      'KallistiPorts',
+      DEFAULT_KALLISTI_PORTS_URL
+    );
+    fRepositories.fDreamcastToolSerialURL := IniFile.ReadString(
+      CONFIG_REPOSITORIES_SECTION_NAME,
+      'DreamcastToolSerial',
+      DEFAULT_DREAMCAST_TOOL_SERIAL_URL
+    );
+    fRepositories.fDreamcastToolInternetProtocolURL := IniFile.ReadString(
+      CONFIG_REPOSITORIES_SECTION_NAME,
+      'DreamcastToolInternetProtocol',
+      DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL
+    );
   finally
     IniFile.Free;
   end;
@@ -205,10 +265,39 @@ var
 begin
   IniFile := TIniFile.Create(GetConfigurationFileName);
   try
-    IniFile.WriteString('General', 'InstallPath', fInstallPath);
-    IniFile.WriteBool('General', 'UseMinTTY', fUseMintty);
-    IniFile.WriteString('Repositories', 'KallistiOS', fKallistiURL);
-    IniFile.WriteString('Repositories', 'KallistiPorts', fKallistiPortsURL);
+    // Settings
+    IniFile.WriteString(
+      CONFIG_SETTINGS_SECTION_NAME,
+      'InstallPath',
+      fSettings.fInstallPath
+    );
+    IniFile.WriteBool(
+      CONFIG_SETTINGS_SECTION_NAME,
+      'UseMinTTY',
+      fSettings.fUseMintty
+    );
+
+    // Repositories
+    IniFile.WriteString(
+      CONFIG_REPOSITORIES_SECTION_NAME,
+      'KallistiOS',
+      fRepositories.fKallistiURL
+    );
+    IniFile.WriteString(
+      CONFIG_REPOSITORIES_SECTION_NAME,
+      'KallistiPorts',
+      fRepositories.fKallistiPortsURL
+    );
+    IniFile.WriteString(
+      CONFIG_REPOSITORIES_SECTION_NAME,
+      'DreamcastToolSerial',
+      fRepositories.fDreamcastToolSerialURL
+    );
+    IniFile.WriteString(
+      CONFIG_REPOSITORIES_SECTION_NAME,
+      'DreamcastToolInternetProtocol',
+      fRepositories.fDreamcastToolInternetProtocolURL
+    );
   finally
     IniFile.Free;
   end;
@@ -264,6 +353,8 @@ end;
 constructor TDreamcastSoftwareDevelopmentEnvironment.Create;
 begin
   fFileSystem := TDreamcastSoftwareDevelopmentFileSystemObject.Create;
+  fRepositories := TDreamcastSoftwareDevelopmentRepositories.Create;
+  fSettings := TDreamcastSoftwareDevelopmentSettings.Create;
   LoadConfig;
 end;
 
@@ -271,7 +362,11 @@ destructor TDreamcastSoftwareDevelopmentEnvironment.Destroy;
 begin
   AbortShellCommand;
   SaveConfig;
+
+  fSettings.Free;
+  fRepositories.Free;
   fFileSystem.Free;
+
   inherited Destroy;
 end;
 

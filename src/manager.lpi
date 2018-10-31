@@ -85,7 +85,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="12">
+    <Units Count="14">
       <Unit0>
         <Filename Value="manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -152,6 +152,16 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="PostInst"/>
       </Unit11>
+      <Unit12>
+        <Filename Value="engine\sys\version.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Version"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="strres.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="StrRes"/>
+      </Unit13>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

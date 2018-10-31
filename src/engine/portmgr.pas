@@ -285,7 +285,7 @@ end;
 
 function TKallistiPortManager.CloneRepository(var BufferOutput: string): Boolean;
 begin
-  Result := fEnvironment.CloneRepository(fEnvironment.KallistiPortsURL, 'kos-ports',
+  Result := fEnvironment.CloneRepository(fEnvironment.Repositories.KallistiPortsURL, 'kos-ports',
     fEnvironment.FileSystem.KallistiPortsDirectory + '..\', BufferOutput);
 end;
 

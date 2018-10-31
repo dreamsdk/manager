@@ -28,12 +28,12 @@ type
   private
     fBuildDateKallistiOS: TDateTime;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
-    fRevisionKallistiOS: string;
+    fVersionKallistiOS: string;
     fVersionGDB: string;
     fVersionBinutils: string;
     fVersionGCC: string;
     fVersionGit: string;
-    fVersionKallistiOS: string;
+    fChangeLogKallistiOS: string;
     fVersionMinGW: string;
     fVersionNewlib: string;
     fVersionPython: string;
@@ -42,11 +42,12 @@ type
     fVersionToolSerial: string;
     function RetrieveVersion(Executable, CommandLine,
       StartTag, EndTag: string): string;
-    function RetrieveVersionWithFind(ComponentName: string;
-      FindTargetFileName: TFileName; StartTag, EndTag: string): string;
+    function RetrieveVersionWithFind(FindTargetFileName: TFileName;
+      StartTag, EndTag: string): string;
   protected
-    function RetrieveKallistiRevision: string;
+    function RetrieveKallistiVersion: string;
     function RetrieveKallistiBuildDate: TDateTime;
+    procedure RetrieveKallistiInformation;
   public
     constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
 
@@ -64,8 +65,8 @@ type
     property ToolSerial: string read fVersionToolSerial;
     property ToolIP: string read fVersionToolIP;
     property KallistiOS: string read fVersionKallistiOS;
-    property KallistiRevision: string read fRevisionKallistiOS;
     property KallistiBuildDate: TDateTime read fBuildDateKallistiOS;
+    property KallistiChangeLog: string read fChangeLogKallistiOS;
   end;
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
@@ -77,8 +78,9 @@ uses
   Forms,
   SysTools;
 
-resourcestring
-  ComponentNotFound = '(Component not found: %s)';
+const
+  INVALID_VERSION = '(##INVALID##)';
+  DEVELOPMENT_VERSION_SUFFIX = '-dev';
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
 const
@@ -101,11 +103,8 @@ begin
 end;
 
 function IsVersionValid(const Version: string): Boolean;
-const
-  INVALID_TAG = 'not found';
-
 begin
-  Result := not IsInString(INVALID_TAG, Version);
+  Result := not IsInString(INVALID_VERSION, Version);
 end;
 
 { TVersionRetriever }
@@ -120,12 +119,11 @@ begin
     Buffer := Run(Executable, CommandLine);
     Result := Trim(ExtractStr(StartTag, EndTag, Buffer));
   except
-    Result := Format(ComponentNotFound,
-      [ExtractFileName(ChangeFileExt(Executable, ''))]);
+    Result := INVALID_VERSION;
   end;
 end;
 
-function TVersionRetriever.RetrieveVersionWithFind(ComponentName: string;
+function TVersionRetriever.RetrieveVersionWithFind(
   FindTargetFileName: TFileName; StartTag, EndTag: string): string;
 var
   CommandLine: string;
@@ -134,20 +132,22 @@ begin
   CommandLine := Format('"%s" %s', [StartTag, FindTargetFileName]);
   Result := RetrieveVersion('find', CommandLine, StartTag, EndTag);
   if (Result = '') then
-    Result := Format(ComponentNotFound, [ComponentName]);
+    Result := INVALID_VERSION;
 end;
 
-function TVersionRetriever.RetrieveKallistiRevision: string;
+function TVersionRetriever.RetrieveKallistiVersion: string;
 const
   START_TAG = 'KallistiOS ';
   END_TAG = ':';
 
 
 begin
-  Result := RetrieveVersionWithFind('kos',
-    fEnvironment.FileSystem.KallistiLibrary, START_TAG, END_TAG);
+  Result := RetrieveVersionWithFind(fEnvironment.FileSystem.KallistiLibrary,
+    START_TAG, END_TAG);
   if IsInString(START_TAG, Result) then
-    Result := Right(START_TAG, Result);
+    Result := Right(START_TAG, Result)
+  else
+    Result := INVALID_VERSION;
 end;
 
 function TVersionRetriever.RetrieveKallistiBuildDate: TDateTime;
@@ -162,6 +162,23 @@ begin
   BuildDate := FileAge(fEnvironment.FileSystem.KallistiLibrary);
   if BuildDate <> -1 then
     Result := FileDateToDateTime(BuildDate);
+end;
+
+procedure TVersionRetriever.RetrieveKallistiInformation;
+begin
+  with fEnvironment.FileSystem do
+  begin
+    fVersionKallistiOS := RetrieveKallistiVersion;
+    fBuildDateKallistiOS := RetrieveKallistiBuildDate;
+    fChangeLogKallistiOS := INVALID_VERSION;
+    if FileExists(KallistiLibrary) then
+    begin
+      fChangeLogKallistiOS := RetrieveVersionWithFind(KallistiChangeLogFile,
+        'KallistiOS version ', ' -----');
+      if IsVersionValid(fChangeLogKallistiOS) then
+        fChangeLogKallistiOS := fChangeLogKallistiOS + DEVELOPMENT_VERSION_SUFFIX;
+    end;
+  end;
 end;
 
 procedure TVersionRetriever.RetrieveVersions;
@@ -181,22 +198,15 @@ begin
     fVersionGDB := RetrieveVersion(GDBExecutable,
       '--version', ' (GDB)', sLineBreak);
 
-    fVersionNewlib := RetrieveVersionWithFind('newlib', NewlibBinary,
+    fVersionNewlib := RetrieveVersionWithFind(NewlibBinary,
       '/dc-chain/newlib-', '/newlib/libc/');
-
-    fRevisionKallistiOS := RetrieveKallistiRevision;
-    fBuildDateKallistiOS := RetrieveKallistiBuildDate;
-    fVersionKallistiOS := Format(ComponentNotFound, ['kos']);
-    if FileExists(KallistiLibrary) then
-    begin
-      fVersionKallistiOS := RetrieveVersionWithFind('kos',
-        KallistiVersionFile, 'KallistiOS version ', ' -----');
-    end;
 
     fVersionToolSerial := RetrieveVersion(DreamcastToolSerialExecutable,
       '-h', 'dc-tool', 'by <andrewk');
     fVersionToolIP := RetrieveVersion(DreamcastToolIPExecutable,
       '-h', 'dc-tool-ip', 'by <andrewk');
+
+    RetrieveKallistiInformation;
   end;
 end;
 

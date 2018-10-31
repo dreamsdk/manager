@@ -7,8 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Main, getver, Environ, portmgr, dcsdkmgr, Progress,
-  kosmgr, ShellThd, SysTools, RunCmd, postinst;
+  Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress,
+  KOSMgr, ShellThd, SysTools, RunCmd, Version, PostInst, StrRes;
 
 {$R *.res}
 

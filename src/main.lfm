@@ -17,8 +17,8 @@ object frmMain: TfrmMain
     Height = 256
     Top = 8
     Width = 508
-    ActivePage = tsOptions
-    TabIndex = 3
+    ActivePage = tsKallistiPorts
+    TabIndex = 1
     TabOrder = 0
     object tsKallistiOS: TTabSheet
       Caption = 'KallistiOS'
@@ -28,8 +28,8 @@ object frmMain: TfrmMain
         Left = 72
         Height = 13
         Top = 8
-        Width = 133
-        Caption = '(KallistiOS Version/Revision)'
+        Width = 185
+        Caption = '(KallistiOS Version/ChangeLog Version)'
         ParentColor = False
       end
       object btnUpdateKallistiOS: TButton
@@ -37,7 +37,7 @@ object frmMain: TfrmMain
         Height = 25
         Top = 14
         Width = 110
-        Caption = '&Update'
+        Caption = '&Update...'
         OnClick = btnUpdateKallistiOSClick
         TabOrder = 0
       end
@@ -294,7 +294,7 @@ object frmMain: TfrmMain
         Height = 25
         Top = 200
         Width = 112
-        Caption = 'Uninst&all'
+        Caption = 'Uninst&all...'
         OnClick = btnPortUninstallClick
         TabOrder = 2
       end
@@ -303,7 +303,7 @@ object frmMain: TfrmMain
         Height = 25
         Top = 200
         Width = 110
-        Caption = '&Install'
+        Caption = '&Install...'
         OnClick = btnPortInstallClick
         TabOrder = 3
       end
@@ -312,7 +312,7 @@ object frmMain: TfrmMain
         Height = 25
         Top = 200
         Width = 118
-        Caption = 'U&pdate'
+        Caption = 'U&pdate...'
         OnClick = btnPortUpdateClick
         TabOrder = 4
       end
@@ -583,37 +583,37 @@ object frmMain: TfrmMain
       ClientHeight = 230
       ClientWidth = 500
       object gbxUrlKallistiOS: TGroupBox
-        Left = 5
+        Left = 4
         Height = 48
         Top = 8
-        Width = 485
+        Width = 241
         Caption = 'KallistiOS Repository URL:'
         ClientHeight = 30
-        ClientWidth = 481
+        ClientWidth = 237
         TabOrder = 0
         object edtUrlKallistiOS: TEdit
           Left = 4
           Height = 21
           Top = 4
-          Width = 468
+          Width = 228
           OnChange = edtUrlKallistiOSChange
           TabOrder = 0
         end
       end
       object gbxUrlKallistiPorts: TGroupBox
-        Left = 4
+        Left = 252
         Height = 48
-        Top = 64
-        Width = 485
+        Top = 8
+        Width = 241
         Caption = 'KallistiOS Ports Repository URL:'
         ClientHeight = 30
-        ClientWidth = 481
+        ClientWidth = 237
         TabOrder = 1
         object edtUrlKallistiPorts: TEdit
           Left = 4
           Height = 21
           Top = 4
-          Width = 468
+          Width = 228
           OnChange = edtUrlKallistiPortsChange
           TabOrder = 0
         end
@@ -621,8 +621,8 @@ object frmMain: TfrmMain
       object rgxTerminalOption: TRadioGroup
         Left = 4
         Height = 81
-        Top = 120
-        Width = 201
+        Top = 136
+        Width = 240
         AutoFill = True
         Caption = 'Terminal:'
         ChildSizing.LeftRightSpacing = 6
@@ -633,37 +633,96 @@ object frmMain: TfrmMain
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
         ClientHeight = 63
-        ClientWidth = 197
+        ClientWidth = 236
         ItemIndex = 0
         Items.Strings = (
-          'Windows Prompt'
-          'MinTTY'
+          '&Windows Prompt (Default)'
+          'MinTT&Y'
         )
         OnClick = rgxTerminalOptionClick
         TabOrder = 2
       end
       object pnlActions: TPanel
-        Left = 220
+        Left = 252
         Height = 78
-        Top = 124
-        Width = 268
+        Top = 140
+        Width = 241
         BevelOuter = bvLowered
         ClientHeight = 78
-        ClientWidth = 268
+        ClientWidth = 241
         TabOrder = 3
         object btnOpenMinGWManager: TButton
-          Left = 32
+          Left = 16
           Height = 25
-          Top = 28
+          Top = 12
           Width = 209
-          Caption = '&MinGW Installation Manager'
+          Caption = 'MinG&W Installation Manager...'
           OnClick = btnOpenMinGWManagerClick
+          TabOrder = 0
+        end
+        object btnRestoreDefaults: TButton
+          Left = 16
+          Height = 25
+          Top = 44
+          Width = 209
+          Caption = 'R&eset Defaults...'
+          OnClick = btnRestoreDefaultsClick
+          TabOrder = 1
+        end
+      end
+      object gbxUrlDreamcastToolSerial: TGroupBox
+        Left = 4
+        Height = 48
+        Top = 68
+        Width = 241
+        Caption = 'Dreamcast Tool Serial URL:'
+        ClientHeight = 30
+        ClientWidth = 237
+        TabOrder = 4
+        object edtUrlDreamcastToolSerial: TEdit
+          Left = 4
+          Height = 21
+          Top = 4
+          Width = 228
+          OnChange = edtUrlDreamcastToolSerialChange
+          TabOrder = 0
+        end
+      end
+      object gbxUrlDreamcastToolIP: TGroupBox
+        Left = 252
+        Height = 48
+        Top = 68
+        Width = 241
+        Caption = 'Dreamcast Tool Serial IP:'
+        ClientHeight = 30
+        ClientWidth = 237
+        TabOrder = 5
+        object edtUrlDreamcastToolIP: TEdit
+          Left = 4
+          Height = 21
+          Top = 4
+          Width = 228
+          OnChange = edtUrlDreamcastToolIPChange
           TabOrder = 0
         end
       end
     end
     object tsAbout: TTabSheet
       Caption = 'About'
+      ClientHeight = 230
+      ClientWidth = 500
+      object lblTitleAbout: TLabel
+        Left = 4
+        Height = 19
+        Top = 8
+        Width = 494
+        AutoSize = False
+        Caption = 'About %s'
+        Font.Height = -16
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
     end
   end
   object btnClose: TButton
@@ -680,7 +739,7 @@ object frmMain: TfrmMain
     Height = 25
     Top = 270
     Width = 121
-    Caption = 'MSYS Shell'
+    Caption = '&Run Shell...'
     OnClick = btnOpenMSYSClick
     TabOrder = 2
   end

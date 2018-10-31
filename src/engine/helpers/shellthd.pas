@@ -77,7 +77,7 @@ procedure ExecuteThreadOperation(const AOperation: TShellThreadOperation);
 implementation
 
 uses
-  Forms, Main, Progress, PostInst;
+  Forms, Main, Progress, PostInst, StrRes;
 
 type
   { TShellThreadHelper }
@@ -90,9 +90,6 @@ type
 var
   ShellThread: TShellThread;
   ShellThreadHelper: TShellThreadHelper;
-
-resourcestring
-  InstallationProblem = 'Your installation have problems!';
 
 procedure PauseThreadOperation;
 begin
@@ -271,8 +268,10 @@ begin
     end
   else
   begin
-    fOperationResultOutput := InstallationProblem;
-    UpdateProgressText(InstallationProblem);
+    // This should never happens...
+    fOperationResultOutput := Format(InstallationProblem, [Manager.Environment
+      .Settings.InstallPath]);
+    UpdateProgressText(fOperationResultOutput);
   end;
 
   // Finish
