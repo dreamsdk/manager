@@ -173,20 +173,20 @@ begin
 
       stcKallistiPort:
         begin
-          KallistiPortText := Format('KallistiOS Port %s %s', [
+          KallistiPortText := Format(KallistiPortOperationText, [
             frmMain.SelectedKallistiPort.Name, frmMain.SelectedKallistiPort.Version]);
           case AOperation of
             stiKallistiPortInstall:
-              OperationTitle := Format('Installation of %s', [KallistiPortText]);
+              OperationTitle := Format(KallistiPortOperationInstallText, [KallistiPortText]);
             stiKallistiPortUpdate:
-              OperationTitle := Format('Update of %s', [KallistiPortText]);
+              OperationTitle := Format(KallistiPortOperationUpdateText, [KallistiPortText]);
             stiKallistiPortUninstall:
-              OperationTitle := Format('Uninstallation of %s', [KallistiPortText]);
+              OperationTitle := Format(KallistiPortOperationUninstallText, [KallistiPortText]);
           end;
         end;
 
       stcKallisti:
-        OperationTitle := 'KallistiOS Installation/Update';
+        OperationTitle := KallistiOperationText;
     end;
 
     with frmProgress do
@@ -321,12 +321,12 @@ var
 
   function RepositoryKindToString(RepositoryKind: TRepositoryKind): string;
   begin
-    Result := 'KallistiOS';
+    Result := KallistiText;
     case RepositoryKind of
       rkKallistiPorts:
-        Result := 'KallistiOS Ports';
+        Result := KallistiPortsText;
       rkDreamcastTool:
-        Result := 'Dreamcast Tool';
+        Result := DreamcastToolText;
     end;
   end;
 
@@ -346,7 +346,7 @@ var
       begin
         // Install (Clone)
         Result := roClone;
-        UpdateProgressText(Format('Cloning %s repository...', [RepositoryName]));
+        UpdateProgressText(Format(CloningOperation, [RepositoryName]));
         case RepositoryKind of
           rkKallisti:
             IsSuccess := Manager.KallistiOS.CloneRepository(TempBuffer);
@@ -361,7 +361,7 @@ var
       begin
         // Update
         Result := roUpdate;
-        UpdateProgressText(Format('Updating %s repository...', [RepositoryName]));
+        UpdateProgressText(Format(UpdatingOperation, [RepositoryName]));
         case RepositoryKind of
           rkKallisti:
             UpdateState := Manager.KallistiOS.UpdateRepository(TempBuffer);
@@ -441,21 +441,21 @@ var
       // Generate environ.sh file, unpacking genromfs and patching config.mk in kos-ports
       if CanContinue then
       begin
-        UpdateProgressText('Initialize KallistiOS environment...');
+        UpdateProgressText(KallistiInitializeText);
         SetOperationSuccess(Manager.KallistiOS.InitializeEnvironment);
       end;
 
       // Making KallistiOS library
       if CanContinue then
       begin
-        UpdateProgressText('Building KallistiOS library...');
+        UpdateProgressText(KallistiBuildText);
         SetOperationSuccess(Manager.KallistiOS.Build(TempBuffer));
       end;
 
       // Fixing-up SH-4 Newlib
       if CanContinue then
       begin
-        UpdateProgressText('Fixing SH-4 Newlib...');
+        UpdateProgressText(KallistiFixNewlibText);
         SetOperationSuccess(Manager.KallistiOS.FixupHitachiNewlib(TempBuffer));
       end;
     end;
@@ -500,14 +500,14 @@ var
       // Preparing Makefile.cfg
       if CanContinue then
       begin
-        UpdateProgressText('Initialize Dreamcast Tool environment...');
+        UpdateProgressText(DreamcastToolInitializeText);
         SetOperationSuccess(Manager.DreamcastTool.InitializeEnvironment);
       end;
 
       // Making Dreamcast Tool binaries
       if CanContinue then
       begin
-        UpdateProgressText('Building Dreamcast Tool binaries...');
+        UpdateProgressText(DreamcastToolBuildText);
         SetOperationSuccess(Manager.DreamcastTool.Build(TempBuffer));
       end;
     end;
@@ -529,7 +529,7 @@ begin
 
   if (not Aborted) and (not IsModifiedKallisti) and (not IsModifiedKallistiPorts)
     and (not IsModifiedDreamcastTool) then
-      UpdateProgressText('KallistiOS is already installed and up-to-date.');
+      UpdateProgressText(KallistiOperationNothingNeededText);
 
   Result := OutputBuffer;
 end;
@@ -556,19 +556,19 @@ begin
   case Operation of
     stiKallistiPortInstall:
       begin
-        UpdateProgressText('Installing the KallistiOS Port...');
+        UpdateProgressText(KallistiPortInstallText);
         fOperationSuccess := SelectedKallistiPort.Install(Result);
       end;
 
     stiKallistiPortUninstall:
       begin
-        UpdateProgressText('Uninstalling the KallistiOS Port...');
+        UpdateProgressText(KallistiPortUninstallText);
         fOperationSuccess := SelectedKallistiPort.Uninstall(Result);
       end;
 
     stiKallistiPortUpdate:
       begin
-        UpdateProgressText('Updating the KallistiOS Port...');
+        UpdateProgressText(KallistiPortUpdateText);
         fOperationUpdateState := SelectedKallistiPort.Update(Result);
         fOperationSuccess := fOperationUpdateState <> uosUpdateFailed;
       end;

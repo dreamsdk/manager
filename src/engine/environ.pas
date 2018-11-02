@@ -157,6 +157,7 @@ uses
 const
   CONFIG_SETTINGS_SECTION_NAME = 'Settings';
   CONFIG_REPOSITORIES_SECTION_NAME = 'Repositories';
+  CONFIG_FILE_NAME = 'dcsdk.conf';
 
 { TDreamcastSoftwareDevelopmentFileSystemObject }
 
@@ -241,7 +242,7 @@ end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.GetConfigurationFileName: TFileName;
 begin
-  Result := GetApplicationPath + 'dcsdk.conf';
+  Result := GetApplicationPath + CONFIG_FILE_NAME;
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.LoadConfig;

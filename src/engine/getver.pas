@@ -140,7 +140,6 @@ const
   START_TAG = 'KallistiOS ';
   END_TAG = ':';
 
-
 begin
   Result := RetrieveVersionWithFind(fEnvironment.FileSystem.KallistiLibrary,
     START_TAG, END_TAG);

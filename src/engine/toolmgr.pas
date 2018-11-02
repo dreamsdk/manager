@@ -52,6 +52,9 @@ begin
 end;
 
 function TDreamcastToolManager.CloneRepository(var BufferOutput: string): Boolean;
+const
+  DCLOAD_IP_INSTALLATION_DIRECTORY = 'dcload-ip';
+  DCLOAD_SERIAL_INSTALLATION_DIRECTORY = 'dcload-serial';
 var
   TempBuffer: string;
 
@@ -69,8 +72,8 @@ begin
   if not DirectoryExists(Environment.FileSystem.DreamcastTool.BaseDirectory) then
     ForceDirectories(Environment.FileSystem.DreamcastTool.BaseDirectory);
 
-  Result := Result and DoCloneRepo(Environment.Repositories.DreamcastToolInternetProtocolURL, 'dcload-ip');
-  Result := Result and DoCloneRepo(Environment.Repositories.DreamcastToolSerialURL, 'dcload-serial');
+  Result := Result and DoCloneRepo(Environment.Repositories.DreamcastToolInternetProtocolURL, DCLOAD_IP_INSTALLATION_DIRECTORY);
+  Result := Result and DoCloneRepo(Environment.Repositories.DreamcastToolSerialURL, DCLOAD_SERIAL_INSTALLATION_DIRECTORY);
 end;
 
 function TDreamcastToolManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;

@@ -144,7 +144,8 @@ uses
   LCLIntf, GetVer, SysTools, PostInst;
 
 const
-  KALLISTI_BUILD_DATE_FORMAT = 'YYYY-MM-DD @ HH:mm:ss';
+  KALLISTI_BUILD_DATE_FORMAT  = 'YYYY-MM-DD @ HH:mm:ss';
+  KALLISTI_VERSION_FORMAT     = '%s (%s)';
 
 { TfrmMain }
 
@@ -200,11 +201,11 @@ begin
 
   case fShellThreadOutputResult of
     stoNothing:
-      MessageDlg('Information', Format('%s is up-to-date.', ['Everything']), mtInformation, [mbOk], 0);
+      MessageDlg(DialogInformationTitle, UpdateProcessEverythingUpdate, mtInformation, [mbOk], 0);
 
     stoKallistiInstall:
       begin
-        MessageDlg('Information', 'KallistiOS was successfully installed.', mtInformation, [mbOk], 0);
+        MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
         UpdateDisplay(True);
       end;
 
@@ -212,11 +213,9 @@ begin
       case fShellThreadUpdateState of
         uosUpdateSuccess:
           begin
-            MessageDlg('Information', 'KallistiOS was successfully updated.', mtInformation, [mbOk], 0);
+            MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
             UpdateDisplay(True);
           end;
-        (*uosUpdateUseless:
-          MessageDlg('Information', 'KallistiOS was successfully.', mtInformation, [mbOk], 0);*)
       end;
 
     stoKallistiPortInstall:
@@ -225,9 +224,9 @@ begin
     stoKallistiPortUpdate:
       case fShellThreadUpdateState of
         uosUpdateSuccess:
-          MessageDlg('Information', Format('%s was successfully updated.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+          MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
         uosUpdateUseless:
-          MessageDlg('Information', Format('%s is up-to-date.', [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+          MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
       end;
 
     stoKallistiPortUninstall:
@@ -270,7 +269,8 @@ begin
   // KallistiOS ChangeLog version
   if DreamcastSoftwareDevelopmentKitManager.KallistiOS.Built then
   begin
-    lblVersionKallistiOS.Caption := Format('%s (%s)', [lblVersionKallistiOS.Caption,
+    lblVersionKallistiOS.Caption := Format(KALLISTI_VERSION_FORMAT,
+      [lblVersionKallistiOS.Caption,
       DreamcastSoftwareDevelopmentKitManager.Versions.KallistiChangeLog]);
   end;
 
@@ -342,9 +342,9 @@ end;
 
 function TfrmMain.BooleanToCaption(Value: Boolean): string;
 begin
-  Result := 'Not installed';
+  Result := UserInterfaceNotInstalledText;
   if Value then
-    Result := 'Installed';
+    Result := UserInterfaceInstalledText;
 end;
 
 function TfrmMain.BooleanToCheckboxState(State: Boolean): TCheckBoxState;

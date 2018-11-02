@@ -145,6 +145,9 @@ end;
 { TKallistiPortManager }
 
 procedure TKallistiPortManager.RetrieveAvailablePorts;
+const
+  KALLISTI_PORTS_PACKAGE_DESCRIPTION = 'pkg-descr';
+
 var
   PortsAvailable: TStringList;
   i: Integer;
@@ -153,7 +156,8 @@ begin
   Clear;
   PortsAvailable := TStringList.Create;
   try
-    FindAllFiles(PortsAvailable, fEnvironment.FileSystem.KallistiPortsDirectory, 'pkg-descr', True);
+    FindAllFiles(PortsAvailable, fEnvironment.FileSystem.KallistiPortsDirectory,
+      KALLISTI_PORTS_PACKAGE_DESCRIPTION, True);
     for i := 0 to PortsAvailable.Count - 1 do
       ProcessPort(PortsAvailable[i]);
   finally
@@ -193,6 +197,9 @@ begin
 end;
 
 procedure TKallistiPortManager.ProcessPort(const PackagingDescriptionFilename: TFileName);
+const
+  MAKEFILE_FILE_NAME = 'Makefile';
+
 var
   MakefileContent: TStringList;
   MakefileContentText, ExtractedURL: string;
@@ -250,7 +257,7 @@ begin
   PortDirectory := IncludeTrailingPathDelimiter(ExtractFilePath(PackagingDescriptionFilename));
   MakefileContent := TStringList.Create;
   try
-    MakefileContent.LoadFromFile(PortDirectory + 'Makefile');
+    MakefileContent.LoadFromFile(PortDirectory + MAKEFILE_FILE_NAME);
     MakefileContentText := SanitizeText(MakefileContent.Text);
 
     with Add do
@@ -285,8 +292,12 @@ begin
 end;
 
 function TKallistiPortManager.CloneRepository(var BufferOutput: string): Boolean;
+const
+  KALLISTI_PORTS_INSTALLATION_DIRECTORY = 'kos-ports';
+
 begin
-  Result := fEnvironment.CloneRepository(fEnvironment.Repositories.KallistiPortsURL, 'kos-ports',
+  Result := fEnvironment.CloneRepository(fEnvironment.Repositories.KallistiPortsURL,
+    KALLISTI_PORTS_INSTALLATION_DIRECTORY,
     fEnvironment.FileSystem.KallistiPortsDirectory + '..\', BufferOutput);
 end;
 
@@ -296,12 +307,15 @@ begin
 end;
 
 function TKallistiPortManager.InitializeEnvironment: Boolean;
+const
+  CONFIG_MAKEFILE = 'config.mk';
+
 var
   MakefileFileName: TFileName;
 
 begin
   MakefileFileName := fEnvironment.FileSystem.KallistiPortsDirectory
-    + 'config.mk';
+    + CONFIG_MAKEFILE;
   Result := FileExists(MakefileFileName);
 
   if Result then
