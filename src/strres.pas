@@ -6,7 +6,7 @@ interface
 
 resourcestring
   // Main
-  MailToSubject = '[KallistiOS] Question about the %s KallistiOS port';
+  MailToSubject = '[KallistiOS] Question (from DreamSDK) about the %s KallistiOS Port';
   RestoreDefaultsTitle = 'Question';
   RestoreDefaultsText = 'Are you sure to restore settings to its defaults?';
 

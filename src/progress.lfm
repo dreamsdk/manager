@@ -17,7 +17,6 @@ object frmProgress: TfrmProgress
     Height = 20
     Top = 28
     Width = 632
-    Style = pbstMarquee
     TabOrder = 0
   end
   object memBufferOutput: TMemo

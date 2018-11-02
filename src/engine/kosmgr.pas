@@ -82,27 +82,6 @@ var
   CommandLine: string;
   WorkingDirectory: TFileName;
 
-  procedure HandleKallistiPortsConfiguration;
-  var
-    MakefileFileName: TFileName;
-
-  begin
-    MakefileFileName := fEnvironment.FileSystem.KallistiPortsDirectory
-      + 'config.mk';
-
-    fEnvironment.PatchMakefile(
-      MakefileFileName,
-      '#FETCH_CMD = wget',
-      'FETCH_CMD = wget --no-check-certificate'
-    );
-
-    fEnvironment.PatchMakefile(
-      MakefileFileName,
-      'FETCH_CMD = curl',
-      '#FETCH_CMD = curl'
-    );
-  end;
-
 begin
   Result := True;
 
@@ -115,8 +94,6 @@ begin
     WorkingDirectory := fEnvironment.FileSystem.KallistiDirectory;
     fEnvironment.ExecuteShellCommand(CommandLine, WorkingDirectory);
   end;
-
-  HandleKallistiPortsConfiguration;
 end;
 
 function TKallistiManager.Build(var BufferOutput: string): Boolean;

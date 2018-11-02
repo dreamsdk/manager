@@ -8,13 +8,20 @@ uses
   Classes, SysUtils, DCSDKMgr, PortMgr, Environ;
 
 type
-  TShellThreadOperation = (
-    stoKallistiManage,
+  TShellThreadInputRequest = (
+    stiKallistiManage,
+    stiKallistiPortInstall,
+    stiKallistiPortUpdate,
+    stiKallistiPortUninstall
+  );
+
+  TShellThreadOutputResponse = (
+    stoNothing,
     stoKallistiInstall,
     stoKallistiUpdate,
-    stoPortInstall,
-    stoPortUpdate,
-    stoPortUninstall
+    stoKallistiPortInstall,
+    stoKallistiPortUpdate,
+    stoKallistiPortUninstall
   );
 
   TShellThreadContext = (
@@ -24,7 +31,8 @@ type
   );
 
   TShellThreadCommandTerminateEvent = procedure(
-    Operation: TShellThreadOperation;
+    Request: TShellThreadInputRequest;
+    Response: TShellThreadOutputResponse;
     Success: Boolean;
     UpdateState: TUpdateOperationState
   ) of object;
@@ -36,10 +44,11 @@ type
     fManager: TDreamcastSoftwareDevelopmentKitManager;
     fProgressText: string;
     fContext: TShellThreadContext;
+    fRequest: TShellThreadInputRequest;
+    fResponse: TShellThreadOutputResponse;
     fOperationUpdateState: TUpdateOperationState;
     fOperationSuccess: Boolean;
     fOperationResultOutput: string;
-    fOperation: TShellThreadOperation;
     fCommandTerminate: TShellThreadCommandTerminateEvent;
     fSelectedKallistiPort: TKallistiPortItem;
     procedure SyncSetProgressTerminateState;
@@ -59,7 +68,7 @@ type
 
     property Aborted: Boolean read fAborted write fAborted;
     property Context: TShellThreadContext read fContext write fContext;
-    property Operation: TShellThreadOperation read fOperation write fOperation;
+    property Operation: TShellThreadInputRequest read fRequest write fRequest;
     property SelectedKallistiPort: TKallistiPortItem
       read fSelectedKallistiPort write fSelectedKallistiPort;
     property Manager: TDreamcastSoftwareDevelopmentKitManager
@@ -72,7 +81,7 @@ type
 procedure AbortThreadOperation;
 procedure PauseThreadOperation;
 procedure ResumeThreadOperation;
-procedure ExecuteThreadOperation(const AOperation: TShellThreadOperation);
+procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
 
 implementation
 
@@ -116,7 +125,7 @@ begin
       @ShellThreadHelper.HandleNewLine;
 end;
 
-function GetThreadContext(const AOperation: TShellThreadOperation): TShellThreadContext;
+function GetThreadContext(const AOperation: TShellThreadInputRequest): TShellThreadContext;
 var
   ValidKallistiPortContext,
   IsSingleKallistiPortOperation: Boolean;
@@ -124,8 +133,8 @@ var
 begin
   Result := stcUndefined;
 
-  IsSingleKallistiPortOperation := (AOperation = stoPortInstall)
-    or (AOperation = stoPortUninstall) or (AOperation = stoPortUpdate);
+  IsSingleKallistiPortOperation := (AOperation = stiKallistiPortInstall)
+    or (AOperation = stiKallistiPortUninstall) or (AOperation = stiKallistiPortUpdate);
 
   ValidKallistiPortContext := Assigned(frmMain.SelectedKallistiPort)
     and IsSingleKallistiPortOperation;
@@ -135,7 +144,7 @@ begin
     Result := stcKallistiPort;
 end;
 
-procedure ExecuteThreadOperation(const AOperation: TShellThreadOperation);
+procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
 var
   ShellThreadContext: TShellThreadContext;
   OperationTitle, KallistiPortText: string;
@@ -164,14 +173,14 @@ begin
 
       stcKallistiPort:
         begin
-          KallistiPortText := Format('kos-port %s %s', [
+          KallistiPortText := Format('KallistiOS Port %s %s', [
             frmMain.SelectedKallistiPort.Name, frmMain.SelectedKallistiPort.Version]);
           case AOperation of
-            stoPortInstall:
+            stiKallistiPortInstall:
               OperationTitle := Format('Installation of %s', [KallistiPortText]);
-            stoPortUpdate:
+            stiKallistiPortUpdate:
               OperationTitle := Format('Update of %s', [KallistiPortText]);
-            stoPortUninstall:
+            stiKallistiPortUninstall:
               OperationTitle := Format('Uninstallation of %s', [KallistiPortText]);
           end;
         end;
@@ -238,12 +247,12 @@ begin
   SetProgressTerminateState;
   Application.ProcessMessages;
   if Assigned(fCommandTerminate) then
-    fCommandTerminate(fOperation, fOperationSuccess, fOperationUpdateState);
+    fCommandTerminate(fRequest, fResponse, fOperationSuccess, fOperationUpdateState);
 end;
 
 function TShellThread.CanContinue: Boolean;
 begin
-  Result := fOperationSuccess and not Terminated;
+  Result := fOperationSuccess and (not Terminated) and (not Aborted);
 end;
 
 procedure TShellThread.SetProgressTerminateState;
@@ -292,13 +301,23 @@ end;
 
 function TShellThread.ProcessKallistiOS: string;
 type
-  TRepositoryOperation = (roInstall, roUpdate);
+  TRepositoryOperation = (roNothing, roClone, roUpdate);
   TRepositoryKind = (rkKallisti, rkKallistiPorts, rkDreamcastTool);
 
 var
-  IsEverythingUpToDate,
-  IsKallistiFreshlyInstalled,
-  IsKallistiNeedsToBeUpdated: Boolean;
+  OutputBuffer: string;
+  IsModifiedKallisti, IsModifiedKallistiPorts, IsModifiedDreamcastTool: Boolean;
+
+  procedure CombineOutputBuffer(const InputBuffer: string);
+  var
+    Separator: string;
+
+  begin
+    Separator := '';
+    if OutputBuffer <> '' then
+      Separator := sLineBreak;
+    OutputBuffer := OutputBuffer + Separator + InputBuffer;
+  end;
 
   function RepositoryKindToString(RepositoryKind: TRepositoryKind): string;
   begin
@@ -311,134 +330,243 @@ var
     end;
   end;
 
-  function HandleRepository(Installed: Boolean; RepositoryKind: TRepositoryKind; var BufferOutput: string): TRepositoryOperation;
+  function HandleRepository(Installed: Boolean; RepositoryKind: TRepositoryKind;
+    var UpdateState: TUpdateOperationState): TRepositoryOperation;
   var
-    RepositoryName: string;
+    RepositoryName,
+    TempBuffer: string;
     IsSuccess: Boolean;
 
   begin
-    Result := roInstall;
+    Result := roNothing;
     RepositoryName := RepositoryKindToString(RepositoryKind);
-    if CanContinue and (not Installed) then
+    if CanContinue then
     begin
-      UpdateProgressText(Format('Cloning %s repository...', [RepositoryName]));
-      case RepositoryKind of
-        rkKallisti:
-          IsSuccess := Manager.KallistiOS.CloneRepository(BufferOutput);
-        rkKallistiPorts:
-          IsSuccess := Manager.KallistiPorts.CloneRepository(BufferOutput);
-        rkDreamcastTool:
-          IsSuccess := Manager.DreamcastTool.CloneRepository(BufferOutput);
+      if not Installed then
+      begin
+        // Install (Clone)
+        Result := roClone;
+        UpdateProgressText(Format('Cloning %s repository...', [RepositoryName]));
+        case RepositoryKind of
+          rkKallisti:
+            IsSuccess := Manager.KallistiOS.CloneRepository(TempBuffer);
+          rkKallistiPorts:
+            IsSuccess := Manager.KallistiPorts.CloneRepository(TempBuffer);
+          rkDreamcastTool:
+            IsSuccess := Manager.DreamcastTool.CloneRepository(TempBuffer);
+        end;
+        SetOperationSuccess(IsSuccess);
+      end
+      else
+      begin
+        // Update
+        Result := roUpdate;
+        UpdateProgressText(Format('Updating %s repository...', [RepositoryName]));
+        case RepositoryKind of
+          rkKallisti:
+            UpdateState := Manager.KallistiOS.UpdateRepository(TempBuffer);
+          rkKallistiPorts:
+            UpdateState := Manager.KallistiPorts.UpdateRepository(TempBuffer);
+          rkDreamcastTool:
+            UpdateState := Manager.DreamcastTool.UpdateRepository(TempBuffer);
+        end;
+        SetOperationSuccess(UpdateState <> uosUpdateFailed);
       end;
-      SetOperationSuccess(IsSuccess);
-    end
-    else
-    begin
-      Result := roUpdate;
-      UpdateProgressText(Format('Updating %s repository...', [RepositoryName]));
-      case RepositoryKind of
-        rkKallisti:
-          fOperationUpdateState := Manager.KallistiOS.UpdateRepository(BufferOutput);
-        rkKallistiPorts:
-          fOperationUpdateState := Manager.KallistiPorts.UpdateRepository(BufferOutput);
-        rkDreamcastTool:
-          fOperationUpdateState := Manager.DreamcastTool.UpdateRepository(BufferOutput);
-      end;
-      SetOperationSuccess(fOperationUpdateState <> uosUpdateFailed);
+      CombineOutputBuffer(TempBuffer);
     end;
+  end;
+
+  function HandleResponse(RepositoryKind: TRepositoryKind;
+    RepositoryOperation: TRepositoryOperation; UpdateState: TUpdateOperationState;
+    ComponentBuilt: Boolean): Boolean;
+  var
+    RepositoryInstalled,
+    RepositoryUpdated,
+    BuildNecessary: Boolean;
+
+  begin
+    RepositoryInstalled := (RepositoryOperation = roClone);
+    RepositoryUpdated := ((RepositoryOperation = roUpdate)
+      and (UpdateState = uosUpdateSuccess));
+    BuildNecessary := (not ComponentBuilt);
+
+    if (RepositoryKind = rkKallisti) then
+    begin
+      // Kallisti has priority
+      if RepositoryInstalled then
+        fResponse := stoKallistiInstall
+      else if RepositoryUpdated then
+      begin
+        fResponse := stoKallistiUpdate;
+        fOperationUpdateState := UpdateState;
+      end
+      else if BuildNecessary then
+      begin
+        fResponse := stoKallistiUpdate;
+        fOperationUpdateState := uosUpdateSuccess;
+      end;
+    end
+    else if (fResponse = stoNothing) then
+    begin
+      // Kallisti Ports and Dreamcast Tool in second place...
+      if (RepositoryInstalled or RepositoryUpdated or BuildNecessary) then
+      begin
+        fResponse := stoKallistiUpdate;
+        fOperationUpdateState := uosUpdateSuccess;
+      end;
+    end;
+
+    Result := RepositoryInstalled or RepositoryUpdated or BuildNecessary;
+  end;
+
+  function HandleKallisti: Boolean;
+  var
+    TempBuffer: string;
+    RepositoryOperation: TRepositoryOperation;
+    UpdateState: TUpdateOperationState;
+
+  begin
+    // Handle KallistiOS Repository
+    UpdateState := uosUndefined;
+    RepositoryOperation := HandleRepository(Manager.KallistiOS.Installed,
+      rkKallisti, UpdateState);
+
+    // Handle all the cases where Kallisti need to be compiled
+    Result := HandleResponse(rkKallisti, RepositoryOperation, UpdateState,
+      Manager.KallistiOS.Built);
+
+    // Determine if we need to do something
+    if Result then
+    begin
+      // Generate environ.sh file, unpacking genromfs and patching config.mk in kos-ports
+      if CanContinue then
+      begin
+        UpdateProgressText('Initialize KallistiOS environment...');
+        SetOperationSuccess(Manager.KallistiOS.InitializeEnvironment);
+      end;
+
+      // Making KallistiOS library
+      if CanContinue then
+      begin
+        UpdateProgressText('Building KallistiOS library...');
+        SetOperationSuccess(Manager.KallistiOS.Build(TempBuffer));
+      end;
+
+      // Fixing-up SH-4 Newlib
+      if CanContinue then
+      begin
+        UpdateProgressText('Fixing SH-4 Newlib...');
+        SetOperationSuccess(Manager.KallistiOS.FixupHitachiNewlib(TempBuffer));
+      end;
+    end;
+    CombineOutputBuffer(TempBuffer);
+  end;
+
+  function HandleKallistiPorts: Boolean;
+  var
+    RepositoryOperation: TRepositoryOperation;
+    UpdateState: TUpdateOperationState;
+
+  begin
+    // Handle Kallisti Ports Repository
+    UpdateState := uosUndefined;
+    RepositoryOperation := HandleRepository(Manager.KallistiPorts.Installed,
+      rkKallistiPorts, UpdateState);
+    Result := HandleResponse(rkKallistiPorts, RepositoryOperation, UpdateState, True);
+
+    // Determine if we need to do something
+    if Result then
+      Manager.KallistiPorts.InitializeEnvironment;
+  end;
+
+  function HandleDreamcastTool: Boolean;
+  var
+    TempBuffer: string;
+    RepositoryOperation: TRepositoryOperation;
+    UpdateState: TUpdateOperationState;
+
+  begin
+    // Handle Dreamcast Tool(dc-tool) repository
+    UpdateState := uosUndefined;
+    RepositoryOperation := HandleRepository(Manager.DreamcastTool.Installed,
+      rkDreamcastTool, UpdateState);
+
+    // Determine if we need to do something
+    Result := HandleResponse(rkDreamcastTool, RepositoryOperation, UpdateState,
+      Manager.DreamcastTool.Built);
+
+    if Result then
+    begin
+      // Preparing Makefile.cfg
+      if CanContinue then
+      begin
+        UpdateProgressText('Initialize Dreamcast Tool environment...');
+        SetOperationSuccess(Manager.DreamcastTool.InitializeEnvironment);
+      end;
+
+      // Making Dreamcast Tool binaries
+      if CanContinue then
+      begin
+        UpdateProgressText('Building Dreamcast Tool binaries...');
+        SetOperationSuccess(Manager.DreamcastTool.Build(TempBuffer));
+      end;
+    end;
+    CombineOutputBuffer(TempBuffer);
   end;
 
 begin
   Result := '';
+
   fOperationSuccess := True;
-  fOperation := stoKallistiInstall;
+  fResponse := stoNothing;
   fOperationUpdateState := uosUndefined;
 
-  // Handle KallistiOS Repository
-  if HandleRepository(Manager.KallistiOS.Installed, rkKallisti, Result) = roUpdate then
-    fOperation := stoKallistiUpdate;
+  IsModifiedKallisti := HandleKallisti;
 
-  IsKallistiNeedsToBeUpdated := (fOperationUpdateState = uosUpdateSuccess);
-  IsKallistiFreshlyInstalled := (fOperationUpdateState = uosUndefined) or (not Manager.KallistiOS.Built);
+  IsModifiedKallistiPorts := HandleKallistiPorts;
 
-  // Handle KallistiPorts Repository
-  HandleRepository(Manager.KallistiPorts.Installed, rkKallistiPorts, Result);
+  IsModifiedDreamcastTool := HandleDreamcastTool;
 
-  if IsKallistiFreshlyInstalled then
-  begin
-    fOperation := stoKallistiInstall;
-    fOperationUpdateState := uosUndefined;
-  end;
+  if (not Aborted) and (not IsModifiedKallisti) and (not IsModifiedKallistiPorts)
+    and (not IsModifiedDreamcastTool) then
+      UpdateProgressText('KallistiOS is already installed and up-to-date.');
 
-  IsEverythingUpToDate := (not IsKallistiFreshlyInstalled)
-    and (not IsKallistiNeedsToBeUpdated)
-    and (Manager.DreamcastTool.Built);
-
-  if IsKallistiFreshlyInstalled or IsKallistiNeedsToBeUpdated then
-  begin
-    // Generate environ.sh file, unpacking genromfs and patching config.mk in kos-ports
-    if CanContinue then
-    begin
-      UpdateProgressText('Initialize KallistiOS and KallistiOS Ports environment...');
-      SetOperationSuccess(Manager.KallistiOS.InitializeEnvironment);
-    end;
-
-    // Making KallistiOS library
-    if CanContinue then
-    begin
-      UpdateProgressText('Building KallistiOS library...');
-      SetOperationSuccess(Manager.KallistiOS.Build(Result));
-    end;
-
-    // Fixing-up SH-4 Newlib
-    if CanContinue then
-    begin
-      UpdateProgressText('Fixing SH-4 Newlib...');
-      SetOperationSuccess(Manager.KallistiOS.FixupHitachiNewlib(Result));
-    end;
-  end;
-
-  // Handle Dreamcast Tool
-  if not Manager.DreamcastTool.Built then
-  begin
-    // Handle Dreamcast Tool(dc-tool) repository
-    HandleRepository(Manager.DreamcastTool.Installed, rkDreamcastTool, Result);
-
-   // Generate environ.sh file, unpacking genromfs and patching config.mk in kos-ports
-    if CanContinue then
-    begin
-      UpdateProgressText('Initialize Dreamcast Tool environment...');
-      SetOperationSuccess(Manager.DreamcastTool.InitializeEnvironment);
-    end;
-
-    // Making KallistiOS library
-    if CanContinue then
-    begin
-      UpdateProgressText('Building Dreamcast Tool binaries...');
-      SetOperationSuccess(Manager.DreamcastTool.Build(Result));
-    end;
-  end;
-
-  if IsEverythingUpToDate then
-    UpdateProgressText('KallistiOS is already installed and up-to-date.');
+  Result := OutputBuffer;
 end;
 
 function TShellThread.ProcessKallistiPort: string;
+
+  function RequestToResponse(Request: TShellThreadInputRequest): TShellThreadOutputResponse;
+  begin
+    Result := stoNothing;
+    case Request of
+      stiKallistiPortInstall:
+        Result := stoKallistiPortInstall;
+      stiKallistiPortUpdate:
+        Result := stoKallistiPortUpdate;
+      stiKallistiPortUninstall:
+        Result := stoKallistiPortUninstall;
+    end;
+  end;
+
 begin
   Result := '';
+  fResponse := RequestToResponse(fRequest);
 
   case Operation of
-    stoPortInstall:
+    stiKallistiPortInstall:
       begin
         UpdateProgressText('Installing the KallistiOS Port...');
         fOperationSuccess := SelectedKallistiPort.Install(Result);
       end;
-    stoPortUninstall:
+
+    stiKallistiPortUninstall:
       begin
         UpdateProgressText('Uninstalling the KallistiOS Port...');
         fOperationSuccess := SelectedKallistiPort.Uninstall(Result);
       end;
-    stoPortUpdate:
+
+    stiKallistiPortUpdate:
       begin
         UpdateProgressText('Updating the KallistiOS Port...');
         fOperationUpdateState := SelectedKallistiPort.Update(Result);

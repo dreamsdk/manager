@@ -60,6 +60,7 @@ type
     destructor Destroy; override;
     function CloneRepository(var BufferOutput: string): Boolean;
     function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
+    function InitializeEnvironment: Boolean;
     procedure RetrieveAvailablePorts;
     property Count: Integer read GetCount;
     property Installed: Boolean read GetInstalled;
@@ -292,6 +293,31 @@ end;
 function TKallistiPortManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
 begin
   Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.KallistiPortsDirectory, BufferOutput);
+end;
+
+function TKallistiPortManager.InitializeEnvironment: Boolean;
+var
+  MakefileFileName: TFileName;
+
+begin
+  MakefileFileName := fEnvironment.FileSystem.KallistiPortsDirectory
+    + 'config.mk';
+  Result := FileExists(MakefileFileName);
+
+  if Result then
+  begin
+    fEnvironment.PatchMakefile(
+      MakefileFileName,
+      '#FETCH_CMD = wget',
+      'FETCH_CMD = wget --no-check-certificate'
+    );
+
+    fEnvironment.PatchMakefile(
+      MakefileFileName,
+      'FETCH_CMD = curl',
+      '#FETCH_CMD = curl'
+    );
+  end;
 end;
 
 end.
