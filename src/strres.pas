@@ -16,7 +16,7 @@ resourcestring
   RestoreDefaultsTitle = 'Question';
   RestoreDefaultsText = 'Are you sure to restore settings to its defaults?';
   UserInterfaceNotInstalledText = 'Not installed';
-  UserInterfaceInstalledText = 'Installed';
+  UserInterfaceInstalledText = 'Yes';
   UpdateProcessEverythingUpdate = 'Everything is up-to-date.';
   UpdateProcessUpdateSuccessText = '%s was successfully updated.';
   UpdateProcessUpdateUselessText = '%s is up-to-date.';

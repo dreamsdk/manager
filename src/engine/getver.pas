@@ -20,22 +20,39 @@ type
     cnNewlib,
     cnToolSerial,
     cnToolIP,
-    cnKallistiOS
+    cnKallistiOS,
+    cnBinutilsARM,
+    cnGCCARM
   );
+
+  { TToolchainVersion }
+  TToolchainVersion = class(TObject)
+  private
+    fKind: TToolchainKind;
+    fVersionBinutils: string;
+    fVersionGCC: string;
+    fVersionGDB: string;
+    fVersionNewlib: string;
+  public
+    constructor Create(ToolchainKind: TToolchainKind);
+    property Binutils: string read fVersionBinutils;
+    property GCC: string read fVersionGCC;
+    property GDB: string read fVersionGDB;
+    property Newlib: string read fVersionNewlib;
+    property Kind: TToolchainKind read fKind;
+  end;
 
   { TVersionRetriever }
   TVersionRetriever = class(TObject)
   private
     fBuildDateKallistiOS: TDateTime;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
-    fVersionKallistiOS: string;
-    fVersionGDB: string;
-    fVersionBinutils: string;
-    fVersionGCC: string;
+    fToolchainARM: TToolchainVersion;
+    fToolchainSuperH: TToolchainVersion;
     fVersionGit: string;
+    fVersionKallistiOS: string;
     fChangeLogKallistiOS: string;
     fVersionMinGW: string;
-    fVersionNewlib: string;
     fVersionPython: string;
     fVersionSVN: string;
     fVersionToolIP: string;
@@ -50,6 +67,7 @@ type
     procedure RetrieveKallistiInformation;
   public
     constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
+    destructor Destroy; override;
 
     function GetComponentVersion(const ComponentName: TComponentName): string;
     procedure RetrieveVersions;
@@ -58,15 +76,13 @@ type
     property MinGW: string read fVersionMinGW;
     property SVN: string read fVersionSVN;
     property Python: string read fVersionPython;
-    property Binutils: string read fVersionBinutils;
-    property Newlib: string read fVersionNewlib;
-    property GCC: string read fVersionGCC;
-    property GDB: string read fVersionGDB;
     property ToolSerial: string read fVersionToolSerial;
     property ToolIP: string read fVersionToolIP;
     property KallistiOS: string read fVersionKallistiOS;
     property KallistiBuildDate: TDateTime read fBuildDateKallistiOS;
     property KallistiChangeLog: string read fChangeLogKallistiOS;
+    property ToolchainSuperH: TToolchainVersion read fToolchainSuperH;
+    property ToolchainARM: TToolchainVersion read fToolchainARM;
   end;
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
@@ -84,7 +100,7 @@ const
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
 const
-  COMPONENTS_NAME: array[0..10] of string = (
+  COMPONENTS_NAME: array[0..12] of string = (
     'Git',
     'SVN',
     'Python',
@@ -95,7 +111,9 @@ const
     'Newlib',
     'ToolSerial',
     'ToolIP',
-    'KallistiOS'
+    'KallistiOS',
+    'BinutilsARM',
+    'GCCARM'
   );
 
 begin
@@ -105,6 +123,13 @@ end;
 function IsVersionValid(const Version: string): Boolean;
 begin
   Result := not IsInString(INVALID_VERSION, Version);
+end;
+
+{ TToolchainVersion }
+
+constructor TToolchainVersion.Create(ToolchainKind: TToolchainKind);
+begin
+  fKind := ToolchainKind;
 end;
 
 { TVersionRetriever }
@@ -141,7 +166,7 @@ const
   END_TAG = ':';
 
 begin
-  Result := RetrieveVersionWithFind(fEnvironment.FileSystem.KallistiLibrary,
+  Result := RetrieveVersionWithFind(fEnvironment.FileSystem.Kallisti.KallistiLibrary,
     START_TAG, END_TAG);
   if IsInString(START_TAG, Result) then
     Result := Right(START_TAG, Result)
@@ -158,14 +183,14 @@ var
 
 begin
   Result := c_UnassignedDate;
-  BuildDate := FileAge(fEnvironment.FileSystem.KallistiLibrary);
+  BuildDate := FileAge(fEnvironment.FileSystem.Kallisti.KallistiLibrary);
   if BuildDate <> -1 then
     Result := FileDateToDateTime(BuildDate);
 end;
 
 procedure TVersionRetriever.RetrieveKallistiInformation;
 begin
-  with fEnvironment.FileSystem do
+  with fEnvironment.FileSystem.Kallisti do
   begin
     fVersionKallistiOS := RetrieveKallistiVersion;
     fBuildDateKallistiOS := RetrieveKallistiBuildDate;
@@ -181,6 +206,26 @@ begin
 end;
 
 procedure TVersionRetriever.RetrieveVersions;
+
+  procedure RetrieveVersionToolchain(Version: TToolchainVersion;
+    Environment: TDreamcastSoftwareDevelopmentFileSystemToolchain);
+  begin
+    with Environment do
+    begin
+      Version.fVersionBinutils := RetrieveVersion(BinutilsExecutable,
+        '--version', ' (GNU Binutils)', sLineBreak);
+      Version.fVersionGCC := RetrieveVersion(GCCExecutable,
+        '--version', ' (GCC)', sLineBreak);
+      if Environment.Kind = tkSuperH then
+      begin
+        Version.fVersionGDB := RetrieveVersion(GDBExecutable,
+          '--version', ' (GDB)', sLineBreak);
+        Version.fVersionNewlib := RetrieveVersionWithFind(NewlibBinary,
+          '/dc-chain/newlib-', '/newlib/libc/');
+      end;
+    end;
+  end;
+
 begin
   with fEnvironment.FileSystem do
   begin
@@ -190,15 +235,8 @@ begin
     fVersionMinGW := RetrieveVersion(MinGWGetExecutable,
       '--version', 'mingw-get version', sLineBreak);
 
-    fVersionBinutils := RetrieveVersion(BinutilsExecutable,
-      '--version', ' (GNU Binutils)', sLineBreak);
-    fVersionGCC := RetrieveVersion(GCCExecutable,
-      '--version', ' (GCC)', sLineBreak);
-    fVersionGDB := RetrieveVersion(GDBExecutable,
-      '--version', ' (GDB)', sLineBreak);
-
-    fVersionNewlib := RetrieveVersionWithFind(NewlibBinary,
-      '/dc-chain/newlib-', '/newlib/libc/');
+    RetrieveVersionToolchain(fToolchainSuperH, ToolchainSuperH);
+    RetrieveVersionToolchain(fToolchainARM, ToolchainARM);
 
     fVersionToolSerial := RetrieveVersion(DreamcastTool.SerialExecutable,
       '-h', 'dc-tool', 'by <');
@@ -213,7 +251,16 @@ constructor TVersionRetriever.Create(
   Environment: TDreamcastSoftwareDevelopmentEnvironment);
 begin
   fEnvironment := Environment;
+  fToolchainSuperH := TToolchainVersion.Create(tkSuperH);
+  fToolchainARM := TToolchainVersion.Create(tkARM);
   RetrieveVersions;
+end;
+
+destructor TVersionRetriever.Destroy;
+begin
+  fToolchainSuperH.Free;
+  fToolchainARM.Free;
+  inherited Destroy;
 end;
 
 function TVersionRetriever.GetComponentVersion(
@@ -230,19 +277,23 @@ begin
     cnMinGW:
       Result := fVersionMinGW;
     cnBinutils:
-      Result := fVersionBinutils;
+      Result := fToolchainSuperH.fVersionBinutils;
     cnGCC:
-      Result := fVersionGCC;
+      Result := fToolchainSuperH.fVersionGCC;
     cnGDB:
-      Result := fVersionGDB;
+      Result := fToolchainSuperH.fVersionGDB;
     cnNewlib:
-      Result := fVersionNewlib;
+      Result := fToolchainSuperH.fVersionNewlib;
     cnToolSerial:
       Result := fVersionToolSerial;
     cnToolIP:
       Result := fVersionToolIP;
     cnKallistiOS:
       Result := fVersionKallistiOS;
+    cnBinutilsARM:
+      Result := fToolchainARM.fVersionBinutils;
+    cnGCCARM:
+      Result := fToolchainARM.fVersionGCC;
   end;
 end;
 

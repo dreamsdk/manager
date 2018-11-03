@@ -30,7 +30,7 @@ type
     edtUrlDreamcastToolSerial: TEdit;
     edtUrlDreamcastToolIP: TEdit;
     edtUrlKallistiPorts: TEdit;
-    gbxToolchainInstalled: TGroupBox;
+    gbxToolchain1: TGroupBox;
     gbxKallistiChangeLog: TGroupBox;
     gbxUrlKallistiOS: TGroupBox;
     gbxUrlDreamcastToolSerial: TGroupBox;
@@ -40,13 +40,17 @@ type
     gbxPortDetails: TGroupBox;
     lblBuildDateKallistiOS: TLabel;
     lblPortName: TLabel;
+    lblTextBinutilsARM: TLabel;
+    lblTextGCCARM: TLabel;
+    lblTextToolchainInstalledARM: TLabel;
+    lblTextToolchainInstalledSH4: TLabel;
     lblTitleAbout: TLabel;
     lblTextKallistiOS: TLabel;
     lblTextBuildDateKallistiOS: TLabel;
-    lblTextToolchainInstalledSH4: TLabel;
-    lblTextToolchainInstalledARM: TLabel;
-    lblToolchainInstalledSH4: TLabel;
     lblToolchainInstalledARM: TLabel;
+    lblToolchainInstalledSH4: TLabel;
+    lblVersionBinutilsARM: TLabel;
+    lblVersionGCCARM: TLabel;
     lbxPorts: TCheckListBox;
     gbxAvailablePorts: TGroupBox;
     gbxToolchain: TGroupBox;
@@ -257,9 +261,9 @@ procedure TfrmMain.DisplayEnvironmentToolchainStatus;
 
 begin
   SetToolchainInstalled(lblToolchainInstalledARM,
-    DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ToolchainInstalledARM);
+    DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ToolchainARM.Installed);
   SetToolchainInstalled(lblToolchainInstalledSH4,
-    DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ToolchainInstalledSH4);
+      DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ToolchainSuperH.Installed);
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
@@ -288,15 +292,15 @@ begin
 
   // KallistiOS build date
   lblBuildDateKallistiOS.Caption := '';
-  if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.KallistiLibrary) then
+  if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Kallisti.KallistiLibrary) then
     lblBuildDateKallistiOS.Caption := FormatDateTime(KALLISTI_BUILD_DATE_FORMAT,
       DreamcastSoftwareDevelopmentKitManager.Versions.KallistiBuildDate);
 
   // KallistiOS changes log display
   memKallistiChangeLog.Lines.Clear;
-  if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.KallistiChangeLogFile) then
+  if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Kallisti.KallistiChangeLogFile) then
     memKallistiChangeLog.Lines.LoadFromFile(DreamcastSoftwareDevelopmentKitManager
-      .Environment.FileSystem.KallistiChangeLogFile);
+      .Environment.FileSystem.Kallisti.KallistiChangeLogFile);
 end;
 
 procedure TfrmMain.DisplayKallistiPorts;

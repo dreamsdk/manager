@@ -44,12 +44,12 @@ resourcestring
 
 function TKallistiManager.GetInstalled: Boolean;
 begin
-  Result := DirectoryExists(fEnvironment.FileSystem.KallistiDirectory);
+  Result := DirectoryExists(fEnvironment.FileSystem.Kallisti.KallistiDirectory);
 end;
 
 function TKallistiManager.GetBuilt: Boolean;
 begin
-  Result := FileExists(fEnvironment.FileSystem.KallistiLibrary);
+  Result := FileExists(fEnvironment.FileSystem.Kallisti.KallistiLibrary);
 end;
 
 constructor TKallistiManager.Create(
@@ -57,24 +57,24 @@ constructor TKallistiManager.Create(
 begin
   fEnvironment := AEnvironment;
 
-  fEnvironShellScriptFileName := fEnvironment.FileSystem.KallistiDirectory
+  fEnvironShellScriptFileName := fEnvironment.FileSystem.Kallisti.KallistiDirectory
     + EnvironShellScriptFileName;
-  fEnvironSampleShellScriptFileName := fEnvironment.FileSystem.KallistiDirectory
+  fEnvironSampleShellScriptFileName := fEnvironment.FileSystem.Kallisti.KallistiDirectory
     + EnvironSampleShellScriptFileName;
 
-  fGenRomFSFileName := fEnvironment.FileSystem.KallistiDirectory + GenRomFSFileName;
+  fGenRomFSFileName := fEnvironment.FileSystem.Kallisti.KallistiDirectory + GenRomFSFileName;
 end;
 
 function TKallistiManager.CloneRepository(var BufferOutput: string): Boolean;
 begin
   Result := fEnvironment.CloneRepository(fEnvironment.Repositories.KallistiURL,
     KallistiFileSystemInstallationDirectory,
-    fEnvironment.FileSystem.KallistiDirectory + '..\', BufferOutput);
+    fEnvironment.FileSystem.Kallisti.KallistiDirectory + '..\', BufferOutput);
 end;
 
 function TKallistiManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
 begin
-  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.KallistiDirectory, BufferOutput);
+  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.Kallisti.KallistiDirectory, BufferOutput);
 end;
 
 function TKallistiManager.InitializeEnvironment: Boolean;
@@ -91,7 +91,7 @@ begin
   if not FileExists(fGenRomFSFileName) then
   begin
     CommandLine := Format('tar xf %s', [GenRomFSPackageFileName]);
-    WorkingDirectory := fEnvironment.FileSystem.KallistiDirectory;
+    WorkingDirectory := fEnvironment.FileSystem.Kallisti.KallistiDirectory;
     fEnvironment.ExecuteShellCommand(CommandLine, WorkingDirectory);
   end;
 end;
@@ -99,8 +99,8 @@ end;
 function TKallistiManager.Build(var BufferOutput: string): Boolean;
 begin
   BufferOutput := fEnvironment.ExecuteShellCommand('make',
-    fEnvironment.FileSystem.KallistiDirectory);
-  Result := FileExists(fEnvironment.FileSystem.KallistiLibrary);
+    fEnvironment.FileSystem.Kallisti.KallistiDirectory);
+  Result := FileExists(fEnvironment.FileSystem.Kallisti.KallistiLibrary);
 end;
 
 function TKallistiManager.FixupHitachiNewlib(var BufferOutput: string): Boolean;
@@ -112,8 +112,8 @@ var
   CommandLine: string;
 
 begin
-  WorkingDirectory := ExtractFilePath(fEnvironment.FileSystem.FixupHitachiNewlibExecutable);
-  CommandLine := Format('%s --verbose', [fEnvironment.FileSystem.FixupHitachiNewlibExecutable]);
+  WorkingDirectory := ExtractFilePath(fEnvironment.FileSystem.ToolchainSuperH.FixupHitachiNewlibExecutable);
+  CommandLine := Format('%s --verbose', [fEnvironment.FileSystem.ToolchainSuperH.FixupHitachiNewlibExecutable]);
   BufferOutput := fEnvironment.ExecuteShellCommand(CommandLine, WorkingDirectory);
   Result := IsInString(SUCCESS_TAG, BufferOutput);
 end;

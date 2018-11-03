@@ -27,6 +27,11 @@ type
     uosUpdateFailed
   );
 
+  TToolchainKind = (
+    tkSuperH,
+    tkARM
+  );
+
   { TDreamcastSoftwareDevelopmentFileSystemDreamcastTool }
   TDreamcastSoftwareDevelopmentFileSystemDreamcastTool = class(TObject)
   private
@@ -45,25 +50,54 @@ type
     property SerialExecutable: TFileName read fSerialExecutable;
   end;
 
-  { TDreamcastSoftwareDevelopmentFileSystemObject }
-  TDreamcastSoftwareDevelopmentFileSystemObject = class(TObject)
+  { TDreamcastSoftwareDevelopmentFileSystemKallisti }
+  TDreamcastSoftwareDevelopmentFileSystemKallisti = class(TObject)
   private
-    fDreamSDKDirectory: TFileName;
-    fDreamSDKExecutable: TFileName;
-    fFixupHitachiNewlibExecutable: TFileName;
-    fGCCExecutable: TFileName;
-    fGDBExecutable: TFileName;
     fKallistiDirectory: TFileName;
     fKallistiLibrary: TFileName;
     fKallistiChangeLogFile: TFileName;
     fKallistiPortsDirectory: TFileName;
-    fNewlibBinary: TFileName;
-    fMinGWGetExecutable: TFileName;
+  public
+    property KallistiPortsDirectory: TFileName read fKallistiPortsDirectory;
+    property KallistiDirectory: TFileName read fKallistiDirectory;
+    property KallistiLibrary: TFileName read fKallistiLibrary;
+    property KallistiChangeLogFile: TFileName read fKallistiChangeLogFile;
+  end;
+
+  { TDreamcastSoftwareDevelopmentFileSystemToolchain }
+  TDreamcastSoftwareDevelopmentFileSystemToolchain = class(TObject)
+  private
+    fFixupNewlibExecutable: TFileName;
     fBinutilsExecutable: TFileName;
+    fGCCExecutable: TFileName;
+    fGDBExecutable: TFileName;
+    fKind: TToolchainKind;
+    fNewlibBinary: TFileName;
+    fToolchainInstalled: Boolean;
+  public
+    constructor Create(AToolchainKind: TToolchainKind);
+    property BinutilsExecutable: TFileName read fBinutilsExecutable;
+    property GCCExecutable: TFileName read fGCCExecutable;
+    property GDBExecutable: TFileName read fGDBExecutable;
+    property NewlibBinary: TFileName read fNewlibBinary;
+    property FixupHitachiNewlibExecutable: TFileName read fFixupNewlibExecutable;
+    property Installed: Boolean read fToolchainInstalled;
+    property Kind: TToolchainKind read fKind;
+  end;
+
+  { TDreamcastSoftwareDevelopmentFileSystem }
+  TDreamcastSoftwareDevelopmentFileSystem = class(TObject)
+  private
+    fDreamSDKDirectory: TFileName;
+    fDreamSDKExecutable: TFileName;
+
+    fMinGWGetExecutable: TFileName;
+
     fShellExecutable: TFileName;
-    fToolchainInstalledARM: Boolean;
-    fToolchainInstalledSH4: Boolean;
     fDreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool;
+    fKallisti: TDreamcastSoftwareDevelopmentFileSystemKallisti;
+    fToolchainARM: TDreamcastSoftwareDevelopmentFileSystemToolchain;
+    fToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain;
   protected
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
   public
@@ -75,17 +109,12 @@ type
     property DreamSDKExecutable: TFileName read fDreamSDKExecutable;
     property ShellExecutable: TFileName read fShellExecutable;
     property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
-    property BinutilsExecutable: TFileName read fBinutilsExecutable;
-    property GCCExecutable: TFileName read fGCCExecutable;
-    property GDBExecutable: TFileName read fGDBExecutable;
-    property NewlibBinary: TFileName read fNewlibBinary;
-    property FixupHitachiNewlibExecutable: TFileName read fFixupHitachiNewlibExecutable;
-    property KallistiPortsDirectory: TFileName read fKallistiPortsDirectory;
-    property KallistiDirectory: TFileName read fKallistiDirectory;
-    property KallistiLibrary: TFileName read fKallistiLibrary;
-    property KallistiChangeLogFile: TFileName read fKallistiChangeLogFile;
-    property ToolchainInstalledARM: Boolean read fToolchainInstalledARM;
-    property ToolchainInstalledSH4: Boolean read fToolchainInstalledSH4;
+    property Kallisti: TDreamcastSoftwareDevelopmentFileSystemKallisti
+      read fKallisti;
+    property ToolchainARM: TDreamcastSoftwareDevelopmentFileSystemToolchain
+      read fToolchainARM;
+    property ToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain
+      read fToolchainSuperH;
   end;
 
   { TDreamcastSoftwareDevelopmentRepositories }
@@ -126,7 +155,7 @@ type
     fShellCommandNewLine: TNewLineEvent;
     fShellCommandRunner: TRunCommand;
     fApplicationPath: TFileName;
-    fFileSystem: TDreamcastSoftwareDevelopmentFileSystemObject;
+    fFileSystem: TDreamcastSoftwareDevelopmentFileSystem;
     fSettings: TDreamcastSoftwareDevelopmentSettings;
     fShellCommandBufferOutput: string;
     function GetApplicationPath: TFileName;
@@ -151,7 +180,7 @@ type
       var BufferOutput: string): TUpdateOperationState; overload;
     procedure PatchMakefile(const MakefileFileName: TFileName;
       OldValue, NewValue: string);
-    property FileSystem: TDreamcastSoftwareDevelopmentFileSystemObject read fFileSystem;
+    property FileSystem: TDreamcastSoftwareDevelopmentFileSystem read fFileSystem;
     property Repositories: TDreamcastSoftwareDevelopmentRepositories read fRepositories;
     property Settings: TDreamcastSoftwareDevelopmentSettings read fSettings;
     property OnShellCommandNewLine: TNewLineEvent read fShellCommandNewLine
@@ -168,12 +197,24 @@ const
   CONFIG_REPOSITORIES_SECTION_NAME = 'Repositories';
   CONFIG_FILE_NAME = 'dcsdk.conf';
 
-{ TDreamcastSoftwareDevelopmentFileSystemObject }
+{ TDreamcastSoftwareDevelopmentFileSystemToolchain }
 
-procedure TDreamcastSoftwareDevelopmentFileSystemObject.ComputeFileSystemObjectValues(
+constructor TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(
+  AToolchainKind: TToolchainKind);
+begin
+  fKind := AToolchainKind;
+end;
+
+{ TDreamcastSoftwareDevelopmentFileSystem }
+
+procedure TDreamcastSoftwareDevelopmentFileSystem.ComputeFileSystemObjectValues(
   InstallPath: TFileName);
 var
-  MSYSBase, ToolchainBase: TFileName;
+  MSYSBase,
+  ToolchainBase,
+  ToolchainBaseSuperH,
+  ToolchainBaseARM: TFileName;
+
 begin
   MSYSBase := InstallPath + 'msys\1.0\';
   ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
@@ -185,15 +226,30 @@ begin
   // DreamSDK
   fDreamSDKDirectory := MSYSBase + 'opt\dcsdk\';
   fDreamSDKExecutable := fDreamSDKDirectory + 'dcsdk.exe';
-  fFixupHitachiNewlibExecutable := MSYSBase + 'opt\dcsdk\helpers\fixup-sh4-newlib';
 
-  // Toolchain
-  fToolchainInstalledARM := DirectoryExists(ToolchainBase + 'arm-eabi');
-  fToolchainInstalledSH4 := DirectoryExists(ToolchainBase + 'sh-elf');
-  fBinutilsExecutable := ToolchainBase + 'sh-elf\bin\sh-elf-ld.exe';
-  fGCCExecutable := ToolchainBase + 'sh-elf\bin\sh-elf-gcc.exe';
-  fGDBExecutable := ToolchainBase + 'sh-elf\bin\sh-elf-gdb.exe';
-  fNewlibBinary := ToolchainBase + 'sh-elf\sh-elf\lib\libnosys.a';
+  // Toolchain for Super-H (Hitachi SH-4)
+  ToolchainBaseSuperH := ToolchainBase + 'sh-elf\';
+  with fToolchainSuperH do
+  begin
+    fToolchainInstalled := DirectoryExists(ToolchainBaseSuperH);
+    fBinutilsExecutable := ToolchainBaseSuperH + 'bin\sh-elf-ld.exe';
+    fGCCExecutable := ToolchainBaseSuperH + 'bin\sh-elf-gcc.exe';
+    fGDBExecutable := ToolchainBaseSuperH + 'bin\sh-elf-gdb.exe';
+    fNewlibBinary := ToolchainBaseSuperH + 'sh-elf\lib\libnosys.a';
+    fFixupNewlibExecutable := fDreamSDKDirectory + 'helpers\fixup-sh4-newlib';
+  end;
+
+  // Toolchain for ARM
+  ToolchainBaseARM := ToolchainBase + 'arm-eabi\';
+  with fToolchainARM do
+  begin
+    fToolchainInstalled := DirectoryExists(ToolchainBaseARM);
+    fBinutilsExecutable := ToolchainBaseARM + 'bin\arm-eabi-ld.exe';
+    fGCCExecutable := ToolchainBaseARM + 'bin\arm-eabi-gcc.exe';
+    fGDBExecutable := ''; // Not Applicable
+    fNewlibBinary := ''; // Not Applicable
+    fFixupNewlibExecutable := ''; // Not Applicable
+  end;
 
   // dcload/dc-tool
   with fDreamcastTool do
@@ -207,20 +263,29 @@ begin
   end;
 
   // KallistiOS
-  fKallistiPortsDirectory := ToolchainBase + 'kos-ports\';
-  fKallistiDirectory := ToolchainBase + 'kos\';
-  fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
-  fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
+  with fKallisti do
+  begin
+    fKallistiPortsDirectory := ToolchainBase + 'kos-ports\';
+    fKallistiDirectory := ToolchainBase + 'kos\';
+    fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
+    fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
+  end;
 end;
 
-constructor TDreamcastSoftwareDevelopmentFileSystemObject.Create;
+constructor TDreamcastSoftwareDevelopmentFileSystem.Create;
 begin
   fDreamcastTool := TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.Create;
+  fKallisti := TDreamcastSoftwareDevelopmentFileSystemKallisti.Create;
+  fToolchainARM := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkARM);
+  fToolchainSuperH := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkSuperH);
 end;
 
-destructor TDreamcastSoftwareDevelopmentFileSystemObject.Destroy;
+destructor TDreamcastSoftwareDevelopmentFileSystem.Destroy;
 begin
   fDreamcastTool.Free;
+  fKallisti.Free;
+  fToolchainARM.Free;
+  fToolchainSuperH.Free;
   inherited Destroy;
 end;
 
@@ -411,7 +476,7 @@ end;
 
 constructor TDreamcastSoftwareDevelopmentEnvironment.Create;
 begin
-  fFileSystem := TDreamcastSoftwareDevelopmentFileSystemObject.Create;
+  fFileSystem := TDreamcastSoftwareDevelopmentFileSystem.Create;
   fRepositories := TDreamcastSoftwareDevelopmentRepositories.Create;
   fSettings := TDreamcastSoftwareDevelopmentSettings.Create;
   LoadConfig;

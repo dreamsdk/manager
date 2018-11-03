@@ -156,7 +156,7 @@ begin
   Clear;
   PortsAvailable := TStringList.Create;
   try
-    FindAllFiles(PortsAvailable, fEnvironment.FileSystem.KallistiPortsDirectory,
+    FindAllFiles(PortsAvailable, fEnvironment.FileSystem.Kallisti.KallistiPortsDirectory,
       KALLISTI_PORTS_PACKAGE_DESCRIPTION, True);
     for i := 0 to PortsAvailable.Count - 1 do
       ProcessPort(PortsAvailable[i]);
@@ -177,7 +177,7 @@ end;
 
 function TKallistiPortManager.GetInstalled: Boolean;
 begin
-  Result := DirectoryExists(fEnvironment.FileSystem.KallistiPortsDirectory);
+  Result := DirectoryExists(fEnvironment.FileSystem.Kallisti.KallistiPortsDirectory);
 end;
 
 function TKallistiPortManager.Add: TKallistiPortItem;
@@ -298,12 +298,12 @@ const
 begin
   Result := fEnvironment.CloneRepository(fEnvironment.Repositories.KallistiPortsURL,
     KALLISTI_PORTS_INSTALLATION_DIRECTORY,
-    fEnvironment.FileSystem.KallistiPortsDirectory + '..\', BufferOutput);
+    fEnvironment.FileSystem.Kallisti.KallistiPortsDirectory + '..\', BufferOutput);
 end;
 
 function TKallistiPortManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
 begin
-  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.KallistiPortsDirectory, BufferOutput);
+  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.Kallisti.KallistiPortsDirectory, BufferOutput);
 end;
 
 function TKallistiPortManager.InitializeEnvironment: Boolean;
@@ -314,7 +314,7 @@ var
   MakefileFileName: TFileName;
 
 begin
-  MakefileFileName := fEnvironment.FileSystem.KallistiPortsDirectory
+  MakefileFileName := fEnvironment.FileSystem.Kallisti.KallistiPortsDirectory
     + CONFIG_MAKEFILE;
   Result := FileExists(MakefileFileName);
 
