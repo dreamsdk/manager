@@ -17,6 +17,9 @@ type
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     function GetBuilt: Boolean;
     function GetInstalled: Boolean;
+  protected
+    property Environment: TDreamcastSoftwareDevelopmentEnvironment
+      read fEnvironment;
   public
     constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
     function CloneRepository(var BufferOutput: string): Boolean;
@@ -37,12 +40,12 @@ uses
 
 function TKallistiManager.GetInstalled: Boolean;
 begin
-  Result := DirectoryExists(fEnvironment.FileSystem.Kallisti.KallistiDirectory);
+  Result := DirectoryExists(Environment.FileSystem.Kallisti.KallistiDirectory);
 end;
 
 function TKallistiManager.GetBuilt: Boolean;
 begin
-  Result := FileExists(fEnvironment.FileSystem.Kallisti.KallistiLibrary);
+  Result := FileExists(Environment.FileSystem.Kallisti.KallistiLibrary);
 end;
 
 constructor TKallistiManager.Create(
@@ -55,12 +58,12 @@ const
 begin
   fEnvironment := AEnvironment;
 
-  fEnvironShellScriptFileName := fEnvironment.FileSystem.Kallisti.KallistiDirectory
+  fEnvironShellScriptFileName := Environment.FileSystem.Kallisti.KallistiDirectory
     + ENVIRON_SHELL_SCRIPT_FILENAME;
-  fEnvironSampleShellScriptFileName := fEnvironment.FileSystem.Kallisti.KallistiDirectory
+  fEnvironSampleShellScriptFileName := Environment.FileSystem.Kallisti.KallistiDirectory
     + ENVIRON_SHELL_SCRIPT_SAMPLE_FILE_LOCATION;
 
-  fGenRomFSFileName := fEnvironment.FileSystem.Kallisti.KallistiDirectory + GENROMFS_LOCATION_FILE;
+  fGenRomFSFileName := Environment.FileSystem.Kallisti.KallistiDirectory + GENROMFS_LOCATION_FILE;
 end;
 
 function TKallistiManager.CloneRepository(var BufferOutput: string): Boolean;
@@ -68,14 +71,15 @@ const
   KALLISTI_INSTALLATION_DIRECTORY = 'kos';
 
 begin
-  Result := fEnvironment.CloneRepository(fEnvironment.Repositories.KallistiURL,
+  Result := Environment.CloneRepository(Environment.Repositories.KallistiURL,
     KALLISTI_INSTALLATION_DIRECTORY,
-    fEnvironment.FileSystem.Kallisti.KallistiDirectory + '..\', BufferOutput);
+    Environment.FileSystem.Kallisti.KallistiDirectory + '..\', BufferOutput);
 end;
 
 function TKallistiManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
 begin
-  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.Kallisti.KallistiDirectory, BufferOutput);
+  Result := Environment.UpdateRepository(
+    Environment.FileSystem.Kallisti.KallistiDirectory, BufferOutput);
 end;
 
 function TKallistiManager.InitializeEnvironment: Boolean;
@@ -95,21 +99,21 @@ begin
   if not FileExists(fGenRomFSFileName) then
   begin
     CommandLine := Format('tar xf %s', [GENROMFS_PACKAGE_FILENAME]);
-    WorkingDirectory := fEnvironment.FileSystem.Kallisti.KallistiDirectory;
-    fEnvironment.ExecuteShellCommand(CommandLine, WorkingDirectory);
+    WorkingDirectory := Environment.FileSystem.Kallisti.KallistiDirectory;
+    Environment.ExecuteShellCommand(CommandLine, WorkingDirectory);
   end;
 end;
 
 function TKallistiManager.Build(var BufferOutput: string): Boolean;
 begin
-  BufferOutput := fEnvironment.ExecuteShellCommand('make',
-    fEnvironment.FileSystem.Kallisti.KallistiDirectory);
-  Result := FileExists(fEnvironment.FileSystem.Kallisti.KallistiLibrary);
+  BufferOutput := Environment.ExecuteShellCommand('make',
+    Environment.FileSystem.Kallisti.KallistiDirectory);
+  Result := FileExists(Environment.FileSystem.Kallisti.KallistiLibrary);
 end;
 
 function TKallistiManager.FixupHitachiNewlib(var BufferOutput: string): Boolean;
 const
-  FIXUP_SUPERH_NEWLIB = DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY + 'fixup-sh4-newlib';
+  FIXUP_SUPERH_NEWLIB = DREAMSDK_MSYS_INSTALL_SCRIPTS_DIRECTORY + 'fixup-sh4-newlib';
   SUCCESS_TAG = 'Done!';
 
 var
@@ -117,9 +121,9 @@ var
   CommandLine: string;
 
 begin
-  WorkingDirectory := fEnvironment.FileSystem.Shell.DreamSDKDirectory;
+  WorkingDirectory := Environment.FileSystem.Shell.DreamSDKDirectory;
   CommandLine := Format('%s --verbose', [FIXUP_SUPERH_NEWLIB]);
-  BufferOutput := fEnvironment.ExecuteShellCommand(CommandLine, WorkingDirectory);
+  BufferOutput := Environment.ExecuteShellCommand(CommandLine, WorkingDirectory);
   Result := IsInString(SUCCESS_TAG, BufferOutput);
 end;
 

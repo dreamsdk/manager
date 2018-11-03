@@ -14,7 +14,7 @@ const
   DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL = 'https://github.com/sizious/dcload-ip.git';
 
   DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dcsdk/';
-  DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'scripts/';
+  DREAMSDK_MSYS_INSTALL_SCRIPTS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'scripts/';
   DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
 
 type
@@ -186,7 +186,7 @@ type
       WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
       var BufferOutput: string): TUpdateOperationState; overload;
-    procedure PatchMakefile(const MakefileFileName: TFileName;
+    procedure PatchConfigurationFile(const MakefileFileName: TFileName;
       OldValue, NewValue: string);
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystem read fFileSystem;
     property Repositories: TDreamcastSoftwareDevelopmentRepositories read fRepositories;
@@ -218,6 +218,7 @@ end;
 procedure TDreamcastSoftwareDevelopmentFileSystem.ComputeFileSystemObjectValues(
   InstallPath: TFileName);
 var
+  DreamSdkRadical,
   MSYSBase,
   ToolchainBase,
   ToolchainBaseSuperH,
@@ -227,6 +228,11 @@ begin
   MSYSBase := InstallPath + 'msys\1.0\';
   ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
 
+  // Translate DREAMSDK_MSYS_INSTALL_DIRECTORY to Windows location
+  DreamSdkRadical := StringReplace(DREAMSDK_MSYS_INSTALL_DIRECTORY, '/',
+    DirectorySeparator, [rfReplaceAll]);
+  DreamSdkRadical := Copy(DreamSdkRadical, 2, Length(DreamSdkRadical) - 1);
+
   with fShell do
   begin
     // MinGW/MSYS
@@ -234,7 +240,7 @@ begin
     fShellExecutable := MSYSBase + 'bin\sh.exe';
 
     // DreamSDK
-    fDreamSDKDirectory := MSYSBase + 'opt\dcsdk\';
+    fDreamSDKDirectory := MSYSBase + DreamSdkRadical;
     fDreamSDKExecutable := fDreamSDKDirectory + 'dcsdk.exe';
   end;
 
@@ -571,7 +577,7 @@ begin
     Result := uosUpdateSuccess;
 end;
 
-procedure TDreamcastSoftwareDevelopmentEnvironment.PatchMakefile(
+procedure TDreamcastSoftwareDevelopmentEnvironment.PatchConfigurationFile(
   const MakefileFileName: TFileName; OldValue, NewValue: string);
 var
   Buffer: TStringList;

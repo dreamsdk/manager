@@ -41,13 +41,9 @@ type
     lblPortName: TLabel;
     lblTextBinutilsARM: TLabel;
     lblTextGCCARM: TLabel;
-    lblTextToolchainInstalledARM: TLabel;
-    lblTextToolchainInstalledSH4: TLabel;
     lblTitleAbout: TLabel;
     lblTextKallistiOS: TLabel;
     lblTextBuildDateKallistiOS: TLabel;
-    lblToolchainInstalledARM: TLabel;
-    lblToolchainInstalledSH4: TLabel;
     lblVersionBinutilsARM: TLabel;
     lblVersionGCCARM: TLabel;
     lbxPorts: TCheckListBox;
@@ -121,7 +117,6 @@ type
     fShellThreadInputRequest: TShellThreadInputRequest;
     fShellThreadOutputResult: TShellThreadOutputResponse;
     fShellThreadUpdateState: TUpdateOperationState;
-    procedure DisplayEnvironmentToolchainStatus;
     procedure DisplayEnvironmentComponentVersions;
     procedure DisplayKallistiPorts;
     function GetSelectedKallistiPort: TKallistiPortItem;
@@ -168,7 +163,6 @@ begin
   pcMain.TabIndex := 0;
   Application.Title := Caption;
   lblTitleAbout.Caption := Format(lblTitleAbout.Caption, [Caption]);
-  DisplayEnvironmentToolchainStatus;
   UpdateDisplay(False);
   LoadConfiguration;
 end;
@@ -278,21 +272,6 @@ begin
 
   if IsKallistiPortsRefreshViewNeeded then
     RefreshKallistiPortsControls;
-end;
-
-procedure TfrmMain.DisplayEnvironmentToolchainStatus;
-
-  procedure SetToolchainInstalled(ToolchainLabel: TLabel; Installed: Boolean);
-  begin
-    ToolchainLabel.Caption := BooleanToCaption(Installed);
-    SetVersionLabelState(ToolchainLabel, not Installed);
-  end;
-
-begin
-  SetToolchainInstalled(lblToolchainInstalledARM,
-    DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ToolchainARM.Installed);
-  SetToolchainInstalled(lblToolchainInstalledSH4,
-      DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.ToolchainSuperH.Installed);
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;

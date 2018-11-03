@@ -377,14 +377,14 @@ object frmMain: TfrmMain
         Height = 193
         Top = 7
         Width = 281
-        Caption = 'Super-H Toolchain:'
+        Caption = 'SuperH Toolchain Versions:'
         ClientHeight = 175
         ClientWidth = 277
         TabOrder = 0
         object lblVersionBinutils: TLabel
           Left = 99
           Height = 13
-          Top = 52
+          Top = 12
           Width = 41
           Caption = '(Binutils)'
           ParentColor = False
@@ -392,7 +392,7 @@ object frmMain: TfrmMain
         object lblVersionGCC: TLabel
           Left = 99
           Height = 13
-          Top = 80
+          Top = 40
           Width = 29
           Caption = '(GCC)'
           ParentColor = False
@@ -400,7 +400,7 @@ object frmMain: TfrmMain
         object lblVersionNewlib: TLabel
           Left = 99
           Height = 13
-          Top = 108
+          Top = 68
           Width = 39
           Caption = '(Newlib)'
           ParentColor = False
@@ -408,7 +408,7 @@ object frmMain: TfrmMain
         object lblVersionGDB: TLabel
           Left = 99
           Height = 13
-          Top = 136
+          Top = 96
           Width = 28
           Caption = '(GDB)'
           ParentColor = False
@@ -416,7 +416,7 @@ object frmMain: TfrmMain
         object lblTextBinutils: TLabel
           Left = 8
           Height = 13
-          Top = 52
+          Top = 12
           Width = 41
           Caption = 'Binutils'
           Font.Style = [fsBold]
@@ -426,7 +426,7 @@ object frmMain: TfrmMain
         object lblTextGCC: TLabel
           Left = 8
           Height = 13
-          Top = 80
+          Top = 40
           Width = 22
           Caption = 'GCC'
           Font.Style = [fsBold]
@@ -436,7 +436,7 @@ object frmMain: TfrmMain
         object lblTextNewlib: TLabel
           Left = 8
           Height = 13
-          Top = 108
+          Top = 68
           Width = 36
           Caption = 'Newlib'
           Font.Style = [fsBold]
@@ -446,30 +446,12 @@ object frmMain: TfrmMain
         object lblTextGDB: TLabel
           Left = 8
           Height = 13
-          Top = 136
+          Top = 96
           Width = 23
           Caption = 'GDB'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
-        end
-        object lblTextToolchainInstalledSH4: TLabel
-          Left = 8
-          Height = 13
-          Top = 24
-          Width = 50
-          Caption = 'Installed'
-          Font.Style = [fsBold]
-          ParentColor = False
-          ParentFont = False
-        end
-        object lblToolchainInstalledSH4: TLabel
-          Left = 99
-          Height = 13
-          Top = 24
-          Width = 91
-          Caption = '(Super-H Installed)'
-          ParentColor = False
         end
       end
       object gbxDependencies: TGroupBox
@@ -477,14 +459,14 @@ object frmMain: TfrmMain
         Height = 161
         Top = 156
         Width = 280
-        Caption = 'Dependencies:'
+        Caption = 'Dependencies Versions:'
         ClientHeight = 143
         ClientWidth = 276
         TabOrder = 1
         object lblVersionSVN: TLabel
           Left = 104
           Height = 13
-          Top = 52
+          Top = 40
           Width = 27
           Caption = '(SVN)'
           ParentColor = False
@@ -492,7 +474,7 @@ object frmMain: TfrmMain
         object lblVersionGit: TLabel
           Left = 104
           Height = 13
-          Top = 24
+          Top = 12
           Width = 21
           Caption = '(Git)'
           ParentColor = False
@@ -500,7 +482,7 @@ object frmMain: TfrmMain
         object lblVersionPython: TLabel
           Left = 104
           Height = 13
-          Top = 80
+          Top = 68
           Width = 42
           Caption = '(Python)'
           ParentColor = False
@@ -508,7 +490,7 @@ object frmMain: TfrmMain
         object lblVersionMinGW: TLabel
           Left = 104
           Height = 13
-          Top = 108
+          Top = 96
           Width = 61
           Caption = '(MinGW Get)'
           ParentColor = False
@@ -516,7 +498,7 @@ object frmMain: TfrmMain
         object lblTextGit: TLabel
           Left = 12
           Height = 13
-          Top = 24
+          Top = 12
           Width = 16
           Caption = 'Git'
           Font.Style = [fsBold]
@@ -526,7 +508,7 @@ object frmMain: TfrmMain
         object lblTextPython: TLabel
           Left = 12
           Height = 13
-          Top = 80
+          Top = 68
           Width = 40
           Caption = 'Python'
           Font.Style = [fsBold]
@@ -536,7 +518,7 @@ object frmMain: TfrmMain
         object lblTextSVN: TLabel
           Left = 12
           Height = 13
-          Top = 52
+          Top = 40
           Width = 21
           Caption = 'SVN'
           Font.Style = [fsBold]
@@ -546,7 +528,7 @@ object frmMain: TfrmMain
         object lblTextMinGW: TLabel
           Left = 12
           Height = 13
-          Top = 108
+          Top = 96
           Width = 39
           Caption = 'MinGW'
           Font.Style = [fsBold]
@@ -559,14 +541,14 @@ object frmMain: TfrmMain
         Height = 108
         Top = 209
         Width = 281
-        Caption = 'Dreamcast Tool:'
+        Caption = 'Dreamcast Tool Versions:'
         ClientHeight = 90
         ClientWidth = 277
         TabOrder = 2
         object lblVersionToolSerial: TLabel
           Left = 100
           Height = 13
-          Top = 24
+          Top = 15
           Width = 82
           Caption = '(DC-TOOL Serial)'
           ParentColor = False
@@ -574,7 +556,7 @@ object frmMain: TfrmMain
         object lblVersionToolIP: TLabel
           Left = 100
           Height = 13
-          Top = 52
+          Top = 43
           Width = 66
           Caption = '(DC-TOOL IP)'
           ParentColor = False
@@ -582,7 +564,7 @@ object frmMain: TfrmMain
         object lblTextToolSerial: TLabel
           Left = 8
           Height = 13
-          Top = 24
+          Top = 15
           Width = 32
           Caption = 'Serial'
           Font.Style = [fsBold]
@@ -592,7 +574,7 @@ object frmMain: TfrmMain
         object lblTextToolIP: TLabel
           Left = 8
           Height = 13
-          Top = 52
+          Top = 43
           Width = 12
           Caption = 'IP'
           Font.Style = [fsBold]
@@ -605,14 +587,14 @@ object frmMain: TfrmMain
         Height = 140
         Top = 7
         Width = 280
-        Caption = 'ARM Toolchain:'
+        Caption = 'ARM Toolchain Versions:'
         ClientHeight = 122
         ClientWidth = 276
         TabOrder = 3
         object lblVersionBinutilsARM: TLabel
           Left = 104
           Height = 13
-          Top = 52
+          Top = 12
           Width = 41
           Caption = '(Binutils)'
           ParentColor = False
@@ -620,7 +602,7 @@ object frmMain: TfrmMain
         object lblVersionGCCARM: TLabel
           Left = 104
           Height = 13
-          Top = 80
+          Top = 40
           Width = 29
           Caption = '(GCC)'
           ParentColor = False
@@ -628,7 +610,7 @@ object frmMain: TfrmMain
         object lblTextBinutilsARM: TLabel
           Left = 12
           Height = 13
-          Top = 52
+          Top = 12
           Width = 41
           Caption = 'Binutils'
           Font.Style = [fsBold]
@@ -638,27 +620,9 @@ object frmMain: TfrmMain
         object lblTextGCCARM: TLabel
           Left = 12
           Height = 13
-          Top = 80
+          Top = 40
           Width = 22
           Caption = 'GCC'
-          Font.Style = [fsBold]
-          ParentColor = False
-          ParentFont = False
-        end
-        object lblToolchainInstalledARM: TLabel
-          Left = 104
-          Height = 13
-          Top = 24
-          Width = 74
-          Caption = '(ARM Installed)'
-          ParentColor = False
-        end
-        object lblTextToolchainInstalledARM: TLabel
-          Left = 12
-          Height = 13
-          Top = 24
-          Width = 50
-          Caption = 'Installed'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False

@@ -65,8 +65,10 @@ type
     function RetrieveKallistiVersion: string;
     function RetrieveKallistiBuildDate: TDateTime;
     procedure RetrieveKallistiInformation;
+    property Environment: TDreamcastSoftwareDevelopmentEnvironment
+      read fEnvironment;
   public
-    constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
+    constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
     destructor Destroy; override;
 
     function GetComponentVersion(const ComponentName: TComponentName): string;
@@ -166,7 +168,7 @@ const
   END_TAG = ':';
 
 begin
-  Result := RetrieveVersionWithFind(fEnvironment.FileSystem.Kallisti.KallistiLibrary,
+  Result := RetrieveVersionWithFind(Environment.FileSystem.Kallisti.KallistiLibrary,
     START_TAG, END_TAG);
   if IsInString(START_TAG, Result) then
     Result := Right(START_TAG, Result)
@@ -183,14 +185,14 @@ var
 
 begin
   Result := c_UnassignedDate;
-  BuildDate := FileAge(fEnvironment.FileSystem.Kallisti.KallistiLibrary);
+  BuildDate := FileAge(Environment.FileSystem.Kallisti.KallistiLibrary);
   if BuildDate <> -1 then
     Result := FileDateToDateTime(BuildDate);
 end;
 
 procedure TComponentVersion.RetrieveKallistiInformation;
 begin
-  with fEnvironment.FileSystem.Kallisti do
+  with Environment.FileSystem.Kallisti do
   begin
     fVersionKallistiOS := RetrieveKallistiVersion;
     fBuildDateKallistiOS := RetrieveKallistiBuildDate;
@@ -227,7 +229,7 @@ procedure TComponentVersion.RetrieveVersions;
   end;
 
 begin
-  with fEnvironment.FileSystem do
+  with Environment.FileSystem do
   begin
     fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak);
     fVersionSVN := RetrieveVersion('svn', '--version', 'svn, version', sLineBreak);
@@ -248,9 +250,9 @@ begin
 end;
 
 constructor TComponentVersion.Create(
-  Environment: TDreamcastSoftwareDevelopmentEnvironment);
+  AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
 begin
-  fEnvironment := Environment;
+  fEnvironment := AEnvironment;
   fToolchainSuperH := TToolchainVersion.Create(tkSuperH);
   fToolchainARM := TToolchainVersion.Create(tkARM);
   RetrieveVersions;
