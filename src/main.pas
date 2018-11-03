@@ -16,14 +16,17 @@ type
     btnOpenMSYS: TButton;
     btnPortInstall: TButton;
     btnPortUninstall: TButton;
-    btnUpdateKallistiOS: TButton;
     btnPortUpdate: TButton;
+    btnUpdateKallistiOS: TButton;
     btnRestoreDefaults: TButton;
-    edtUrlKallistiOS: TEdit;
+    btnAllPortInstall: TButton;
+    btnAllPortUninstall: TButton;
+    btnAllPortUpdate: TButton;
     edtPortLicense: TLabeledEdit;
-    edtPortURL: TLabeledEdit;
     edtPortMaintainer: TLabeledEdit;
+    edtPortURL: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
+    edtUrlKallistiOS: TEdit;
     edtUrlDreamcastToolSerial: TEdit;
     edtUrlDreamcastToolIP: TEdit;
     edtUrlKallistiPorts: TEdit;
@@ -33,6 +36,8 @@ type
     gbxUrlDreamcastToolSerial: TGroupBox;
     gbxUrlDreamcastToolIP: TGroupBox;
     gbxUrlKallistiPorts: TGroupBox;
+    gbxPortAll: TGroupBox;
+    gbxPortDetails: TGroupBox;
     lblBuildDateKallistiOS: TLabel;
     lblPortName: TLabel;
     lblTitleAbout: TLabel;
@@ -72,12 +77,12 @@ type
     memPortDescription: TMemo;
     memPortShortDescription: TMemo;
     pcMain: TPageControl;
-    pcPortDetails: TPageControl;
     pnlActions: TPanel;
+    rgbDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
+    tsHome: TTabSheet;
+    tsDreamcastTool: TTabSheet;
     tmrShellThreadTerminate: TTimer;
-    tsPortInformation: TTabSheet;
-    tsPortDescription: TTabSheet;
     tsAbout: TTabSheet;
     tsOptions: TTabSheet;
     tsEnvironment: TTabSheet;
@@ -103,6 +108,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
+    procedure rgbDreamcastToolClick(Sender: TObject);
     procedure rgxTerminalOptionClick(Sender: TObject);
     procedure tmrShellThreadTerminateTimer(Sender: TObject);
   private
@@ -179,6 +185,12 @@ begin
     memPortDescription.Text := SelectedKallistiPort.Description;
     UpdateKallistiPortControls;
   end;
+end;
+
+procedure TfrmMain.rgbDreamcastToolClick(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment
+    .Settings.DreamcastToolKind := TDreamcastToolKind(rgbDreamcastTool.ItemIndex);
 end;
 
 procedure TfrmMain.rgxTerminalOptionClick(Sender: TObject);
@@ -338,6 +350,7 @@ begin
   edtUrlKallistiPorts.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.KallistiPortsURL;
   edtUrlDreamcastToolSerial.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.DreamcastToolSerialURL;
   edtUrlDreamcastToolIP.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.DreamcastToolInternetProtocolURL;
+  rgbDreamcastTool.ItemIndex := Integer(DreamcastSoftwareDevelopmentKitManager.Environment.Settings.DreamcastToolKind);
 end;
 
 function TfrmMain.BooleanToCaption(Value: Boolean): string;
@@ -568,7 +581,7 @@ end;
 
 procedure TfrmMain.FormActivate(Sender: TObject);
 begin
-  if not IsPostInstallMode and IsUpdateRequired then
+  if not IsPostInstallMode and IsInstallOrUpdateRequired then
     ExecuteThreadOperation(stiKallistiManage);
 end;
 

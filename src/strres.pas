@@ -49,7 +49,8 @@ resourcestring
   KallistiBuildText = 'Building KallistiOS library...';
   KallistiFixNewlibText = 'Fixing SH-4 Newlib...';
   DreamcastToolInitializeText = 'Initialize Dreamcast Tool environment...';
-  DreamcastToolBuildText = 'Building Dreamcast Tool binaries...';
+  DreamcastToolBuildText = 'Building Dreamcast Tool components...';
+  DreamcastToolInstallText = 'Installing Dreamcast Tool...';
   KallistiPortInstallText = 'Installing the KallistiOS Port...';
   KallistiPortUninstallText = 'Uninstalling the KallistiOS Port...';
   KallistiPortUpdateText = 'Updating the KallistiOS Port...';

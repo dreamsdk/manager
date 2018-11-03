@@ -510,6 +510,13 @@ var
         UpdateProgressText(DreamcastToolBuildText);
         SetOperationSuccess(Manager.DreamcastTool.Build(TempBuffer));
       end;
+
+      // Copying the right Dreamcast Tool binary in place
+      if CanContinue then
+      begin
+        UpdateProgressText(DreamcastToolInstallText);
+        SetOperationSuccess(Manager.DreamcastTool.Install());
+      end;
     end;
     CombineOutputBuffer(TempBuffer);
   end;
@@ -527,7 +534,7 @@ begin
 
   IsModifiedDreamcastTool := HandleDreamcastTool;
 
-  if (not Aborted) and (not IsModifiedKallisti) and (not IsModifiedKallistiPorts)
+  if (CanContinue) and (not IsModifiedKallisti) and (not IsModifiedKallistiPorts)
     and (not IsModifiedDreamcastTool) then
       UpdateProgressText(KallistiOperationNothingNeededText);
 

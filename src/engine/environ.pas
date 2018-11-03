@@ -14,6 +14,12 @@ const
   DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL = 'https://github.com/sizious/dcload-ip.git';
 
 type
+  TDreamcastToolKind = (
+    dtkUndefined,
+    dtkSerial,
+    dtkInternetProtocol
+  );
+
   TUpdateOperationState = (
     uosUndefined,
     uosUpdateSuccess,
@@ -25,19 +31,19 @@ type
   TDreamcastSoftwareDevelopmentFileSystemDreamcastTool = class(TObject)
   private
     fBaseDirectory: TFileName;
+    fBaseExecutable: TFileName;
     fInternetProtocolDirectory: TFileName;
     fInternetProtocolExecutable: TFileName;
     fSerialDirectory: TFileName;
     fSerialExecutable: TFileName;
   public
     property BaseDirectory: TFileName read fBaseDirectory;
+    property BaseExecutable: TFileName read fBaseExecutable;
     property InternetProtocolDirectory: TFileName read fInternetProtocolDirectory;
     property InternetProtocolExecutable: TFileName read fInternetProtocolExecutable;
     property SerialDirectory: TFileName read fSerialDirectory;
     property SerialExecutable: TFileName read fSerialExecutable;
   end;
-
- // DCLOAD_BASE_DIRECTORY = 'dcload\';
 
   { TDreamcastSoftwareDevelopmentFileSystemObject }
   TDreamcastSoftwareDevelopmentFileSystemObject = class(TObject)
@@ -103,10 +109,13 @@ type
   { TDreamcastSoftwareDevelopmentSettings }
   TDreamcastSoftwareDevelopmentSettings = class(TObject)
   private
+    fDreamcastToolKind: TDreamcastToolKind;
     fInstallPath: TFileName;
     fUseMinTTY: Boolean;
   public
     property InstallPath: TFileName read fInstallPath;
+    property DreamcastToolKind: TDreamcastToolKind read fDreamcastToolKind
+      write fDreamcastToolKind;
     property UseMinTTY: Boolean read fUseMinTTY write fUseMinTTY;
   end;
 
@@ -194,6 +203,7 @@ begin
     fSerialDirectory := fBaseDirectory + 'dcload-serial\';
     fSerialExecutable := ToolchainBase + 'bin\dc-tool-ser.exe';
     fInternetProtocolExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
+    fBaseExecutable := ToolchainBase + 'bin\dc-tool.exe';
   end;
 
   // KallistiOS
@@ -270,6 +280,12 @@ begin
       False
     );
 
+    fSettings.fDreamcastToolKind := TDreamcastToolKind(IniFile.ReadInteger(
+      CONFIG_SETTINGS_SECTION_NAME,
+      'DreamcastToolKind',
+      0
+    ));
+
     // Repositories
     fRepositories.fKallistiURL := IniFile.ReadString(
       CONFIG_REPOSITORIES_SECTION_NAME,
@@ -313,6 +329,11 @@ begin
       CONFIG_SETTINGS_SECTION_NAME,
       'UseMinTTY',
       fSettings.fUseMintty
+    );
+    IniFile.WriteInteger(
+      CONFIG_SETTINGS_SECTION_NAME,
+      'DreamcastToolKind',
+      Integer(fSettings.fDreamcastToolKind)
     );
 
     // Repositories

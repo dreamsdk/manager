@@ -25,11 +25,15 @@ type
     function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
     function InitializeEnvironment: Boolean;
     function Build(var BufferOutput: string): Boolean;
+    function Install: Boolean;
     property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
   end;
 
 implementation
+
+uses
+  FileUtil;
 
 { TDreamcastToolManager }
 
@@ -143,6 +147,28 @@ begin
   Result := True;
   Result := Result and DoBuild(Environment.FileSystem.DreamcastTool.InternetProtocolDirectory, Environment.FileSystem.DreamcastTool.InternetProtocolExecutable);
   Result := Result and DoBuild(Environment.FileSystem.DreamcastTool.SerialDirectory, Environment.FileSystem.DreamcastTool.SerialExecutable);
+end;
+
+function TDreamcastToolManager.Install: Boolean;
+var
+  SourceBinary: TFileName;
+
+begin
+  Result := True;
+  if not FileExists(Environment.FileSystem.DreamcastTool.BaseExecutable) then
+  begin
+    SourceBinary := '';
+    case Environment.Settings.DreamcastToolKind of
+      dtkInternetProtocol:
+        SourceBinary := Environment.FileSystem.DreamcastTool.InternetProtocolExecutable;
+      dtkSerial:
+        SourceBinary := Environment.FileSystem.DreamcastTool.SerialExecutable;
+    end;
+    if FileExists(SourceBinary) then
+    begin
+      Result := CopyFile(SourceBinary, Environment.FileSystem.DreamcastTool.BaseExecutable, True);
+    end;
+  end;
 end;
 
 end.

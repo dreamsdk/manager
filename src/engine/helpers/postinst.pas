@@ -8,7 +8,7 @@ uses
   Classes, SysUtils;
 
 function IsPostInstallMode: Boolean;
-function IsUpdateRequired: Boolean;
+function IsInstallOrUpdateRequired: Boolean;
 procedure ExecutePostInstall;
 
 implementation
@@ -40,7 +40,7 @@ begin
   Result := PostInstall;
 end;
 
-function IsUpdateRequired: Boolean;
+function IsInstallOrUpdateRequired: Boolean;
 begin
   Result := (not DreamcastSoftwareDevelopmentKitManager.KallistiOS.Built)
     or (not DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Installed)
@@ -51,7 +51,7 @@ procedure ExecutePostInstall;
 begin
   if PostInstall then
   begin
-    if IsUpdateRequired then
+    if IsInstallOrUpdateRequired then
       ExecuteThreadOperation(stiKallistiManage)
     else
       Application.Terminate;
