@@ -13,6 +13,10 @@ const
   DEFAULT_DREAMCAST_TOOL_SERIAL_URL = 'https://github.com/sizious/dcload-serial.git';
   DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL = 'https://github.com/sizious/dcload-ip.git';
 
+  DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dcsdk/';
+  DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'scripts/';
+  DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
+
 type
   TDreamcastToolKind = (
     dtkUndefined,
@@ -67,7 +71,6 @@ type
   { TDreamcastSoftwareDevelopmentFileSystemToolchain }
   TDreamcastSoftwareDevelopmentFileSystemToolchain = class(TObject)
   private
-    fFixupNewlibExecutable: TFileName;
     fBinutilsExecutable: TFileName;
     fGCCExecutable: TFileName;
     fGDBExecutable: TFileName;
@@ -80,22 +83,30 @@ type
     property GCCExecutable: TFileName read fGCCExecutable;
     property GDBExecutable: TFileName read fGDBExecutable;
     property NewlibBinary: TFileName read fNewlibBinary;
-    property FixupHitachiNewlibExecutable: TFileName read fFixupNewlibExecutable;
     property Installed: Boolean read fToolchainInstalled;
     property Kind: TToolchainKind read fKind;
+  end;
+
+  { TDreamcastSoftwareDevelopmentFileSystemShell }
+  TDreamcastSoftwareDevelopmentFileSystemShell = class(TObject)
+  private
+    fDreamSDKDirectory: TFileName;
+    fDreamSDKExecutable: TFileName;
+    fMinGWGetExecutable: TFileName;
+    fShellExecutable: TFileName;
+  public
+    property DreamSDKDirectory: TFileName read fDreamSDKDirectory;
+    property DreamSDKExecutable: TFileName read fDreamSDKExecutable;
+    property ShellExecutable: TFileName read fShellExecutable;
+    property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystem }
   TDreamcastSoftwareDevelopmentFileSystem = class(TObject)
   private
-    fDreamSDKDirectory: TFileName;
-    fDreamSDKExecutable: TFileName;
-
-    fMinGWGetExecutable: TFileName;
-
-    fShellExecutable: TFileName;
     fDreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool;
     fKallisti: TDreamcastSoftwareDevelopmentFileSystemKallisti;
+    fShell: TDreamcastSoftwareDevelopmentFileSystemShell;
     fToolchainARM: TDreamcastSoftwareDevelopmentFileSystemToolchain;
     fToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain;
   protected
@@ -105,12 +116,9 @@ type
     destructor Destroy; override;
     property DreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool
       read fDreamcastTool;
-    property DreamSDKDirectory: TFileName read fDreamSDKDirectory;
-    property DreamSDKExecutable: TFileName read fDreamSDKExecutable;
-    property ShellExecutable: TFileName read fShellExecutable;
-    property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
     property Kallisti: TDreamcastSoftwareDevelopmentFileSystemKallisti
       read fKallisti;
+    property Shell: TDreamcastSoftwareDevelopmentFileSystemShell read fShell;
     property ToolchainARM: TDreamcastSoftwareDevelopmentFileSystemToolchain
       read fToolchainARM;
     property ToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain
@@ -219,13 +227,16 @@ begin
   MSYSBase := InstallPath + 'msys\1.0\';
   ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
 
-  // MinGW/MSYS
-  fMinGWGetExecutable := InstallPath + 'bin\mingw-get.exe';
-  fShellExecutable := MSYSBase + 'bin\sh.exe';
+  with fShell do
+  begin
+    // MinGW/MSYS
+    fMinGWGetExecutable := InstallPath + 'bin\mingw-get.exe';
+    fShellExecutable := MSYSBase + 'bin\sh.exe';
 
-  // DreamSDK
-  fDreamSDKDirectory := MSYSBase + 'opt\dcsdk\';
-  fDreamSDKExecutable := fDreamSDKDirectory + 'dcsdk.exe';
+    // DreamSDK
+    fDreamSDKDirectory := MSYSBase + 'opt\dcsdk\';
+    fDreamSDKExecutable := fDreamSDKDirectory + 'dcsdk.exe';
+  end;
 
   // Toolchain for Super-H (Hitachi SH-4)
   ToolchainBaseSuperH := ToolchainBase + 'sh-elf\';
@@ -236,7 +247,6 @@ begin
     fGCCExecutable := ToolchainBaseSuperH + 'bin\sh-elf-gcc.exe';
     fGDBExecutable := ToolchainBaseSuperH + 'bin\sh-elf-gdb.exe';
     fNewlibBinary := ToolchainBaseSuperH + 'sh-elf\lib\libnosys.a';
-    fFixupNewlibExecutable := fDreamSDKDirectory + 'helpers\fixup-sh4-newlib';
   end;
 
   // Toolchain for ARM
@@ -248,7 +258,6 @@ begin
     fGCCExecutable := ToolchainBaseARM + 'bin\arm-eabi-gcc.exe';
     fGDBExecutable := ''; // Not Applicable
     fNewlibBinary := ''; // Not Applicable
-    fFixupNewlibExecutable := ''; // Not Applicable
   end;
 
   // dcload/dc-tool
@@ -278,6 +287,7 @@ begin
   fKallisti := TDreamcastSoftwareDevelopmentFileSystemKallisti.Create;
   fToolchainARM := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkARM);
   fToolchainSuperH := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkSuperH);
+  fShell := TDreamcastSoftwareDevelopmentFileSystemShell.Create;
 end;
 
 destructor TDreamcastSoftwareDevelopmentFileSystem.Destroy;
@@ -286,6 +296,7 @@ begin
   fKallisti.Free;
   fToolchainARM.Free;
   fToolchainSuperH.Free;
+  fShell.Free;
   inherited Destroy;
 end;
 
@@ -453,7 +464,7 @@ begin
   fShellCommandRunner := TRunCommand.Create(True);
   with fShellCommandRunner do
   begin
-    Executable := fFileSystem.ShellExecutable;
+    Executable := fFileSystem.Shell.ShellExecutable;
 
     Parameters.Add('--login');
     Parameters.Add('-i');

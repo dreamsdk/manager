@@ -42,8 +42,8 @@ type
     property Kind: TToolchainKind read fKind;
   end;
 
-  { TVersionRetriever }
-  TVersionRetriever = class(TObject)
+  { TComponentVersion }
+  TComponentVersion = class(TObject)
   private
     fBuildDateKallistiOS: TDateTime;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
@@ -132,9 +132,9 @@ begin
   fKind := ToolchainKind;
 end;
 
-{ TVersionRetriever }
+{ TComponentVersion }
 
-function TVersionRetriever.RetrieveVersion(Executable, CommandLine,
+function TComponentVersion.RetrieveVersion(Executable, CommandLine,
   StartTag, EndTag: string): string;
 var
   Buffer: string;
@@ -148,7 +148,7 @@ begin
   end;
 end;
 
-function TVersionRetriever.RetrieveVersionWithFind(
+function TComponentVersion.RetrieveVersionWithFind(
   FindTargetFileName: TFileName; StartTag, EndTag: string): string;
 var
   CommandLine: string;
@@ -160,7 +160,7 @@ begin
     Result := INVALID_VERSION;
 end;
 
-function TVersionRetriever.RetrieveKallistiVersion: string;
+function TComponentVersion.RetrieveKallistiVersion: string;
 const
   START_TAG = 'KallistiOS ';
   END_TAG = ':';
@@ -174,7 +174,7 @@ begin
     Result := INVALID_VERSION;
 end;
 
-function TVersionRetriever.RetrieveKallistiBuildDate: TDateTime;
+function TComponentVersion.RetrieveKallistiBuildDate: TDateTime;
 const
   c_UnassignedDate = -693594;
 
@@ -188,7 +188,7 @@ begin
     Result := FileDateToDateTime(BuildDate);
 end;
 
-procedure TVersionRetriever.RetrieveKallistiInformation;
+procedure TComponentVersion.RetrieveKallistiInformation;
 begin
   with fEnvironment.FileSystem.Kallisti do
   begin
@@ -205,7 +205,7 @@ begin
   end;
 end;
 
-procedure TVersionRetriever.RetrieveVersions;
+procedure TComponentVersion.RetrieveVersions;
 
   procedure RetrieveVersionToolchain(Version: TToolchainVersion;
     Environment: TDreamcastSoftwareDevelopmentFileSystemToolchain);
@@ -232,7 +232,7 @@ begin
     fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak);
     fVersionSVN := RetrieveVersion('svn', '--version', 'svn, version', sLineBreak);
     fVersionPython := RetrieveVersion('python', '--version', 'Python', sLineBreak);
-    fVersionMinGW := RetrieveVersion(MinGWGetExecutable,
+    fVersionMinGW := RetrieveVersion(Shell.MinGWGetExecutable,
       '--version', 'mingw-get version', sLineBreak);
 
     RetrieveVersionToolchain(fToolchainSuperH, ToolchainSuperH);
@@ -247,7 +247,7 @@ begin
   end;
 end;
 
-constructor TVersionRetriever.Create(
+constructor TComponentVersion.Create(
   Environment: TDreamcastSoftwareDevelopmentEnvironment);
 begin
   fEnvironment := Environment;
@@ -256,14 +256,14 @@ begin
   RetrieveVersions;
 end;
 
-destructor TVersionRetriever.Destroy;
+destructor TComponentVersion.Destroy;
 begin
   fToolchainSuperH.Free;
   fToolchainARM.Free;
   inherited Destroy;
 end;
 
-function TVersionRetriever.GetComponentVersion(
+function TComponentVersion.GetComponentVersion(
   const ComponentName: TComponentName): string;
 begin
   Result := '';

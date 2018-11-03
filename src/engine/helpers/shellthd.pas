@@ -10,6 +10,8 @@ uses
 type
   TShellThreadInputRequest = (
     stiKallistiManage,
+    stiKallistiPortsInstall,
+    stiKallistiPortsUninstall,
     stiKallistiPortInstall,
     stiKallistiPortUpdate,
     stiKallistiPortUninstall
@@ -19,6 +21,8 @@ type
     stoNothing,
     stoKallistiInstall,
     stoKallistiUpdate,
+    stoKallistiPortsInstall,
+    stoKallistiPortsUninstall,
     stoKallistiPortInstall,
     stoKallistiPortUpdate,
     stoKallistiPortUninstall
@@ -27,7 +31,8 @@ type
   TShellThreadContext = (
     stcUndefined,
     stcKallisti,
-    stcKallistiPort
+    stcKallistiPortSingle,
+    stcKallistiPorts
   );
 
   TShellThreadCommandTerminateEvent = procedure(
@@ -61,7 +66,8 @@ type
     procedure UpdateProgressText(const Text: string);
     procedure TriggerCommandTerminate(OutputBuffer: string);
     function ProcessKallistiOS: string;
-    function ProcessKallistiPort: string;
+    function ProcessKallistiPortSingle: string;
+    function ProcessKallistiPorts: string;
     procedure SetOperationSuccess(const Success: Boolean);
   public
     constructor Create(CreateSuspended: Boolean);
@@ -128,7 +134,8 @@ end;
 function GetThreadContext(const AOperation: TShellThreadInputRequest): TShellThreadContext;
 var
   ValidKallistiPortContext,
-  IsSingleKallistiPortOperation: Boolean;
+  IsSingleKallistiPortOperation,
+  IsKallistiPortsOperation: Boolean;
 
 begin
   Result := stcUndefined;
@@ -139,9 +146,14 @@ begin
   ValidKallistiPortContext := Assigned(frmMain.SelectedKallistiPort)
     and IsSingleKallistiPortOperation;
 
+  IsKallistiPortsOperation := (AOperation = stiKallistiPortsUninstall)
+    or (AOperation = stiKallistiPortsInstall);
+
   Result := stcKallisti;
   if ValidKallistiPortContext then
-    Result := stcKallistiPort;
+    Result := stcKallistiPortSingle
+  else if IsKallistiPortsOperation then
+    Result := stcKallistiPorts;
 end;
 
 procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
@@ -171,7 +183,7 @@ begin
 
     case ShellThreadContext of
 
-      stcKallistiPort:
+      stcKallistiPortSingle:
         begin
           KallistiPortText := Format(KallistiPortOperationText, [
             frmMain.SelectedKallistiPort.Name, frmMain.SelectedKallistiPort.Version]);
@@ -187,6 +199,9 @@ begin
 
       stcKallisti:
         OperationTitle := KallistiOperationText;
+
+      stcKallistiPorts:
+        OperationTitle := KallistiPortsOperationText;
     end;
 
     with frmProgress do
@@ -265,15 +280,20 @@ var
   Buffer: string;
 
 begin
-  fOperationSuccess := False;
+  fOperationSuccess := True;
+  fResponse := stoNothing;
+  fOperationUpdateState := uosUndefined;
+
   Buffer := '';
 
-  if FileExists(Manager.Environment.FileSystem.ShellExecutable) then
+  if FileExists(Manager.Environment.FileSystem.Shell.ShellExecutable) then
     case fContext of
       stcKallisti:
         Buffer := ProcessKallistiOS;
-      stcKallistiPort:
-        Buffer := ProcessKallistiPort;
+      stcKallistiPortSingle:
+        Buffer := ProcessKallistiPortSingle;
+      stcKallistiPorts:
+        Buffer := ProcessKallistiPorts;
     end
   else
   begin
@@ -524,10 +544,6 @@ var
 begin
   Result := '';
 
-  fOperationSuccess := True;
-  fResponse := stoNothing;
-  fOperationUpdateState := uosUndefined;
-
   IsModifiedKallisti := HandleKallisti;
 
   IsModifiedKallistiPorts := HandleKallistiPorts;
@@ -541,7 +557,7 @@ begin
   Result := OutputBuffer;
 end;
 
-function TShellThread.ProcessKallistiPort: string;
+function TShellThread.ProcessKallistiPortSingle: string;
 
   function RequestToResponse(Request: TShellThreadInputRequest): TShellThreadOutputResponse;
   begin
@@ -564,21 +580,45 @@ begin
     stiKallistiPortInstall:
       begin
         UpdateProgressText(KallistiPortInstallText);
-        fOperationSuccess := SelectedKallistiPort.Install(Result);
+        SetOperationSuccess(SelectedKallistiPort.Install(Result));
       end;
 
     stiKallistiPortUninstall:
       begin
         UpdateProgressText(KallistiPortUninstallText);
-        fOperationSuccess := SelectedKallistiPort.Uninstall(Result);
+        SetOperationSuccess(SelectedKallistiPort.Uninstall(Result));
       end;
 
     stiKallistiPortUpdate:
       begin
         UpdateProgressText(KallistiPortUpdateText);
         fOperationUpdateState := SelectedKallistiPort.Update(Result);
-        fOperationSuccess := fOperationUpdateState <> uosUpdateFailed;
+        SetOperationSuccess(fOperationUpdateState <> uosUpdateFailed);
       end;
+  end;
+
+end;
+
+function TShellThread.ProcessKallistiPorts: string;
+begin
+  Result := '';
+
+  case Operation of
+
+    stiKallistiPortsInstall:
+      begin
+        UpdateProgressText(KallistiPortsInstallText);
+        fResponse := stoKallistiPortsInstall;
+        SetOperationSuccess(Manager.KallistiPorts.Install(Result));
+      end;
+
+    stiKallistiPortsUninstall:
+      begin
+        UpdateProgressText(KallistiPortsUninstallText);
+        fResponse := stoKallistiPortsUninstall;
+        SetOperationSuccess(Manager.KallistiPorts.Uninstall(Result));
+      end;
+
   end;
 end;
 

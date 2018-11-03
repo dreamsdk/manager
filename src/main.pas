@@ -21,7 +21,6 @@ type
     btnRestoreDefaults: TButton;
     btnAllPortInstall: TButton;
     btnAllPortUninstall: TButton;
-    btnAllPortUpdate: TButton;
     edtPortLicense: TLabeledEdit;
     edtPortMaintainer: TLabeledEdit;
     edtPortURL: TLabeledEdit;
@@ -92,6 +91,8 @@ type
     tsEnvironment: TTabSheet;
     tsKallistiOS: TTabSheet;
     tsKallistiPorts: TTabSheet;
+    procedure btnAllPortInstallClick(Sender: TObject);
+    procedure btnAllPortUninstallClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure btnOpenMSYSClick(Sender: TObject);
@@ -116,6 +117,8 @@ type
     procedure rgxTerminalOptionClick(Sender: TObject);
     procedure tmrShellThreadTerminateTimer(Sender: TObject);
   private
+    fShellThreadSuccess: Boolean;
+    fShellThreadInputRequest: TShellThreadInputRequest;
     fShellThreadOutputResult: TShellThreadOutputResponse;
     fShellThreadUpdateState: TUpdateOperationState;
     procedure DisplayEnvironmentToolchainStatus;
@@ -130,6 +133,7 @@ type
     procedure UpdateKallistiPortControls;
     procedure SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
     procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
+    procedure RefreshKallistiPortsControls;
   public
     procedure UpdateDisplay(ForceRefresh: Boolean);
     procedure OnCommandTerminateThread(Request: TShellThreadInputRequest;
@@ -204,6 +208,9 @@ begin
 end;
 
 procedure TfrmMain.tmrShellThreadTerminateTimer(Sender: TObject);
+var
+  IsGlobalRefreshViewNeeded,
+  IsKallistiPortsRefreshViewNeeded: Boolean;
 
   procedure KallistiPortUpdateView;
   begin
@@ -215,40 +222,62 @@ procedure TfrmMain.tmrShellThreadTerminateTimer(Sender: TObject);
 begin
   tmrShellThreadTerminate.Enabled := False;
 
-  case fShellThreadOutputResult of
-    stoNothing:
-      MessageDlg(DialogInformationTitle, UpdateProcessEverythingUpdate, mtInformation, [mbOk], 0);
+  if fShellThreadSuccess then
+    case fShellThreadOutputResult of
+      // No action was done
+      stoNothing:
+        MessageDlg(DialogInformationTitle, UpdateProcessEverythingUpdate, mtInformation, [mbOk], 0);
 
-    stoKallistiInstall:
-      begin
-        MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
-        UpdateDisplay(True);
-      end;
+      // KallistiOS was installed
+      stoKallistiInstall:
+        MessageDlg(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
 
-    stoKallistiUpdate:
-      case fShellThreadUpdateState of
-        uosUpdateSuccess:
-          begin
+      // KallistiOS, KallistiOS Ports or Dreamcast Tool were updated
+      stoKallistiUpdate:
+        case fShellThreadUpdateState of
+          uosUpdateSuccess:
             MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
-            UpdateDisplay(True);
-          end;
-      end;
+        end;
 
-    stoKallistiPortInstall:
-      KallistiPortUpdateView;
+      // All KallistiOS Ports were installed
+      stoKallistiPortsInstall:
+        MessageDlg(DialogInformationTitle, UpdateProcessAllKallistiPortsInstalled, mtInformation, [mbOk], 0);
 
-    stoKallistiPortUpdate:
-      case fShellThreadUpdateState of
-        uosUpdateSuccess:
-          MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
-        uosUpdateUseless:
-          MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
-      end;
+      // All KallistiOS Ports were uninstalled
+      stoKallistiPortsUninstall:
+        MessageDlg(DialogInformationTitle, UpdateProcessAllKallistiPortsUninstalled, mtInformation, [mbOk], 0);
 
-    stoKallistiPortUninstall:
-      KallistiPortUpdateView;
+      // A single KallistiOS Port was installed
+      stoKallistiPortInstall:
+        KallistiPortUpdateView;
 
-  end;
+      // A single KallistiOS Port was updated
+      stoKallistiPortUpdate:
+        case fShellThreadUpdateState of
+          uosUpdateSuccess:
+            MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+          uosUpdateUseless:
+            MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+        end;
+
+      // A single KallistiOS Port was uninstalled
+      stoKallistiPortUninstall:
+        KallistiPortUpdateView;
+    end;
+
+  IsGlobalRefreshViewNeeded := (fShellThreadOutputResult = stoKallistiInstall)
+    or (fShellThreadOutputResult = stoKallistiUpdate)
+    or (fShellThreadOutputResult = stoKallistiPortsInstall)
+    or (fShellThreadOutputResult = stoKallistiPortsUninstall);
+
+  if IsGlobalRefreshViewNeeded then
+    UpdateDisplay(True);
+
+  IsKallistiPortsRefreshViewNeeded := (fShellThreadOutputResult = stoKallistiPortInstall)
+    or (fShellThreadOutputResult = stoKallistiPortUninstall);
+
+  if IsKallistiPortsRefreshViewNeeded then
+    RefreshKallistiPortsControls;
 end;
 
 procedure TfrmMain.DisplayEnvironmentToolchainStatus;
@@ -307,6 +336,7 @@ procedure TfrmMain.DisplayKallistiPorts;
 var
   i, j: Integer;
   PortInfo: TKallistiPortItem;
+  HasKallistiPorts: Boolean;
 
 begin
   lbxPorts.Clear;
@@ -319,13 +349,16 @@ begin
       lbxPorts.State[j] := cbGrayed;
   end;
 
-  if lbxPorts.Count > 0 then
+  HasKallistiPorts := (lbxPorts.Count > 0);
+  if HasKallistiPorts then
   begin
     lbxPorts.ItemIndex := 0;
     lbxPortsSelectionChange(Self, True);
   end
   else
     ClearKallistiPortPanel;
+
+  RefreshKallistiPortsControls;
 end;
 
 function TfrmMain.GetSelectedKallistiPort: TKallistiPortItem;
@@ -419,6 +452,22 @@ begin
   SetVersionLabelState(VersionLabel, not ValidVersion);
 end;
 
+procedure TfrmMain.RefreshKallistiPortsControls;
+var
+  i, PortsCount, InstalledPortsCount: Integer;
+
+begin
+  PortsCount := DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Count;
+
+  InstalledPortsCount := 0;
+  for i := 0 to PortsCount - 1 do
+    if DreamcastSoftwareDevelopmentKitManager.KallistiPorts[i].Installed then
+      Inc(InstalledPortsCount);
+
+  btnAllPortInstall.Enabled := (PortsCount <> InstalledPortsCount);
+  btnAllPortUninstall.Enabled := (InstalledPortsCount > 0);
+end;
+
 procedure TfrmMain.UpdateDisplay(ForceRefresh: Boolean);
 begin
   Cursor := crHourGlass;
@@ -440,12 +489,11 @@ procedure TfrmMain.OnCommandTerminateThread(Request: TShellThreadInputRequest;
   UpdateState: TUpdateOperationState);
 begin
   Application.ProcessMessages;
-  if Success then
-  begin
-    fShellThreadOutputResult := Response;
-    fShellThreadUpdateState := UpdateState;
-    tmrShellThreadTerminate.Enabled := True;
-  end;
+  fShellThreadSuccess := Success;
+  fShellThreadInputRequest := Request;
+  fShellThreadOutputResult := Response;
+  fShellThreadUpdateState := UpdateState;
+  tmrShellThreadTerminate.Enabled := True;
 end;
 
 procedure TfrmMain.btnCloseClick(Sender: TObject);
@@ -453,15 +501,27 @@ begin
   Close;
 end;
 
+procedure TfrmMain.btnAllPortInstallClick(Sender: TObject);
+begin
+  if MessageDlg(DialogQuestionTitle, InstallAllKallistiPorts, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+    ExecuteThreadOperation(stiKallistiPortsInstall);
+end;
+
+procedure TfrmMain.btnAllPortUninstallClick(Sender: TObject);
+begin
+  if MessageDlg(DialogQuestionTitle, UninstallAllKallistiPorts, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+    ExecuteThreadOperation(stiKallistiPortsUninstall);
+end;
+
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
 begin
-  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.MinGWGetExecutable);
+  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.MinGWGetExecutable);
 end;
 
 procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);
 begin
   DreamcastSoftwareDevelopmentKitManager.Environment.SaveConfig;
-  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.DreamSDKExecutable);
+  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.DreamSDKExecutable);
 end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
@@ -481,7 +541,7 @@ end;
 
 procedure TfrmMain.btnRestoreDefaultsClick(Sender: TObject);
 begin
-  if MessageDlg(RestoreDefaultsTitle, RestoreDefaultsText, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  if MessageDlg(DialogQuestionTitle, RestoreDefaultsText, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
   begin
     rgxTerminalOption.ItemIndex := 0;
     rgxTerminalOptionClick(Self);

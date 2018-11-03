@@ -33,13 +33,6 @@ implementation
 uses
   FileUtil, SysTools;
 
-resourcestring
-  KallistiFileSystemInstallationDirectory = 'kos';
-  EnvironShellScriptFileName = 'environ.sh';
-  EnvironSampleShellScriptFileName = 'doc\environ.sh.sample';
-  GenRomFSPackageFileName = '/opt/dcsdk/helpers/genromfs-0.5.1-cygwin-bin.tar.xz';
-  GenRomFSFileName = 'utils\genromfs.exe';
-
 { TKallistiManager }
 
 function TKallistiManager.GetInstalled: Boolean;
@@ -54,21 +47,29 @@ end;
 
 constructor TKallistiManager.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
+const
+  ENVIRON_SHELL_SCRIPT_FILENAME = 'environ.sh';
+  ENVIRON_SHELL_SCRIPT_SAMPLE_FILE_LOCATION = 'doc\environ.sh.sample';
+  GENROMFS_LOCATION_FILE = 'utils\genromfs.exe';
+
 begin
   fEnvironment := AEnvironment;
 
   fEnvironShellScriptFileName := fEnvironment.FileSystem.Kallisti.KallistiDirectory
-    + EnvironShellScriptFileName;
+    + ENVIRON_SHELL_SCRIPT_FILENAME;
   fEnvironSampleShellScriptFileName := fEnvironment.FileSystem.Kallisti.KallistiDirectory
-    + EnvironSampleShellScriptFileName;
+    + ENVIRON_SHELL_SCRIPT_SAMPLE_FILE_LOCATION;
 
-  fGenRomFSFileName := fEnvironment.FileSystem.Kallisti.KallistiDirectory + GenRomFSFileName;
+  fGenRomFSFileName := fEnvironment.FileSystem.Kallisti.KallistiDirectory + GENROMFS_LOCATION_FILE;
 end;
 
 function TKallistiManager.CloneRepository(var BufferOutput: string): Boolean;
+const
+  KALLISTI_INSTALLATION_DIRECTORY = 'kos';
+
 begin
   Result := fEnvironment.CloneRepository(fEnvironment.Repositories.KallistiURL,
-    KallistiFileSystemInstallationDirectory,
+    KALLISTI_INSTALLATION_DIRECTORY,
     fEnvironment.FileSystem.Kallisti.KallistiDirectory + '..\', BufferOutput);
 end;
 
@@ -78,6 +79,9 @@ begin
 end;
 
 function TKallistiManager.InitializeEnvironment: Boolean;
+const
+  GENROMFS_PACKAGE_FILENAME = DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY + 'genromfs-0.5.1-cygwin-bin.tar.xz';
+
 var
   CommandLine: string;
   WorkingDirectory: TFileName;
@@ -90,7 +94,7 @@ begin
 
   if not FileExists(fGenRomFSFileName) then
   begin
-    CommandLine := Format('tar xf %s', [GenRomFSPackageFileName]);
+    CommandLine := Format('tar xf %s', [GENROMFS_PACKAGE_FILENAME]);
     WorkingDirectory := fEnvironment.FileSystem.Kallisti.KallistiDirectory;
     fEnvironment.ExecuteShellCommand(CommandLine, WorkingDirectory);
   end;
@@ -105,6 +109,7 @@ end;
 
 function TKallistiManager.FixupHitachiNewlib(var BufferOutput: string): Boolean;
 const
+  FIXUP_SUPERH_NEWLIB = DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY + 'fixup-sh4-newlib';
   SUCCESS_TAG = 'Done!';
 
 var
@@ -112,8 +117,8 @@ var
   CommandLine: string;
 
 begin
-  WorkingDirectory := ExtractFilePath(fEnvironment.FileSystem.ToolchainSuperH.FixupHitachiNewlibExecutable);
-  CommandLine := Format('%s --verbose', [fEnvironment.FileSystem.ToolchainSuperH.FixupHitachiNewlibExecutable]);
+  WorkingDirectory := fEnvironment.FileSystem.Shell.DreamSDKDirectory;
+  CommandLine := Format('%s --verbose', [FIXUP_SUPERH_NEWLIB]);
   BufferOutput := fEnvironment.ExecuteShellCommand(CommandLine, WorkingDirectory);
   Result := IsInString(SUCCESS_TAG, BufferOutput);
 end;

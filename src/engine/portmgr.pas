@@ -54,13 +54,18 @@ type
     function GetItem(Index: Integer): TKallistiPortItem;
     function Add: TKallistiPortItem;
     procedure Clear;
+    function GetUtilityDirectory: TFileName;
     procedure ProcessPort(const PackagingDescriptionFilename: TFileName);
+  protected
+    property UtilityDirectory: TFileName read GetUtilityDirectory;
   public
     constructor Create(Environment: TDreamcastSoftwareDevelopmentEnvironment);
     destructor Destroy; override;
     function CloneRepository(var BufferOutput: string): Boolean;
     function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
     function InitializeEnvironment: Boolean;
+    function Install(var OutputBuffer: string): Boolean;
+    function Uninstall(var OutputBuffer: string): Boolean;
     procedure RetrieveAvailablePorts;
     property Count: Integer read GetCount;
     property Installed: Boolean read GetInstalled;
@@ -71,6 +76,14 @@ implementation
 
 uses
   FileUtil, SysTools;
+
+const
+  KALLISTI_PORTS_DIRECTORY = '/opt/toolchains/dc/kos-ports/';
+  KALLISTI_PORTS_UTILS_DIRECTORY = KALLISTI_PORTS_DIRECTORY + 'utils/';
+  KALLISTI_PORTS_ALL_BUILD = KALLISTI_PORTS_UTILS_DIRECTORY + 'build-all.sh';
+  KALLISTI_PORTS_ALL_CLEAN = KALLISTI_PORTS_UTILS_DIRECTORY + 'clean-all.sh';
+  KALLISTI_PORTS_ALL_UNINSTALL = KALLISTI_PORTS_UTILS_DIRECTORY + 'uninstall-all.sh';
+  KALLISTI_PORTS_RESET = DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY + 'kos-ports-reset';
 
 { TKallistiPortItem }
 
@@ -196,6 +209,11 @@ begin
   fList.Clear;
 end;
 
+function TKallistiPortManager.GetUtilityDirectory: TFileName;
+begin
+  Result := fEnvironment.FileSystem.Kallisti.KallistiPortsDirectory + 'utils\';
+end;
+
 procedure TKallistiPortManager.ProcessPort(const PackagingDescriptionFilename: TFileName);
 const
   MAKEFILE_FILE_NAME = 'Makefile';
@@ -303,7 +321,8 @@ end;
 
 function TKallistiPortManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
 begin
-  Result := fEnvironment.UpdateRepository(fEnvironment.FileSystem.Kallisti.KallistiPortsDirectory, BufferOutput);
+  Result := fEnvironment
+    .UpdateRepository(fEnvironment.FileSystem.Kallisti.KallistiPortsDirectory, BufferOutput);
 end;
 
 function TKallistiPortManager.InitializeEnvironment: Boolean;
@@ -332,6 +351,30 @@ begin
       '#FETCH_CMD = curl'
     );
   end;
+end;
+
+function TKallistiPortManager.Install(var OutputBuffer: string): Boolean;
+const
+  FAILED_TAG = 'Bailing out.';
+
+begin
+  Result := False;
+  if Installed then
+  begin
+    OutputBuffer := fEnvironment.ExecuteShellCommand(KALLISTI_PORTS_ALL_BUILD, UtilityDirectory);
+    fEnvironment.ExecuteShellCommand(KALLISTI_PORTS_ALL_CLEAN, UtilityDirectory);
+    Result := not IsInString(FAILED_TAG, OutputBuffer);
+  end;
+end;
+
+function TKallistiPortManager.Uninstall(var OutputBuffer: string): Boolean;
+begin
+  if Installed then
+  begin
+    OutputBuffer := fEnvironment.ExecuteShellCommand(KALLISTI_PORTS_ALL_UNINSTALL, UtilityDirectory);
+    fEnvironment.ExecuteShellCommand(KALLISTI_PORTS_RESET, UtilityDirectory);
+  end;
+  Result := Installed;
 end;
 
 end.

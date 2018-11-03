@@ -63,6 +63,7 @@ begin
       AbortThreadOperation;
       SetCloseButtonState(False);
       memBufferOutput.Lines.Add(SendingCancelSignal);
+      lblProgressStep.Caption := SendingCancelSignal;
     end
     else
       ResumeThreadOperation;

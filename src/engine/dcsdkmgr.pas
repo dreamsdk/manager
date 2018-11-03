@@ -13,7 +13,7 @@ type
   private
     fDreamcastTool: TDreamcastToolManager;
     fKallistiManager: TKallistiManager;
-    fVersionRetriever: TVersionRetriever;
+    fVersionRetriever: TComponentVersion;
     fKallistiPortsManager: TKallistiPortManager;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
   public
@@ -24,7 +24,7 @@ type
     property DreamcastTool: TDreamcastToolManager read fDreamcastTool;
     property KallistiOS: TKallistiManager read fKallistiManager;
     property KallistiPorts: TKallistiPortManager read fKallistiPortsManager;
-    property Versions: TVersionRetriever read fVersionRetriever;
+    property Versions: TComponentVersion read fVersionRetriever;
   end;
 
 implementation
@@ -34,7 +34,7 @@ implementation
 constructor TDreamcastSoftwareDevelopmentKitManager.Create;
 begin
   fEnvironment := TDreamcastSoftwareDevelopmentEnvironment.Create;
-  fVersionRetriever := TVersionRetriever.Create(fEnvironment);
+  fVersionRetriever := TComponentVersion.Create(fEnvironment);
   fKallistiPortsManager := TKallistiPortManager.Create(fEnvironment);
   fKallistiManager := TKallistiManager.Create(fEnvironment);
   fDreamcastTool := TDreamcastToolManager.Create(fEnvironment);
