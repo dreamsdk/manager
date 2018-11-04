@@ -150,25 +150,8 @@ begin
 end;
 
 function TDreamcastToolManager.Install: Boolean;
-var
-  SourceBinary: TFileName;
-
 begin
   Result := True;
-  if not FileExists(Environment.FileSystem.DreamcastTool.BaseExecutable) then
-  begin
-    SourceBinary := '';
-    case Environment.Settings.DreamcastToolKind of
-      dtkInternetProtocol:
-        SourceBinary := Environment.FileSystem.DreamcastTool.InternetProtocolExecutable;
-      dtkSerial:
-        SourceBinary := Environment.FileSystem.DreamcastTool.SerialExecutable;
-    end;
-    if FileExists(SourceBinary) then
-    begin
-      Result := CopyFile(SourceBinary, Environment.FileSystem.DreamcastTool.BaseExecutable, True);
-    end;
-  end;
 end;
 
 end.

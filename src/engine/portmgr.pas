@@ -14,7 +14,8 @@ type
   TKallistiPortItem = class(TObject)
   private
     fOwner: TKallistiPortManager;
-    fDirectory: TFileName;
+    fSourceDirectory: TFileName;
+    fInstallDirectory: TFileName;
     fDescription: string;
     fLicense: string;
     fMaintainer: string;
@@ -35,7 +36,8 @@ type
     function Update(var BufferOutput: string): TUpdateOperationState;
     property Name: string read fName;
     property Description: string read fDescription;
-    property Directory: TFileName read fDirectory;
+    property SourceDirectory: TFileName read fSourceDirectory;
+    property InstallDirectory: TFileName read fInstallDirectory;
     property Installed: Boolean read IsPortInstalled;
     property Maintainer: string read fMaintainer;
     property License: string read fLicense;
@@ -91,12 +93,12 @@ const
 
 function TKallistiPortItem.IsPortInstalled: Boolean;
 begin
-  Result := FileExists(fDirectory + '..\lib\.kos-ports\' + Name);
+  Result := FileExists(fSourceDirectory + '..\lib\.kos-ports\' + Name);
 end;
 
 function TKallistiPortItem.ExecuteShellCommand(const CommandLine: string): string;
 begin
-  Result := Environment.ExecuteShellCommand(CommandLine, Directory);
+  Result := Environment.ExecuteShellCommand(CommandLine, SourceDirectory);
 end;
 
 function TKallistiPortItem.GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
@@ -134,6 +136,8 @@ begin
   SuccessTag := Format(SUCCESS_TAG, [Name]);
   BufferOutput := ExecuteShellCommand('make uninstall');
   Result := IsInString(SuccessTag, BufferOutput);
+  if DirectoryExists(InstallDirectory) then
+    Result := DeleteDirectory(InstallDirectory, False);
 end;
 
 function TKallistiPortItem.Update(var BufferOutput: string): TUpdateOperationState;
@@ -273,6 +277,13 @@ var
     end;
   end;
 
+  function GetInstallDirectory: TFileName;
+  begin
+    Result := GetPackageString('HDR_INSTDIR');
+    if Result <> '' then
+      Result := PortDirectory + '..\include\' + Result;
+  end;
+
 begin
   PortDirectory := IncludeTrailingPathDelimiter(ExtractFilePath(PackagingDescriptionFilename));
   MakefileContent := TStringList.Create;
@@ -282,7 +293,7 @@ begin
 
     with Add do
     begin
-      fDirectory := PortDirectory;
+      fSourceDirectory := PortDirectory;
       fName := GetPackageString('PORTNAME');
       fVersion := GetPackageString('PORTVERSION');
       fMaintainer := GetPackageString('MAINTAINER');
@@ -290,6 +301,7 @@ begin
       fShortDescription := GetPackageString('SHORT_DESC');
       fDescription := GetPackageDescription(ExtractedURL);
       fURL := ExtractedURL;
+      fInstallDirectory := GetInstallDirectory;
     end;
   finally
     MakefileContent.Free;

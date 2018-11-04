@@ -26,6 +26,9 @@ object frmProgress: TfrmProgress
     Width = 632
     Font.Height = -12
     Font.Name = 'Courier New'
+    Lines.Strings = (
+      '01234567890123456789012345678901234567890123456789012345678901234567890123456789'
+    )
     ParentFont = False
     ReadOnly = True
     ScrollBars = ssAutoBoth
