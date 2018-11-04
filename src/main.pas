@@ -79,6 +79,7 @@ type
     pnlActions: TPanel;
     rgbDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
+    tmDisplayKallistiPorts: TTimer;
     tsHome: TTabSheet;
     tsDreamcastTool: TTabSheet;
     tmrShellThreadTerminate: TTimer;
@@ -111,14 +112,16 @@ type
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
     procedure rgbDreamcastToolClick(Sender: TObject);
     procedure rgxTerminalOptionClick(Sender: TObject);
+    procedure tmDisplayKallistiPortsTimer(Sender: TObject);
     procedure tmrShellThreadTerminateTimer(Sender: TObject);
   private
+    fKallistiPortsClearList: Boolean;
     fShellThreadSuccess: Boolean;
     fShellThreadInputRequest: TShellThreadInputRequest;
     fShellThreadOutputResult: TShellThreadOutputResponse;
     fShellThreadUpdateState: TUpdateOperationState;
     procedure DisplayEnvironmentComponentVersions;
-    procedure DisplayKallistiPorts;
+    procedure DisplayKallistiPorts(ClearList: Boolean);
     function GetSelectedKallistiPort: TKallistiPortItem;
     function GetSelectedKallistiPortItemIndex: Integer;
     procedure LoadConfiguration;
@@ -163,7 +166,7 @@ begin
   pcMain.TabIndex := 0;
   Application.Title := Caption;
   lblTitleAbout.Caption := Format(lblTitleAbout.Caption, [Caption]);
-  UpdateDisplay(False);
+  UpdateDisplay(True);
   LoadConfiguration;
 end;
 
@@ -201,17 +204,65 @@ begin
     .Settings.UseMinTTY := (rgxTerminalOption.ItemIndex = 1);
 end;
 
+procedure TfrmMain.tmDisplayKallistiPortsTimer(Sender: TObject);
+var
+  i, j: Integer;
+  PortInfo: TKallistiPortItem;
+  HasKallistiPorts: Boolean;
+
+begin
+  tmDisplayKallistiPorts.Enabled := False;
+
+  if fKallistiPortsClearList then
+  begin
+    // Reset the Ports view
+
+    lbxPorts.Clear;
+    for i := 0 to DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Count - 1 do
+    begin
+      PortInfo := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[i];
+      j := lbxPorts.Items.Add(PortInfo.Name);
+      lbxPorts.Items.Objects[j] := TObject(i);
+      if PortInfo.Installed then
+        lbxPorts.State[j] := cbGrayed;
+      Application.ProcessMessages;
+    end;
+
+    HasKallistiPorts := (lbxPorts.Count > 0);
+    if HasKallistiPorts then
+    begin
+      lbxPorts.ItemIndex := 0;
+      lbxPortsSelectionChange(Self, True);
+    end
+    else
+      ClearKallistiPortPanel;
+
+  end
+  else
+  begin
+    // Just refresh the current view
+
+    for i := 0 to lbxPorts.Items.Count - 1 do
+    begin
+      j := Integer(lbxPorts.Items.Objects[i]);
+      PortInfo := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[j];
+      if PortInfo.Installed then
+        lbxPorts.State[i] := cbGrayed
+      else
+        lbxPorts.State[i] := cbUnchecked;
+      Application.ProcessMessages;
+    end;
+
+    UpdateKallistiPortControls;
+  end;
+
+  RefreshKallistiPortsControls;
+end;
+
 procedure TfrmMain.tmrShellThreadTerminateTimer(Sender: TObject);
 var
   IsGlobalRefreshViewNeeded,
   IsKallistiPortsRefreshViewNeeded: Boolean;
-
-  procedure KallistiPortUpdateView;
-  begin
-    lbxPorts.State[lbxPorts.ItemIndex] :=
-      BooleanToCheckboxState(fShellThreadOutputResult = stoKallistiPortInstall);
-    UpdateKallistiPortControls;
-  end;
 
 begin
   tmrShellThreadTerminate.Enabled := False;
@@ -243,7 +294,7 @@ begin
 
       // A single KallistiOS Port was installed
       stoKallistiPortInstall:
-        KallistiPortUpdateView;
+        DisplayKallistiPorts(False);
 
       // A single KallistiOS Port was updated
       stoKallistiPortUpdate:
@@ -256,7 +307,7 @@ begin
 
       // A single KallistiOS Port was uninstalled
       stoKallistiPortUninstall:
-        KallistiPortUpdateView;
+        DisplayKallistiPorts(False);
     end;
 
   IsGlobalRefreshViewNeeded := (fShellThreadOutputResult = stoKallistiInstall)
@@ -311,33 +362,10 @@ begin
       .Environment.FileSystem.Kallisti.KallistiChangeLogFile);
 end;
 
-procedure TfrmMain.DisplayKallistiPorts;
-var
-  i, j: Integer;
-  PortInfo: TKallistiPortItem;
-  HasKallistiPorts: Boolean;
-
+procedure TfrmMain.DisplayKallistiPorts(ClearList: Boolean);
 begin
-  lbxPorts.Clear;
-  for i := 0 to DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Count - 1 do
-  begin
-    PortInfo := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[i];
-    j := lbxPorts.Items.Add(PortInfo.Name);
-    lbxPorts.Items.Objects[j] := TObject(i);
-    if PortInfo.Installed then
-      lbxPorts.State[j] := cbGrayed;
-  end;
-
-  HasKallistiPorts := (lbxPorts.Count > 0);
-  if HasKallistiPorts then
-  begin
-    lbxPorts.ItemIndex := 0;
-    lbxPortsSelectionChange(Self, True);
-  end
-  else
-    ClearKallistiPortPanel;
-
-  RefreshKallistiPortsControls;
+  fKallistiPortsClearList := ClearList;
+  tmDisplayKallistiPorts.Enabled := True;
 end;
 
 function TfrmMain.GetSelectedKallistiPort: TKallistiPortItem;
@@ -459,7 +487,7 @@ begin
   end;
 
   DisplayEnvironmentComponentVersions;
-  DisplayKallistiPorts;
+  DisplayKallistiPorts(ForceRefresh);
   Cursor := crDefault;
 end;
 

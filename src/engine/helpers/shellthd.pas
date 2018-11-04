@@ -358,6 +358,7 @@ var
     IsSuccess: Boolean;
 
   begin
+    IsSuccess := False;
     Result := roNothing;
     RepositoryName := RepositoryKindToString(RepositoryKind);
     if CanContinue then

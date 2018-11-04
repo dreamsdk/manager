@@ -47,8 +47,8 @@ type
   private
     fBuildDateKallistiOS: TDateTime;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
-    fToolchainARM: TToolchainVersion;
-    fToolchainSuperH: TToolchainVersion;
+    fToolchainVersionARM: TToolchainVersion;
+    fToolchainVersionSuperH: TToolchainVersion;
     fVersionGit: string;
     fVersionKallistiOS: string;
     fChangeLogKallistiOS: string;
@@ -83,8 +83,8 @@ type
     property KallistiOS: string read fVersionKallistiOS;
     property KallistiBuildDate: TDateTime read fBuildDateKallistiOS;
     property KallistiChangeLog: string read fChangeLogKallistiOS;
-    property ToolchainSuperH: TToolchainVersion read fToolchainSuperH;
-    property ToolchainARM: TToolchainVersion read fToolchainARM;
+    property ToolchainSuperH: TToolchainVersion read fToolchainVersionSuperH;
+    property ToolchainARM: TToolchainVersion read fToolchainVersionARM;
   end;
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
@@ -209,20 +209,20 @@ end;
 
 procedure TComponentVersion.RetrieveVersions;
 
-  procedure RetrieveVersionToolchain(Version: TToolchainVersion;
-    Environment: TDreamcastSoftwareDevelopmentFileSystemToolchain);
+  procedure RetrieveVersionToolchain(AVersion: TToolchainVersion;
+    AEnvironment: TDreamcastSoftwareDevelopmentFileSystemToolchain);
   begin
-    with Environment do
+    if Assigned(AVersion) then
     begin
-      Version.fVersionBinutils := RetrieveVersion(BinutilsExecutable,
+      AVersion.fVersionBinutils := RetrieveVersion(AEnvironment.BinutilsExecutable,
         '--version', ' (GNU Binutils)', sLineBreak);
-      Version.fVersionGCC := RetrieveVersion(GCCExecutable,
+      AVersion.fVersionGCC := RetrieveVersion(AEnvironment.GCCExecutable,
         '--version', ' (GCC)', sLineBreak);
-      if Environment.Kind = tkSuperH then
+      if AEnvironment.Kind = tkSuperH then
       begin
-        Version.fVersionGDB := RetrieveVersion(GDBExecutable,
+        AVersion.fVersionGDB := RetrieveVersion(AEnvironment.GDBExecutable,
           '--version', ' (GDB)', sLineBreak);
-        Version.fVersionNewlib := RetrieveVersionWithFind(NewlibBinary,
+        AVersion.fVersionNewlib := RetrieveVersionWithFind(AEnvironment.NewlibBinary,
           '/dc-chain/newlib-', '/newlib/libc/');
       end;
     end;
@@ -237,8 +237,8 @@ begin
     fVersionMinGW := RetrieveVersion(Shell.MinGWGetExecutable,
       '--version', 'mingw-get version', sLineBreak);
 
-    RetrieveVersionToolchain(fToolchainSuperH, ToolchainSuperH);
-    RetrieveVersionToolchain(fToolchainARM, ToolchainARM);
+    RetrieveVersionToolchain(fToolchainVersionSuperH, ToolchainSuperH);
+    RetrieveVersionToolchain(fToolchainVersionARM, ToolchainARM);
 
     fVersionToolSerial := RetrieveVersion(DreamcastTool.SerialExecutable,
       '-h', 'dc-tool', 'by <');
@@ -253,15 +253,15 @@ constructor TComponentVersion.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
 begin
   fEnvironment := AEnvironment;
-  fToolchainSuperH := TToolchainVersion.Create(tkSuperH);
-  fToolchainARM := TToolchainVersion.Create(tkARM);
+  fToolchainVersionSuperH := TToolchainVersion.Create(tkSuperH);
+  fToolchainVersionARM := TToolchainVersion.Create(tkARM);
   RetrieveVersions;
 end;
 
 destructor TComponentVersion.Destroy;
 begin
-  fToolchainSuperH.Free;
-  fToolchainARM.Free;
+  fToolchainVersionSuperH.Free;
+  fToolchainVersionARM.Free;
   inherited Destroy;
 end;
 
@@ -279,13 +279,13 @@ begin
     cnMinGW:
       Result := fVersionMinGW;
     cnBinutils:
-      Result := fToolchainSuperH.fVersionBinutils;
+      Result := fToolchainVersionSuperH.fVersionBinutils;
     cnGCC:
-      Result := fToolchainSuperH.fVersionGCC;
+      Result := fToolchainVersionSuperH.fVersionGCC;
     cnGDB:
-      Result := fToolchainSuperH.fVersionGDB;
+      Result := fToolchainVersionSuperH.fVersionGDB;
     cnNewlib:
-      Result := fToolchainSuperH.fVersionNewlib;
+      Result := fToolchainVersionSuperH.fVersionNewlib;
     cnToolSerial:
       Result := fVersionToolSerial;
     cnToolIP:
@@ -293,9 +293,9 @@ begin
     cnKallistiOS:
       Result := fVersionKallistiOS;
     cnBinutilsARM:
-      Result := fToolchainARM.fVersionBinutils;
+      Result := fToolchainVersionARM.fVersionBinutils;
     cnGCCARM:
-      Result := fToolchainARM.fVersionGCC;
+      Result := fToolchainVersionARM.fVersionGCC;
   end;
 end;
 

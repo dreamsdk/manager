@@ -798,7 +798,14 @@ object frmMain: TfrmMain
     Enabled = False
     Interval = 50
     OnTimer = tmrShellThreadTerminateTimer
-    left = 288
+    left = 208
+    top = 348
+  end
+  object tmDisplayKallistiPorts: TTimer
+    Enabled = False
+    Interval = 50
+    OnTimer = tmDisplayKallistiPortsTimer
+    left = 346
     top = 348
   end
 end
