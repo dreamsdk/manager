@@ -175,12 +175,6 @@ var
   ToolchainBaseSuperH,
   ToolchainBaseARM: TFileName;
 
-  function UnixPathToSystem(const PathName: TFileName): TFileName;
-  begin
-    Result := StringReplace(PathName, '/', DirectorySeparator, [rfReplaceAll]);
-    Result := IncludeTrailingPathDelimiter(Copy(Result, 2, Length(Result) - 1));
-  end;
-
 begin
   MSYSBase := InstallPath + 'msys\1.0\';
   ToolchainBase := MSYSBase + 'opt\toolchains\dc\';

@@ -59,11 +59,6 @@ begin
   Result := Environment.Settings.DreamcastTool;
 end;
 
-(*!-t <device>   Use <device> to communicate with dc (default: COM1)
-!-b <baudrate> Use <baudrate> (default: 57600)
-!-e            Try alternate 115200 (must also use -b 115200)
-!-E            Use an external clock for the DC's serial port
-!-p            Use dumb terminal rather than console/fileserver*)
 function TDreamcastToolManager.GenerateDreamcastToolCommandLine: string;
 var
   CommandLine: string;

@@ -12,6 +12,24 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
+  object btnClose: TButton
+    Left = 476
+    Height = 25
+    Top = 364
+    Width = 120
+    Caption = '&Quit'
+    OnClick = btnCloseClick
+    TabOrder = 1
+  end
+  object btnOpenMSYS: TButton
+    Left = 8
+    Height = 25
+    Top = 364
+    Width = 121
+    Caption = '&Run Shell...'
+    OnClick = btnOpenMSYSClick
+    TabOrder = 0
+  end
   object pcMain: TPageControl
     Left = 8
     Height = 348
@@ -956,8 +974,9 @@ object frmMain: TfrmMain
       object lblTitleAbout: TLabel
         Left = 4
         Height = 19
-        Top = 8
-        Width = 494
+        Top = 12
+        Width = 572
+        Alignment = taCenter
         AutoSize = False
         Caption = 'About %s'
         Font.Height = -16
@@ -965,25 +984,273 @@ object frmMain: TfrmMain
         ParentColor = False
         ParentFont = False
       end
+      object gbxManagerInfo: TGroupBox
+        Left = 4
+        Height = 92
+        Top = 128
+        Width = 281
+        Caption = 'About %s:'
+        ClientHeight = 74
+        ClientWidth = 277
+        TabOrder = 0
+        object edtManagerFileVersion: TLabeledEdit
+          Left = 124
+          Height = 13
+          Top = 8
+          Width = 136
+          BorderStyle = bsNone
+          Color = clForm
+          EditLabel.AnchorSideTop.Control = edtManagerFileVersion
+          EditLabel.AnchorSideTop.Side = asrCenter
+          EditLabel.AnchorSideRight.Control = edtManagerFileVersion
+          EditLabel.AnchorSideBottom.Control = edtManagerFileVersion
+          EditLabel.AnchorSideBottom.Side = asrBottom
+          EditLabel.Left = 57
+          EditLabel.Height = 13
+          EditLabel.Top = 8
+          EditLabel.Width = 64
+          EditLabel.Caption = 'File Version'
+          EditLabel.ParentColor = False
+          EditLabel.ParentFont = False
+          EditLabel.Font.Style = [fsBold]
+          LabelPosition = lpLeft
+          ReadOnly = True
+          TabOrder = 0
+          Text = 'edtManagerFileVersion'
+        end
+        object edtManagerCompiledDate: TLabeledEdit
+          Left = 124
+          Height = 13
+          Top = 28
+          Width = 136
+          BorderStyle = bsNone
+          Color = clForm
+          EditLabel.AnchorSideTop.Control = edtManagerCompiledDate
+          EditLabel.AnchorSideTop.Side = asrCenter
+          EditLabel.AnchorSideRight.Control = edtManagerCompiledDate
+          EditLabel.AnchorSideBottom.Control = edtManagerCompiledDate
+          EditLabel.AnchorSideBottom.Side = asrBottom
+          EditLabel.Left = 64
+          EditLabel.Height = 13
+          EditLabel.Top = 28
+          EditLabel.Width = 57
+          EditLabel.Caption = 'Build Date'
+          EditLabel.ParentColor = False
+          EditLabel.ParentFont = False
+          EditLabel.Font.Style = [fsBold]
+          LabelPosition = lpLeft
+          ReadOnly = True
+          TabOrder = 1
+          Text = 'edtManagerCompiledDate'
+        end
+      end
+      object gbxCompilerInfo: TGroupBox
+        Left = 296
+        Height = 76
+        Top = 40
+        Width = 281
+        Caption = 'Compiler Information:'
+        ClientHeight = 58
+        ClientWidth = 277
+        TabOrder = 1
+        object edtManagerCompilerInfo: TLabeledEdit
+          Left = 124
+          Height = 13
+          Top = 8
+          Width = 136
+          BorderStyle = bsNone
+          Color = clForm
+          EditLabel.AnchorSideTop.Control = edtManagerCompilerInfo
+          EditLabel.AnchorSideTop.Side = asrCenter
+          EditLabel.AnchorSideRight.Control = edtManagerCompilerInfo
+          EditLabel.AnchorSideBottom.Control = edtManagerCompilerInfo
+          EditLabel.AnchorSideBottom.Side = asrBottom
+          EditLabel.Left = 45
+          EditLabel.Height = 13
+          EditLabel.Top = 8
+          EditLabel.Width = 76
+          EditLabel.Caption = 'Compiler Info'
+          EditLabel.ParentColor = False
+          EditLabel.ParentFont = False
+          EditLabel.Font.Style = [fsBold]
+          LabelPosition = lpLeft
+          ReadOnly = True
+          TabOrder = 0
+          Text = 'edtManagerCompilerInfo'
+        end
+        object edtManagerLCLVersion: TLabeledEdit
+          Left = 124
+          Height = 13
+          Top = 28
+          Width = 136
+          BorderStyle = bsNone
+          Color = clForm
+          EditLabel.AnchorSideTop.Control = edtManagerLCLVersion
+          EditLabel.AnchorSideTop.Side = asrCenter
+          EditLabel.AnchorSideRight.Control = edtManagerLCLVersion
+          EditLabel.AnchorSideBottom.Control = edtManagerLCLVersion
+          EditLabel.AnchorSideBottom.Side = asrBottom
+          EditLabel.Left = 57
+          EditLabel.Height = 13
+          EditLabel.Top = 28
+          EditLabel.Width = 64
+          EditLabel.Caption = 'LCL Version'
+          EditLabel.ParentColor = False
+          EditLabel.ParentFont = False
+          EditLabel.Font.Style = [fsBold]
+          LabelPosition = lpLeft
+          ReadOnly = True
+          TabOrder = 1
+          Text = 'edtManagerLCLVersion'
+        end
+      end
+      object gbxHostEnvironment: TGroupBox
+        Left = 296
+        Height = 92
+        Top = 128
+        Width = 281
+        Caption = 'Host Environment Information:'
+        ClientHeight = 74
+        ClientWidth = 277
+        TabOrder = 2
+        object edtManagerOS: TLabeledEdit
+          Left = 124
+          Height = 13
+          Top = 28
+          Width = 136
+          BorderStyle = bsNone
+          Color = clForm
+          EditLabel.AnchorSideTop.Control = edtManagerOS
+          EditLabel.AnchorSideTop.Side = asrCenter
+          EditLabel.AnchorSideRight.Control = edtManagerOS
+          EditLabel.AnchorSideBottom.Control = edtManagerOS
+          EditLabel.AnchorSideBottom.Side = asrBottom
+          EditLabel.Left = 19
+          EditLabel.Height = 13
+          EditLabel.Top = 28
+          EditLabel.Width = 102
+          EditLabel.Caption = 'Operating System'
+          EditLabel.ParentColor = False
+          EditLabel.ParentFont = False
+          EditLabel.Font.Style = [fsBold]
+          LabelPosition = lpLeft
+          ReadOnly = True
+          TabOrder = 0
+          Text = 'edtManagerOS'
+        end
+        object edtManagerWidgetSet: TLabeledEdit
+          Left = 124
+          Height = 13
+          Top = 48
+          Width = 136
+          BorderStyle = bsNone
+          Color = clForm
+          EditLabel.AnchorSideTop.Control = edtManagerWidgetSet
+          EditLabel.AnchorSideTop.Side = asrCenter
+          EditLabel.AnchorSideRight.Control = edtManagerWidgetSet
+          EditLabel.AnchorSideBottom.Control = edtManagerWidgetSet
+          EditLabel.AnchorSideBottom.Side = asrBottom
+          EditLabel.Left = 59
+          EditLabel.Height = 13
+          EditLabel.Top = 48
+          EditLabel.Width = 62
+          EditLabel.Caption = 'Widget Set'
+          EditLabel.ParentColor = False
+          EditLabel.ParentFont = False
+          EditLabel.Font.Style = [fsBold]
+          LabelPosition = lpLeft
+          ReadOnly = True
+          TabOrder = 1
+          Text = 'edtManagerWidgetSet'
+        end
+        object edtManagerTargetInfo: TLabeledEdit
+          Left = 124
+          Height = 13
+          Top = 8
+          Width = 136
+          BorderStyle = bsNone
+          Color = clForm
+          EditLabel.AnchorSideTop.Control = edtManagerTargetInfo
+          EditLabel.AnchorSideTop.Side = asrCenter
+          EditLabel.AnchorSideRight.Control = edtManagerTargetInfo
+          EditLabel.AnchorSideBottom.Control = edtManagerTargetInfo
+          EditLabel.AnchorSideBottom.Side = asrBottom
+          EditLabel.Left = 57
+          EditLabel.Height = 13
+          EditLabel.Top = 8
+          EditLabel.Width = 64
+          EditLabel.Caption = 'Target Info'
+          EditLabel.ParentColor = False
+          EditLabel.ParentFont = False
+          EditLabel.Font.Style = [fsBold]
+          LabelPosition = lpLeft
+          ReadOnly = True
+          TabOrder = 2
+          Text = 'edtManagerTargetInfo'
+        end
+      end
+      object gbxPackageInfo: TGroupBox
+        Left = 4
+        Height = 76
+        Top = 40
+        Width = 281
+        Caption = 'Package Information:'
+        ClientHeight = 58
+        ClientWidth = 277
+        TabOrder = 3
+        object edtManagerProductVersion: TLabeledEdit
+          Left = 123
+          Height = 13
+          Top = 8
+          Width = 136
+          BorderStyle = bsNone
+          Color = clForm
+          EditLabel.AnchorSideTop.Control = edtManagerProductVersion
+          EditLabel.AnchorSideTop.Side = asrCenter
+          EditLabel.AnchorSideRight.Control = edtManagerProductVersion
+          EditLabel.AnchorSideBottom.Control = edtManagerProductVersion
+          EditLabel.AnchorSideBottom.Side = asrBottom
+          EditLabel.Left = 31
+          EditLabel.Height = 13
+          EditLabel.Top = 8
+          EditLabel.Width = 89
+          EditLabel.Caption = 'Product Version'
+          EditLabel.ParentColor = False
+          EditLabel.ParentFont = False
+          EditLabel.Font.Style = [fsBold]
+          LabelPosition = lpLeft
+          ReadOnly = True
+          TabOrder = 0
+          Text = 'edtManagerProductVersion'
+        end
+      end
+      object gbxLauncherVersion: TGroupBox
+        Left = 4
+        Height = 85
+        Top = 232
+        Width = 281
+        Caption = 'gbxLauncherVersion'
+        TabOrder = 4
+      end
+      object pnlAbout: TPanel
+        Left = 296
+        Height = 80
+        Top = 240
+        Width = 280
+        BevelOuter = bvLowered
+        ClientHeight = 80
+        ClientWidth = 280
+        TabOrder = 5
+        object btnCredits: TButton
+          Left = 36
+          Height = 25
+          Top = 29
+          Width = 209
+          Caption = '&Credits...'
+          TabOrder = 0
+        end
+      end
     end
-  end
-  object btnClose: TButton
-    Left = 476
-    Height = 25
-    Top = 364
-    Width = 120
-    Caption = '&Quit'
-    OnClick = btnCloseClick
-    TabOrder = 1
-  end
-  object btnOpenMSYS: TButton
-    Left = 8
-    Height = 25
-    Top = 364
-    Width = 121
-    Caption = '&Run Shell...'
-    OnClick = btnOpenMSYSClick
-    TabOrder = 0
   end
   object tmrShellThreadTerminate: TTimer
     Enabled = False

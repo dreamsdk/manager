@@ -14,7 +14,7 @@ resourcestring
   DialogWarningTitle = 'Warning';
 
   // Main
-  MailToSubject = '[KallistiOS] Question (from DreamSDK) about the %s KallistiOS Port';
+  MailToSubject = 'Question about the KallistiOS Port: %s';
   RestoreDefaultsText = 'Are you sure to restore settings to its defaults?';
   UserInterfaceNotInstalledText = 'Not installed';
   UserInterfaceInstalledText = 'OK';

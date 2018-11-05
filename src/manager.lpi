@@ -18,7 +18,10 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <Attributes pvaDebug="True"/>
+      <AutoIncrementBuild Value="True"/>
+      <MajorVersionNr Value="1"/>
+      <BuildNr Value="64"/>
+      <StringTable CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" OriginalFilename="manager.exe" ProductName="DreamSDK" ProductVersion="1.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="2">
       <Item1 Name="Release" Default="True"/>
@@ -31,7 +34,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="engine;engine\sys;engine\helpers;..\..\common\src"/>
+            <OtherUnitFiles Value="engine;engine\sys;engine\helpers;..\..\common\src;..\..\common\src\sys"/>
             <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -133,12 +136,12 @@
         <UnitName Value="KOSMgr"/>
       </Unit7>
       <Unit8>
-        <Filename Value="engine\sys\runcmd.pas"/>
+        <Filename Value="..\..\common\src\sys\runcmd.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="RunCmd"/>
       </Unit8>
       <Unit9>
-        <Filename Value="engine\sys\systools.pas"/>
+        <Filename Value="..\..\common\src\sys\systools.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SysTools"/>
       </Unit9>
@@ -153,7 +156,7 @@
         <UnitName Value="PostInst"/>
       </Unit11>
       <Unit12>
-        <Filename Value="engine\sys\version.pas"/>
+        <Filename Value="..\..\common\src\sys\version.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Version"/>
       </Unit12>
@@ -182,7 +185,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="engine;engine\sys;engine\helpers"/>
+      <OtherUnitFiles Value="engine;engine\sys;engine\helpers;..\..\common\src;..\..\common\src\sys"/>
       <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>

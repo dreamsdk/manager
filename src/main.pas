@@ -13,98 +13,113 @@ type
   { TfrmMain }
   TfrmMain = class(TForm)
     apMain: TApplicationProperties;
+    btnAllPortInstall: TButton;
+    btnAllPortUninstall: TButton;
     btnClose: TButton;
     btnOpenMinGWManager: TButton;
     btnOpenMSYS: TButton;
     btnPortInstall: TButton;
     btnPortUninstall: TButton;
     btnPortUpdate: TButton;
-    btnUpdateKallistiOS: TButton;
     btnRestoreDefaults: TButton;
-    btnAllPortInstall: TButton;
-    btnAllPortUninstall: TButton;
-    ckxDreamcastToolAttachConsoleFileServer: TCheckBox;
-    ckxDreamcastToolClearScreenBeforeDownload: TCheckBox;
-    ckxDreamcastToolAlwaysStartGDB: TCheckBox;
-    ckxDreamcastToolSerialAlternateBaudrate: TCheckBox;
-    ckxDreamcastToolSerialExternalClock: TCheckBox;
-    ckxDreamcastToolSerialDumbTerminal: TCheckBox;
+    btnUpdateKallistiOS: TButton;
+    btnCredits: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
+    cbxUrlDreamcastToolIP: TComboBox;
+    cbxUrlDreamcastToolSerial: TComboBox;
     cbxUrlKallisti: TComboBox;
     cbxUrlKallistiPorts: TComboBox;
-    cbxUrlDreamcastToolSerial: TComboBox;
-    cbxUrlDreamcastToolIP: TComboBox;
+    ckxDreamcastToolAlwaysStartGDB: TCheckBox;
+    ckxDreamcastToolAttachConsoleFileServer: TCheckBox;
+    ckxDreamcastToolClearScreenBeforeDownload: TCheckBox;
+    ckxDreamcastToolSerialAlternateBaudrate: TCheckBox;
+    ckxDreamcastToolSerialDumbTerminal: TCheckBox;
+    ckxDreamcastToolSerialExternalClock: TCheckBox;
+    edtDreamcastToolInternetProtocolAddress: TMaskEdit;
+    edtManagerCompiledDate: TLabeledEdit;
+    edtManagerCompilerInfo: TLabeledEdit;
+    edtManagerFileVersion: TLabeledEdit;
+    edtManagerLCLVersion: TLabeledEdit;
+    edtManagerOS: TLabeledEdit;
+    edtManagerProductVersion: TLabeledEdit;
+    edtManagerTargetInfo: TLabeledEdit;
+    edtManagerWidgetSet: TLabeledEdit;
     edtPortLicense: TLabeledEdit;
     edtPortMaintainer: TLabeledEdit;
     edtPortURL: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
-    gbxToolchain1: TGroupBox;
-    gbxKallistiChangeLog: TGroupBox;
-    gbxUrlKallistiOS: TGroupBox;
-    gbxUrlDreamcastToolSerial: TGroupBox;
-    gbxUrlDreamcastToolIP: TGroupBox;
-    gbxUrlKallistiPorts: TGroupBox;
-    gbxPortAll: TGroupBox;
-    gbxPortDetails: TGroupBox;
-    gbxDreamcastToolSerial: TGroupBox;
-    gbxDreamcastToolInternetProtocol: TGroupBox;
-    gbxDreamcastToolCommon: TGroupBox;
-    lblInvalidlInternetProtocolAddress: TLabel;
-    lblDreamcastToolInternetProtocolAddress: TLabel;
-    lblDreamcastToolSerialPort: TLabel;
-    lblDreamcastToolSerialBaudrate: TLabel;
-    lblBuildDateKallistiOS: TLabel;
-    lblPortName: TLabel;
-    lblTextBinutilsARM: TLabel;
-    lblTextGCCARM: TLabel;
-    lblTitleAbout: TLabel;
-    lblTextKallistiOS: TLabel;
-    lblTextBuildDateKallistiOS: TLabel;
-    lblVersionBinutilsARM: TLabel;
-    lblVersionGCCARM: TLabel;
-    lbxPorts: TCheckListBox;
+    gbxManagerInfo: TGroupBox;
     gbxAvailablePorts: TGroupBox;
-    gbxToolchain: TGroupBox;
+    gbxCompilerInfo: TGroupBox;
     gbxDependencies: TGroupBox;
     gbxDreamcastTool: TGroupBox;
+    gbxDreamcastToolCommon: TGroupBox;
+    gbxDreamcastToolInternetProtocol: TGroupBox;
+    gbxDreamcastToolSerial: TGroupBox;
+    gbxKallistiChangeLog: TGroupBox;
+    gbxPortAll: TGroupBox;
+    gbxPortDetails: TGroupBox;
+    gbxToolchain: TGroupBox;
+    gbxToolchain1: TGroupBox;
+    gbxUrlDreamcastToolIP: TGroupBox;
+    gbxUrlDreamcastToolSerial: TGroupBox;
+    gbxUrlKallistiOS: TGroupBox;
+    gbxUrlKallistiPorts: TGroupBox;
+    gbxHostEnvironment: TGroupBox;
+    gbxPackageInfo: TGroupBox;
+    gbxLauncherVersion: TGroupBox;
+    lblBuildDateKallistiOS: TLabel;
+    lblDreamcastToolInternetProtocolAddress: TLabel;
+    lblDreamcastToolSerialBaudrate: TLabel;
+    lblDreamcastToolSerialPort: TLabel;
+    lblInvalidlInternetProtocolAddress: TLabel;
+    lblPortName: TLabel;
     lblTextBinutils: TLabel;
+    lblTextBinutilsARM: TLabel;
+    lblTextBuildDateKallistiOS: TLabel;
+    lblTextGCC: TLabel;
+    lblTextGCCARM: TLabel;
+    lblTextGDB: TLabel;
     lblTextGit: TLabel;
+    lblTextKallistiOS: TLabel;
+    lblTextMinGW: TLabel;
+    lblTextNewlib: TLabel;
     lblTextPython: TLabel;
     lblTextSVN: TLabel;
-    lblTextMinGW: TLabel;
-    lblTextToolSerial: TLabel;
-    lblTextGCC: TLabel;
-    lblTextNewlib: TLabel;
-    lblTextGDB: TLabel;
     lblTextToolIP: TLabel;
-    lblVersionToolSerial: TLabel;
-    lblVersionToolIP: TLabel;
-    lblVersionKallistiOS: TLabel;
+    lblTextToolSerial: TLabel;
+    lblTitleAbout: TLabel;
     lblVersionBinutils: TLabel;
+    lblVersionBinutilsARM: TLabel;
     lblVersionGCC: TLabel;
+    lblVersionGCCARM: TLabel;
     lblVersionGDB: TLabel;
     lblVersionGit: TLabel;
+    lblVersionKallistiOS: TLabel;
+    lblVersionMinGW: TLabel;
     lblVersionNewlib: TLabel;
     lblVersionPython: TLabel;
-    lblVersionMinGW: TLabel;
     lblVersionSVN: TLabel;
-    edtDreamcastToolInternetProtocolAddress: TMaskEdit;
+    lblVersionToolIP: TLabel;
+    lblVersionToolSerial: TLabel;
+    lbxPorts: TCheckListBox;
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
     memPortShortDescription: TMemo;
+    pnlAbout: TPanel;
     pcMain: TPageControl;
     pnlActions: TPanel;
     rgbDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
     tmDisplayKallistiPorts: TTimer;
-    tsDreamcastTool: TTabSheet;
     tmrShellThreadTerminate: TTimer;
     tsAbout: TTabSheet;
-    tsOptions: TTabSheet;
+    tsDreamcastTool: TTabSheet;
     tsEnvironment: TTabSheet;
     tsKallistiOS: TTabSheet;
     tsKallistiPorts: TTabSheet;
+    tsOptions: TTabSheet;
     procedure apMainException(Sender: TObject; E: Exception);
     procedure btnAllPortInstallClick(Sender: TObject);
     procedure btnAllPortUninstallClick(Sender: TObject);
@@ -163,6 +178,7 @@ type
     procedure InstallDreamcastTool;
     procedure HandleInvalidInternetProtocolAddress(const InvalidMaskFormat: Boolean);
     procedure LoadRepositoriesSelectionList;
+    procedure InitializeAboutScreen;
   public
     procedure UpdateDisplay(ForceRefresh: Boolean);
     procedure OnCommandTerminateThread(Request: TShellThreadInputRequest;
@@ -184,19 +200,20 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, GetVer, SysTools, PostInst, Settings;
+  LCLIntf, GetVer, SysTools, PostInst, Settings, Version;
 
 const
-  KALLISTI_BUILD_DATE_FORMAT  = 'YYYY-MM-DD @ HH:mm:ss';
-  KALLISTI_VERSION_FORMAT     = '%s (%s)';
+  BUILD_DATE_FORMAT = 'YYYY-MM-DD @ HH:mm:ss';
+  KALLISTI_VERSION_FORMAT = '%s (%s)';
 
 { TfrmMain }
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
+  DoubleBuffered := True;
   pcMain.TabIndex := 0;
   Application.Title := Caption;
-  lblTitleAbout.Caption := Format(lblTitleAbout.Caption, [Caption]);
+  InitializeAboutScreen;
   fLoadingConfiguration := True;
   LoadRepositoriesSelectionList;
   LoadConfiguration;
@@ -386,7 +403,7 @@ begin
   // KallistiOS build date
   lblBuildDateKallistiOS.Caption := '';
   if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Kallisti.KallistiLibrary) then
-    lblBuildDateKallistiOS.Caption := FormatDateTime(KALLISTI_BUILD_DATE_FORMAT,
+    lblBuildDateKallistiOS.Caption := FormatDateTime(BUILD_DATE_FORMAT,
       DreamcastSoftwareDevelopmentKitManager.Versions.KallistiBuildDate);
 
   // KallistiOS changes log display
@@ -598,6 +615,20 @@ begin
   LoadControl(cbxUrlKallistiPorts, REPOSITORY_CONFIG_KALLISTI_PORTS);
   LoadControl(cbxUrlDreamcastToolSerial, REPOSITORY_CONFIG_DCLOAD_SERIAL);
   LoadControl(cbxUrlDreamcastToolIP, REPOSITORY_CONFIG_DCLOAD_IP);
+end;
+
+procedure TfrmMain.InitializeAboutScreen;
+begin
+  lblTitleAbout.Caption := Format(lblTitleAbout.Caption, [GetProductName]);
+  gbxManagerInfo.Caption := Format(gbxManagerInfo.Caption, [Caption]);
+  edtManagerFileVersion.Text := GetFileVersion;
+  edtManagerProductVersion.Text := GetProductVersion;
+  edtManagerCompiledDate.Text := FormatDateTime(BUILD_DATE_FORMAT, GetCompiledDateTime);
+  edtManagerCompilerInfo.Text := GetCompilerInfo;
+  edtManagerTargetInfo.Text := GetTargetInfo;
+  edtManagerOS.Text := GetOS;
+  edtManagerLCLVersion.Text := GetLCLVersion;
+  edtManagerWidgetSet.Text := GetWidgetSet;
 end;
 
 procedure TfrmMain.UpdateDisplay(ForceRefresh: Boolean);
