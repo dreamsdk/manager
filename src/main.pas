@@ -6,11 +6,13 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  StdCtrls, ExtCtrls, CheckLst, PortMgr, ShellThd, DCSDKMgr, Environ, StrRes;
+  StdCtrls, ExtCtrls, CheckLst, MaskEdit, PortMgr, ShellThd, DCSDKMgr, Environ,
+  StrRes;
 
 type
   { TfrmMain }
   TfrmMain = class(TForm)
+    apMain: TApplicationProperties;
     btnClose: TButton;
     btnOpenMinGWManager: TButton;
     btnOpenMSYS: TButton;
@@ -21,14 +23,22 @@ type
     btnRestoreDefaults: TButton;
     btnAllPortInstall: TButton;
     btnAllPortUninstall: TButton;
+    ckxDreamcastToolAttachConsoleFileServer: TCheckBox;
+    ckxDreamcastToolClearScreenBeforeDownload: TCheckBox;
+    ckxDreamcastToolAlwaysStartGDB: TCheckBox;
+    ckxDreamcastToolSerialAlternateBaudrate: TCheckBox;
+    ckxDreamcastToolSerialExternalClock: TCheckBox;
+    ckxDreamcastToolSerialDumbTerminal: TCheckBox;
+    cbxDreamcastToolSerialBaudrate: TComboBox;
+    cbxDreamcastToolSerialPort: TComboBox;
+    cbxUrlKallisti: TComboBox;
+    cbxUrlKallistiPorts: TComboBox;
+    cbxUrlDreamcastToolSerial: TComboBox;
+    cbxUrlDreamcastToolIP: TComboBox;
     edtPortLicense: TLabeledEdit;
     edtPortMaintainer: TLabeledEdit;
     edtPortURL: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
-    edtUrlKallistiOS: TEdit;
-    edtUrlDreamcastToolSerial: TEdit;
-    edtUrlDreamcastToolIP: TEdit;
-    edtUrlKallistiPorts: TEdit;
     gbxToolchain1: TGroupBox;
     gbxKallistiChangeLog: TGroupBox;
     gbxUrlKallistiOS: TGroupBox;
@@ -37,6 +47,13 @@ type
     gbxUrlKallistiPorts: TGroupBox;
     gbxPortAll: TGroupBox;
     gbxPortDetails: TGroupBox;
+    gbxDreamcastToolSerial: TGroupBox;
+    gbxDreamcastToolInternetProtocol: TGroupBox;
+    gbxDreamcastToolCommon: TGroupBox;
+    lblInvalidlInternetProtocolAddress: TLabel;
+    lblDreamcastToolInternetProtocolAddress: TLabel;
+    lblDreamcastToolSerialPort: TLabel;
+    lblDreamcastToolSerialBaudrate: TLabel;
     lblBuildDateKallistiOS: TLabel;
     lblPortName: TLabel;
     lblTextBinutilsARM: TLabel;
@@ -72,6 +89,7 @@ type
     lblVersionPython: TLabel;
     lblVersionMinGW: TLabel;
     lblVersionSVN: TLabel;
+    edtDreamcastToolInternetProtocolAddress: TMaskEdit;
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
     memPortShortDescription: TMemo;
@@ -80,7 +98,6 @@ type
     rgbDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
     tmDisplayKallistiPorts: TTimer;
-    tsHome: TTabSheet;
     tsDreamcastTool: TTabSheet;
     tmrShellThreadTerminate: TTimer;
     tsAbout: TTabSheet;
@@ -88,6 +105,7 @@ type
     tsEnvironment: TTabSheet;
     tsKallistiOS: TTabSheet;
     tsKallistiPorts: TTabSheet;
+    procedure apMainException(Sender: TObject; E: Exception);
     procedure btnAllPortInstallClick(Sender: TObject);
     procedure btnAllPortUninstallClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
@@ -98,6 +116,13 @@ type
     procedure btnPortUpdateClick(Sender: TObject);
     procedure btnRestoreDefaultsClick(Sender: TObject);
     procedure btnUpdateKallistiOSClick(Sender: TObject);
+    procedure cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
+    procedure cbxDreamcastToolSerialPortSelect(Sender: TObject);
+    procedure cbxUrlDreamcastToolIPChange(Sender: TObject);
+    procedure cbxUrlDreamcastToolSerialChange(Sender: TObject);
+    procedure cbxUrlKallistiChange(Sender: TObject);
+    procedure cbxUrlKallistiPortsChange(Sender: TObject);
+    procedure edtDreamcastToolInternetProtocolAddressChange(Sender: TObject);
     procedure edtPortMaintainerClick(Sender: TObject);
     procedure edtPortURLClick(Sender: TObject);
     procedure edtPortURLMouseEnter(Sender: TObject);
@@ -110,11 +135,12 @@ type
     procedure FormCreate(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
-    procedure rgbDreamcastToolClick(Sender: TObject);
+    procedure rgbDreamcastToolSelectionChanged(Sender: TObject);
     procedure rgxTerminalOptionClick(Sender: TObject);
     procedure tmDisplayKallistiPortsTimer(Sender: TObject);
     procedure tmrShellThreadTerminateTimer(Sender: TObject);
   private
+    fLoadingConfiguration: Boolean;
     fKallistiPortsClearList: Boolean;
     fShellThreadSuccess: Boolean;
     fShellThreadInputRequest: TShellThreadInputRequest;
@@ -132,6 +158,11 @@ type
     procedure SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
     procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
     procedure RefreshKallistiPortsControls;
+    procedure UpdateDreamcastToolScreen;
+    procedure UpdateDreamcastToolAlternateCheckbox;
+    procedure InstallDreamcastTool;
+    procedure HandleInvalidInternetProtocolAddress(const InvalidMaskFormat: Boolean);
+    procedure LoadRepositoriesSelectionList;
   public
     procedure UpdateDisplay(ForceRefresh: Boolean);
     procedure OnCommandTerminateThread(Request: TShellThreadInputRequest;
@@ -153,7 +184,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, GetVer, SysTools, PostInst;
+  LCLIntf, GetVer, SysTools, PostInst, Settings;
 
 const
   KALLISTI_BUILD_DATE_FORMAT  = 'YYYY-MM-DD @ HH:mm:ss';
@@ -166,8 +197,11 @@ begin
   pcMain.TabIndex := 0;
   Application.Title := Caption;
   lblTitleAbout.Caption := Format(lblTitleAbout.Caption, [Caption]);
-  UpdateDisplay(True);
+  fLoadingConfiguration := True;
+  LoadRepositoriesSelectionList;
   LoadConfiguration;
+  UpdateDisplay(True);
+  fLoadingConfiguration := False;
 end;
 
 procedure TfrmMain.lbxPortsClickCheck(Sender: TObject);
@@ -192,10 +226,10 @@ begin
   end;
 end;
 
-procedure TfrmMain.rgbDreamcastToolClick(Sender: TObject);
+procedure TfrmMain.rgbDreamcastToolSelectionChanged(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Environment
-    .Settings.DreamcastToolKind := TDreamcastToolKind(rgbDreamcastTool.ItemIndex);
+  InstallDreamcastTool;
+  UpdateDreamcastToolScreen;
 end;
 
 procedure TfrmMain.rgxTerminalOptionClick(Sender: TObject);
@@ -388,13 +422,30 @@ end;
 
 procedure TfrmMain.LoadConfiguration;
 begin
-  if DreamcastSoftwareDevelopmentKitManager.Environment.Settings.UseMinTTY then
-    rgxTerminalOption.ItemIndex := 1;
-  edtUrlKallistiOS.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.KallistiURL;
-  edtUrlKallistiPorts.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.KallistiPortsURL;
-  edtUrlDreamcastToolSerial.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.DreamcastToolSerialURL;
-  edtUrlDreamcastToolIP.Text := DreamcastSoftwareDevelopmentKitManager.Environment.Repositories.DreamcastToolInternetProtocolURL;
-  rgbDreamcastTool.ItemIndex := Integer(DreamcastSoftwareDevelopmentKitManager.Environment.Settings.DreamcastToolKind);
+  with DreamcastSoftwareDevelopmentKitManager.Environment.Settings do
+  begin
+    // Settings
+    if UseMinTTY then
+      rgxTerminalOption.ItemIndex := 1;
+
+    // Repositories
+    cbxUrlKallisti.Text := Repositories.KallistiURL;
+    cbxUrlKallistiPorts.Text := Repositories.KallistiPortsURL;
+    cbxUrlDreamcastToolSerial.Text := Repositories.DreamcastToolSerialURL;
+    cbxUrlDreamcastToolIP.Text := Repositories.DreamcastToolInternetProtocolURL;
+
+    // Dreamcast Tool
+    cbxDreamcastToolSerialPort.ItemIndex := Integer(DreamcastTool.SerialPort);
+    cbxDreamcastToolSerialBaudrate.ItemIndex := Integer(DreamcastTool.SerialBaudrate);
+    ckxDreamcastToolSerialAlternateBaudrate.Checked := DreamcastTool.SerialBaudrateAlternate;
+    ckxDreamcastToolSerialExternalClock.Checked := DreamcastTool.SerialExternalClock;
+    ckxDreamcastToolSerialDumbTerminal.Checked := DreamcastTool.SerialDumbTerminal;
+    edtDreamcastToolInternetProtocolAddress.Text := DreamcastTool.InternetProtocolAddress;
+    ckxDreamcastToolAttachConsoleFileServer.Checked := DreamcastTool.AttachConsoleFileserver;
+    ckxDreamcastToolClearScreenBeforeDownload.Checked := DreamcastTool.ClearScreenBeforeDownload;
+    ckxDreamcastToolAlwaysStartGDB.Checked := DreamcastTool.AlwaysStartDebugger;
+    rgbDreamcastTool.ItemIndex := Integer(DreamcastTool.Kind);
+  end;
 end;
 
 function TfrmMain.BooleanToCaption(Value: Boolean): string;
@@ -475,6 +526,80 @@ begin
   btnAllPortUninstall.Enabled := (InstalledPortsCount > 0);
 end;
 
+procedure TfrmMain.UpdateDreamcastToolScreen;
+begin
+  gbxDreamcastToolSerial.Enabled := (rgbDreamcastTool.ItemIndex = 1);
+  gbxDreamcastToolInternetProtocol.Enabled := (rgbDreamcastTool.ItemIndex = 2);
+  gbxDreamcastToolCommon.Enabled := (rgbDreamcastTool.ItemIndex <> 0);
+  UpdateDreamcastToolAlternateCheckbox;
+end;
+
+procedure TfrmMain.UpdateDreamcastToolAlternateCheckbox;
+begin
+  ckxDreamcastToolSerialAlternateBaudrate.Enabled := (gbxDreamcastToolSerial.Enabled)
+    and (cbxDreamcastToolSerialBaudrate.ItemIndex = 8);
+end;
+
+procedure TfrmMain.InstallDreamcastTool;
+begin
+  if not fLoadingConfiguration then
+  begin
+    with DreamcastSoftwareDevelopmentKitManager.Environment.Settings.DreamcastTool do
+    begin
+      AlwaysStartDebugger := ckxDreamcastToolAlwaysStartGDB.Checked;
+      AttachConsoleFileserver := ckxDreamcastToolAttachConsoleFileServer.Checked;
+      ClearScreenBeforeDownload := ckxDreamcastToolClearScreenBeforeDownload.Checked;
+      Kind := TDreamcastToolKind(rgbDreamcastTool.ItemIndex);
+      SerialBaudrate := TDreamcastToolSerialBaudrate(cbxDreamcastToolSerialBaudrate.ItemIndex);
+      SerialBaudrateAlternate := ckxDreamcastToolSerialAlternateBaudrate.Checked;
+      SerialDumbTerminal := ckxDreamcastToolSerialDumbTerminal.Checked;
+      SerialPort := TDreamcastToolSerialPort(cbxDreamcastToolSerialPort.ItemIndex);
+      SerialExternalClock := ckxDreamcastToolSerialExternalClock.Checked;
+      InternetProtocolAddress := edtDreamcastToolInternetProtocolAddress.Text;
+    end;
+    DreamcastSoftwareDevelopmentKitManager.DreamcastTool.Install;
+  end;
+end;
+
+procedure TfrmMain.HandleInvalidInternetProtocolAddress(const InvalidMaskFormat: Boolean);
+var
+  InvalidValue: Boolean;
+
+begin
+  InvalidValue := not IsValidInternetProtocolAddress(edtDreamcastToolInternetProtocolAddress.Text);
+  if InvalidMaskFormat then
+    lblInvalidlInternetProtocolAddress.Caption := InvalidInternetProtocolAddressFormat
+  else
+    lblInvalidlInternetProtocolAddress.Caption := InvalidInternetProtocolAddressValue;
+  lblInvalidlInternetProtocolAddress.Visible := InvalidMaskFormat or InvalidValue;
+end;
+
+procedure TfrmMain.LoadRepositoriesSelectionList;
+const
+  REPOSITORIES_DIRECTORY = 'repositories';
+  REPOSITORY_CONFIG_KALLISTI = 'kallisti.conf';
+  REPOSITORY_CONFIG_KALLISTI_PORTS = 'kallisti-ports.conf';
+  REPOSITORY_CONFIG_DCLOAD_SERIAL = 'dcload-serial.conf';
+  REPOSITORY_CONFIG_DCLOAD_IP = 'dcload-ip.conf';
+
+var
+  RepositoriesDirectory: TFileName;
+
+  procedure LoadControl(Control: TComboBox; FileName: TFileName);
+  begin
+    if FileExists(RepositoriesDirectory + FileName) then
+      Control.Items.LoadFromFile(RepositoriesDirectory + FileName);
+  end;
+
+begin
+  RepositoriesDirectory := DreamcastSoftwareDevelopmentKitManager.Environment
+    .FileSystem.Shell.ConfigurationDirectory + REPOSITORIES_DIRECTORY + '\';
+  LoadControl(cbxUrlKallisti, REPOSITORY_CONFIG_KALLISTI);
+  LoadControl(cbxUrlKallistiPorts, REPOSITORY_CONFIG_KALLISTI_PORTS);
+  LoadControl(cbxUrlDreamcastToolSerial, REPOSITORY_CONFIG_DCLOAD_SERIAL);
+  LoadControl(cbxUrlDreamcastToolIP, REPOSITORY_CONFIG_DCLOAD_IP);
+end;
+
 procedure TfrmMain.UpdateDisplay(ForceRefresh: Boolean);
 begin
   Cursor := crHourGlass;
@@ -488,6 +613,7 @@ begin
 
   DisplayEnvironmentComponentVersions;
   DisplayKallistiPorts(ForceRefresh);
+  UpdateDreamcastToolScreen;
   Cursor := crDefault;
 end;
 
@@ -514,6 +640,12 @@ begin
     ExecuteThreadOperation(stiKallistiPortsInstall);
 end;
 
+procedure TfrmMain.apMainException(Sender: TObject; E: Exception);
+begin
+  if (E is EDBEditError) then
+    HandleInvalidInternetProtocolAddress(True);
+end;
+
 procedure TfrmMain.btnAllPortUninstallClick(Sender: TObject);
 begin
   if MessageDlg(DialogQuestionTitle, UninstallAllKallistiPorts, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
@@ -527,7 +659,7 @@ end;
 
 procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Environment.SaveConfig;
+  DreamcastSoftwareDevelopmentKitManager.Environment.Settings.SaveConfiguration;
   RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.DreamSDKExecutable);
 end;
 
@@ -552,17 +684,59 @@ begin
   begin
     rgxTerminalOption.ItemIndex := 0;
     rgxTerminalOptionClick(Self);
-    edtUrlKallistiOS.Text := DEFAULT_KALLISTI_URL;
-    edtUrlKallistiPorts.Text := DEFAULT_KALLISTI_PORTS_URL;
-    edtUrlDreamcastToolSerial.Text := DEFAULT_DREAMCAST_TOOL_SERIAL_URL;
-    edtUrlDreamcastToolIP.Text := DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL;
-    DreamcastSoftwareDevelopmentKitManager.Environment.SaveConfig;
+    cbxUrlKallisti.Text := DEFAULT_KALLISTI_URL;
+    cbxUrlKallistiPorts.Text := DEFAULT_KALLISTI_PORTS_URL;
+    cbxUrlDreamcastToolSerial.Text := DEFAULT_DREAMCAST_TOOL_SERIAL_URL;
+    cbxUrlDreamcastToolIP.Text := DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL;
+    DreamcastSoftwareDevelopmentKitManager.Environment.Settings.SaveConfiguration;
   end;
 end;
 
 procedure TfrmMain.btnUpdateKallistiOSClick(Sender: TObject);
 begin
   ExecuteThreadOperation(stiKallistiManage);
+end;
+
+procedure TfrmMain.cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
+begin
+  UpdateDreamcastToolAlternateCheckbox;
+  InstallDreamcastTool;
+end;
+
+procedure TfrmMain.cbxDreamcastToolSerialPortSelect(Sender: TObject);
+begin
+  InstallDreamcastTool;
+end;
+
+procedure TfrmMain.cbxUrlDreamcastToolIPChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
+    .DreamcastToolInternetProtocolURL := cbxUrlDreamcastToolIP.Text;
+end;
+
+procedure TfrmMain.cbxUrlDreamcastToolSerialChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
+    .DreamcastToolSerialURL := cbxUrlDreamcastToolSerial.Text;
+end;
+
+procedure TfrmMain.cbxUrlKallistiChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
+    .KallistiURL := cbxUrlKallisti.Text;
+end;
+
+procedure TfrmMain.cbxUrlKallistiPortsChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
+    .KallistiPortsURL := cbxUrlKallistiPorts.Text;
+end;
+
+procedure TfrmMain.edtDreamcastToolInternetProtocolAddressChange(Sender: TObject
+  );
+begin
+  HandleInvalidInternetProtocolAddress(False);
+  InstallDreamcastTool;
 end;
 
 procedure TfrmMain.edtPortMaintainerClick(Sender: TObject);
@@ -628,26 +802,22 @@ end;
 
 procedure TfrmMain.edtUrlDreamcastToolIPChange(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Environment.Repositories
-    .DreamcastToolInternetProtocolURL := edtUrlDreamcastToolIP.Text;
+
 end;
 
 procedure TfrmMain.edtUrlDreamcastToolSerialChange(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Environment.Repositories
-    .DreamcastToolSerialURL := edtUrlDreamcastToolSerial.Text;
+
 end;
 
 procedure TfrmMain.edtUrlKallistiOSChange(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Environment.Repositories
-    .KallistiURL := edtUrlKallistiOS.Text;
+
 end;
 
 procedure TfrmMain.edtUrlKallistiPortsChange(Sender: TObject);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Environment.Repositories
-    .KallistiPortsURL := edtUrlKallistiPorts.Text;
+
 end;
 
 procedure TfrmMain.FormActivate(Sender: TObject);

@@ -8,7 +8,8 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress,
-  KOSMgr, ShellThd, SysTools, RunCmd, Version, PostInst, StrRes, ToolMgr;
+  KOSMgr, ShellThd, SysTools, RunCmd, Version, PostInst, StrRes, ToolMgr,
+  Settings;
 
 {$R *.res}
 

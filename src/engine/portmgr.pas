@@ -328,7 +328,7 @@ const
   KALLISTI_PORTS_INSTALLATION_DIRECTORY = 'kos-ports';
 
 begin
-  Result := Environment.CloneRepository(Environment.Repositories.KallistiPortsURL,
+  Result := Environment.CloneRepository(Environment.Settings.Repositories.KallistiPortsURL,
     KALLISTI_PORTS_INSTALLATION_DIRECTORY,
     Environment.FileSystem.Kallisti.KallistiPortsDirectory + '..\', BufferOutput);
 end;

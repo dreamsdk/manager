@@ -11,6 +11,7 @@ function ExtractStr(LeftSubStr, RightSubStr, S: string): string;
 function ExtremeRight(SubStr: string ; S: string): string;
 function GetSubStrCount(SubStr, S: string): Integer;
 function IsInString(const SubStr, S: string): Boolean;
+function IsValidInternetProtocolAddress(InternetProtocolAddress: string): Boolean;
 function Left(SubStr: string; S: string): string;
 function LeftNRight(SubStr, S: string; N: Integer): string;
 function Right(SubStr: string; S: string): string;
@@ -194,6 +195,34 @@ end;
 function IsInString(const SubStr, S: string): Boolean;
 begin
   Result := Pos(LowerCase(SubStr), LowerCase(S)) > 0;
+end;
+
+// Thanks to: http://docwiki.embarcadero.com/CodeExamples/Tokyo/en/EditMask_(Delphi)
+function IsValidInternetProtocolAddress(InternetProtocolAddress: string): Boolean;
+var
+  net1, net2, host1, host2: Integer;
+  InvalidAddress: Boolean;
+
+begin
+  try
+    net1 := StrToInt(TrimRight(Copy(InternetProtocolAddress, 0, 3)));
+    net2 := StrToInt(TrimRight(Copy(InternetProtocolAddress, 5, 3)));
+    host1 := StrToInt(TrimRight(Copy(InternetProtocolAddress, 9, 3)));
+    host2 := StrToInt(TrimRight(Copy(InternetProtocolAddress, 13, 3)));
+    InvalidAddress := (
+      (net1 < 0) or
+      (net1 > 255) or
+      (net2 < 0) or
+      (net2 > 255) or
+      (host1 < 0) or
+      (host1 > 255) or
+      (host2 < 0) or
+      (host2 > 255)
+    );
+    Result := not InvalidAddress;
+  except
+    Result := False;
+  end;
 end;
 
 end.

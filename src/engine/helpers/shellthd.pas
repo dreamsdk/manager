@@ -298,8 +298,9 @@ begin
   else
   begin
     // This should never happens...
+    fOperationSuccess := False;
     fOperationResultOutput := Format(InstallationProblem, [Manager.Environment
-      .Settings.InstallPath]);
+      .Settings.InstallPath, Manager.Environment.Settings.FileName]);
     UpdateProgressText(fOperationResultOutput);
   end;
 
@@ -326,7 +327,10 @@ type
 
 var
   OutputBuffer: string;
-  IsModifiedKallisti, IsModifiedKallistiPorts, IsModifiedDreamcastTool: Boolean;
+  IsModifiedKallisti,
+  IsModifiedKallistiPorts,
+  IsModifiedDreamcastTool,
+  IsEnvironShellScriptUpdated: Boolean;
 
   procedure CombineOutputBuffer(const InputBuffer: string);
   var
@@ -464,6 +468,7 @@ var
       begin
         UpdateProgressText(KallistiInitializeText);
         SetOperationSuccess(Manager.KallistiOS.InitializeEnvironment);
+        IsEnvironShellScriptUpdated := True;
       end;
 
       // Making KallistiOS library
@@ -514,7 +519,7 @@ var
 
     // Determine if we need to do something
     Result := HandleResponse(rkDreamcastTool, RepositoryOperation, UpdateState,
-      Manager.DreamcastTool.Built);
+      Manager.DreamcastTool.Built) or IsEnvironShellScriptUpdated;
 
     if Result then
     begin
@@ -536,7 +541,7 @@ var
       if CanContinue then
       begin
         UpdateProgressText(DreamcastToolInstallText);
-        SetOperationSuccess(Manager.DreamcastTool.Install());
+        SetOperationSuccess(Manager.DreamcastTool.Install);
       end;
     end;
     CombineOutputBuffer(TempBuffer);
@@ -544,6 +549,7 @@ var
 
 begin
   Result := '';
+  IsEnvironShellScriptUpdated := False;
 
   IsModifiedKallisti := HandleKallisti;
 

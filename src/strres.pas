@@ -11,6 +11,7 @@ resourcestring
   DreamcastToolText = 'Dreamcast Tool';
   DialogInformationTitle = 'Information';
   DialogQuestionTitle = 'Question';
+  DialogWarningTitle = 'Warning';
 
   // Main
   MailToSubject = '[KallistiOS] Question (from DreamSDK) about the %s KallistiOS Port';
@@ -25,6 +26,8 @@ resourcestring
   UpdateProcessAllKallistiPortsUninstalled = 'All KallistiOS Ports were successfully uninstalled.';
   InstallAllKallistiPorts = 'Are you sure to install all KallistiOS Ports at once?';
   UninstallAllKallistiPorts = 'Are you sure to uninstall all KallistiOS Ports at once?';
+  InvalidInternetProtocolAddressFormat = 'Please use 3 digits for all IP address parts.';
+  InvalidInternetProtocolAddressValue = 'Invalid IP address value.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to 1 minute, please be patient...';
@@ -41,7 +44,7 @@ resourcestring
   InstallationProblem =
     'Your installation have problems!!!' + sLineBreak +
     'No required binaries were found in the InstallPath directory ("%s").' + sLineBreak +
-    'Please check the configuration file and modify the InstallPath key if needed.';
+    'Please check the configuration file ("%s") and modify the InstallPath key if needed.';
   KallistiPortOperationText = 'KallistiOS Port %s %s';
   KallistiPortOperationInstallText = 'Installation of %s';
   KallistiPortOperationUpdateText = 'Update of %s';

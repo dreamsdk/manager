@@ -31,7 +31,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="engine;engine\sys;engine\helpers"/>
+            <OtherUnitFiles Value="engine;engine\sys;engine\helpers;..\..\common\src"/>
             <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -85,7 +85,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="15">
+    <Units Count="16">
       <Unit0>
         <Filename Value="manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -167,6 +167,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ToolMgr"/>
       </Unit14>
+      <Unit15>
+        <Filename Value="..\..\common\src\settings.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Settings"/>
+      </Unit15>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

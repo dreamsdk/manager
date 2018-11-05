@@ -5,25 +5,14 @@ unit Environ;
 interface
 
 uses
-  Classes, SysUtils, RunCmd;
+  Classes, SysUtils, RunCmd, Settings;
 
 const
-  DEFAULT_KALLISTI_URL = 'https://git.code.sf.net/p/cadcdev/kallistios';
-  DEFAULT_KALLISTI_PORTS_URL = 'https://git.code.sf.net/p/cadcdev/kos-ports';
-  DEFAULT_DREAMCAST_TOOL_SERIAL_URL = 'https://github.com/sizious/dcload-serial.git';
-  DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL = 'https://github.com/sizious/dcload-ip.git';
-
   DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dcsdk/';
   DREAMSDK_MSYS_INSTALL_SCRIPTS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'scripts/';
   DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
 
 type
-  TDreamcastToolKind = (
-    dtkUndefined,
-    dtkSerial,
-    dtkInternetProtocol
-  );
-
   TUpdateOperationState = (
     uosUndefined,
     uosUpdateSuccess,
@@ -57,6 +46,7 @@ type
   { TDreamcastSoftwareDevelopmentFileSystemKallisti }
   TDreamcastSoftwareDevelopmentFileSystemKallisti = class(TObject)
   private
+    fKallistiConfigurationFileName: TFileName;
     fKallistiDirectory: TFileName;
     fKallistiLibrary: TFileName;
     fKallistiChangeLogFile: TFileName;
@@ -66,6 +56,7 @@ type
     property KallistiDirectory: TFileName read fKallistiDirectory;
     property KallistiLibrary: TFileName read fKallistiLibrary;
     property KallistiChangeLogFile: TFileName read fKallistiChangeLogFile;
+    property KallistiConfigurationFileName: TFileName read fKallistiConfigurationFileName;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystemToolchain }
@@ -90,6 +81,7 @@ type
   { TDreamcastSoftwareDevelopmentFileSystemShell }
   TDreamcastSoftwareDevelopmentFileSystemShell = class(TObject)
   private
+    fConfigurationDirectory: TFileName;
     fDreamSDKDirectory: TFileName;
     fDreamSDKExecutable: TFileName;
     fMinGWGetExecutable: TFileName;
@@ -97,6 +89,7 @@ type
   public
     property DreamSDKDirectory: TFileName read fDreamSDKDirectory;
     property DreamSDKExecutable: TFileName read fDreamSDKExecutable;
+    property ConfigurationDirectory: TFileName read fConfigurationDirectory;
     property ShellExecutable: TFileName read fShellExecutable;
     property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
   end;
@@ -125,50 +118,16 @@ type
       read fToolchainSuperH;
   end;
 
-  { TDreamcastSoftwareDevelopmentRepositories }
-  TDreamcastSoftwareDevelopmentRepositories = class(TObject)
-  private
-    fKallistiPortsURL: string;
-    fKallistiURL: string;
-    fDreamcastToolSerialURL: string;
-    fDreamcastToolInternetProtocolURL: string;
-  public
-    property KallistiURL: string
-      read fKallistiURL write fKallistiURL;
-    property KallistiPortsURL: string
-      read fKallistiPortsURL write fKallistiPortsURL;
-    property DreamcastToolSerialURL: string
-      read fDreamcastToolSerialURL write fDreamcastToolSerialURL;
-    property DreamcastToolInternetProtocolURL: string
-      read fDreamcastToolInternetProtocolURL write fDreamcastToolInternetProtocolURL;
-  end;
-
-  { TDreamcastSoftwareDevelopmentSettings }
-  TDreamcastSoftwareDevelopmentSettings = class(TObject)
-  private
-    fDreamcastToolKind: TDreamcastToolKind;
-    fInstallPath: TFileName;
-    fUseMinTTY: Boolean;
-  public
-    property InstallPath: TFileName read fInstallPath;
-    property DreamcastToolKind: TDreamcastToolKind read fDreamcastToolKind
-      write fDreamcastToolKind;
-    property UseMinTTY: Boolean read fUseMinTTY write fUseMinTTY;
-  end;
-
   { TDreamcastSoftwareDevelopmentEnvironment }
   TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
   private
-    fRepositories: TDreamcastSoftwareDevelopmentRepositories;
     fShellCommandNewLine: TNewLineEvent;
     fShellCommandRunner: TRunCommand;
-    fApplicationPath: TFileName;
     fFileSystem: TDreamcastSoftwareDevelopmentFileSystem;
     fSettings: TDreamcastSoftwareDevelopmentSettings;
     fShellCommandBufferOutput: string;
-    function GetApplicationPath: TFileName;
-    function GetConfigurationFileName: TFileName;
   protected
+    procedure LoadConfig;
     procedure HandleShellCommandRunnerNewLine(Sender: TObject; NewLine: string);
     procedure HandleShellCommandRunnerTerminate(Sender: TObject);
     function ExecuteShellCommandRunner(const CommandLine: string): string;
@@ -180,16 +139,13 @@ type
       WorkingDirectory: TFileName): string;
     procedure PauseShellCommand;
     procedure ResumeShellCommand;
-    procedure LoadConfig;
-    procedure SaveConfig;
     function CloneRepository(const URL: string; const TargetDirectoryName,
       WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
       var BufferOutput: string): TUpdateOperationState; overload;
-    procedure PatchConfigurationFile(const MakefileFileName: TFileName;
+    procedure PatchConfigurationFile(const FileName: TFileName;
       OldValue, NewValue: string);
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystem read fFileSystem;
-    property Repositories: TDreamcastSoftwareDevelopmentRepositories read fRepositories;
     property Settings: TDreamcastSoftwareDevelopmentSettings read fSettings;
     property OnShellCommandNewLine: TNewLineEvent read fShellCommandNewLine
       write fShellCommandNewLine;
@@ -198,12 +154,7 @@ type
 implementation
 
 uses
-  IniFiles, SysTools;
-
-const
-  CONFIG_SETTINGS_SECTION_NAME = 'Settings';
-  CONFIG_REPOSITORIES_SECTION_NAME = 'Repositories';
-  CONFIG_FILE_NAME = 'dcsdk.conf';
+  SysTools;
 
 { TDreamcastSoftwareDevelopmentFileSystemToolchain }
 
@@ -224,14 +175,18 @@ var
   ToolchainBaseSuperH,
   ToolchainBaseARM: TFileName;
 
+  function UnixPathToSystem(const PathName: TFileName): TFileName;
+  begin
+    Result := StringReplace(PathName, '/', DirectorySeparator, [rfReplaceAll]);
+    Result := IncludeTrailingPathDelimiter(Copy(Result, 2, Length(Result) - 1));
+  end;
+
 begin
   MSYSBase := InstallPath + 'msys\1.0\';
   ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
 
   // Translate DREAMSDK_MSYS_INSTALL_DIRECTORY to Windows location
-  DreamSdkRadical := StringReplace(DREAMSDK_MSYS_INSTALL_DIRECTORY, '/',
-    DirectorySeparator, [rfReplaceAll]);
-  DreamSdkRadical := Copy(DreamSdkRadical, 2, Length(DreamSdkRadical) - 1);
+  DreamSdkRadical := UnixPathToSystem(DREAMSDK_MSYS_INSTALL_DIRECTORY);
 
   with fShell do
   begin
@@ -242,6 +197,7 @@ begin
     // DreamSDK
     fDreamSDKDirectory := MSYSBase + DreamSdkRadical;
     fDreamSDKExecutable := fDreamSDKDirectory + 'dcsdk.exe';
+    fConfigurationDirectory := MSYSBase + UnixPathToSystem(SETTINGS_DIRECTORY);
   end;
 
   // Toolchain for Super-H (Hitachi SH-4)
@@ -284,6 +240,7 @@ begin
     fKallistiDirectory := ToolchainBase + 'kos\';
     fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
     fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
+    fKallistiConfigurationFileName := KallistiDirectory + 'environ.sh';
   end;
 end;
 
@@ -308,140 +265,10 @@ end;
 
 { TDreamcastSoftwareDevelopmentEnvironment }
 
-function TDreamcastSoftwareDevelopmentEnvironment.GetApplicationPath: TFileName;
-var
-  Path: TFileName;
-{$IFDEF Darwin}
-  i: Integer;
-{$ENDIF}
-
-begin
-  if (fApplicationPath = '') then
-  begin
-    Path := ExtractFilePath(ParamStr(0));
-{$IFDEF Darwin}
-    i := Pos('.app', Path);
-    if i > 0 then
-    begin
-      i := LastDelimiter('/', Copy(Path, 1, i));
-      Path := Copy(Path, 1, i);
-    end;
-{$ENDIF}
-    fApplicationPath := IncludeTrailingPathDelimiter(Path);
-  end;
-  Result := fApplicationPath;
-end;
-
-function TDreamcastSoftwareDevelopmentEnvironment.GetConfigurationFileName: TFileName;
-begin
-  Result := GetApplicationPath + CONFIG_FILE_NAME;
-end;
-
 procedure TDreamcastSoftwareDevelopmentEnvironment.LoadConfig;
-var
-  IniFile: TIniFile;
-  DefaultInstallationPath: TFileName;
-
 begin
-  IniFile := TIniFile.Create(GetConfigurationFileName);
-  try
-    // Settings
-    DefaultInstallationPath := ExpandFileName(GetApplicationPath + '..\..\..\..\');
-    fSettings.fInstallPath := IncludeTrailingPathDelimiter(
-      IniFile.ReadString(
-        CONFIG_SETTINGS_SECTION_NAME,
-        'InstallPath',
-        DefaultInstallationPath
-      )
-    );
-    FileSystem.ComputeFileSystemObjectValues(fSettings.fInstallPath);
-
-    fSettings.fUseMintty := IniFile.ReadBool(
-      CONFIG_SETTINGS_SECTION_NAME,
-      'UseMinTTY',
-      False
-    );
-
-    fSettings.fDreamcastToolKind := TDreamcastToolKind(IniFile.ReadInteger(
-      CONFIG_SETTINGS_SECTION_NAME,
-      'DreamcastToolKind',
-      0
-    ));
-
-    // Repositories
-    fRepositories.fKallistiURL := IniFile.ReadString(
-      CONFIG_REPOSITORIES_SECTION_NAME,
-      'KallistiOS',
-      DEFAULT_KALLISTI_URL
-    );
-    fRepositories.fKallistiPortsURL := IniFile.ReadString(
-      CONFIG_REPOSITORIES_SECTION_NAME,
-      'KallistiPorts',
-      DEFAULT_KALLISTI_PORTS_URL
-    );
-    fRepositories.fDreamcastToolSerialURL := IniFile.ReadString(
-      CONFIG_REPOSITORIES_SECTION_NAME,
-      'DreamcastToolSerial',
-      DEFAULT_DREAMCAST_TOOL_SERIAL_URL
-    );
-    fRepositories.fDreamcastToolInternetProtocolURL := IniFile.ReadString(
-      CONFIG_REPOSITORIES_SECTION_NAME,
-      'DreamcastToolInternetProtocol',
-      DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL
-    );
-  finally
-    IniFile.Free;
-  end;
-end;
-
-procedure TDreamcastSoftwareDevelopmentEnvironment.SaveConfig;
-var
-  IniFile: TIniFile;
-
-begin
-  IniFile := TIniFile.Create(GetConfigurationFileName);
-  try
-    // Settings
-    IniFile.WriteString(
-      CONFIG_SETTINGS_SECTION_NAME,
-      'InstallPath',
-      fSettings.fInstallPath
-    );
-    IniFile.WriteBool(
-      CONFIG_SETTINGS_SECTION_NAME,
-      'UseMinTTY',
-      fSettings.fUseMintty
-    );
-    IniFile.WriteInteger(
-      CONFIG_SETTINGS_SECTION_NAME,
-      'DreamcastToolKind',
-      Integer(fSettings.fDreamcastToolKind)
-    );
-
-    // Repositories
-    IniFile.WriteString(
-      CONFIG_REPOSITORIES_SECTION_NAME,
-      'KallistiOS',
-      fRepositories.fKallistiURL
-    );
-    IniFile.WriteString(
-      CONFIG_REPOSITORIES_SECTION_NAME,
-      'KallistiPorts',
-      fRepositories.fKallistiPortsURL
-    );
-    IniFile.WriteString(
-      CONFIG_REPOSITORIES_SECTION_NAME,
-      'DreamcastToolSerial',
-      fRepositories.fDreamcastToolSerialURL
-    );
-    IniFile.WriteString(
-      CONFIG_REPOSITORIES_SECTION_NAME,
-      'DreamcastToolInternetProtocol',
-      fRepositories.fDreamcastToolInternetProtocolURL
-    );
-  finally
-    IniFile.Free;
-  end;
+  Settings.LoadConfiguration;
+  FileSystem.ComputeFileSystemObjectValues(Settings.InstallPath);
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerNewLine(
@@ -494,7 +321,6 @@ end;
 constructor TDreamcastSoftwareDevelopmentEnvironment.Create;
 begin
   fFileSystem := TDreamcastSoftwareDevelopmentFileSystem.Create;
-  fRepositories := TDreamcastSoftwareDevelopmentRepositories.Create;
   fSettings := TDreamcastSoftwareDevelopmentSettings.Create;
   LoadConfig;
 end;
@@ -502,10 +328,10 @@ end;
 destructor TDreamcastSoftwareDevelopmentEnvironment.Destroy;
 begin
   AbortShellCommand;
-  SaveConfig;
+
+  Settings.SaveConfiguration;
 
   fSettings.Free;
-  fRepositories.Free;
   fFileSystem.Free;
 
   inherited Destroy;
@@ -578,18 +404,18 @@ begin
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.PatchConfigurationFile(
-  const MakefileFileName: TFileName; OldValue, NewValue: string);
+  const FileName: TFileName; OldValue, NewValue: string);
 var
   Buffer: TStringList;
 
 begin
   Buffer := TStringList.Create;
   try
-    Buffer.LoadFromFile(MakefileFileName);
+    Buffer.LoadFromFile(FileName);
     if IsInString(OldValue, Buffer.Text) then
     begin
       Buffer.Text := StringReplace(Buffer.Text, OldValue, NewValue, [rfReplaceAll]);
-      Buffer.SaveToFile(MakefileFileName);
+      Buffer.SaveToFile(FileName);
     end;
   finally
     Buffer.Free;

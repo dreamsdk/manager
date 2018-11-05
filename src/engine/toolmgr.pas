@@ -5,27 +5,32 @@ unit ToolMgr;
 interface
 
 uses
-  Classes, SysUtils, Environ;
+  Classes, SysUtils, Environ, Settings;
 
 type
 
   { TDreamcastToolManager }
-
   TDreamcastToolManager = class(TObject)
   private
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     function GetBuilt: Boolean;
     function GetInstalled: Boolean;
+    function GetSettings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool;
   protected
+    function GenerateDreamcastToolCommandLine: string;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
+    property Settings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool
+      read GetSettings;
   public
     constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
+
     function CloneRepository(var BufferOutput: string): Boolean;
     function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
     function InitializeEnvironment: Boolean;
     function Build(var BufferOutput: string): Boolean;
     function Install: Boolean;
+
     property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
   end;
@@ -33,7 +38,7 @@ type
 implementation
 
 uses
-  FileUtil;
+  SysTools, FileUtil;
 
 { TDreamcastToolManager }
 
@@ -47,6 +52,63 @@ function TDreamcastToolManager.GetInstalled: Boolean;
 begin
   Result := DirectoryExists(Environment.FileSystem.DreamcastTool.SerialDirectory)
     and DirectoryExists(Environment.FileSystem.DreamcastTool.InternetProtocolDirectory);
+end;
+
+function TDreamcastToolManager.GetSettings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool;
+begin
+  Result := Environment.Settings.DreamcastTool;
+end;
+
+(*!-t <device>   Use <device> to communicate with dc (default: COM1)
+!-b <baudrate> Use <baudrate> (default: 57600)
+!-e            Try alternate 115200 (must also use -b 115200)
+!-E            Use an external clock for the DC's serial port
+!-p            Use dumb terminal rather than console/fileserver*)
+function TDreamcastToolManager.GenerateDreamcastToolCommandLine: string;
+var
+  CommandLine: string;
+
+  procedure Concat(Param: string);
+  begin
+    CommandLine := CommandLine + ' ' + Param;
+  end;
+
+begin
+  CommandLine := 'dc-tool';
+
+  if Settings.Kind <> dtkUndefined then
+    with Settings do
+    begin
+
+      case Kind of
+        dtkSerial:
+          begin
+            Concat(Format('-t %s', [SerialPortToString(SerialPort)]));
+            Concat(Format('-b %s', [SerialBaudrateToString(SerialBaudrate)]));
+            if (SerialBaudrate = dtb115200) and SerialBaudrateAlternate then
+              Concat('-e');
+            if SerialExternalClock then
+              Concat('-E');
+            if SerialDumbTerminal then
+              Concat('-p');
+          end;
+
+        dtkInternetProtocol:
+          Concat(Format('-t %s', [InternetProtocolAddress]));
+      end;
+
+      if not AttachConsoleFileserver then
+        Concat('-n');
+      if not ClearScreenBeforeDownload then
+        Concat('-q');
+      if AlwaysStartDebugger then
+        Concat('-g');
+
+      // Upload and Execute
+      Concat('-x');
+    end;
+
+  Result := CommandLine;
 end;
 
 constructor TDreamcastToolManager.Create(
@@ -76,8 +138,8 @@ begin
   if not DirectoryExists(Environment.FileSystem.DreamcastTool.BaseDirectory) then
     ForceDirectories(Environment.FileSystem.DreamcastTool.BaseDirectory);
 
-  Result := Result and DoCloneRepo(Environment.Repositories.DreamcastToolInternetProtocolURL, DCLOAD_IP_INSTALLATION_DIRECTORY);
-  Result := Result and DoCloneRepo(Environment.Repositories.DreamcastToolSerialURL, DCLOAD_SERIAL_INSTALLATION_DIRECTORY);
+  Result := Result and DoCloneRepo(Environment.Settings.Repositories.DreamcastToolInternetProtocolURL, DCLOAD_IP_INSTALLATION_DIRECTORY);
+  Result := Result and DoCloneRepo(Environment.Settings.Repositories.DreamcastToolSerialURL, DCLOAD_SERIAL_INSTALLATION_DIRECTORY);
 end;
 
 function TDreamcastToolManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
@@ -150,8 +212,51 @@ begin
 end;
 
 function TDreamcastToolManager.Install: Boolean;
+const
+  EXPORT_TAG = 'export KOS_LOADER=';
+
+var
+  Buffer: TStringList;
+  EnvironShellScriptFileName: TFileName;
+  i: Integer;
+  SourceLine: string;
+
+  function IsCommented(const SourceLine: string): Boolean;
+  begin
+    Result := Copy(SourceLine, 1, 1) = '#';
+  end;
+
+  function MakeLine(const SourceLine, NewCommandLine: string): string;
+  var
+    RightStr: string;
+
+  begin
+    RightStr := ExtremeRight('"', SourceLine);
+    Result := Format('%s"%s"%s', [EXPORT_TAG, NewCommandLine, RightStr]);
+  end;
+
 begin
-  Result := True;
+  Result := False;
+  EnvironShellScriptFileName := Environment.FileSystem.Kallisti.KallistiConfigurationFileName;
+  if FileExists(EnvironShellScriptFileName) then
+  begin
+    Buffer := TStringList.Create;
+    try
+      Buffer.LoadFromFile(EnvironShellScriptFileName);
+      for i := 0 to Buffer.Count - 1 do
+      begin
+        SourceLine := Buffer[i];
+        if (IsInString(EXPORT_TAG, SourceLine)) and (not IsCommented(SourceLine)) then
+        begin
+          Buffer[i] := MakeLine(SourceLine, GenerateDreamcastToolCommandLine);
+          Result := True;
+        end;
+      end;
+      Buffer.SaveToFile(EnvironShellScriptFileName);
+    finally
+      Buffer.Free;
+    end;
+  end;
 end;
 
 end.

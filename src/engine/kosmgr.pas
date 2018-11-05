@@ -12,7 +12,6 @@ type
   TKallistiManager = class(TObject)
   private
     fGenRomFSFileName: TFileName;
-    fEnvironShellScriptFileName: TFileName;
     fEnvironSampleShellScriptFileName: TFileName;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     function GetBuilt: Boolean;
@@ -45,24 +44,20 @@ end;
 
 function TKallistiManager.GetBuilt: Boolean;
 begin
-  Result := FileExists(Environment.FileSystem.Kallisti.KallistiLibrary);
+  Result := FileExists(Environment.FileSystem.Kallisti.KallistiLibrary) and
+    FileExists(Environment.FileSystem.Kallisti.KallistiConfigurationFileName);
 end;
 
 constructor TKallistiManager.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
 const
-  ENVIRON_SHELL_SCRIPT_FILENAME = 'environ.sh';
   ENVIRON_SHELL_SCRIPT_SAMPLE_FILE_LOCATION = 'doc\environ.sh.sample';
   GENROMFS_LOCATION_FILE = 'utils\genromfs.exe';
 
 begin
   fEnvironment := AEnvironment;
-
-  fEnvironShellScriptFileName := Environment.FileSystem.Kallisti.KallistiDirectory
-    + ENVIRON_SHELL_SCRIPT_FILENAME;
   fEnvironSampleShellScriptFileName := Environment.FileSystem.Kallisti.KallistiDirectory
     + ENVIRON_SHELL_SCRIPT_SAMPLE_FILE_LOCATION;
-
   fGenRomFSFileName := Environment.FileSystem.Kallisti.KallistiDirectory + GENROMFS_LOCATION_FILE;
 end;
 
@@ -71,7 +66,7 @@ const
   KALLISTI_INSTALLATION_DIRECTORY = 'kos';
 
 begin
-  Result := Environment.CloneRepository(Environment.Repositories.KallistiURL,
+  Result := Environment.CloneRepository(Environment.Settings.Repositories.KallistiURL,
     KALLISTI_INSTALLATION_DIRECTORY,
     Environment.FileSystem.Kallisti.KallistiDirectory + '..\', BufferOutput);
 end;
@@ -84,7 +79,8 @@ end;
 
 function TKallistiManager.InitializeEnvironment: Boolean;
 const
-  GENROMFS_PACKAGE_FILENAME = DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY + 'genromfs-0.5.1-cygwin-bin.tar.xz';
+  GENROMFS_PACKAGE_FILENAME = DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY
+    + 'genromfs-0.5.1-cygwin-bin.tar.xz';
 
 var
   CommandLine: string;
@@ -93,8 +89,8 @@ var
 begin
   Result := True;
 
-  if not FileExists(fEnvironShellScriptFileName) then
-    Result := CopyFile(fEnvironSampleShellScriptFileName, fEnvironShellScriptFileName);
+  if not FileExists(Environment.FileSystem.Kallisti.KallistiConfigurationFileName) then
+    Result := CopyFile(fEnvironSampleShellScriptFileName, Environment.FileSystem.Kallisti.KallistiConfigurationFileName);
 
   if not FileExists(fGenRomFSFileName) then
   begin
