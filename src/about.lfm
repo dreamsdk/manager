@@ -1,0 +1,123 @@
+object frmAbout: TfrmAbout
+  Left = 919
+  Height = 300
+  Top = 607
+  Width = 580
+  BorderStyle = bsDialog
+  Caption = 'License'
+  ClientHeight = 300
+  ClientWidth = 580
+  OnCreate = FormCreate
+  Position = poScreenCenter
+  LCLVersion = '1.8.4.0'
+  object btnClose: TButton
+    Left = 244
+    Height = 25
+    Top = 265
+    Width = 108
+    Caption = '&Okay, he!'
+    OnClick = btnCloseClick
+    TabOrder = 0
+  end
+  object lblCreditsTitle: TLabel
+    Left = 4
+    Height = 19
+    Top = 8
+    Width = 116
+    Caption = 'lblCreditsTitle'
+    Font.Height = -16
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object lblCopyleft: TLabel
+    Left = 4
+    Height = 13
+    Top = 32
+    Width = 186
+    Caption = '© Copyleft 2018, %s and contributors'
+    ParentColor = False
+  end
+  object Panel1: TPanel
+    Left = 4
+    Height = 2
+    Top = 52
+    Width = 570
+    BevelOuter = bvLowered
+    TabOrder = 1
+  end
+  object Label1: TLabel
+    Left = 4
+    Height = 13
+    Top = 60
+    Width = 208
+    Caption = 'This package contains several components:'
+    ParentColor = False
+  end
+  object tvwComponents: TTreeView
+    Left = 8
+    Height = 168
+    Top = 80
+    Width = 212
+    ReadOnly = True
+    TabOrder = 2
+    Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
+    Items.Data = {
+      F9FFFFFF020003000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF020000000000
+      0000010B000000456E7669726F6E6D656E74FFFFFFFFFFFFFFFFFFFFFFFFFFFF
+      FFFF000000000000000000050000004D696E4757FFFFFFFFFFFFFFFFFFFFFFFF
+      FFFFFFFF000000000000000000040000004D535953FFFFFFFFFFFFFFFFFFFFFF
+      FFFFFFFFFF04000000000000000109000000546F6F6C636861696EFFFFFFFFFF
+      FFFFFFFFFFFFFFFFFFFFFF0000000000000000000800000042696E7574696C73
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000000000001D000000474E55
+      20436F6D70696C657220436F6C6C656374696F6E202847434329FFFFFFFFFFFF
+      FFFFFFFFFFFFFFFFFFFF000000000000000000060000004E65776C6962FFFFFF
+      FFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000012000000474E55204465
+      627567676572202847444229FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03000000
+      0000000001090000004C6962726172696573FFFFFFFFFFFFFFFFFFFFFFFFFFFF
+      FFFF0000000000000000000A0000004B616C6C697374694F53FFFFFFFFFFFFFF
+      FFFFFFFFFFFFFFFFFF000000000000000000100000004B616C6C697374694F53
+      20506F727473FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000018
+      000000447265616D6361737420546F6F6C202864632D746F6F6C29
+    }
+  end
+  object edtComponentURL: TLabeledEdit
+    Left = 252
+    Height = 13
+    Top = 232
+    Width = 324
+    BorderStyle = bsNone
+    Color = clForm
+    EditLabel.AnchorSideTop.Control = edtComponentURL
+    EditLabel.AnchorSideTop.Side = asrCenter
+    EditLabel.AnchorSideRight.Control = edtComponentURL
+    EditLabel.AnchorSideBottom.Control = edtComponentURL
+    EditLabel.AnchorSideBottom.Side = asrBottom
+    EditLabel.Left = 227
+    EditLabel.Height = 13
+    EditLabel.Top = 232
+    EditLabel.Width = 22
+    EditLabel.Caption = 'URL'
+    EditLabel.ParentColor = False
+    EditLabel.ParentFont = False
+    EditLabel.Font.Style = [fsBold]
+    LabelPosition = lpLeft
+    ReadOnly = True
+    TabOrder = 3
+  end
+  object Panel2: TPanel
+    Left = 8
+    Height = 2
+    Top = 256
+    Width = 570
+    BevelOuter = bvLowered
+    TabOrder = 4
+  end
+  object memLicense: TMemo
+    Left = 224
+    Height = 146
+    Top = 80
+    Width = 352
+    TabOrder = 5
+  end
+end

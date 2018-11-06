@@ -10,6 +10,7 @@ object frmMain: TfrmMain
   ClientWidth = 600
   OnActivate = FormActivate
   OnCreate = FormCreate
+  OnShow = FormShow
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
   object btnClose: TButton
@@ -35,8 +36,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 588
-    ActivePage = tsAbout
-    TabIndex = 5
+    ActivePage = tsKallistiPorts
+    TabIndex = 1
     TabOrder = 2
     object tsKallistiOS: TTabSheet
       Caption = '&KallistiOS'
@@ -387,10 +388,10 @@ object frmMain: TfrmMain
         Left = 4
         Height = 138
         Top = 68
-        Width = 285
+        Width = 284
         Caption = 'Serial Settings:'
         ClientHeight = 120
-        ClientWidth = 281
+        ClientWidth = 280
         TabOrder = 1
         object cbxDreamcastToolSerialBaudrate: TComboBox
           Left = 84
@@ -483,13 +484,13 @@ object frmMain: TfrmMain
         end
       end
       object gbxDreamcastToolInternetProtocol: TGroupBox
-        Left = 292
+        Left = 293
         Height = 138
         Top = 68
-        Width = 285
+        Width = 284
         Caption = 'Internet Protocol (IP) Settings:'
         ClientHeight = 120
-        ClientWidth = 281
+        ClientWidth = 280
         TabOrder = 2
         object edtDreamcastToolInternetProtocolAddress: TMaskEdit
           Left = 108
@@ -581,10 +582,10 @@ object frmMain: TfrmMain
         Left = 4
         Height = 193
         Top = 7
-        Width = 281
+        Width = 286
         Caption = 'SuperH Toolchain Versions:'
         ClientHeight = 175
-        ClientWidth = 277
+        ClientWidth = 282
         TabOrder = 0
         object lblVersionBinutils: TLabel
           Left = 99
@@ -663,10 +664,10 @@ object frmMain: TfrmMain
         Left = 296
         Height = 161
         Top = 156
-        Width = 280
+        Width = 282
         Caption = 'Dependencies Versions:'
         ClientHeight = 143
-        ClientWidth = 276
+        ClientWidth = 278
         TabOrder = 1
         object lblVersionSVN: TLabel
           Left = 104
@@ -745,10 +746,10 @@ object frmMain: TfrmMain
         Left = 4
         Height = 108
         Top = 209
-        Width = 281
+        Width = 286
         Caption = 'Dreamcast Tool Versions:'
         ClientHeight = 90
-        ClientWidth = 277
+        ClientWidth = 282
         TabOrder = 2
         object lblVersionToolSerial: TLabel
           Left = 100
@@ -791,10 +792,10 @@ object frmMain: TfrmMain
         Left = 296
         Height = 140
         Top = 7
-        Width = 280
+        Width = 282
         Caption = 'ARM Toolchain Versions:'
         ClientHeight = 122
-        ClientWidth = 276
+        ClientWidth = 278
         TabOrder = 3
         object lblVersionBinutilsARM: TLabel
           Left = 104
@@ -986,11 +987,11 @@ object frmMain: TfrmMain
       end
       object gbxManagerInfo: TGroupBox
         Left = 4
-        Height = 100
-        Top = 116
+        Height = 92
+        Top = 120
         Width = 281
         Caption = 'About %s Component:'
-        ClientHeight = 82
+        ClientHeight = 74
         ClientWidth = 277
         TabOrder = 0
         object edtManagerFileVersion: TLabeledEdit
@@ -1019,9 +1020,9 @@ object frmMain: TfrmMain
           Text = 'edtManagerFileVersion'
         end
         object edtManagerCompiledDate: TLabeledEdit
-          Left = 124
+          Left = 123
           Height = 13
-          Top = 32
+          Top = 28
           Width = 136
           BorderStyle = bsNone
           Color = clForm
@@ -1030,9 +1031,9 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideRight.Control = edtManagerCompiledDate
           EditLabel.AnchorSideBottom.Control = edtManagerCompiledDate
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 64
+          EditLabel.Left = 63
           EditLabel.Height = 13
-          EditLabel.Top = 32
+          EditLabel.Top = 28
           EditLabel.Width = 57
           EditLabel.Caption = 'Build Date'
           EditLabel.ParentColor = False
@@ -1046,7 +1047,7 @@ object frmMain: TfrmMain
         object edtManagerProductVersion: TLabeledEdit
           Left = 123
           Height = 13
-          Top = 56
+          Top = 48
           Width = 136
           BorderStyle = bsNone
           Color = clForm
@@ -1057,7 +1058,7 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideBottom.Side = asrBottom
           EditLabel.Left = 31
           EditLabel.Height = 13
-          EditLabel.Top = 56
+          EditLabel.Top = 48
           EditLabel.Width = 89
           EditLabel.Caption = 'Product Version'
           EditLabel.ParentColor = False
@@ -1131,11 +1132,11 @@ object frmMain: TfrmMain
       end
       object gbxHostEnvironment: TGroupBox
         Left = 292
-        Height = 100
-        Top = 116
+        Height = 92
+        Top = 120
         Width = 281
         Caption = 'Host Environment Information:'
-        ClientHeight = 82
+        ClientHeight = 74
         ClientWidth = 277
         TabOrder = 2
         object edtManagerOS: TLabeledEdit
@@ -1166,7 +1167,7 @@ object frmMain: TfrmMain
         object edtManagerWidgetSet: TLabeledEdit
           Left = 124
           Height = 13
-          Top = 56
+          Top = 48
           Width = 136
           BorderStyle = bsNone
           Color = clForm
@@ -1177,7 +1178,7 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideBottom.Side = asrBottom
           EditLabel.Left = 59
           EditLabel.Height = 13
-          EditLabel.Top = 56
+          EditLabel.Top = 48
           EditLabel.Width = 62
           EditLabel.Caption = 'Widget Set'
           EditLabel.ParentColor = False
@@ -1191,7 +1192,7 @@ object frmMain: TfrmMain
         object edtManagerTargetInfo: TLabeledEdit
           Left = 124
           Height = 13
-          Top = 32
+          Top = 28
           Width = 136
           BorderStyle = bsNone
           Color = clForm
@@ -1202,7 +1203,7 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideBottom.Side = asrBottom
           EditLabel.Left = 57
           EditLabel.Height = 13
-          EditLabel.Top = 32
+          EditLabel.Top = 28
           EditLabel.Width = 64
           EditLabel.Caption = 'Target Info'
           EditLabel.ParentColor = False
@@ -1374,6 +1375,7 @@ object frmMain: TfrmMain
           Top = 8
           Width = 209
           Caption = '&Additional Information...'
+          OnClick = btnCreditsClick
           TabOrder = 0
         end
         object btnCheckForUpdates: TButton

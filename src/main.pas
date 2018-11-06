@@ -131,6 +131,7 @@ type
     procedure btnAllPortUninstallClick(Sender: TObject);
     procedure btnCheckForUpdatesClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
+    procedure btnCreditsClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure btnOpenMSYSClick(Sender: TObject);
     procedure btnPortInstallClick(Sender: TObject);
@@ -151,6 +152,7 @@ type
     procedure edtPortURLMouseLeave(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
     procedure rgbDreamcastToolSelectionChanged(Sender: TObject);
@@ -203,7 +205,8 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, GetVer, SysTools, PostInst, Settings, Version, VerIntf, IniFiles;
+  LCLIntf, GetVer, SysTools, PostInst, Settings, Version, VerIntf, IniFiles,
+  About;
 
 const
   OFFICIAL_WEBSITE = 'http://dreamsdk.sizious.com/';
@@ -216,6 +219,10 @@ begin
   DoubleBuffered := True;
   pcMain.TabIndex := 0;
   Application.Title := Caption;
+end;
+
+procedure TfrmMain.FormShow(Sender: TObject);
+begin
   InitializeAboutScreen;
   fLoadingConfiguration := True;
   LoadRepositoriesSelectionList;
@@ -621,30 +628,51 @@ begin
 end;
 
 procedure TfrmMain.InitializeAboutScreen;
+const
+  UNKNOWN_VALUE = '(Unknown)';
 
   procedure DisplayLauncherModuleVersion;
   var
     LauncherExecutable: TFileName;
     LauncherProcessId: Integer;
     LauncherModuleVersion: TModuleVersion;
+    LauncherGroupName,
+    LauncherFileVersion,
+    LauncherCompiledDate,
+    LauncherProductVersion: string;
 
   begin
     LauncherExecutable := DreamcastSoftwareDevelopmentKitManager.Environment
       .FileSystem.Shell.DreamSDKExecutable;
     LauncherProcessId := 0;
-    Run(LauncherExecutable, GET_MODULE_VERSION_SWITCH, LauncherProcessId);
-    LauncherModuleVersion := LoadModuleVersion(LauncherExecutable, LauncherProcessId);
-    gbxLauncherVersion.Caption := Format(gbxLauncherVersion.Caption, [LauncherModuleVersion.FileDescription]);
-    edtLauncherFileVersion.Text := LauncherModuleVersion.FileVersion;
-    edtLauncherCompiledDate.Text := LauncherModuleVersion.BuildDateTime;
-    edtLauncherProductVersion.Text := LauncherModuleVersion.ProductVersion;
+
+    if FileExists(LauncherExecutable) then
+    begin
+      Run(LauncherExecutable, GET_MODULE_VERSION_SWITCH, LauncherProcessId);
+      LauncherModuleVersion := LoadModuleVersion(LauncherExecutable, LauncherProcessId);
+      LauncherGroupName := LauncherModuleVersion.FileDescription;
+      LauncherFileVersion := LauncherModuleVersion.FileVersion;
+      LauncherCompiledDate := LauncherModuleVersion.BuildDateTime;
+      LauncherProductVersion := LauncherModuleVersion.ProductVersion;
+    end
+    else
+    begin
+      LauncherGroupName := UNKNOWN_VALUE;
+      LauncherFileVersion := UNKNOWN_VALUE;
+      LauncherCompiledDate := UNKNOWN_VALUE;
+      LauncherProductVersion := UNKNOWN_VALUE;
+    end;
+
+    gbxLauncherVersion.Caption := Format(gbxLauncherVersion.Caption, [LauncherGroupName]);
+    edtLauncherFileVersion.Text := LauncherFileVersion;
+    edtLauncherCompiledDate.Text := LauncherCompiledDate;
+    edtLauncherProductVersion.Text := LauncherProductVersion;
   end;
 
   procedure DisplayProductInformation;
   const
     VERSION_FILE_NAME = 'VERSION';
     VERSION_SECTION_NAME = 'Version';
-    UNKNOWN_VALUE = '(Unknown)';
 
   var
     IniFile: TIniFile;
@@ -709,6 +737,11 @@ end;
 procedure TfrmMain.btnCloseClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TfrmMain.btnCreditsClick(Sender: TObject);
+begin
+  frmAbout.ShowModal;
 end;
 
 procedure TfrmMain.btnAllPortInstallClick(Sender: TObject);

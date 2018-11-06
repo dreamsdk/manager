@@ -9,7 +9,7 @@ uses
   Interfaces, // this includes the LCL widgetset
   Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress,
   KOSMgr, ShellThd, SysTools, RunCmd, Version, PostInst, StrRes, ToolMgr,
-  Settings;
+  Settings, About;
 
 {$R *.res}
 
@@ -23,6 +23,7 @@ begin
   Application.CreateForm(TfrmProgress, frmProgress);
   Application.ShowMainForm := not IsPostInstallMode;
   ExecutePostInstall;
+  Application.CreateForm(TfrmAbout, frmAbout);
   Application.Run;
 end.
 
