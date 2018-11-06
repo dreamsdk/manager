@@ -16,6 +16,7 @@ type
     btnAllPortInstall: TButton;
     btnAllPortUninstall: TButton;
     btnClose: TButton;
+    btnCheckForUpdates: TButton;
     btnOpenMinGWManager: TButton;
     btnOpenMSYS: TButton;
     btnPortInstall: TButton;
@@ -38,17 +39,22 @@ type
     ckxDreamcastToolSerialExternalClock: TCheckBox;
     edtDreamcastToolInternetProtocolAddress: TMaskEdit;
     edtManagerCompiledDate: TLabeledEdit;
+    edtLauncherCompiledDate: TLabeledEdit;
     edtManagerCompilerInfo: TLabeledEdit;
     edtManagerFileVersion: TLabeledEdit;
+    edtLauncherFileVersion: TLabeledEdit;
+    edtManagerProductVersion: TLabeledEdit;
     edtManagerLCLVersion: TLabeledEdit;
     edtManagerOS: TLabeledEdit;
-    edtManagerProductVersion: TLabeledEdit;
+    edtLauncherProductVersion: TLabeledEdit;
+    edtProductRelease: TLabeledEdit;
     edtManagerTargetInfo: TLabeledEdit;
     edtManagerWidgetSet: TLabeledEdit;
     edtPortLicense: TLabeledEdit;
     edtPortMaintainer: TLabeledEdit;
     edtPortURL: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
+    edtProductBuildDate: TLabeledEdit;
     gbxManagerInfo: TGroupBox;
     gbxAvailablePorts: TGroupBox;
     gbxCompilerInfo: TGroupBox;
@@ -123,6 +129,7 @@ type
     procedure apMainException(Sender: TObject; E: Exception);
     procedure btnAllPortInstallClick(Sender: TObject);
     procedure btnAllPortUninstallClick(Sender: TObject);
+    procedure btnCheckForUpdatesClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure btnOpenMSYSClick(Sender: TObject);
@@ -142,10 +149,6 @@ type
     procedure edtPortURLClick(Sender: TObject);
     procedure edtPortURLMouseEnter(Sender: TObject);
     procedure edtPortURLMouseLeave(Sender: TObject);
-    procedure edtUrlDreamcastToolIPChange(Sender: TObject);
-    procedure edtUrlDreamcastToolSerialChange(Sender: TObject);
-    procedure edtUrlKallistiOSChange(Sender: TObject);
-    procedure edtUrlKallistiPortsChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
@@ -200,10 +203,10 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, GetVer, SysTools, PostInst, Settings, Version;
+  LCLIntf, GetVer, SysTools, PostInst, Settings, Version, VerIntf, IniFiles;
 
 const
-  BUILD_DATE_FORMAT = 'YYYY-MM-DD @ HH:mm:ss';
+  OFFICIAL_WEBSITE = 'http://dreamsdk.sizious.com/';
   KALLISTI_VERSION_FORMAT = '%s (%s)';
 
 { TfrmMain }
@@ -403,7 +406,7 @@ begin
   // KallistiOS build date
   lblBuildDateKallistiOS.Caption := '';
   if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Kallisti.KallistiLibrary) then
-    lblBuildDateKallistiOS.Caption := FormatDateTime(BUILD_DATE_FORMAT,
+    lblBuildDateKallistiOS.Caption := FormatDateTime(STRING_DATE_FORMAT,
       DreamcastSoftwareDevelopmentKitManager.Versions.KallistiBuildDate);
 
   // KallistiOS changes log display
@@ -618,17 +621,60 @@ begin
 end;
 
 procedure TfrmMain.InitializeAboutScreen;
+
+  procedure DisplayLauncherModuleVersion;
+  var
+    LauncherExecutable: TFileName;
+    LauncherProcessId: Integer;
+    LauncherModuleVersion: TModuleVersion;
+
+  begin
+    LauncherExecutable := DreamcastSoftwareDevelopmentKitManager.Environment
+      .FileSystem.Shell.DreamSDKExecutable;
+    LauncherProcessId := 0;
+    Run(LauncherExecutable, GET_MODULE_VERSION_SWITCH, LauncherProcessId);
+    LauncherModuleVersion := LoadModuleVersion(LauncherExecutable, LauncherProcessId);
+    gbxLauncherVersion.Caption := Format(gbxLauncherVersion.Caption, [LauncherModuleVersion.FileDescription]);
+    edtLauncherFileVersion.Text := LauncherModuleVersion.FileVersion;
+    edtLauncherCompiledDate.Text := LauncherModuleVersion.BuildDateTime;
+    edtLauncherProductVersion.Text := LauncherModuleVersion.ProductVersion;
+  end;
+
+  procedure DisplayProductInformation;
+  const
+    VERSION_FILE_NAME = 'VERSION';
+    VERSION_SECTION_NAME = 'Version';
+    UNKNOWN_VALUE = '(Unknown)';
+
+  var
+    IniFile: TIniFile;
+
+  begin
+    IniFile := TIniFile.Create(DreamcastSoftwareDevelopmentKitManager.Environment
+      .FileSystem.Shell.DreamSDKDirectory + VERSION_FILE_NAME);
+    try
+      edtProductRelease.Text := IniFile.ReadString(VERSION_SECTION_NAME, 'Release', UNKNOWN_VALUE);
+      edtProductBuildDate.Text := IniFile.ReadString(VERSION_SECTION_NAME, 'Date', UNKNOWN_VALUE);
+    finally
+      IniFile.Free;
+    end;
+  end;
+
 begin
+  btnCheckForUpdates.Caption := Format(btnCheckForUpdates.Caption, [GetProductName]);
+  gbxPackageInfo.Caption := Format(gbxPackageInfo.Caption, [GetProductName]);
   lblTitleAbout.Caption := Format(lblTitleAbout.Caption, [GetProductName]);
   gbxManagerInfo.Caption := Format(gbxManagerInfo.Caption, [Caption]);
   edtManagerFileVersion.Text := GetFileVersion;
   edtManagerProductVersion.Text := GetProductVersion;
-  edtManagerCompiledDate.Text := FormatDateTime(BUILD_DATE_FORMAT, GetCompiledDateTime);
+  edtManagerCompiledDate.Text := FormatDateTime(STRING_DATE_FORMAT, GetCompiledDateTime);
   edtManagerCompilerInfo.Text := GetCompilerInfo;
   edtManagerTargetInfo.Text := GetTargetInfo;
   edtManagerOS.Text := GetOS;
   edtManagerLCLVersion.Text := GetLCLVersion;
   edtManagerWidgetSet.Text := GetWidgetSet;
+  DisplayLauncherModuleVersion;
+  DisplayProductInformation;
 end;
 
 procedure TfrmMain.UpdateDisplay(ForceRefresh: Boolean);
@@ -681,6 +727,11 @@ procedure TfrmMain.btnAllPortUninstallClick(Sender: TObject);
 begin
   if MessageDlg(DialogQuestionTitle, UninstallAllKallistiPorts, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
     ExecuteThreadOperation(stiKallistiPortsUninstall);
+end;
+
+procedure TfrmMain.btnCheckForUpdatesClick(Sender: TObject);
+begin
+  OpenURL(OFFICIAL_WEBSITE);
 end;
 
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
@@ -829,26 +880,6 @@ begin
     Font.Color := clDefault;
     Cursor := crDefault;
   end;
-end;
-
-procedure TfrmMain.edtUrlDreamcastToolIPChange(Sender: TObject);
-begin
-
-end;
-
-procedure TfrmMain.edtUrlDreamcastToolSerialChange(Sender: TObject);
-begin
-
-end;
-
-procedure TfrmMain.edtUrlKallistiOSChange(Sender: TObject);
-begin
-
-end;
-
-procedure TfrmMain.edtUrlKallistiPortsChange(Sender: TObject);
-begin
-
 end;
 
 procedure TfrmMain.FormActivate(Sender: TObject);

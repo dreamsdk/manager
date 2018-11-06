@@ -8,7 +8,8 @@ uses
   Classes, SysUtils, RunCmd, Settings;
 
 const
-  DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dcsdk/';
+  DREAMSDK_LAUNCHER_EXECUTABLE = 'dreamsdk.exe';
+  DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dreamsdk/';
   DREAMSDK_MSYS_INSTALL_SCRIPTS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'scripts/';
   DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
 
@@ -190,7 +191,7 @@ begin
 
     // DreamSDK
     fDreamSDKDirectory := MSYSBase + DreamSdkRadical;
-    fDreamSDKExecutable := fDreamSDKDirectory + 'dcsdk.exe';
+    fDreamSDKExecutable := fDreamSDKDirectory + DREAMSDK_LAUNCHER_EXECUTABLE;
     fConfigurationDirectory := MSYSBase + UnixPathToSystem(SETTINGS_DIRECTORY);
   end;
 

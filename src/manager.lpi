@@ -20,7 +20,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="64"/>
+      <BuildNr Value="70"/>
       <StringTable CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" OriginalFilename="manager.exe" ProductName="DreamSDK" ProductVersion="1.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -67,7 +67,7 @@
             </Options>
           </Linking>
           <Other>
-            <CustomOptions Value="-dDEBUG"/>
+            <CustomOptions Value="-dDEBUG -dGUI"/>
           </Other>
         </CompilerOptions>
       </Item2>
@@ -208,7 +208,7 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dRELEASE"/>
+      <CustomOptions Value="-dRELEASE -dGUI"/>
     </Other>
   </CompilerOptions>
   <Debugging>
