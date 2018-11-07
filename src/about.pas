@@ -15,6 +15,7 @@ type
   TfrmAbout = class(TForm)
     btnClose: TButton;
     edtComponentURL: TLabeledEdit;
+    Image1: TImage;
     lblIntroduction: TLabel;
     lblCopyleft: TLabel;
     lblCreditsTitle: TLabel;
@@ -68,9 +69,11 @@ resourcestring
   ComponentGit = 'Git is a free and open source distributed version control system designed to handle everything from small to very large projects with speed and efficiency. \n\nGit is easy to learn and has a tiny footprint with lightning fast performance. It outclasses SCM tools like Subversion, CVS, Perforce, and ClearCase with features like cheap local branching, convenient staging areas, and multiple workflows.';
   ComponentSubversion = 'Subversion is an open source version control system. Founded in 2000 by CollabNet, Inc., the Subversion project and software have seen incredible success over the past decade. Subversion has enjoyed and continues to enjoy widespread adoption in both the open source arena and the corporate world.';
   ComponentPython = 'Python is an interpreted high-level programming language for general-purpose programming. Created by Guido van Rossum and first released in 1991, Python has a design philosophy that emphasizes code readability, notably using significant whitespace. It provides constructs that enable clear programming on both small and large scales. In July 2018, Van Rossum stepped down as the leader in the language community after 30 years.\n\nPython features a dynamic type system and automatic memory management. It supports multiple programming paradigms, including object-oriented, imperative, functional and procedural, and has a large and comprehensive standard library.\n\nPython interpreters are available for many operating systems. CPython, the reference implementation of Python, is open source software and has a community-based development model, as do nearly all of Python''s other implementations. Python and CPython are managed by the non-profit Python Software Foundation.';
+  ComponentMisc = 'About miscallenaous components';
+  ComponentIcon = 'Settings Icon made by Martz90\nIconset: Circle Icons\nLicense: CC Attribution-Noncommercial-No Derivate 4.0';
 
 const
-  COMPONENTS_INFORMATION: array[0..15] of TComponentItem = (
+  COMPONENTS_INFORMATION: array[0..17] of TComponentItem = (
     (Text: ComponentEnvironment;    Url: ''), // Environment
     (Text: ComponentMinGW;          Url: 'http://mingw.org/'), // MinGW
     (Text: ComponentMSYS;           Url: 'http://mingw.org/wiki/MSYS'), // MSYS
@@ -86,7 +89,9 @@ const
     (Text: ComponentDependencies;   Url: ''), // Dependencies
     (Text: ComponentGit;            Url: 'https://git-scm.com/'), // Git
     (Text: ComponentSubversion;     Url: 'http://subversion.apache.org/'), // Subversion
-    (Text: ComponentPython;         Url: 'https://www.python.org/')  // Python
+    (Text: ComponentPython;         Url: 'https://www.python.org/'),  // Python
+    (Text: ComponentMisc;           Url: ''),
+    (Text: ComponentIcon;           Url: 'https://www.deviantart.com/martz90')
   );
 
 { TfrmAbout }
@@ -126,7 +131,7 @@ end;
 procedure TfrmAbout.FormCreate(Sender: TObject);
 begin
   lblCreditsTitle.Caption := GetProductName;
-  lblCopyleft.Caption := Format(lblCopyleft.Caption, [GetCompanyName]);
+  lblCopyleft.Caption := Format(lblCopyleft.Caption, [GetLegalCopyright, GetCompanyName]);
 end;
 
 procedure TfrmAbout.FormShow(Sender: TObject);

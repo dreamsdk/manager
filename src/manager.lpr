@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress, KOSMgr, ShellThd,
-  SysTools, RunCmd, Version, StrHashMap, PostInst, StrRes, ToolMgr, Settings,
+  SysTools, RunCmd, Version, PostInst, StrRes, ToolMgr, Settings,
   About;
 
 {$R *.res}
@@ -16,6 +16,7 @@ uses
 
 
 begin
+  Application.Scaled:=True;
   Application.Title:='DreamSDK Manager';
   RequireDerivedFormResource:=True;
   Application.Initialize;
