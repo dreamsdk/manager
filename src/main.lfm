@@ -36,8 +36,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 588
-    ActivePage = tsDreamcastTool
-    TabIndex = 2
+    ActivePage = tsKallistiPorts
+    TabIndex = 1
     TabOrder = 2
     object tsKallistiOS: TTabSheet
       Caption = '&KallistiOS'

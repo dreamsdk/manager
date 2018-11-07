@@ -20,7 +20,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="78"/>
+      <BuildNr Value="80"/>
       <StringTable CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" OriginalFilename="manager.exe" ProductName="DreamSDK" ProductVersion="1.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -88,7 +88,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="17">
+    <Units Count="18">
       <Unit0>
         <Filename Value="manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -183,6 +183,10 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="About"/>
       </Unit16>
+      <Unit17>
+        <Filename Value="..\..\common\src\sys\StrHashMap.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit17>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
