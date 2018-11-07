@@ -584,6 +584,7 @@ begin
       SerialExternalClock := ckxDreamcastToolSerialExternalClock.Checked;
       InternetProtocolAddress := edtDreamcastToolInternetProtocolAddress.Text;
     end;
+    DreamcastSoftwareDevelopmentKitManager.Environment.Settings.SaveConfiguration;
     DreamcastSoftwareDevelopmentKitManager.DreamcastTool.Install;
   end;
 end;

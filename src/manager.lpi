@@ -20,7 +20,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="77"/>
+      <BuildNr Value="78"/>
       <StringTable CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" OriginalFilename="manager.exe" ProductName="DreamSDK" ProductVersion="1.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -179,6 +179,7 @@
         <Filename Value="about.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmAbout"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="About"/>
       </Unit16>
