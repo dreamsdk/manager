@@ -36,8 +36,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 588
-    ActivePage = tsKallistiPorts
-    TabIndex = 1
+    ActivePage = tsDreamcastTool
+    TabIndex = 2
     TabOrder = 2
     object tsKallistiOS: TTabSheet
       Caption = '&KallistiOS'
@@ -428,7 +428,7 @@ object frmMain: TfrmMain
         object ckxDreamcastToolSerialExternalClock: TCheckBox
           Left = 12
           Height = 17
-          Top = 64
+          Top = 92
           Width = 194
           Caption = 'Use external clock for the serial port'
           OnChange = cbxDreamcastToolSerialPortSelect
@@ -437,7 +437,7 @@ object frmMain: TfrmMain
         object ckxDreamcastToolSerialDumbTerminal: TCheckBox
           Left = 12
           Height = 17
-          Top = 92
+          Top = 64
           Width = 254
           Caption = 'Use dumb terminal rather than console/fileserver'
           OnChange = cbxDreamcastToolSerialPortSelect
@@ -545,8 +545,8 @@ object frmMain: TfrmMain
           Left = 12
           Height = 17
           Top = 4
-          Width = 140
-          Caption = 'Attach console/fileserver'
+          Width = 176
+          Caption = 'Always attach console/fileserver'
           Checked = True
           OnChange = cbxDreamcastToolSerialPortSelect
           State = cbChecked
@@ -556,8 +556,8 @@ object frmMain: TfrmMain
           Left = 12
           Height = 17
           Top = 32
-          Width = 164
-          Caption = 'Clear screen before download'
+          Width = 199
+          Caption = 'Always clear screen before download'
           Checked = True
           OnChange = cbxDreamcastToolSerialPortSelect
           State = cbChecked
@@ -895,7 +895,7 @@ object frmMain: TfrmMain
         ClientWidth = 277
         ItemIndex = 0
         Items.Strings = (
-          '&Windows Prompt (Default)'
+          '&Windows Prompt'
           'MinTT&Y'
         )
         OnClick = rgxTerminalOptionClick
