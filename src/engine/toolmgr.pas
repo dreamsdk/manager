@@ -69,7 +69,7 @@ var
   end;
 
 begin
-  CommandLine := 'dc-tool';
+  CommandLine := '';
 
   if Settings.Kind <> dtkUndefined then
     with Settings do
@@ -82,10 +82,10 @@ begin
             Concat(Format('-b %s', [SerialBaudrateToString(SerialBaudrate)]));
             if (SerialBaudrate = dtb115200) and SerialBaudrateAlternate then
               Concat('-e');
-            if SerialExternalClock then
-              Concat('-E');
             if SerialDumbTerminal then
               Concat('-p');
+            if SerialExternalClock then
+              Concat('-E');
           end;
 
         dtkInternetProtocol:
@@ -98,12 +98,9 @@ begin
         Concat('-q');
       if AlwaysStartDebugger then
         Concat('-g');
-
-      // Upload and Execute
-      Concat('-x');
     end;
 
-  Result := CommandLine;
+  Result := Trim(CommandLine);
 end;
 
 constructor TDreamcastToolManager.Create(
@@ -208,7 +205,7 @@ end;
 
 function TDreamcastToolManager.Install: Boolean;
 const
-  EXPORT_TAG = 'export KOS_LOADER=';
+  COMMAND_LINE_TAG = 'dreamcast_tool_parameters=';
 
 var
   Buffer: TStringList;
@@ -227,12 +224,12 @@ var
 
   begin
     RightStr := ExtremeRight('"', SourceLine);
-    Result := Format('%s"%s"%s', [EXPORT_TAG, NewCommandLine, RightStr]);
+    Result := Format('%s"%s"%s', [COMMAND_LINE_TAG, NewCommandLine, RightStr]);
   end;
 
 begin
   Result := False;
-  EnvironShellScriptFileName := Environment.FileSystem.Kallisti.KallistiConfigurationFileName;
+  EnvironShellScriptFileName := Environment.FileSystem.DreamcastTool.BaseShellScriptExecutable;
   if FileExists(EnvironShellScriptFileName) then
   begin
     Buffer := TStringList.Create;
@@ -241,7 +238,7 @@ begin
       for i := 0 to Buffer.Count - 1 do
       begin
         SourceLine := Buffer[i];
-        if (IsInString(EXPORT_TAG, SourceLine)) and (not IsCommented(SourceLine)) then
+        if (IsInString(COMMAND_LINE_TAG, SourceLine)) and (not IsCommented(SourceLine)) then
         begin
           Buffer[i] := MakeLine(SourceLine, GenerateDreamcastToolCommandLine);
           Result := True;

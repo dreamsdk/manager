@@ -30,14 +30,14 @@ type
   TDreamcastSoftwareDevelopmentFileSystemDreamcastTool = class(TObject)
   private
     fBaseDirectory: TFileName;
-    fBaseExecutable: TFileName;
+    fBaseShellScriptExecutable: TFileName;
     fInternetProtocolDirectory: TFileName;
     fInternetProtocolExecutable: TFileName;
     fSerialDirectory: TFileName;
     fSerialExecutable: TFileName;
   public
     property BaseDirectory: TFileName read fBaseDirectory;
-    property BaseExecutable: TFileName read fBaseExecutable;
+    property BaseShellScriptExecutable: TFileName read fBaseShellScriptExecutable;
     property InternetProtocolDirectory: TFileName read fInternetProtocolDirectory;
     property InternetProtocolExecutable: TFileName read fInternetProtocolExecutable;
     property SerialDirectory: TFileName read fSerialDirectory;
@@ -170,7 +170,7 @@ end;
 procedure TDreamcastSoftwareDevelopmentFileSystem.ComputeFileSystemObjectValues(
   InstallPath: TFileName);
 var
-  DreamSdkRadical,
+  DreamSDKBase,
   MSYSBase,
   ToolchainBase,
   ToolchainBaseSuperH,
@@ -181,7 +181,7 @@ begin
   ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
 
   // Translate DREAMSDK_MSYS_INSTALL_DIRECTORY to Windows location
-  DreamSdkRadical := UnixPathToSystem(DREAMSDK_MSYS_INSTALL_DIRECTORY);
+  DreamSDKBase := MSYSBase + UnixPathToSystem(DREAMSDK_MSYS_INSTALL_DIRECTORY);
 
   with fShell do
   begin
@@ -190,7 +190,7 @@ begin
     fShellExecutable := MSYSBase + 'bin\sh.exe';
 
     // DreamSDK
-    fDreamSDKDirectory := MSYSBase + DreamSdkRadical;
+    fDreamSDKDirectory := DreamSDKBase;
     fDreamSDKExecutable := fDreamSDKDirectory + DREAMSDK_LAUNCHER_EXECUTABLE;
     fConfigurationDirectory := MSYSBase + UnixPathToSystem(SETTINGS_DIRECTORY);
   end;
@@ -225,7 +225,7 @@ begin
     fSerialDirectory := fBaseDirectory + 'dcload-serial\';
     fSerialExecutable := ToolchainBase + 'bin\dc-tool-ser.exe';
     fInternetProtocolExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
-    fBaseExecutable := ToolchainBase + 'bin\dc-tool.exe';
+    fBaseShellScriptExecutable := DreamSDKBase + 'scripts\dc-tool';
   end;
 
   // KallistiOS
