@@ -759,7 +759,7 @@ end;
 
 procedure TfrmMain.btnAllPortUninstallClick(Sender: TObject);
 begin
-  if MessageDlg(DialogQuestionTitle, UninstallAllKallistiPorts, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  if MessageDlg(DialogWarningTitle, UninstallAllKallistiPorts, mtWarning, [mbYes, mbNo], 0) = mrYes then
     ExecuteThreadOperation(stiKallistiPortsUninstall);
 end;
 
