@@ -36,8 +36,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 588
-    ActivePage = tsKallistiPorts
-    TabIndex = 1
+    ActivePage = tsKallistiOS
+    TabIndex = 0
     TabOrder = 2
     object tsKallistiOS: TTabSheet
       Caption = '&KallistiOS'
@@ -377,9 +377,9 @@ object frmMain: TfrmMain
         Columns = 3
         ItemIndex = 0
         Items.Strings = (
-          'None (Disable Dreamcast Tool)'
-          'Serial'
-          'Internet Protocol (IP)'
+          '&None (Disable Dreamcast Tool)'
+          '&Serial'
+          '&Internet Protocol (IP)'
         )
         OnSelectionChanged = rgbDreamcastToolSelectionChanged
         TabOrder = 0
@@ -421,7 +421,7 @@ object frmMain: TfrmMain
           Height = 17
           Top = 34
           Width = 65
-          Caption = 'Alternate'
+          Caption = 'Al&ternate'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 2
         end
@@ -430,7 +430,7 @@ object frmMain: TfrmMain
           Height = 17
           Top = 92
           Width = 194
-          Caption = 'Use external clock for the serial port'
+          Caption = 'Us&e external clock for the serial port'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 3
         end
@@ -439,7 +439,7 @@ object frmMain: TfrmMain
           Height = 17
           Top = 64
           Width = 254
-          Caption = 'Use dumb terminal rather than console/fileserver'
+          Caption = '&Use dumb terminal rather than console/fileserver'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 4
         end
@@ -546,7 +546,7 @@ object frmMain: TfrmMain
           Height = 17
           Top = 4
           Width = 176
-          Caption = 'Always attach console/fileserver'
+          Caption = '&Always attach console/fileserver'
           Checked = True
           OnChange = cbxDreamcastToolSerialPortSelect
           State = cbChecked
@@ -557,7 +557,7 @@ object frmMain: TfrmMain
           Height = 17
           Top = 32
           Width = 199
-          Caption = 'Always clear screen before download'
+          Caption = 'Al&ways clear screen before download'
           Checked = True
           OnChange = cbxDreamcastToolSerialPortSelect
           State = cbChecked
@@ -567,8 +567,8 @@ object frmMain: TfrmMain
           Left = 12
           Height = 17
           Top = 60
-          Width = 339
-          Caption = '&Always start a GDB server when executing though Dreamcast Tool'
+          Width = 514
+          Caption = 'Alwa&ys start a GNU Debugger (GDB) server when executing the project binary through Dreamcast Tool'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 2
         end
