@@ -15,7 +15,7 @@ type
   TfrmAbout = class(TForm)
     btnClose: TButton;
     edtComponentURL: TLabeledEdit;
-    Image1: TImage;
+    imgLogo: TImage;
     lblIntroduction: TLabel;
     lblCopyleft: TLabel;
     lblCreditsTitle: TLabel;
@@ -73,9 +73,10 @@ resourcestring
   ComponentIcon = 'Settings Icon made by Martz90\nIconset: Circle Icons\nLicense: CC Attribution-Noncommercial-No Derivate 4.0';
   ComponentFreePascal = 'Free Pascal is a 32, 64 and 16 bit professional Pascal compiler. It can target many processor architectures: Intel x86 (including 8086), AMD64/x86-64, PowerPC, PowerPC64, SPARC, ARM, AArch64, MIPS and the JVM. Supported operating systems include Linux, FreeBSD, Haiku, Mac OS X/iOS/iPhoneSimulator/Darwin, DOS (16 and 32 bit), Win32, Win64, WinCE, OS/2, MorphOS, Nintendo GBA, Nintendo DS, Nintendo Wii, Android, AIX and AROS. Additionally, support for the Motorola 68k architecture is available in the development versions.';
   ComponentLazarus = 'Lazarus is a Delphi compatible cross-platform IDE for Rapid Application Development. It has variety of components ready for use and a graphical form designer to easily create complex graphical user interfaces.';
+  ComponentInnoSetup = 'Inno Setup is a free installer for Windows programs by Jordan Russell and Martijn Laan. First introduced in 1997, Inno Setup today rivals and even surpasses many commercial installers in feature set and stability.';
 
 const
-  COMPONENTS_INFORMATION: array[0..19] of TComponentItem = (
+  COMPONENTS_INFORMATION: array[0..20] of TComponentItem = (
     (Text: ComponentEnvironment;    Url: ''), // Environment
     (Text: ComponentMinGW;          Url: 'http://mingw.org/'), // MinGW
     (Text: ComponentMSYS;           Url: 'http://mingw.org/wiki/MSYS'), // MSYS
@@ -95,7 +96,8 @@ const
     (Text: ComponentMisc;           Url: ''), // Misc
     (Text: ComponentIcon;           Url: 'https://www.deviantart.com/martz90'), // Main Icon
     (Text: ComponentFreePascal;     Url: 'https://www.freepascal.org/'), // Free Pascal
-    (Text: ComponentLazarus;        Url: 'https://www.lazarus-ide.org/') // Lazarus
+    (Text: ComponentLazarus;        Url: 'https://www.lazarus-ide.org/'), // Lazarus
+    (Text: ComponentInnoSetup;      Url: 'http://www.jrsoftware.org/') // Inno Setup
   );
 
 { TfrmAbout }
