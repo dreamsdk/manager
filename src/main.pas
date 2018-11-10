@@ -47,7 +47,7 @@ type
     edtManagerLCLVersion: TLabeledEdit;
     edtManagerOS: TLabeledEdit;
     edtLauncherProductVersion: TLabeledEdit;
-    edtProductRelease: TLabeledEdit;
+    edtProductVersion: TLabeledEdit;
     edtManagerTargetInfo: TLabeledEdit;
     edtManagerWidgetSet: TLabeledEdit;
     edtPortLicense: TLabeledEdit;
@@ -682,7 +682,7 @@ const
     IniFile := TIniFile.Create(DreamcastSoftwareDevelopmentKitManager.Environment
       .FileSystem.Shell.DreamSDKDirectory + VERSION_FILE_NAME);
     try
-      edtProductRelease.Text := IniFile.ReadString(VERSION_SECTION_NAME, 'Release', UNKNOWN_VALUE);
+      edtProductVersion.Text := IniFile.ReadString(VERSION_SECTION_NAME, 'Release', UNKNOWN_VALUE);
       edtProductBuildDate.Text := IniFile.ReadString(VERSION_SECTION_NAME, 'Date', UNKNOWN_VALUE);
     finally
       IniFile.Free;

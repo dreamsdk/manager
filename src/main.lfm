@@ -1224,30 +1224,30 @@ object frmMain: TfrmMain
         ClientHeight = 54
         ClientWidth = 277
         TabOrder = 3
-        object edtProductRelease: TLabeledEdit
+        object edtProductVersion: TLabeledEdit
           Left = 123
           Height = 13
           Top = 8
           Width = 136
           BorderStyle = bsNone
           Color = clForm
-          EditLabel.AnchorSideTop.Control = edtProductRelease
+          EditLabel.AnchorSideTop.Control = edtProductVersion
           EditLabel.AnchorSideTop.Side = asrCenter
-          EditLabel.AnchorSideRight.Control = edtProductRelease
-          EditLabel.AnchorSideBottom.Control = edtProductRelease
+          EditLabel.AnchorSideRight.Control = edtProductVersion
+          EditLabel.AnchorSideBottom.Control = edtProductVersion
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 75
+          EditLabel.Left = 31
           EditLabel.Height = 13
           EditLabel.Top = 8
-          EditLabel.Width = 45
-          EditLabel.Caption = 'Release'
+          EditLabel.Width = 89
+          EditLabel.Caption = 'Product Version'
           EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
           ReadOnly = True
           TabOrder = 0
-          Text = 'edtProductRelease'
+          Text = 'edtProductVersion'
         end
         object edtProductBuildDate: TLabeledEdit
           Left = 123
