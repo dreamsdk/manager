@@ -336,7 +336,11 @@ begin
 
       // KallistiOS was installed
       stoKallistiInstall:
-        MessageDlg(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
+        begin
+          MessageDlg(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
+          if IsPostInstallMode then
+            Application.Terminate;
+        end;
 
       // KallistiOS, KallistiOS Ports or Dreamcast Tool were updated
       stoKallistiUpdate:
