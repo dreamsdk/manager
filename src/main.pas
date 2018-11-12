@@ -355,10 +355,6 @@ begin
       stoKallistiPortsUninstall:
         MessageDlg(DialogInformationTitle, UpdateProcessAllKallistiPortsUninstalled, mtInformation, [mbOk], 0);
 
-      // A single KallistiOS Port was installed
-      stoKallistiSinglePortInstall:
-        RefreshViewKallistiPorts(False);
-
       // A single KallistiOS Port was updated
       stoKallistiSinglePortUpdate:
         case fShellThreadUpdateState of
@@ -367,10 +363,6 @@ begin
           uosUpdateUseless:
             MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
         end;
-
-      // A single KallistiOS Port was uninstalled
-      stoKallistiSinglePortUninstall:
-        RefreshViewKallistiPorts(False);
     end;
 
   IsGlobalRefreshViewNeeded := (fShellThreadOutputResult = stoKallistiInstall)
@@ -379,7 +371,9 @@ begin
     or (fShellThreadOutputResult = stoKallistiPortsUninstall);
 
   if IsGlobalRefreshViewNeeded then
-    RefreshEverything(True);
+    RefreshEverything(True)
+  else
+    RefreshViewKallistiPorts(False); // Single KallistiPorts change
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
