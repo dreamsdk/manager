@@ -267,7 +267,7 @@ end;
 
 procedure TfrmMain.tmDisplayKallistiPortsTimer(Sender: TObject);
 var
-  i, j: Integer;
+  i, j, SavedIndex: Integer;
   PortInfo: TKallistiPortItem;
   HasKallistiPorts: Boolean;
 
@@ -277,6 +277,8 @@ begin
   if fKallistiPortsClearList then
   begin
     // Reset the Ports view
+
+    SavedIndex := lbxPorts.ItemIndex;
 
     lbxPorts.Clear;
     for i := 0 to DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Count - 1 do
@@ -292,7 +294,10 @@ begin
     HasKallistiPorts := (lbxPorts.Count > 0);
     if HasKallistiPorts then
     begin
-      lbxPorts.ItemIndex := 0;
+      if (SavedIndex > -1) and (SavedIndex < lbxPorts.Items.Count - 1) then
+        lbxPorts.ItemIndex := SavedIndex
+      else
+        lbxPorts.ItemIndex := 0;
       lbxPortsSelectionChange(Self, True);
     end
     else
