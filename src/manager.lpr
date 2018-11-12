@@ -21,10 +21,9 @@ begin
   RequireDerivedFormResource:=True;
   Application.Initialize;
   Application.CreateForm(TfrmMain, frmMain);
-  Application.CreateForm(TfrmProgress, frmProgress);
+  Application.CreateForm(TfrmAbout, frmAbout);
   Application.ShowMainForm := not IsPostInstallMode;
   ExecutePostInstall;
-  Application.CreateForm(TfrmAbout, frmAbout);
   Application.Run;
 end.
 

@@ -187,10 +187,9 @@ type
     procedure RefreshViewKallistiPorts(ForceRefresh: Boolean);
     procedure RefreshViewEnvironment(ForceRefresh: Boolean);
     procedure RefreshEverything(ForceRefresh: Boolean);
-    procedure OnCommandTerminateThread(Request: TShellThreadInputRequest;
-    Response: TShellThreadOutputResponse;
-    Success: Boolean;
-    UpdateState: TUpdateOperationState);
+    procedure OnCommandTerminateThread(Sender: TObject;
+      Request: TShellThreadInputRequest; Response: TShellThreadOutputResponse;
+      Success: Boolean; UpdateState: TUpdateOperationState);
     property SelectedKallistiPortItemIndex: Integer
       read GetSelectedKallistiPortItemIndex;
     property SelectedKallistiPort: TKallistiPortItem
@@ -725,9 +724,9 @@ begin
   Cursor := crDefault;
 end;
 
-procedure TfrmMain.OnCommandTerminateThread(Request: TShellThreadInputRequest;
-  Response: TShellThreadOutputResponse; Success: Boolean;
-  UpdateState: TUpdateOperationState);
+procedure TfrmMain.OnCommandTerminateThread(Sender: TObject;
+  Request: TShellThreadInputRequest; Response: TShellThreadOutputResponse;
+  Success: Boolean; UpdateState: TUpdateOperationState);
 begin
   Application.ProcessMessages;
   fShellThreadSuccess := Success;

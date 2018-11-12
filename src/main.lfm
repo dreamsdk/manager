@@ -2,12 +2,12 @@ object frmMain: TfrmMain
   Left = 870
   Height = 400
   Top = 550
-  Width = 620
+  Width = 622
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'DreamSDK Manager'
   ClientHeight = 400
-  ClientWidth = 620
+  ClientWidth = 622
   OnActivate = FormActivate
   OnCreate = FormCreate
   OnShow = FormShow
@@ -36,8 +36,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 608
-    ActivePage = tsKallistiPorts
-    TabIndex = 1
+    ActivePage = tsKallistiOS
+    TabIndex = 0
     TabOrder = 2
     object tsKallistiOS: TTabSheet
       Caption = '&KallistiOS'
@@ -181,10 +181,10 @@ object frmMain: TfrmMain
         ClientWidth = 372
         TabOrder = 2
         object btnPortUninstall: TButton
-          Left = 251
+          Left = 249
           Height = 25
           Top = 264
-          Width = 113
+          Width = 115
           Caption = 'Uninst&all...'
           OnClick = btnPortUninstallClick
           TabOrder = 8
@@ -193,7 +193,7 @@ object frmMain: TfrmMain
           Left = 128
           Height = 25
           Top = 264
-          Width = 113
+          Width = 115
           Caption = 'U&pdate...'
           OnClick = btnPortUpdateClick
           TabOrder = 7
@@ -202,7 +202,7 @@ object frmMain: TfrmMain
           Left = 6
           Height = 25
           Top = 264
-          Width = 113
+          Width = 115
           Caption = '&Install...'
           OnClick = btnPortInstallClick
           TabOrder = 6

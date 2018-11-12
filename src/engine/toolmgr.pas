@@ -170,7 +170,7 @@ function TDreamcastToolManager.InitializeEnvironment: Boolean;
 
   procedure PatchMakefile(const FileName: TFileName);
   begin
-    Environment.PatchConfigurationFile(FileName, '#STANDALONE_BINARY', 'STANDALONE_BINARY');
+    Environment.PatchTextFile(FileName, '#STANDALONE_BINARY', 'STANDALONE_BINARY');
   end;
 
 begin

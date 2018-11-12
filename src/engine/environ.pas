@@ -144,7 +144,7 @@ type
       WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
       var BufferOutput: string): TUpdateOperationState; overload;
-    procedure PatchConfigurationFile(const FileName: TFileName;
+    procedure PatchTextFile(const FileName: TFileName;
       OldValue, NewValue: string);
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystem read fFileSystem;
     property Settings: TDreamcastSoftwareDevelopmentSettings read fSettings;
@@ -398,7 +398,7 @@ begin
     Result := uosUpdateSuccess;
 end;
 
-procedure TDreamcastSoftwareDevelopmentEnvironment.PatchConfigurationFile(
+procedure TDreamcastSoftwareDevelopmentEnvironment.PatchTextFile(
   const FileName: TFileName; OldValue, NewValue: string);
 var
   Buffer: TStringList;

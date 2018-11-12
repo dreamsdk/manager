@@ -350,27 +350,36 @@ end;
 function TKallistiPortManager.InitializeEnvironment: Boolean;
 const
   CONFIG_MAKEFILE = 'config.mk';
+  BUILD_MAKEFILE = 'scripts\build.mk';
 
 var
-  MakefileFileName: TFileName;
+  ConfigFileName,
+  BuildFileName: TFileName;
 
 begin
-  MakefileFileName := Environment.FileSystem.Kallisti.KallistiPortsDirectory
-    + CONFIG_MAKEFILE;
-  Result := FileExists(MakefileFileName);
+  ConfigFileName := Environment.FileSystem.Kallisti.KallistiPortsDirectory + CONFIG_MAKEFILE;
+  BuildFileName := Environment.FileSystem.Kallisti.KallistiPortsDirectory + BUILD_MAKEFILE;
 
+  Result := FileExists(ConfigFileName) and FileExists(BuildFileName);
   if Result then
   begin
-    Environment.PatchConfigurationFile(
-      MakefileFileName,
+    Environment.PatchTextFile(
+      ConfigFileName,
       '#FETCH_CMD = wget',
       'FETCH_CMD = wget --no-check-certificate'
     );
 
-    Environment.PatchConfigurationFile(
-      MakefileFileName,
+    Environment.PatchTextFile(
+      ConfigFileName,
       'FETCH_CMD = curl',
       '#FETCH_CMD = curl'
+    );
+
+    // ln doesn't work very well under MinGW/MSYS...
+    Environment.PatchTextFile(
+      BuildFileName,
+      'ln -s',
+      'cp -r'
     );
   end;
 end;

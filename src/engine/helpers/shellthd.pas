@@ -36,6 +36,7 @@ type
   );
 
   TShellThreadCommandTerminateEvent = procedure(
+    Sender: TObject;
     Request: TShellThreadInputRequest;
     Response: TShellThreadOutputResponse;
     Success: Boolean;
@@ -47,6 +48,7 @@ type
   private
     fAborted: Boolean;
     fManager: TDreamcastSoftwareDevelopmentKitManager;
+    fPaused: Boolean;
     fProgressText: string;
     fContext: TShellThreadContext;
     fRequest: TShellThreadInputRequest;
@@ -79,6 +81,7 @@ type
       read fSelectedKallistiPort write fSelectedKallistiPort;
     property Manager: TDreamcastSoftwareDevelopmentKitManager
       read fManager write fManager;
+    property Paused: Boolean read fPaused;
 
     property OnCommandTerminate: TShellThreadCommandTerminateEvent
       read fCommandTerminate write fCommandTerminate;
@@ -108,8 +111,9 @@ var
 
 procedure PauseThreadOperation;
 begin
-  if Assigned(ShellThread) then
+  if Assigned(ShellThread) and (not ShellThread.Paused) then
   begin
+    ShellThread.fPaused := True;
     ShellThread.Manager.Environment.PauseShellCommand;
     Application.ProcessMessages;
   end;
@@ -117,8 +121,9 @@ end;
 
 procedure ResumeThreadOperation;
 begin
-  if Assigned(ShellThread) then
+  if Assigned(ShellThread) and (ShellThread.Paused) then
   begin
+    ShellThread.fPaused := False;
     ShellThread.Manager.Environment.ResumeShellCommand;
     Application.ProcessMessages;
   end;
@@ -159,15 +164,9 @@ end;
 procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
 var
   ShellThreadContext: TShellThreadContext;
-  OperationTitle, KallistiPortText: string;
 
-begin
-  ShellThreadContext := GetThreadContext(AOperation);
-
-  if ShellThreadContext <> stcUndefined then
+  procedure StartupThread;
   begin
-    InitializeNewLineHandler;
-
     ShellThread := TShellThread.Create(True);
     with ShellThread do
     begin
@@ -180,9 +179,15 @@ begin
       OnTerminate := @ShellThreadHelper.HandleTerminate;
       Start;
     end;
+  end;
 
+  procedure ShowProgressWindow;
+  var
+    OperationTitle,
+    KallistiPortText: string;
+
+  begin
     case ShellThreadContext of
-
       stcKallistiSinglePort:
         begin
           KallistiPortText := Format(KallistiPortOperationText, [
@@ -204,11 +209,25 @@ begin
         OperationTitle := KallistiPortsOperationText;
     end;
 
+    frmProgress := TfrmProgress.Create(Application);
     with frmProgress do
-    begin
-      Caption := OperationTitle;
-      ShowModal;
-    end;
+      try
+        Caption := OperationTitle;
+        ShowModal;
+      finally
+        Free;
+      end;
+  end;
+
+begin
+  AbortThreadOperation;
+
+  ShellThreadContext := GetThreadContext(AOperation);
+  if ShellThreadContext <> stcUndefined then
+  begin
+    InitializeNewLineHandler;
+    StartupThread;
+    ShowProgressWindow;
   end;
 end;
 
@@ -262,7 +281,7 @@ begin
   SetProgressTerminateState;
   Application.ProcessMessages;
   if Assigned(fCommandTerminate) then
-    fCommandTerminate(fRequest, fResponse, fOperationSuccess, fOperationUpdateState);
+    fCommandTerminate(Self, fRequest, fResponse, fOperationSuccess, fOperationUpdateState);
 end;
 
 function TShellThread.CanContinue: Boolean;
