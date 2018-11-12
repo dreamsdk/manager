@@ -12,9 +12,9 @@ type
     stiKallistiManage,
     stiKallistiPortsInstall,
     stiKallistiPortsUninstall,
-    stiKallistiPortInstall,
-    stiKallistiPortUpdate,
-    stiKallistiPortUninstall
+    stiKallistiSinglePortInstall,
+    stiKallistiSinglePortUpdate,
+    stiKallistiSinglePortUninstall
   );
 
   TShellThreadOutputResponse = (
@@ -23,15 +23,15 @@ type
     stoKallistiUpdate,
     stoKallistiPortsInstall,
     stoKallistiPortsUninstall,
-    stoKallistiPortInstall,
-    stoKallistiPortUpdate,
-    stoKallistiPortUninstall
+    stoKallistiSinglePortInstall,
+    stoKallistiSinglePortUpdate,
+    stoKallistiSinglePortUninstall
   );
 
   TShellThreadContext = (
     stcUndefined,
     stcKallisti,
-    stcKallistiPortSingle,
+    stcKallistiSinglePort,
     stcKallistiPorts
   );
 
@@ -140,8 +140,8 @@ var
 begin
   Result := stcUndefined;
 
-  IsSingleKallistiPortOperation := (AOperation = stiKallistiPortInstall)
-    or (AOperation = stiKallistiPortUninstall) or (AOperation = stiKallistiPortUpdate);
+  IsSingleKallistiPortOperation := (AOperation = stiKallistiSinglePortInstall)
+    or (AOperation = stiKallistiSinglePortUninstall) or (AOperation = stiKallistiSinglePortUpdate);
 
   ValidKallistiPortContext := Assigned(frmMain.SelectedKallistiPort)
     and IsSingleKallistiPortOperation;
@@ -151,7 +151,7 @@ begin
 
   Result := stcKallisti;
   if ValidKallistiPortContext then
-    Result := stcKallistiPortSingle
+    Result := stcKallistiSinglePort
   else if IsKallistiPortsOperation then
     Result := stcKallistiPorts;
 end;
@@ -183,16 +183,16 @@ begin
 
     case ShellThreadContext of
 
-      stcKallistiPortSingle:
+      stcKallistiSinglePort:
         begin
           KallistiPortText := Format(KallistiPortOperationText, [
             frmMain.SelectedKallistiPort.Name, frmMain.SelectedKallistiPort.Version]);
           case AOperation of
-            stiKallistiPortInstall:
+            stiKallistiSinglePortInstall:
               OperationTitle := Format(KallistiPortOperationInstallText, [KallistiPortText]);
-            stiKallistiPortUpdate:
+            stiKallistiSinglePortUpdate:
               OperationTitle := Format(KallistiPortOperationUpdateText, [KallistiPortText]);
-            stiKallistiPortUninstall:
+            stiKallistiSinglePortUninstall:
               OperationTitle := Format(KallistiPortOperationUninstallText, [KallistiPortText]);
           end;
         end;
@@ -290,7 +290,7 @@ begin
     case fContext of
       stcKallisti:
         Buffer := ProcessKallistiOS;
-      stcKallistiPortSingle:
+      stcKallistiSinglePort:
         Buffer := ProcessKallistiPortSingle;
       stcKallistiPorts:
         Buffer := ProcessKallistiPorts;
@@ -570,12 +570,12 @@ function TShellThread.ProcessKallistiPortSingle: string;
   begin
     Result := stoNothing;
     case Request of
-      stiKallistiPortInstall:
-        Result := stoKallistiPortInstall;
-      stiKallistiPortUpdate:
-        Result := stoKallistiPortUpdate;
-      stiKallistiPortUninstall:
-        Result := stoKallistiPortUninstall;
+      stiKallistiSinglePortInstall:
+        Result := stoKallistiSinglePortInstall;
+      stiKallistiSinglePortUpdate:
+        Result := stoKallistiSinglePortUpdate;
+      stiKallistiSinglePortUninstall:
+        Result := stoKallistiSinglePortUninstall;
     end;
   end;
 
@@ -584,19 +584,19 @@ begin
   fResponse := RequestToResponse(fRequest);
 
   case Operation of
-    stiKallistiPortInstall:
+    stiKallistiSinglePortInstall:
       begin
         UpdateProgressText(KallistiPortInstallText);
         SetOperationSuccess(SelectedKallistiPort.Install(Result));
       end;
 
-    stiKallistiPortUninstall:
+    stiKallistiSinglePortUninstall:
       begin
         UpdateProgressText(KallistiPortUninstallText);
         SetOperationSuccess(SelectedKallistiPort.Uninstall(Result));
       end;
 
-    stiKallistiPortUpdate:
+    stiKallistiSinglePortUpdate:
       begin
         UpdateProgressText(KallistiPortUpdateText);
         fOperationUpdateState := SelectedKallistiPort.Update(Result);

@@ -25,6 +25,7 @@ type
     fVersion: string;
     function GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     function IsPortInstalled: Boolean;
+    function DeleteInstallPortDirectoryIfNeeded: Boolean;
   protected
     function ExecuteShellCommand(const CommandLine: string): string;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
@@ -96,6 +97,13 @@ begin
   Result := FileExists(fSourceDirectory + '..\lib\.kos-ports\' + Name);
 end;
 
+function TKallistiPortItem.DeleteInstallPortDirectoryIfNeeded: Boolean;
+begin
+  Result := False;
+  if DirectoryExists(InstallDirectory) then
+    Result := DeleteDirectory(InstallDirectory, False);
+end;
+
 function TKallistiPortItem.ExecuteShellCommand(const CommandLine: string): string;
 begin
   Result := Environment.ExecuteShellCommand(CommandLine, SourceDirectory);
@@ -119,6 +127,7 @@ var
   SuccessTag: string;
 
 begin
+  DeleteInstallPortDirectoryIfNeeded;
   SuccessTag := Format(SUCCESS_TAG, [Name, Version]);
   BufferOutput := ExecuteShellCommand('make install');
   ExecuteShellCommand('make clean');
@@ -136,8 +145,7 @@ begin
   SuccessTag := Format(SUCCESS_TAG, [Name]);
   BufferOutput := ExecuteShellCommand('make uninstall');
   Result := IsInString(SuccessTag, BufferOutput);
-  if DirectoryExists(InstallDirectory) then
-    Result := DeleteDirectory(InstallDirectory, False);
+  DeleteInstallPortDirectoryIfNeeded;
 end;
 
 function TKallistiPortItem.Update(var BufferOutput: string): TUpdateOperationState;

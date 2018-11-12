@@ -209,7 +209,7 @@ end;
 
 procedure TComponentVersion.RetrieveVersions;
 
-  procedure RetrieveVersionToolchain(AVersion: TToolchainVersion;
+  procedure RetrieveVersionToolchain(var AVersion: TToolchainVersion;
     AEnvironment: TDreamcastSoftwareDevelopmentFileSystemToolchain);
   begin
     if Assigned(AVersion) then

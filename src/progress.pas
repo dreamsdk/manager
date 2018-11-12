@@ -58,7 +58,7 @@ begin
   begin
     CloseAction := caNone;
     PauseThreadOperation;
-    if MessageDlg(CancelDialogCaption, CancelDialogText, mtWarning, [mbYes, mbNo], 0) = mrYes then
+    if MessageDlg(CancelDialogCaption, CancelDialogText, mtWarning, [mbYes, mbNo], 0, mbNo) = mrYes then
     begin
       AbortThreadOperation;
       SetCloseButtonState(False);

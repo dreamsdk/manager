@@ -28,9 +28,10 @@ resourcestring
   UninstallAllKallistiPorts = 'Are you sure to uninstall all KallistiOS Ports at once?';
   InvalidInternetProtocolAddressFormat = 'Please use 3 digits for all IP address parts.';
   InvalidInternetProtocolAddressValue = 'Invalid IP address value.';
+  UninstallKallistiSinglePort = 'Are you sure to uninstall %s?';
 
   // Progress
-  SendingCancelSignal = 'Sending abort signal, this can take up to 1 minute, please be patient...';
+  SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';
   CancelDialogCaption = 'Warning';
   CancelDialogText = 'Are you really sure to cancel? This may breaks things!';
   CloseButtonCaption = '&Close';

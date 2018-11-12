@@ -46,9 +46,9 @@ object frmProgress: TfrmProgress
   end
   object lblProgressStep: TLabel
     Left = 4
-    Height = 13
+    Height = 15
     Top = 8
-    Width = 89
+    Width = 87
     Caption = 'lblProgressStep'
     Font.Style = [fsBold]
     ParentColor = False

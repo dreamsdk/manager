@@ -22,9 +22,9 @@ object frmAbout: TfrmAbout
   end
   object lblCreditsTitle: TLabel
     Left = 58
-    Height = 19
+    Height = 21
     Top = 8
-    Width = 116
+    Width = 107
     Caption = 'lblCreditsTitle'
     Font.Height = -16
     Font.Style = [fsBold]
@@ -33,9 +33,9 @@ object frmAbout: TfrmAbout
   end
   object lblCopyleft: TLabel
     Left = 58
-    Height = 13
+    Height = 15
     Top = 32
-    Width = 121
+    Width = 127
     Caption = '%s, %s and contributors'
     ParentColor = False
   end
@@ -49,9 +49,9 @@ object frmAbout: TfrmAbout
   end
   object lblIntroduction: TLabel
     Left = 4
-    Height = 13
+    Height = 15
     Top = 60
-    Width = 422
+    Width = 466
     Caption = 'This package contains several components. Without them this project won''t be possible:'
     ParentColor = False
   end
@@ -59,7 +59,7 @@ object frmAbout: TfrmAbout
     Left = 4
     Height = 168
     Top = 80
-    Width = 216
+    Width = 236
     ReadOnly = True
     TabOrder = 2
     OnChange = tvwComponentsChange
@@ -98,10 +98,10 @@ object frmAbout: TfrmAbout
     }
   end
   object edtComponentURL: TLabeledEdit
-    Left = 252
-    Height = 13
+    Left = 272
+    Height = 15
     Top = 232
-    Width = 322
+    Width = 302
     BorderStyle = bsNone
     Color = clForm
     EditLabel.AnchorSideTop.Control = edtComponentURL
@@ -109,10 +109,10 @@ object frmAbout: TfrmAbout
     EditLabel.AnchorSideRight.Control = edtComponentURL
     EditLabel.AnchorSideBottom.Control = edtComponentURL
     EditLabel.AnchorSideBottom.Side = asrBottom
-    EditLabel.Left = 227
-    EditLabel.Height = 13
+    EditLabel.Left = 246
+    EditLabel.Height = 15
     EditLabel.Top = 232
-    EditLabel.Width = 22
+    EditLabel.Width = 23
     EditLabel.Caption = 'URL'
     EditLabel.ParentColor = False
     EditLabel.ParentFont = False
@@ -133,10 +133,10 @@ object frmAbout: TfrmAbout
     TabOrder = 4
   end
   object memDescription: TMemo
-    Left = 224
+    Left = 244
     Height = 146
     Top = 80
-    Width = 350
+    Width = 330
     ReadOnly = True
     ScrollBars = ssAutoVertical
     TabOrder = 5
