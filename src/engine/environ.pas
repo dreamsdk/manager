@@ -85,6 +85,7 @@ type
     fConfigurationDirectory: TFileName;
     fDreamSDKDirectory: TFileName;
     fDreamSDKExecutable: TFileName;
+    fHomeDirectory: TFileName;
     fMinGWGetExecutable: TFileName;
     fShellExecutable: TFileName;
   public
@@ -93,6 +94,7 @@ type
     property ConfigurationDirectory: TFileName read fConfigurationDirectory;
     property ShellExecutable: TFileName read fShellExecutable;
     property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
+    property HomeDirectory: TFileName read fHomeDirectory;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystem }
@@ -188,6 +190,7 @@ begin
     // MinGW/MSYS
     fMinGWGetExecutable := InstallPath + 'bin\mingw-get.exe';
     fShellExecutable := MSYSBase + 'bin\sh.exe';
+    fHomeDirectory := MSYSBase + 'home\' + GetEnvironmentVariable('USERNAME') + '\';
 
     // DreamSDK
     fDreamSDKDirectory := DreamSDKBase;

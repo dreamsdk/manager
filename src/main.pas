@@ -17,6 +17,8 @@ type
     btnAllPortUninstall: TButton;
     btnClose: TButton;
     btnCheckForUpdates: TButton;
+    btnOpenHelp: TButton;
+    btnOpenHome: TButton;
     btnOpenMinGWManager: TButton;
     btnOpenMSYS: TButton;
     btnPortInstall: TButton;
@@ -75,6 +77,13 @@ type
     gbxHostEnvironment: TGroupBox;
     gbxPackageInfo: TGroupBox;
     gbxLauncherVersion: TGroupBox;
+    gbxHomeRunShell: TGroupBox;
+    gbxHomeFolder: TGroupBox;
+    gbxHomeHelp: TGroupBox;
+    lblHomeHelp: TLabel;
+    lblHomeShell: TLabel;
+    lblHomeFolder: TLabel;
+    lblIntroduction: TLabel;
     lblBuildDateKallistiOS: TLabel;
     lblDreamcastToolInternetProtocolAddress: TLabel;
     lblDreamcastToolSerialBaudrate: TLabel;
@@ -96,6 +105,7 @@ type
     lblTextToolIP: TLabel;
     lblTextToolSerial: TLabel;
     lblTitleAbout: TLabel;
+    lblTitleHome: TLabel;
     lblVersionBinutils: TLabel;
     lblVersionBinutilsARM: TLabel;
     lblVersionGCC: TLabel;
@@ -118,6 +128,7 @@ type
     pnlActions: TPanel;
     rgbDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
+    tsHome: TTabSheet;
     tmDisplayKallistiPorts: TTimer;
     tmrShellThreadTerminate: TTimer;
     tsAbout: TTabSheet;
@@ -132,6 +143,8 @@ type
     procedure btnCheckForUpdatesClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnCreditsClick(Sender: TObject);
+    procedure btnOpenHelpClick(Sender: TObject);
+    procedure btnOpenHomeClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure btnOpenMSYSClick(Sender: TObject);
     procedure btnPortInstallClick(Sender: TObject);
@@ -182,6 +195,8 @@ type
     procedure HandleInvalidInternetProtocolAddress(const InvalidMaskFormat: Boolean);
     procedure LoadRepositoriesSelectionList;
     procedure InitializeAboutScreen;
+    procedure InitializeHomeScreen;
+    procedure HandleAero;
   public
     procedure RefreshViewDreamcastTool;
     procedure RefreshViewKallistiPorts(ForceRefresh: Boolean);
@@ -205,8 +220,8 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, GetVer, SysTools, PostInst, Settings, Version, VerIntf, IniFiles,
-  About;
+  LCLIntf, IniFiles, UITools, GetVer, SysTools, PostInst, Settings, Version,
+  VerIntf, About;
 
 const
   OFFICIAL_WEBSITE = 'http://dreamsdk.sizious.com/';
@@ -219,10 +234,12 @@ begin
   DoubleBuffered := True;
   pcMain.TabIndex := 0;
   Application.Title := Caption;
+  HandleAero;
 end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
 begin
+  InitializeHomeScreen;
   InitializeAboutScreen;
   fLoadingConfiguration := True;
   LoadRepositoriesSelectionList;
@@ -338,11 +355,7 @@ begin
 
       // KallistiOS was installed
       stoKallistiInstall:
-        begin
-          MessageDlg(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
-          if IsPostInstallMode then
-            Application.Terminate;
-        end;
+        MessageDlg(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
 
       // KallistiOS, KallistiOS Ports or Dreamcast Tool were updated
       stoKallistiUpdate:
@@ -684,6 +697,29 @@ begin
   DisplayProductInformation;
 end;
 
+procedure TfrmMain.InitializeHomeScreen;
+begin
+  lblTitleHome.Caption := Format(lblTitleHome.Caption, [GetProductName]);
+  lblIntroduction.Caption := Format(lblIntroduction.Caption, [GetProductName]);
+  lblHomeShell.Caption := Format(lblHomeShell.Caption, [GetProductName]);
+  lblHomeFolder.Caption := Format(lblHomeFolder.Caption, [GetProductName]);
+  lblHomeHelp.Caption := Format(lblHomeHelp.Caption, [GetProductName]);
+end;
+
+procedure TfrmMain.HandleAero;
+var
+  i: Integer;
+
+begin
+  if IsAeroEnabled then
+  begin
+    for i := 0 to frmMain.ComponentCount - 1 do
+      if (frmMain.Components[i] is TLabeledEdit) then
+        (frmMain.Components[i] as TLabeledEdit).Color := clDefault;
+    memPortShortDescription.Color := clDefault;
+  end;
+end;
+
 procedure TfrmMain.RefreshViewKallistiPorts(ForceRefresh: Boolean);
 
   procedure RefreshKallistiPortsControls;
@@ -749,6 +785,16 @@ end;
 procedure TfrmMain.btnCreditsClick(Sender: TObject);
 begin
   frmAbout.ShowModal;
+end;
+
+procedure TfrmMain.btnOpenHelpClick(Sender: TObject);
+begin
+  RunShellExecute('dreamsdk.chm');
+end;
+
+procedure TfrmMain.btnOpenHomeClick(Sender: TObject);
+begin
+  RunShellExecute(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.HomeDirectory);
 end;
 
 procedure TfrmMain.btnAllPortInstallClick(Sender: TObject);

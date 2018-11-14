@@ -7,13 +7,11 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress, KOSMgr, ShellThd,
-  SysTools, RunCmd, Version, PostInst, StrRes, ToolMgr, Settings,
-  About;
+  Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress, KOSMgr,
+  ShellThd, SysTools, RunCmd, Version, PostInst, StrRes, ToolMgr, Settings,
+  About, lhelpcontrolpkg, UITools;
 
 {$R *.res}
-
-
 
 begin
   Application.Scaled:=True;
