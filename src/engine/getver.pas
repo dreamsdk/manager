@@ -57,10 +57,6 @@ type
     fVersionSVN: string;
     fVersionToolIP: string;
     fVersionToolSerial: string;
-    function RetrieveVersion(Executable, CommandLine,
-      StartTag, EndTag: string): string;
-    function RetrieveVersionWithFind(FindTargetFileName: TFileName;
-      StartTag, EndTag: string): string;
   protected
     function RetrieveKallistiVersion: string;
     function RetrieveKallistiBuildDate: TDateTime;
@@ -88,16 +84,15 @@ type
   end;
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
-function IsVersionValid(const Version: string): Boolean;
 
 implementation
 
 uses
   Forms,
-  SysTools;
+  SysTools,
+  VerIntf;
 
 const
-  INVALID_VERSION = '(##INVALID##)';
   DEVELOPMENT_VERSION_SUFFIX = '-dev';
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
@@ -122,11 +117,6 @@ begin
   Result := COMPONENTS_NAME[Integer(ComponentName)];
 end;
 
-function IsVersionValid(const Version: string): Boolean;
-begin
-  Result := not IsInString(INVALID_VERSION, Version);
-end;
-
 { TToolchainVersion }
 
 constructor TToolchainVersion.Create(ToolchainKind: TToolchainKind);
@@ -135,32 +125,6 @@ begin
 end;
 
 { TComponentVersion }
-
-function TComponentVersion.RetrieveVersion(Executable, CommandLine,
-  StartTag, EndTag: string): string;
-var
-  Buffer: string;
-
-begin
-  try
-    Buffer := Run(Executable, CommandLine);
-    Result := Trim(ExtractStr(StartTag, EndTag, Buffer));
-  except
-    Result := INVALID_VERSION;
-  end;
-end;
-
-function TComponentVersion.RetrieveVersionWithFind(
-  FindTargetFileName: TFileName; StartTag, EndTag: string): string;
-var
-  CommandLine: string;
-
-begin
-  CommandLine := Format('"%s" %s', [StartTag, FindTargetFileName]);
-  Result := RetrieveVersion('find', CommandLine, StartTag, EndTag);
-  if (Result = '') then
-    Result := INVALID_VERSION;
-end;
 
 function TComponentVersion.RetrieveKallistiVersion: string;
 const

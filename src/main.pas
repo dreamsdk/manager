@@ -49,6 +49,7 @@ type
     edtManagerLCLVersion: TLabeledEdit;
     edtManagerOS: TLabeledEdit;
     edtLauncherProductVersion: TLabeledEdit;
+    edtProductHelpVersion: TLabeledEdit;
     edtProductVersion: TLabeledEdit;
     edtManagerTargetInfo: TLabeledEdit;
     edtManagerWidgetSet: TLabeledEdit;
@@ -226,6 +227,9 @@ uses
 const
   OFFICIAL_WEBSITE = 'http://dreamsdk.sizious.com/';
   KALLISTI_VERSION_FORMAT = '%s (%s)';
+
+var
+  HelpFileName: TFileName;
 
 { TfrmMain }
 
@@ -680,6 +684,16 @@ const
     end;
   end;
 
+  procedure DisplayHelpFileVersion;
+  var
+    HelpFileVersion: string;
+
+  begin
+    HelpFileVersion := RetrieveVersionWithFind(HelpFileName, 'DreamSDK Help', sLineBreak);
+    HelpFileVersion := Right('Ver. ', HelpFileVersion);
+    edtProductHelpVersion.Text := HelpFileVersion;
+  end;
+
 begin
   btnCheckForUpdates.Caption := Format(btnCheckForUpdates.Caption, [GetProductName]);
   gbxPackageInfo.Caption := Format(gbxPackageInfo.Caption, [GetProductName]);
@@ -695,6 +709,7 @@ begin
   edtManagerWidgetSet.Text := GetWidgetSet;
   DisplayLauncherModuleVersion;
   DisplayProductInformation;
+  DisplayHelpFileVersion;
 end;
 
 procedure TfrmMain.InitializeHomeScreen;
@@ -789,7 +804,7 @@ end;
 
 procedure TfrmMain.btnOpenHelpClick(Sender: TObject);
 begin
-  RunShellExecute('dreamsdk.chm');
+  RunShellExecute(HelpFileName);
 end;
 
 procedure TfrmMain.btnOpenHomeClick(Sender: TObject);
@@ -984,6 +999,8 @@ end;
 
 initialization
   DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
+  HelpFileName := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))
+    + 'dreamsdk.chm';
 
 finalization
   DreamcastSoftwareDevelopmentKitManager.Free;
