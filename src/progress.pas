@@ -50,6 +50,9 @@ uses
   PostInst,
   StrRes;
 
+const
+  CLOSE_TAG_VALUE = 1000;
+
 { TfrmProgress }
 
 procedure TfrmProgress.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -91,7 +94,7 @@ begin
   if State then
   begin
     btnAbort.Caption := CloseButtonCaption;
-    btnAbort.Tag := 1000;
+    btnAbort.Tag := CLOSE_TAG_VALUE;
     pgbOperationProgress.Style := pbstNormal;
     SetCloseButtonState(True);
   end
@@ -119,13 +122,15 @@ begin
       EnableMenuItem(hSysMenu, SC_CLOSE, MF_BYCOMMAND or MF_GRAYED);
     DrawMenuBar(Self.Handle);
   end;
+{$ELSE}
+begin
 {$ENDIF}
   btnAbort.Enabled := State;
 end;
 
 function TfrmProgress.GetAbortOperation: Boolean;
 begin
-  Result := btnAbort.Tag <> 1000;
+  Result := btnAbort.Tag <> CLOSE_TAG_VALUE;
 end;
 
 procedure TfrmProgress.SetTerminateState(Success: Boolean; Aborted: Boolean);
@@ -147,7 +152,7 @@ begin
   end
   else
   begin
-    lblProgressStep.Caption := OperationSuccessfullyTerminated;
+    SetProgressText(OperationSuccessfullyTerminated);
     if not IsPostInstallMode then
       Close;
   end;
