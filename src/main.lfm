@@ -626,7 +626,7 @@ object frmMain: TfrmMain
         end
         object lblInvalidlInternetProtocolAddress: TLabel
           Left = 4
-          Height = 13
+          Height = 21
           Top = 68
           Width = 272
           Alignment = taCenter
