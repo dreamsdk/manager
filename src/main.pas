@@ -222,7 +222,7 @@ implementation
 
 uses
   LCLIntf, IniFiles, UITools, GetVer, SysTools, PostInst, Settings, Version,
-  VerIntf, About;
+  VerIntf, About, UxTheme;
 
 const
   OFFICIAL_WEBSITE = 'http://dreamsdk.sizious.com/';
@@ -520,9 +520,18 @@ end;
 
 procedure TfrmMain.UpdateKallistiPortControls;
 begin
-  btnPortInstall.Enabled := not SelectedKallistiPort.Installed;
-  btnPortUninstall.Enabled := SelectedKallistiPort.Installed;
-  btnPortUpdate.Enabled := SelectedKallistiPort.Installed;
+  if Assigned(SelectedKallistiPort) then
+  begin
+    btnPortInstall.Enabled := not SelectedKallistiPort.Installed;
+    btnPortUninstall.Enabled := SelectedKallistiPort.Installed;
+    btnPortUpdate.Enabled := SelectedKallistiPort.Installed;
+  end
+  else
+  begin
+    btnPortInstall.Enabled := False;
+    btnPortUninstall.Enabled := False;
+    btnPortUpdate.Enabled := False;
+  end;
 end;
 
 procedure TfrmMain.SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
@@ -730,7 +739,7 @@ var
   i: Integer;
 
 begin
-  if IsAeroEnabled then
+  if IsAeroEnabled or UseThemes then
   begin
     for i := 0 to frmMain.ComponentCount - 1 do
       if (frmMain.Components[i] is TLabeledEdit) then
