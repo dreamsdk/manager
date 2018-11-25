@@ -351,14 +351,17 @@ function TKallistiPortManager.InitializeEnvironment: Boolean;
 const
   CONFIG_MAKEFILE = 'config.mk';
   BUILD_MAKEFILE = 'scripts\build.mk';
+  DOWNLOAD_MAKEFILE = 'scripts\download.mk';
 
 var
   ConfigFileName,
-  BuildFileName: TFileName;
+  BuildFileName,
+  DownloadFileName: TFileName;
 
 begin
   ConfigFileName := Environment.FileSystem.Kallisti.KallistiPortsDirectory + CONFIG_MAKEFILE;
   BuildFileName := Environment.FileSystem.Kallisti.KallistiPortsDirectory + BUILD_MAKEFILE;
+  DownloadFileName := Environment.FileSystem.Kallisti.KallistiPortsDirectory + DOWNLOAD_MAKEFILE;
 
   Result := FileExists(ConfigFileName) and FileExists(BuildFileName);
   if Result then
@@ -373,6 +376,12 @@ begin
       ConfigFileName,
       'FETCH_CMD = curl',
       '#FETCH_CMD = curl'
+    );
+
+    Environment.PatchTextFile(
+      DownloadFileName,
+      'svn checkout',
+      'svn checkout --non-interactive --trust-server-cert'
     );
 
     // ln doesn't work very well under MinGW/MSYS...
