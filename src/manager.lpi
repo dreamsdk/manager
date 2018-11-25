@@ -21,7 +21,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="135"/>
+      <BuildNr Value="137"/>
       <StringTable Comments="http://dreamsdk.sizious.com/" CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" LegalCopyright="© Copyleft 2018" LegalTrademarks="Sega and Dreamcast are registered trademark of Sega Games Co., Ltd." OriginalFilename="dreamsdk-manager.exe" ProductName="DreamSDK" ProductVersion="1.0.0.0"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -92,7 +92,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="18">
+    <Units Count="19">
       <Unit0>
         <Filename Value="manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -192,6 +192,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UITools"/>
       </Unit17>
+      <Unit18>
+        <Filename Value="..\..\common\src\sys\msgdlg.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="MsgDlg"/>
+      </Unit18>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

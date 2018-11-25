@@ -206,6 +206,10 @@ type
     procedure OnCommandTerminateThread(Sender: TObject;
       Request: TShellThreadInputRequest; Response: TShellThreadOutputResponse;
       Success: Boolean; UpdateState: TUpdateOperationState);
+    function MsgBox(const aCaption: string; const aMsg: string;
+      DlgType: TMsgDlgType; Buttons: TMsgDlgButtons; DefaultButton: TMsgDlgBtn): TModalResult; overload;
+    function MsgBox(const aCaption: string; const aMsg: string;
+      DlgType: TMsgDlgType; Buttons: TMsgDlgButtons): TModalResult; overload;
     property SelectedKallistiPortItemIndex: Integer
       read GetSelectedKallistiPortItemIndex;
     property SelectedKallistiPort: TKallistiPortItem
@@ -222,7 +226,7 @@ implementation
 
 uses
   LCLIntf, IniFiles, UITools, GetVer, SysTools, PostInst, Settings, Version,
-  VerIntf, About, UxTheme;
+  VerIntf, About, UxTheme, MsgDlg;
 
 const
   OFFICIAL_WEBSITE = 'http://dreamsdk.sizious.com/';
@@ -249,7 +253,8 @@ begin
   fLoadingConfiguration := True;
   LoadRepositoriesSelectionList;
   LoadConfiguration;
-  RefreshEverything(True);
+  RefreshEverything(False);
+  DisplayKallistiPorts(True);
   fLoadingConfiguration := False;
   Cursor := crDefault;
 end;
@@ -357,34 +362,34 @@ begin
     case fShellThreadOutputResult of
       // No action was done
       stoNothing:
-        MessageDlg(DialogInformationTitle, UpdateProcessEverythingUpdate, mtInformation, [mbOk], 0);
+        MsgBox(DialogInformationTitle, UpdateProcessEverythingUpdate, mtInformation, [mbOk]);
 
       // KallistiOS was installed
       stoKallistiInstall:
-        MessageDlg(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
+        MsgBox(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk]);
 
       // KallistiOS, KallistiOS Ports or Dreamcast Tool were updated
       stoKallistiUpdate:
         case fShellThreadUpdateState of
           uosUpdateSuccess:
-            MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [KallistiText]), mtInformation, [mbOk], 0);
+            MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [KallistiText]), mtInformation, [mbOk]);
         end;
 
       // All KallistiOS Ports were installed
       stoKallistiPortsInstall:
-        MessageDlg(DialogInformationTitle, UpdateProcessAllKallistiPortsInstalled, mtInformation, [mbOk], 0);
+        MsgBox(DialogInformationTitle, UpdateProcessAllKallistiPortsInstalled, mtInformation, [mbOk]);
 
       // All KallistiOS Ports were uninstalled
       stoKallistiPortsUninstall:
-        MessageDlg(DialogInformationTitle, UpdateProcessAllKallistiPortsUninstalled, mtInformation, [mbOk], 0);
+        MsgBox(DialogInformationTitle, UpdateProcessAllKallistiPortsUninstalled, mtInformation, [mbOk]);
 
       // A single KallistiOS Port was updated
       stoKallistiSinglePortUpdate:
         case fShellThreadUpdateState of
           uosUpdateSuccess:
-            MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+            MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
           uosUpdateUseless:
-            MessageDlg(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk], 0);
+            MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
         end;
     end;
 
@@ -794,13 +799,29 @@ procedure TfrmMain.OnCommandTerminateThread(Sender: TObject;
   Request: TShellThreadInputRequest; Response: TShellThreadOutputResponse;
   Success: Boolean; UpdateState: TUpdateOperationState);
 begin
-  Cursor := crHourGlass;
-  Application.ProcessMessages;
-  fShellThreadSuccess := Success;
-  fShellThreadInputRequest := Request;
-  fShellThreadOutputResult := Response;
-  fShellThreadUpdateState := UpdateState;
-  tmrShellThreadTerminate.Enabled := True;
+  if not IsPostInstallMode then
+  begin
+    Cursor := crHourGlass;
+    Application.ProcessMessages;
+    fShellThreadSuccess := Success;
+    fShellThreadInputRequest := Request;
+    fShellThreadOutputResult := Response;
+    fShellThreadUpdateState := UpdateState;
+    tmrShellThreadTerminate.Enabled := True;
+  end;
+end;
+
+function TfrmMain.MsgBox(const aCaption: string; const aMsg: string;
+  DlgType: TMsgDlgType; Buttons: TMsgDlgButtons; DefaultButton: TMsgDlgBtn
+  ): TModalResult;
+begin
+  Result := MsgBoxDlg(Handle, aCaption, aMsg, DlgType, Buttons, DefaultButton);
+end;
+
+function TfrmMain.MsgBox(const aCaption: string; const aMsg: string;
+  DlgType: TMsgDlgType; Buttons: TMsgDlgButtons): TModalResult;
+begin
+  Result := MsgBoxDlg(Handle, aCaption, aMsg, DlgType, Buttons);
 end;
 
 procedure TfrmMain.btnCloseClick(Sender: TObject);
@@ -825,7 +846,7 @@ end;
 
 procedure TfrmMain.btnAllPortInstallClick(Sender: TObject);
 begin
-  if MessageDlg(DialogQuestionTitle, InstallAllKallistiPorts, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  if MsgBox(DialogQuestionTitle, InstallAllKallistiPorts, mtConfirmation, [mbYes, mbNo]) = mrYes then
     ExecuteThreadOperation(stiKallistiPortsInstall);
 end;
 
@@ -837,7 +858,7 @@ end;
 
 procedure TfrmMain.btnAllPortUninstallClick(Sender: TObject);
 begin
-  if MessageDlg(DialogWarningTitle, UninstallAllKallistiPorts, mtWarning, [mbYes, mbNo], 0, mbNo) = mrYes then
+  if MsgBox(DialogWarningTitle, UninstallAllKallistiPorts, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
     ExecuteThreadOperation(stiKallistiPortsUninstall);
 end;
 
@@ -870,7 +891,7 @@ begin
   if Assigned(SelectedKallistiPort) then
   begin
     Msg := Format(UninstallKallistiSinglePort, [SelectedKallistiPort.Name]);
-    if MessageDlg(DialogQuestionTitle, Msg, mtConfirmation, [mbYes, mbNo], 0, mbNo) = mrYes then
+    if MsgBox(DialogQuestionTitle, Msg, mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
       ExecuteThreadOperation(stiKallistiSinglePortUninstall);
   end;
 end;
@@ -882,7 +903,7 @@ end;
 
 procedure TfrmMain.btnRestoreDefaultsClick(Sender: TObject);
 begin
-  if MessageDlg(DialogQuestionTitle, RestoreDefaultsText, mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  if MsgBox(DialogQuestionTitle, RestoreDefaultsText, mtConfirmation, [mbYes, mbNo]) = mrYes then
   begin
     rgxTerminalOption.ItemIndex := 0;
     rgxTerminalOptionClick(Self);

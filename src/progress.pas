@@ -48,7 +48,8 @@ uses
   SysTools,
   Main,
   PostInst,
-  StrRes;
+  StrRes,
+  MsgDlg;
 
 const
   CLOSE_TAG_VALUE = 1000;
@@ -61,7 +62,7 @@ begin
   begin
     CloseAction := caNone;
     PauseThreadOperation;
-    if MessageDlg(CancelDialogCaption, CancelDialogText, mtWarning, [mbYes, mbNo], 0, mbNo) = mrYes then
+    if MsgBoxDlg(Handle, CancelDialogCaption, CancelDialogText, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
     begin
       AbortThreadOperation;
       SetCloseButtonState(False);

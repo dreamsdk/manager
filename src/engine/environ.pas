@@ -390,14 +390,18 @@ const
   SUCCESS_TAG = 'Updating ';
   USELESS_TAG = 'Already up to date.';
 
+var
+  TempBuffer: string;
+
 begin
   Result := uosUpdateFailed;
 
   BufferOutput := ExecuteShellCommand('git pull', WorkingDirectory);
+  TempBuffer := StringReplace(BufferOutput, '-', ' ', [rfReplaceAll]);
 
-  if IsInString(USELESS_TAG, BufferOutput) then
+  if IsInString(USELESS_TAG, TempBuffer) then
     Result := uosUpdateUseless
-  else if IsInString(SUCCESS_TAG, BufferOutput) then
+  else if IsInString(SUCCESS_TAG, TempBuffer) then
     Result := uosUpdateSuccess;
 end;
 
