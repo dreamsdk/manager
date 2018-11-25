@@ -198,6 +198,7 @@ type
     procedure InitializeAboutScreen;
     procedure InitializeHomeScreen;
     procedure HandleAero;
+    function GetMsgBoxWindowHandle: THandle;
   public
     procedure RefreshViewDreamcastTool;
     procedure RefreshViewKallistiPorts(ForceRefresh: Boolean);
@@ -226,7 +227,7 @@ implementation
 
 uses
   LCLIntf, IniFiles, UITools, GetVer, SysTools, PostInst, Settings, Version,
-  VerIntf, About, UxTheme, MsgDlg;
+  VerIntf, About, UxTheme, MsgDlg, Progress;
 
 const
   OFFICIAL_WEBSITE = 'http://dreamsdk.sizious.com/';
@@ -756,6 +757,13 @@ begin
   end;
 end;
 
+function TfrmMain.GetMsgBoxWindowHandle: THandle;
+begin
+  Result := Handle;
+  if IsPostInstallMode then
+    Result := frmProgress.Handle;
+end;
+
 procedure TfrmMain.RefreshViewKallistiPorts(ForceRefresh: Boolean);
 
   procedure RefreshKallistiPortsControls;
@@ -815,13 +823,14 @@ function TfrmMain.MsgBox(const aCaption: string; const aMsg: string;
   DlgType: TMsgDlgType; Buttons: TMsgDlgButtons; DefaultButton: TMsgDlgBtn
   ): TModalResult;
 begin
-  Result := MsgBoxDlg(Handle, aCaption, aMsg, DlgType, Buttons, DefaultButton);
+  Result := MsgBoxDlg(GetMsgBoxWindowHandle, aCaption, aMsg, DlgType, Buttons,
+    DefaultButton);
 end;
 
 function TfrmMain.MsgBox(const aCaption: string; const aMsg: string;
   DlgType: TMsgDlgType; Buttons: TMsgDlgButtons): TModalResult;
 begin
-  Result := MsgBoxDlg(Handle, aCaption, aMsg, DlgType, Buttons);
+  Result := MsgBoxDlg(GetMsgBoxWindowHandle, aCaption, aMsg, DlgType, Buttons);
 end;
 
 procedure TfrmMain.btnCloseClick(Sender: TObject);

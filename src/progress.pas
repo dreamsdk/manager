@@ -46,7 +46,6 @@ uses
 {$ENDIF}
   ShellThd,
   SysTools,
-  Main,
   PostInst,
   StrRes,
   MsgDlg;
