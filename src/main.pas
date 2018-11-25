@@ -393,15 +393,18 @@ begin
         end;
     end;
 
-  IsGlobalRefreshViewNeeded := (fShellThreadOutputResult = stoKallistiInstall)
-    or (fShellThreadOutputResult = stoKallistiUpdate)
-    or (fShellThreadOutputResult = stoKallistiPortsInstall)
-    or (fShellThreadOutputResult = stoKallistiPortsUninstall);
+  if not IsPostInstallMode then
+  begin
+    IsGlobalRefreshViewNeeded := (fShellThreadOutputResult = stoKallistiInstall)
+      or (fShellThreadOutputResult = stoKallistiUpdate)
+      or (fShellThreadOutputResult = stoKallistiPortsInstall)
+      or (fShellThreadOutputResult = stoKallistiPortsUninstall);
 
-  if IsGlobalRefreshViewNeeded then
-    RefreshEverything(True)
-  else
-    RefreshViewKallistiPorts(False); // Single KallistiPorts change
+    if IsGlobalRefreshViewNeeded then
+      RefreshEverything(True)
+    else
+      RefreshViewKallistiPorts(False); // Single KallistiPorts change
+  end;
 
   Cursor := crDefault;
 end;
@@ -799,16 +802,13 @@ procedure TfrmMain.OnCommandTerminateThread(Sender: TObject;
   Request: TShellThreadInputRequest; Response: TShellThreadOutputResponse;
   Success: Boolean; UpdateState: TUpdateOperationState);
 begin
-  if not IsPostInstallMode then
-  begin
-    Cursor := crHourGlass;
-    Application.ProcessMessages;
-    fShellThreadSuccess := Success;
-    fShellThreadInputRequest := Request;
-    fShellThreadOutputResult := Response;
-    fShellThreadUpdateState := UpdateState;
-    tmrShellThreadTerminate.Enabled := True;
-  end;
+  Cursor := crHourGlass;
+  Application.ProcessMessages;
+  fShellThreadSuccess := Success;
+  fShellThreadInputRequest := Request;
+  fShellThreadOutputResult := Response;
+  fShellThreadUpdateState := UpdateState;
+  tmrShellThreadTerminate.Enabled := True;
 end;
 
 function TfrmMain.MsgBox(const aCaption: string; const aMsg: string;

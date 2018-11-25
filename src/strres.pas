@@ -36,7 +36,7 @@ resourcestring
   CancelDialogText = 'Are you really sure to cancel? This may breaks things!';
   CloseButtonCaption = '&Close';
   CancelButtonCaption = '&Cancel';
-  OperationSuccessfullyTerminated = 'Operation finished.';
+  OperationSuccessfullyTerminated = 'Operation done.';
   OperationAborted = 'Operation aborted.';
   OperationDoneWithErrors = 'Operation done with errors.';
   OperationErrorMemoText = '*** %s';
