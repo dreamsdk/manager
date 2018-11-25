@@ -17,7 +17,7 @@ uses
   Main, ShellThd, Forms;
 
 var
-  PostInstall: Boolean;
+  PostInstallMode: Boolean;
 
 procedure SetPostInstallMode;
 const
@@ -29,15 +29,15 @@ var
 begin
   for i := 1 to ParamCount do
   begin
-    PostInstall := LowerCase(ParamStr(i)) = POST_INSTALL_SWITCH;
-    if PostInstall then
-      break;
+    PostInstallMode := LowerCase(ParamStr(i)) = POST_INSTALL_SWITCH;
+    if PostInstallMode then
+      Break;
   end;
 end;
 
 function IsPostInstallMode: Boolean;
 begin
-  Result := PostInstall;
+  Result := PostInstallMode;
 end;
 
 function IsInstallOrUpdateRequired: Boolean;
@@ -49,7 +49,7 @@ end;
 
 procedure ExecutePostInstall;
 begin
-  if PostInstall then
+  if PostInstallMode then
   begin
     if IsInstallOrUpdateRequired then
       ExecuteThreadOperation(stiKallistiManage)
