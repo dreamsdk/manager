@@ -27,9 +27,10 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 616
-    ActivePage = tsAbout
-    TabIndex = 6
+    ActivePage = tsOptions
+    TabIndex = 5
     TabOrder = 1
+    OnChanging = pcMainChanging
     object tsHome: TTabSheet
       Caption = 'H&ome'
       ClientHeight = 320

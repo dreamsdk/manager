@@ -8,13 +8,15 @@ uses
   Classes, SysUtils, Environ, Settings;
 
 type
-
   { TDreamcastToolManager }
   TDreamcastToolManager = class(TObject)
   private
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     function GetBuilt: Boolean;
     function GetInstalled: Boolean;
+    function GetRepositoryReady: Boolean;
+    function GetRepositoryReadyInternetProtocol: Boolean;
+    function GetRepositoryReadySerial: Boolean;
     function GetSettings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool;
   protected
     function GenerateDreamcastToolCommandLine: string;
@@ -33,6 +35,9 @@ type
 
     property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
+    property RepositoryReady: Boolean read GetRepositoryReady;
+    property RepositoryReadySerial: Boolean read GetRepositoryReadySerial;
+    property RepositoryReadyInternetProtocol: Boolean read GetRepositoryReadyInternetProtocol;
   end;
 
 implementation
@@ -52,6 +57,23 @@ function TDreamcastToolManager.GetInstalled: Boolean;
 begin
   Result := DirectoryExists(Environment.FileSystem.DreamcastTool.SerialDirectory)
     and DirectoryExists(Environment.FileSystem.DreamcastTool.InternetProtocolDirectory);
+end;
+
+function TDreamcastToolManager.GetRepositoryReady: Boolean;
+begin
+  Result := RepositoryReadyInternetProtocol and RepositoryReadySerial;
+end;
+
+function TDreamcastToolManager.GetRepositoryReadyInternetProtocol: Boolean;
+begin
+  Result := DirectoryExists(Environment.FileSystem.DreamcastTool.InternetProtocolDirectory
+    + GIT_SYSTEM_DIRECTORY);
+end;
+
+function TDreamcastToolManager.GetRepositoryReadySerial: Boolean;
+begin
+  Result := DirectoryExists(Environment.FileSystem.DreamcastTool.SerialDirectory
+    + GIT_SYSTEM_DIRECTORY);
 end;
 
 function TDreamcastToolManager.GetSettings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool;
@@ -108,9 +130,6 @@ begin
 end;
 
 function TDreamcastToolManager.CloneRepository(var BufferOutput: string): Boolean;
-const
-  DCLOAD_IP_INSTALLATION_DIRECTORY = 'dcload-ip';
-  DCLOAD_SERIAL_INSTALLATION_DIRECTORY = 'dcload-serial';
 var
   TempBuffer: string;
 

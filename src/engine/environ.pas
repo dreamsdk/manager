@@ -8,6 +8,11 @@ uses
   Classes, SysUtils, RunCmd, Settings;
 
 const
+  GIT_SYSTEM_DIRECTORY = '.git';
+
+  DCLOAD_IP_INSTALLATION_DIRECTORY = 'dcload-ip';
+  DCLOAD_SERIAL_INSTALLATION_DIRECTORY = 'dcload-serial';
+
   DREAMSDK_LAUNCHER_EXECUTABLE = 'dreamsdk.exe';
   DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dreamsdk/';
   DREAMSDK_MSYS_INSTALL_SCRIPTS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'scripts/';
@@ -224,8 +229,8 @@ begin
   with fDreamcastTool do
   begin
     fBaseDirectory := ToolchainBase + 'dcload\';
-    fInternetProtocolDirectory := fBaseDirectory + 'dcload-ip\';
-    fSerialDirectory := fBaseDirectory + 'dcload-serial\';
+    fInternetProtocolDirectory := fBaseDirectory + DCLOAD_IP_INSTALLATION_DIRECTORY + '\';
+    fSerialDirectory := fBaseDirectory + DCLOAD_SERIAL_INSTALLATION_DIRECTORY + '\';
     fSerialExecutable := ToolchainBase + 'bin\dc-tool-ser.exe';
     fInternetProtocolExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
     fConfigurationFileName := GetConfigurationDirectory + 'dc-tool.conf';

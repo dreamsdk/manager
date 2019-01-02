@@ -57,6 +57,7 @@ type
     function GetItem(Index: Integer): TKallistiPortItem;
     function Add: TKallistiPortItem;
     procedure Clear;
+    function GetRepositoryReady: Boolean;
     function GetUtilityDirectory: TFileName;
     procedure ProcessPort(const PackagingDescriptionFilename: TFileName);
   protected
@@ -75,6 +76,7 @@ type
     property Count: Integer read GetCount;
     property Installed: Boolean read GetInstalled;
     property Items[Index: Integer]: TKallistiPortItem read GetItem; default;
+    property RepositoryReady: Boolean read GetRepositoryReady;
   end;
 
 implementation
@@ -221,6 +223,12 @@ begin
   for i := 0 to fList.Count - 1 do
     TKallistiPortItem(fList[i]).Free;
   fList.Clear;
+end;
+
+function TKallistiPortManager.GetRepositoryReady: Boolean;
+begin
+  Result := DirectoryExists(Environment.FileSystem.Kallisti.KallistiPortsDirectory
+    + GIT_SYSTEM_DIRECTORY);
 end;
 
 function TKallistiPortManager.GetUtilityDirectory: TFileName;

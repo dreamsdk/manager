@@ -174,6 +174,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
+    procedure pcMainChanging(Sender: TObject; var AllowChange: Boolean);
     procedure rgbDreamcastToolSelectionChanged(Sender: TObject);
     procedure rgxTerminalOptionClick(Sender: TObject);
     procedure tmDisplayKallistiPortsTimer(Sender: TObject);
@@ -198,6 +199,7 @@ type
     procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
     procedure UpdateDreamcastToolMediaAccessControlAddressControls;
     procedure UpdateDreamcastToolAlternateCheckbox;
+    procedure UpdateOptionsControls;
     procedure InstallDreamcastTool;
     procedure HandleInvalidInternetProtocolAddress(const InvalidMaskFormat: Boolean);
     procedure HandleInvalidMediaAccessControlAddress(const InvalidMaskFormat: Boolean);
@@ -287,6 +289,13 @@ begin
     memPortDescription.Text := SelectedKallistiPort.Description;
     UpdateKallistiPortControls;
   end;
+end;
+
+procedure TfrmMain.pcMainChanging(Sender: TObject; var AllowChange: Boolean);
+begin
+  AllowChange := True;
+  if pcMain.ActivePage = tsOptions then
+    UpdateOptionsControls;
 end;
 
 procedure TfrmMain.rgbDreamcastToolSelectionChanged(Sender: TObject);
@@ -603,6 +612,17 @@ procedure TfrmMain.UpdateDreamcastToolAlternateCheckbox;
 begin
   ckxDreamcastToolSerialAlternateBaudrate.Enabled := (gbxDreamcastToolSerial.Enabled)
     and (cbxDreamcastToolSerialBaudrate.ItemIndex = 8);
+end;
+
+procedure TfrmMain.UpdateOptionsControls;
+begin
+  with DreamcastSoftwareDevelopmentKitManager do
+  begin
+    cbxUrlKallisti.Enabled := not KallistiOS.RepositoryReady;
+    cbxUrlKallistiPorts.Enabled := not KallistiPorts.RepositoryReady;
+    cbxUrlDreamcastToolSerial.Enabled := not DreamcastTool.RepositoryReadySerial;
+    cbxUrlDreamcastToolIP.Enabled := not DreamcastTool.RepositoryReadyInternetProtocol;
+  end;
 end;
 
 procedure TfrmMain.InstallDreamcastTool;

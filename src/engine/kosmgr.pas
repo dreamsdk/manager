@@ -16,6 +16,7 @@ type
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     function GetBuilt: Boolean;
     function GetInstalled: Boolean;
+    function GetRepositoryReady: Boolean;
   protected
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
@@ -28,6 +29,7 @@ type
     function FixupHitachiNewlib(var BufferOutput: string): Boolean;
     property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
+    property RepositoryReady: Boolean read GetRepositoryReady;
   end;
 
 implementation
@@ -40,6 +42,12 @@ uses
 function TKallistiManager.GetInstalled: Boolean;
 begin
   Result := DirectoryExists(Environment.FileSystem.Kallisti.KallistiDirectory);
+end;
+
+function TKallistiManager.GetRepositoryReady: Boolean;
+begin
+  Result := DirectoryExists(Environment.FileSystem.Kallisti.KallistiDirectory
+    + GIT_SYSTEM_DIRECTORY);
 end;
 
 function TKallistiManager.GetBuilt: Boolean;
