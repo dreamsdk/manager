@@ -19,7 +19,12 @@ type
     function GetRepositoryReadySerial: Boolean;
     function GetSettings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool;
   protected
+    function DoRepositoryOperation(Kind: TDreamcastToolKind;
+      var UpdateOperationState: TUpdateOperationState;
+      var BufferOutput: string): Boolean;
+
     function GenerateDreamcastToolCommandLine: string;
+
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
     property Settings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool
@@ -81,6 +86,51 @@ begin
   Result := Environment.Settings.DreamcastTool;
 end;
 
+function TDreamcastToolManager.DoRepositoryOperation(Kind: TDreamcastToolKind;
+  var UpdateOperationState: TUpdateOperationState;
+  var BufferOutput: string): Boolean;
+var
+  Url: string;
+  InstallationDirectoryName,
+  InstallationDirectoryPath: TFileName;
+  IsRepositoryReady: Boolean;
+
+begin
+  if not DirectoryExists(Environment.FileSystem.DreamcastTool.BaseDirectory) then
+    ForceDirectories(Environment.FileSystem.DreamcastTool.BaseDirectory);
+
+  case Kind of
+    dtkSerial:
+      begin
+        Url := Environment.Settings.Repositories.DreamcastToolSerialURL;
+        InstallationDirectoryName := DCLOAD_SERIAL_INSTALLATION_DIRECTORY;
+        InstallationDirectoryPath := Environment.FileSystem.DreamcastTool.SerialDirectory;
+        IsRepositoryReady := RepositoryReadySerial;
+      end;
+    dtkInternetProtocol:
+      begin
+        Url := Environment.Settings.Repositories.DreamcastToolInternetProtocolURL;
+        InstallationDirectoryName := DCLOAD_IP_INSTALLATION_DIRECTORY;
+        InstallationDirectoryPath := Environment.FileSystem.DreamcastTool.InternetProtocolDirectory;
+        IsRepositoryReady := RepositoryReadyInternetProtocol;
+      end;
+  end;
+
+  if IsRepositoryReady then
+  begin
+    // Update the repository if it already exists
+    UpdateOperationState := Environment.UpdateRepository(
+      InstallationDirectoryPath, BufferOutput);
+    Result := (UpdateOperationState <> uosUpdateFailed);
+  end
+  else
+  begin
+    // Initialize the repository
+    Result := Environment.CloneRepository(Url, InstallationDirectoryName,
+      Environment.FileSystem.DreamcastTool.BaseDirectory, BufferOutput);
+  end;
+end;
+
 function TDreamcastToolManager.GenerateDreamcastToolCommandLine: string;
 var
   CommandLine: string;
@@ -133,22 +183,21 @@ function TDreamcastToolManager.CloneRepository(var BufferOutput: string): Boolea
 var
   TempBuffer: string;
 
-  function DoCloneRepo(Url: string; InstallationDirectory: TFileName): Boolean;
+  function DoCloneRepo(Kind: TDreamcastToolKind): Boolean;
+  var
+    UnusedCrap: TUpdateOperationState;
+
   begin
-    Result := Environment.CloneRepository(Url, InstallationDirectory,
-      Environment.FileSystem.DreamcastTool.BaseDirectory, TempBuffer);
+    UnusedCrap := uosUndefined;
+    Result := DoRepositoryOperation(Kind, UnusedCrap, TempBuffer);
     BufferOutput := BufferOutput + sLineBreak + TempBuffer;
   end;
 
 begin
   Result := True;
   BufferOutput := '';
-
-  if not DirectoryExists(Environment.FileSystem.DreamcastTool.BaseDirectory) then
-    ForceDirectories(Environment.FileSystem.DreamcastTool.BaseDirectory);
-
-  Result := Result and DoCloneRepo(Environment.Settings.Repositories.DreamcastToolInternetProtocolURL, DCLOAD_IP_INSTALLATION_DIRECTORY);
-  Result := Result and DoCloneRepo(Environment.Settings.Repositories.DreamcastToolSerialURL, DCLOAD_SERIAL_INSTALLATION_DIRECTORY);
+  Result := Result and DoCloneRepo(dtkSerial);
+  Result := Result and DoCloneRepo(dtkInternetProtocol);
 end;
 
 function TDreamcastToolManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;
@@ -157,9 +206,10 @@ var
   ResultInternetProtocol,
   ResultSerial: TUpdateOperationState;
 
-  function DoUpdateRepo(InstallationDirectory: TFileName): TUpdateOperationState;
+  function DoUpdateRepo(Kind: TDreamcastToolKind): TUpdateOperationState;
   begin
-    Result := Environment.UpdateRepository(InstallationDirectory, TempBuffer);
+    Result := uosUndefined;
+    DoRepositoryOperation(Kind, Result, TempBuffer);
     BufferOutput := BufferOutput + sLineBreak + TempBuffer;
   end;
 
@@ -177,9 +227,8 @@ var
 begin
   Result := uosUndefined;
   BufferOutput := '';
-
-  ResultInternetProtocol := DoUpdateRepo(Environment.FileSystem.DreamcastTool.InternetProtocolDirectory);
-  ResultSerial := DoUpdateRepo(Environment.FileSystem.DreamcastTool.SerialDirectory);
+  ResultSerial := DoUpdateRepo(dtkSerial);
+  ResultInternetProtocol := DoUpdateRepo(dtkInternetProtocol);
   Result := Combine(ResultInternetProtocol, ResultSerial);
 end;
 
@@ -228,7 +277,6 @@ var
   IniFile: TIniFile;
 
 begin
-  Result := False;
   IniFile := TIniFile.Create(Environment.FileSystem.DreamcastTool.ConfigurationFileName);
   try
     IniFile.WriteString(SECTION_NAME, 'CommandLine', GenerateDreamcastToolCommandLine);
@@ -238,6 +286,7 @@ begin
   finally
     IniFile.Free;
   end;
+  Result := FileExists(Environment.FileSystem.DreamcastTool.ConfigurationFileName);
 end;
 
 end.
