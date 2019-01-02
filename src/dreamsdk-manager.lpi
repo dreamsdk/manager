@@ -31,7 +31,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="..\bin\manager"/>
+            <Filename Value="..\bin\dreamsdk-manager"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -91,7 +91,7 @@
     </RequiredPackages>
     <Units Count="21">
       <Unit0>
-        <Filename Value="manager.lpr"/>
+        <Filename Value="dreamsdk-manager.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Manager"/>
       </Unit0>
@@ -210,7 +210,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="..\bin\manager"/>
+      <Filename Value="..\bin\dreamsdk-manager"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
