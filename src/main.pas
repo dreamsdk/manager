@@ -33,13 +33,14 @@ type
     cbxUrlDreamcastToolSerial: TComboBox;
     cbxUrlKallisti: TComboBox;
     cbxUrlKallistiPorts: TComboBox;
-    ckxDreamcastToolAlwaysStartGDB: TCheckBox;
+    ckxDreamcastToolInternetProtocolUseARP: TCheckBox;
     ckxDreamcastToolAttachConsoleFileServer: TCheckBox;
     ckxDreamcastToolClearScreenBeforeDownload: TCheckBox;
     ckxDreamcastToolSerialAlternateBaudrate: TCheckBox;
     ckxDreamcastToolSerialDumbTerminal: TCheckBox;
     ckxDreamcastToolSerialExternalClock: TCheckBox;
     edtDreamcastToolInternetProtocolAddress: TMaskEdit;
+    edtDreamcastToolInternetProtocolMAC: TMaskEdit;
     edtManagerCompiledDate: TLabeledEdit;
     edtLauncherCompiledDate: TLabeledEdit;
     edtManagerCompilerInfo: TLabeledEdit;
@@ -81,6 +82,8 @@ type
     gbxHomeRunShell: TGroupBox;
     gbxHomeFolder: TGroupBox;
     gbxHomeHelp: TGroupBox;
+    lblDreamcastToolInternetProtocolMAC: TLabel;
+    lblDreamcastToolInternetProtocolInvalidMAC: TLabel;
     lblHomeHelp: TLabel;
     lblHomeShell: TLabel;
     lblHomeFolder: TLabel;
@@ -89,7 +92,7 @@ type
     lblDreamcastToolInternetProtocolAddress: TLabel;
     lblDreamcastToolSerialBaudrate: TLabel;
     lblDreamcastToolSerialPort: TLabel;
-    lblInvalidlInternetProtocolAddress: TLabel;
+    lblDreamcastToolInternetProtocolInvalidAddress: TLabel;
     lblPortName: TLabel;
     lblTextBinutils: TLabel;
     lblTextBinutilsARM: TLabel;
@@ -159,7 +162,9 @@ type
     procedure cbxUrlDreamcastToolSerialChange(Sender: TObject);
     procedure cbxUrlKallistiChange(Sender: TObject);
     procedure cbxUrlKallistiPortsChange(Sender: TObject);
+    procedure ckxDreamcastToolInternetProtocolUseARPChange(Sender: TObject);
     procedure edtDreamcastToolInternetProtocolAddressChange(Sender: TObject);
+    procedure edtDreamcastToolInternetProtocolMACChange(Sender: TObject);
     procedure edtPortMaintainerClick(Sender: TObject);
     procedure edtPortURLClick(Sender: TObject);
     procedure edtPortURLMouseEnter(Sender: TObject);
@@ -191,9 +196,11 @@ type
     procedure UpdateKallistiPortControls;
     procedure SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
     procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
+    procedure UpdateDreamcastToolMediaAccessControlAddressControls;
     procedure UpdateDreamcastToolAlternateCheckbox;
     procedure InstallDreamcastTool;
     procedure HandleInvalidInternetProtocolAddress(const InvalidMaskFormat: Boolean);
+    procedure HandleInvalidMediaAccessControlAddress(const InvalidMaskFormat: Boolean);
     procedure LoadRepositoriesSelectionList;
     procedure InitializeAboutScreen;
     procedure InitializeHomeScreen;
@@ -494,7 +501,8 @@ begin
     edtDreamcastToolInternetProtocolAddress.Text := DreamcastTool.InternetProtocolAddress;
     ckxDreamcastToolAttachConsoleFileServer.Checked := DreamcastTool.AttachConsoleFileserver;
     ckxDreamcastToolClearScreenBeforeDownload.Checked := DreamcastTool.ClearScreenBeforeDownload;
-    ckxDreamcastToolAlwaysStartGDB.Checked := DreamcastTool.AlwaysStartDebugger;
+    ckxDreamcastToolInternetProtocolUseARP.Checked := DreamcastTool.MediaAccessControlEnabled;
+    edtDreamcastToolInternetProtocolMAC.Text := DreamcastTool.MediaAccessControlAddress;
     rgbDreamcastTool.ItemIndex := Integer(DreamcastTool.Kind);
   end;
 end;
@@ -570,12 +578,25 @@ begin
   SetVersionLabelState(VersionLabel, not ValidVersion);
 end;
 
+procedure TfrmMain.UpdateDreamcastToolMediaAccessControlAddressControls;
+var
+  EnabledControls: Boolean;
+
+begin
+  EnabledControls := (gbxDreamcastToolInternetProtocol.Enabled) and
+    (ckxDreamcastToolInternetProtocolUseARP.Checked);
+  edtDreamcastToolInternetProtocolMAC.Enabled := EnabledControls;
+  lblDreamcastToolInternetProtocolInvalidMAC.Enabled := EnabledControls;
+  lblDreamcastToolInternetProtocolMAC.Enabled := EnabledControls;
+end;
+
 procedure TfrmMain.RefreshViewDreamcastTool;
 begin
   gbxDreamcastToolSerial.Enabled := (rgbDreamcastTool.ItemIndex = 1);
   gbxDreamcastToolInternetProtocol.Enabled := (rgbDreamcastTool.ItemIndex = 2);
   gbxDreamcastToolCommon.Enabled := (rgbDreamcastTool.ItemIndex <> 0);
   UpdateDreamcastToolAlternateCheckbox;
+  UpdateDreamcastToolMediaAccessControlAddressControls;
 end;
 
 procedure TfrmMain.UpdateDreamcastToolAlternateCheckbox;
@@ -590,7 +611,6 @@ begin
   begin
     with DreamcastSoftwareDevelopmentKitManager.Environment.Settings.DreamcastTool do
     begin
-      AlwaysStartDebugger := ckxDreamcastToolAlwaysStartGDB.Checked;
       AttachConsoleFileserver := ckxDreamcastToolAttachConsoleFileServer.Checked;
       ClearScreenBeforeDownload := ckxDreamcastToolClearScreenBeforeDownload.Checked;
       Kind := TDreamcastToolKind(rgbDreamcastTool.ItemIndex);
@@ -600,6 +620,8 @@ begin
       SerialPort := TDreamcastToolSerialPort(cbxDreamcastToolSerialPort.ItemIndex);
       SerialExternalClock := ckxDreamcastToolSerialExternalClock.Checked;
       InternetProtocolAddress := edtDreamcastToolInternetProtocolAddress.Text;
+      MediaAccessControlEnabled := ckxDreamcastToolInternetProtocolUseARP.Checked;
+      MediaAccessControlAddress := edtDreamcastToolInternetProtocolMAC.Text;
     end;
     DreamcastSoftwareDevelopmentKitManager.Environment.Settings.SaveConfiguration;
     DreamcastSoftwareDevelopmentKitManager.DreamcastTool.Install;
@@ -613,10 +635,24 @@ var
 begin
   InvalidValue := not IsValidInternetProtocolAddress(edtDreamcastToolInternetProtocolAddress.Text);
   if InvalidMaskFormat then
-    lblInvalidlInternetProtocolAddress.Caption := InvalidInternetProtocolAddressFormat
+    lblDreamcastToolInternetProtocolInvalidAddress.Caption := InvalidInternetProtocolAddressFormat
   else
-    lblInvalidlInternetProtocolAddress.Caption := InvalidInternetProtocolAddressValue;
-  lblInvalidlInternetProtocolAddress.Visible := InvalidMaskFormat or InvalidValue;
+    lblDreamcastToolInternetProtocolInvalidAddress.Caption := InvalidInternetProtocolAddressValue;
+  lblDreamcastToolInternetProtocolInvalidAddress.Visible := InvalidMaskFormat or InvalidValue;
+end;
+
+procedure TfrmMain.HandleInvalidMediaAccessControlAddress(
+  const InvalidMaskFormat: Boolean);
+var
+  InvalidValue: Boolean;
+
+begin
+  InvalidValue := not IsValidMediaAccessControlAddress(edtDreamcastToolInternetProtocolMAC.Text);
+  if InvalidMaskFormat then
+    lblDreamcastToolInternetProtocolInvalidMAC.Caption := InvalidMediaAccessControlAddressFormat
+  else
+    lblDreamcastToolInternetProtocolInvalidMAC.Caption := InvalidMediaAccessControlAddressValue;
+  lblDreamcastToolInternetProtocolInvalidMAC.Visible := InvalidMaskFormat or InvalidValue;
 end;
 
 procedure TfrmMain.LoadRepositoriesSelectionList;
@@ -860,9 +896,18 @@ begin
 end;
 
 procedure TfrmMain.apMainException(Sender: TObject; E: Exception);
+var
+  SenderName: string;
+
 begin
-  if (E is EDBEditError) then
-    HandleInvalidInternetProtocolAddress(True);
+  if (E is EDBEditError) and (ActiveControl is TMaskEdit) then
+  begin
+    SenderName := (ActiveControl as TMaskEdit).Name;
+    if SameText(SenderName, 'edtDreamcastToolInternetProtocolAddress') then
+      HandleInvalidInternetProtocolAddress(True)
+    else
+      HandleInvalidMediaAccessControlAddress(True);
+  end;
 end;
 
 procedure TfrmMain.btnAllPortUninstallClick(Sender: TObject);
@@ -964,10 +1009,23 @@ begin
     .KallistiPortsURL := cbxUrlKallistiPorts.Text;
 end;
 
+procedure TfrmMain.ckxDreamcastToolInternetProtocolUseARPChange(Sender: TObject
+  );
+begin
+  UpdateDreamcastToolMediaAccessControlAddressControls;
+  InstallDreamcastTool;
+end;
+
 procedure TfrmMain.edtDreamcastToolInternetProtocolAddressChange(Sender: TObject
   );
 begin
   HandleInvalidInternetProtocolAddress(False);
+  InstallDreamcastTool;
+end;
+
+procedure TfrmMain.edtDreamcastToolInternetProtocolMACChange(Sender: TObject);
+begin
+  HandleInvalidMediaAccessControlAddress(False);
   InstallDreamcastTool;
 end;
 
@@ -1034,8 +1092,10 @@ end;
 
 procedure TfrmMain.FormActivate(Sender: TObject);
 begin
+  SetControlMultilineLabel(ckxDreamcastToolInternetProtocolUseARP);
   if not IsPostInstallMode and IsInstallOrUpdateRequired then
-    ExecuteThreadOperation(stiKallistiManage);
+    if MsgBox(DialogQuestionTitle, InstallOrUpdateRequiredDoItNow, mtConfirmation, [mbYes, mbNo]) = mrYes then
+      ExecuteThreadOperation(stiKallistiManage);
 end;
 
 initialization

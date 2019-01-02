@@ -38,7 +38,7 @@ type
 implementation
 
 uses
-  SysTools, FileUtil;
+  SysTools, FileUtil, IniFiles;
 
 { TDreamcastToolManager }
 
@@ -96,8 +96,6 @@ begin
         Concat('-n');
       if not ClearScreenBeforeDownload then
         Concat('-q');
-      if AlwaysStartDebugger then
-        Concat('-g');
     end;
 
   Result := Trim(CommandLine);
@@ -205,49 +203,21 @@ end;
 
 function TDreamcastToolManager.Install: Boolean;
 const
-  COMMAND_LINE_TAG = 'dreamcast_tool_parameters=';
+  SECTION_NAME = 'DreamcastTool';
 
 var
-  Buffer: TStringList;
-  EnvironShellScriptFileName: TFileName;
-  i: Integer;
-  SourceLine: string;
-
-  function IsCommented(const SourceLine: string): Boolean;
-  begin
-    Result := Copy(SourceLine, 1, 1) = '#';
-  end;
-
-  function MakeLine(const SourceLine, NewCommandLine: string): string;
-  var
-    RightStr: string;
-
-  begin
-    RightStr := ExtremeRight('"', SourceLine);
-    Result := Format('%s"%s"%s', [COMMAND_LINE_TAG, NewCommandLine, RightStr]);
-  end;
+  IniFile: TIniFile;
 
 begin
   Result := False;
-  EnvironShellScriptFileName := Environment.FileSystem.DreamcastTool.BaseShellScriptExecutable;
-  if FileExists(EnvironShellScriptFileName) then
-  begin
-    Buffer := TStringList.Create;
-    try
-      Buffer.LoadFromFile(EnvironShellScriptFileName);
-      for i := 0 to Buffer.Count - 1 do
-      begin
-        SourceLine := Buffer[i];
-        if (IsInString(COMMAND_LINE_TAG, SourceLine)) and (not IsCommented(SourceLine)) then
-        begin
-          Buffer[i] := MakeLine(SourceLine, GenerateDreamcastToolCommandLine);
-          Result := True;
-        end;
-      end;
-      Buffer.SaveToFile(EnvironShellScriptFileName);
-    finally
-      Buffer.Free;
-    end;
+  IniFile := TIniFile.Create(Environment.FileSystem.DreamcastTool.ConfigurationFileName);
+  try
+    IniFile.WriteString(SECTION_NAME, 'CommandLine', GenerateDreamcastToolCommandLine);
+    IniFile.WriteString(SECTION_NAME, 'InternetProtocolAddress', Settings.InternetProtocolAddress);
+    IniFile.WriteBool(SECTION_NAME, 'MediaAccessControlEnabled', Settings.MediaAccessControlEnabled);
+    IniFile.WriteString(SECTION_NAME, 'MediaAccessControlAddress', Settings.MediaAccessControlAddress);
+  finally
+    IniFile.Free;
   end;
 end;
 

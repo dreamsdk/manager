@@ -30,14 +30,14 @@ type
   TDreamcastSoftwareDevelopmentFileSystemDreamcastTool = class(TObject)
   private
     fBaseDirectory: TFileName;
-    fBaseShellScriptExecutable: TFileName;
+    fConfigurationFileName: TFileName;
     fInternetProtocolDirectory: TFileName;
     fInternetProtocolExecutable: TFileName;
     fSerialDirectory: TFileName;
     fSerialExecutable: TFileName;
   public
     property BaseDirectory: TFileName read fBaseDirectory;
-    property BaseShellScriptExecutable: TFileName read fBaseShellScriptExecutable;
+    property ConfigurationFileName: TFileName read fConfigurationFileName;
     property InternetProtocolDirectory: TFileName read fInternetProtocolDirectory;
     property InternetProtocolExecutable: TFileName read fInternetProtocolExecutable;
     property SerialDirectory: TFileName read fSerialDirectory;
@@ -228,7 +228,7 @@ begin
     fSerialDirectory := fBaseDirectory + 'dcload-serial\';
     fSerialExecutable := ToolchainBase + 'bin\dc-tool-ser.exe';
     fInternetProtocolExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
-    fBaseShellScriptExecutable := DreamSDKBase + 'scripts\dc-tool';
+    fConfigurationFileName := GetConfigurationDirectory + 'dc-tool.conf';
   end;
 
   // KallistiOS

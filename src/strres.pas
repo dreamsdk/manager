@@ -26,9 +26,12 @@ resourcestring
   UpdateProcessAllKallistiPortsUninstalled = 'All KallistiOS Ports were successfully uninstalled.';
   InstallAllKallistiPorts = 'Are you sure to install all KallistiOS Ports at once?';
   UninstallAllKallistiPorts = 'Are you sure to uninstall all KallistiOS Ports at once?';
-  InvalidInternetProtocolAddressFormat = 'Please use 3 digits for all IP address parts.';
-  InvalidInternetProtocolAddressValue = 'Invalid IP address value.';
+  InvalidInternetProtocolAddressFormat = 'Use 3 digits!';
+  InvalidInternetProtocolAddressValue = 'Invalid IP';
+  InvalidMediaAccessControlAddressFormat = 'Use 2 digits!';
+  InvalidMediaAccessControlAddressValue = 'Invalid MAC';
   UninstallKallistiSinglePort = 'Are you sure to uninstall %s?';
+  InstallOrUpdateRequiredDoItNow = 'Installation or update of KallistiOS is necessary. Do it now?';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';

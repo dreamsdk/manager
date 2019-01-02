@@ -76,9 +76,10 @@ resourcestring
   ComponentResources = 'Resources used in this project';
   ComponentMainIcon = 'Settings Icon made by Martz90\nIconset: Circle Icons\nLicense: CC Attribution-Noncommercial-No Derivate 4.0';
   ComponentSetupIcon = 'Setup Icon made by Roundicons from FlatIcon\nLicensed by Creative Commons BY 3.0.';
+  ComponentElevate = 'Elevate is an utility that executes a command with UAC privilege elevation. This is useful for working inside command prompts or with batch files.';
 
 const
-  COMPONENTS_INFORMATION: array[0..22] of TComponentItem = (
+  COMPONENTS_INFORMATION: array[0..23] of TComponentItem = (
     (Text: ComponentEnvironment;    Url: ''), // Environment
     (Text: ComponentMinGW;          Url: 'http://mingw.org/'), // MinGW
     (Text: ComponentMSYS;           Url: 'http://mingw.org/wiki/MSYS'), // MSYS
@@ -101,7 +102,8 @@ const
     (Text: ComponentInnoSetup;      Url: 'http://www.jrsoftware.org/'), // Inno Setup
     (Text: ComponentResources;      Url: ''), // ComponentResources
     (Text: ComponentMainIcon;       Url: 'https://www.deviantart.com/martz90'), // Main Icon
-    (Text: ComponentSetupIcon;      Url: 'https://www.flaticon.com/authors/roundicons') // Setup Icon
+    (Text: ComponentSetupIcon;      Url: 'https://www.flaticon.com/authors/roundicons'), // Setup Icon
+    (Text: ComponentElevate;        Url: 'http://code.kliu.org/misc/elevate/') // Misc/Elevate
   );
 
 { TfrmAbout }
