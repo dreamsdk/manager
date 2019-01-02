@@ -31,7 +31,7 @@ resourcestring
   InvalidMediaAccessControlAddressFormat = 'Use 2 digits!';
   InvalidMediaAccessControlAddressValue = 'Invalid MAC';
   UninstallKallistiSinglePort = 'Are you sure to uninstall %s?';
-  InstallOrUpdateRequiredDoItNow = 'Installation or update of KallistiOS is necessary. Do it now?';
+  InstallOrUpdateRequiredDoItNow = 'A management operation of KallistiOS components is necessary. Do it now?';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';
