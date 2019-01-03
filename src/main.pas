@@ -39,17 +39,15 @@ type
     ckxDreamcastToolSerialAlternateBaudrate: TCheckBox;
     ckxDreamcastToolSerialDumbTerminal: TCheckBox;
     ckxDreamcastToolSerialExternalClock: TCheckBox;
+    cbxModuleSelection: TComboBox;
     edtDreamcastToolInternetProtocolAddress: TMaskEdit;
     edtDreamcastToolInternetProtocolMAC: TMaskEdit;
-    edtManagerCompiledDate: TLabeledEdit;
-    edtLauncherCompiledDate: TLabeledEdit;
+    edtModuleCompiledDate: TLabeledEdit;
     edtManagerCompilerInfo: TLabeledEdit;
-    edtManagerFileVersion: TLabeledEdit;
-    edtLauncherFileVersion: TLabeledEdit;
-    edtManagerProductVersion: TLabeledEdit;
+    edtModuleFileVersion: TLabeledEdit;
+    edtModuleProductVersion: TLabeledEdit;
     edtManagerLCLVersion: TLabeledEdit;
     edtManagerOS: TLabeledEdit;
-    edtLauncherProductVersion: TLabeledEdit;
     edtProductHelpVersion: TLabeledEdit;
     edtProductVersion: TLabeledEdit;
     edtManagerTargetInfo: TLabeledEdit;
@@ -59,7 +57,7 @@ type
     edtPortURL: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
     edtProductBuildDate: TLabeledEdit;
-    gbxManagerInfo: TGroupBox;
+    gbxModuleInfo: TGroupBox;
     gbxAvailablePorts: TGroupBox;
     gbxCompilerInfo: TGroupBox;
     gbxDependencies: TGroupBox;
@@ -78,10 +76,10 @@ type
     gbxUrlKallistiPorts: TGroupBox;
     gbxHostEnvironment: TGroupBox;
     gbxPackageInfo: TGroupBox;
-    gbxLauncherVersion: TGroupBox;
     gbxHomeRunShell: TGroupBox;
     gbxHomeFolder: TGroupBox;
     gbxHomeHelp: TGroupBox;
+    lblComponentInformation: TLabel;
     lblDreamcastToolInternetProtocolMAC: TLabel;
     lblDreamcastToolInternetProtocolInvalidMAC: TLabel;
     lblHomeHelp: TLabel;
@@ -158,6 +156,7 @@ type
     procedure btnUpdateKallistiOSClick(Sender: TObject);
     procedure cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
     procedure cbxDreamcastToolSerialPortSelect(Sender: TObject);
+    procedure cbxModuleSelectionChange(Sender: TObject);
     procedure cbxUrlDreamcastToolIPChange(Sender: TObject);
     procedure cbxUrlDreamcastToolSerialChange(Sender: TObject);
     procedure cbxUrlKallistiChange(Sender: TObject);
@@ -236,14 +235,16 @@ implementation
 
 uses
   LCLIntf, IniFiles, UITools, GetVer, SysTools, PostInst, Settings, Version,
-  VerIntf, About, UxTheme, MsgDlg, Progress;
+  VerIntf, About, UxTheme, MsgDlg, Progress, ModVer;
 
 const
   OFFICIAL_WEBSITE = 'http://dreamsdk.sizious.com/';
   KALLISTI_VERSION_FORMAT = '%s (%s)';
+  UNKNOWN_VALUE = '(Unknown)';
 
 var
   HelpFileName: TFileName;
+  ModuleVersionList: TModuleVersionList;
 
 { TfrmMain }
 
@@ -702,46 +703,8 @@ begin
 end;
 
 procedure TfrmMain.InitializeAboutScreen;
-const
-  UNKNOWN_VALUE = '(Unknown)';
-
-  procedure DisplayLauncherModuleVersion;
-  var
-    LauncherExecutable: TFileName;
-    LauncherProcessId: Integer;
-    LauncherModuleVersion: TModuleVersion;
-    LauncherGroupName,
-    LauncherFileVersion,
-    LauncherCompiledDate,
-    LauncherProductVersion: string;
-
-  begin
-    LauncherExecutable := DreamcastSoftwareDevelopmentKitManager.Environment
-      .FileSystem.Shell.DreamSDKExecutable;
-    LauncherProcessId := 0;
-
-    if FileExists(LauncherExecutable) then
-    begin
-      Run(LauncherExecutable, GET_MODULE_VERSION_SWITCH, LauncherProcessId);
-      LauncherModuleVersion := LoadModuleVersion(LauncherExecutable, LauncherProcessId);
-      LauncherGroupName := LauncherModuleVersion.FileDescription;
-      LauncherFileVersion := LauncherModuleVersion.FileVersion;
-      LauncherCompiledDate := LauncherModuleVersion.BuildDateTime;
-      LauncherProductVersion := LauncherModuleVersion.ProductVersion;
-    end
-    else
-    begin
-      LauncherGroupName := UNKNOWN_VALUE;
-      LauncherFileVersion := UNKNOWN_VALUE;
-      LauncherCompiledDate := UNKNOWN_VALUE;
-      LauncherProductVersion := UNKNOWN_VALUE;
-    end;
-
-    gbxLauncherVersion.Caption := Format(gbxLauncherVersion.Caption, [LauncherGroupName]);
-    edtLauncherFileVersion.Text := LauncherFileVersion;
-    edtLauncherCompiledDate.Text := LauncherCompiledDate;
-    edtLauncherProductVersion.Text := LauncherProductVersion;
-  end;
+var
+  i: Integer;
 
   procedure DisplayProductInformation;
   const
@@ -776,16 +739,21 @@ begin
   btnCheckForUpdates.Caption := Format(btnCheckForUpdates.Caption, [GetProductName]);
   gbxPackageInfo.Caption := Format(gbxPackageInfo.Caption, [GetProductName]);
   lblTitleAbout.Caption := Format(lblTitleAbout.Caption, [GetProductName]);
-  gbxManagerInfo.Caption := Format(gbxManagerInfo.Caption, [Caption]);
-  edtManagerFileVersion.Text := GetFileVersion;
-  edtManagerProductVersion.Text := GetProductVersion;
-  edtManagerCompiledDate.Text := FormatDateTime(STRING_DATE_FORMAT, GetCompiledDateTime);
+
   edtManagerCompilerInfo.Text := GetCompilerInfo;
   edtManagerTargetInfo.Text := GetTargetInfo;
   edtManagerOS.Text := GetOS;
   edtManagerLCLVersion.Text := GetLCLVersion;
   edtManagerWidgetSet.Text := GetWidgetSet;
-  DisplayLauncherModuleVersion;
+
+  for i := 0 to ModuleVersionList.Count - 1 do
+    cbxModuleSelection.Items.Add(ModuleVersionList[i].FileDescription);
+  if cbxModuleSelection.Items.Count > 0 then
+  begin
+    cbxModuleSelection.ItemIndex := 0;
+    cbxModuleSelectionChange(Self);
+  end;
+
   DisplayProductInformation;
   DisplayHelpFileVersion;
 end;
@@ -949,7 +917,7 @@ end;
 procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);
 begin
   DreamcastSoftwareDevelopmentKitManager.Environment.Settings.SaveConfiguration;
-  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.DreamSDKExecutable);
+  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.LauncherExecutable);
 end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
@@ -1003,6 +971,31 @@ end;
 procedure TfrmMain.cbxDreamcastToolSerialPortSelect(Sender: TObject);
 begin
   InstallDreamcastTool;
+end;
+
+procedure TfrmMain.cbxModuleSelectionChange(Sender: TObject);
+var
+  ModuleVersionItem: TModuleVersionItem;
+  ValidItemIndex: Boolean;
+
+begin
+  edtModuleProductVersion.Text := EmptyStr;
+  edtModuleCompiledDate.Text := EmptyStr;
+  edtModuleFileVersion.Text := EmptyStr;
+
+  ValidItemIndex := (cbxModuleSelection.ItemIndex > -1) and
+    (cbxModuleSelection.ItemIndex < ModuleVersionList.Count);
+
+  if ValidItemIndex then
+  begin
+    ModuleVersionItem := ModuleVersionList[cbxModuleSelection.ItemIndex];
+    if Assigned(ModuleVersionItem) then
+    begin
+      edtModuleProductVersion.Text := ModuleVersionItem.ProductVersion;
+      edtModuleCompiledDate.Text := ModuleVersionItem.BuildDateTime;
+      edtModuleFileVersion.Text := ModuleVersionItem.FileVersion;
+    end;
+  end;
 end;
 
 procedure TfrmMain.cbxUrlDreamcastToolIPChange(Sender: TObject);
@@ -1118,13 +1111,31 @@ begin
       ExecuteThreadOperation(stiKallistiManage);
 end;
 
+function CreateModuleVersionList: TModuleVersionList;
+var
+  ModulesList: TStringList;
+
+begin
+  ModulesList := TStringList.Create;
+  try
+    ModulesList.Add(SELF_MODULE_REFERENCE);
+    ModulesList.Add(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.LauncherExecutable);
+    ModulesList.Add(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.RunnerExecutable);
+    Result := TModuleVersionList.Create(ModulesList, UNKNOWN_VALUE);
+  finally
+    ModulesList.Free;
+  end;
+end;
+
 initialization
   DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
   HelpFileName := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))
     + 'dreamsdk.chm';
+  ModuleVersionList := CreateModuleVersionList;
 
 finalization
   DreamcastSoftwareDevelopmentKitManager.Free;
+  ModuleVersionList.Free;
 
 end.
 

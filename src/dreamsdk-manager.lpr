@@ -9,7 +9,7 @@ uses
   Interfaces, // this includes the LCL widgetset
   Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress, KOSMgr, ShellThd,
   SysTools, RunCmd, Version, PostInst, FirstRun, StrRes, ToolMgr, Settings,
-  VerIntf, About, UITools, MsgDlg;
+  VerIntf, About, UITools, MsgDlg, modver;
 
 {$R *.res}
 

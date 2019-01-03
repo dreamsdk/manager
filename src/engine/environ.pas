@@ -13,6 +13,7 @@ const
   DCLOAD_IP_INSTALLATION_DIRECTORY = 'dcload-ip';
   DCLOAD_SERIAL_INSTALLATION_DIRECTORY = 'dcload-serial';
 
+  DREAMSDK_RUNNER_EXECUTABLE = 'dreamsdk-runner.exe';
   DREAMSDK_LAUNCHER_EXECUTABLE = 'dreamsdk.exe';
   DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dreamsdk/';
   DREAMSDK_MSYS_INSTALL_SCRIPTS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'scripts/';
@@ -92,10 +93,12 @@ type
     fDreamSDKExecutable: TFileName;
     fHomeDirectory: TFileName;
     fMinGWGetExecutable: TFileName;
+    fRunnerExecutable: TFileName;
     fShellExecutable: TFileName;
   public
     property DreamSDKDirectory: TFileName read fDreamSDKDirectory;
-    property DreamSDKExecutable: TFileName read fDreamSDKExecutable;
+    property LauncherExecutable: TFileName read fDreamSDKExecutable;
+    property RunnerExecutable: TFileName read fRunnerExecutable;
     property ConfigurationDirectory: TFileName read fConfigurationDirectory;
     property ShellExecutable: TFileName read fShellExecutable;
     property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
@@ -200,6 +203,7 @@ begin
     // DreamSDK
     fDreamSDKDirectory := DreamSDKBase;
     fDreamSDKExecutable := fDreamSDKDirectory + DREAMSDK_LAUNCHER_EXECUTABLE;
+    fRunnerExecutable := fDreamSDKDirectory + DREAMSDK_RUNNER_EXECUTABLE;
     fConfigurationDirectory := MSYSBase + UnixPathToSystem(SETTINGS_DIRECTORY);
   end;
 
