@@ -14,7 +14,7 @@ object frmMain: TfrmMain
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
   object btnClose: TButton
-    Left = 286
+    Left = 266
     Height = 25
     Top = 364
     Width = 138
@@ -27,18 +27,18 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsHome
-    TabIndex = 0
+    ActivePage = tsDreamcastTool
+    TabIndex = 3
     TabOrder = 1
-    OnChanging = pcMainChanging
+    OnChange = pcMainChange
     object tsHome: TTabSheet
       Caption = 'H&ome'
       ClientHeight = 320
       ClientWidth = 648
       object lblTitleHome: TLabel
         Left = 4
-        Height = 19
-        Top = 12
+        Height = 24
+        Top = 8
         Width = 640
         Alignment = taCenter
         AutoSize = False
@@ -468,7 +468,7 @@ object frmMain: TfrmMain
       ClientWidth = 648
       object rgbDreamcastTool: TRadioGroup
         Left = 4
-        Height = 49
+        Height = 57
         Top = 4
         Width = 640
         AutoFill = True
@@ -479,27 +479,28 @@ object frmMain: TfrmMain
         ChildSizing.ShrinkHorizontal = crsScaleChilds
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
-        ChildSizing.ControlsPerLine = 3
-        ClientHeight = 29
+        ChildSizing.ControlsPerLine = 4
+        ClientHeight = 37
         ClientWidth = 636
-        Columns = 3
+        Columns = 4
         ItemIndex = 0
         Items.Strings = (
           '&None (Disable Dreamcast Tool)'
           '&Serial (RS-232)'
           '&Internet Protocol (IP)'
+          '&Custom'
         )
         OnSelectionChanged = rgbDreamcastToolSelectionChanged
         TabOrder = 0
       end
       object gbxDreamcastToolSerial: TGroupBox
         Left = 4
-        Height = 138
-        Top = 56
-        Width = 318
+        Height = 134
+        Top = 64
+        Width = 316
         Caption = 'Serial Settings:'
-        ClientHeight = 118
-        ClientWidth = 314
+        ClientHeight = 114
+        ClientWidth = 312
         TabOrder = 1
         object cbxDreamcastToolSerialBaudrate: TComboBox
           Left = 84
@@ -536,7 +537,7 @@ object frmMain: TfrmMain
         object ckxDreamcastToolSerialExternalClock: TCheckBox
           Left = 8
           Height = 19
-          Top = 92
+          Top = 88
           Width = 207
           Caption = 'Us&e external clock for the serial port'
           OnChange = cbxDreamcastToolSerialPortSelect
@@ -592,13 +593,13 @@ object frmMain: TfrmMain
         end
       end
       object gbxDreamcastToolInternetProtocol: TGroupBox
-        Left = 326
-        Height = 138
-        Top = 56
-        Width = 318
+        Left = 328
+        Height = 134
+        Top = 64
+        Width = 316
         Caption = 'Internet Protocol (IP) Settings:'
-        ClientHeight = 118
-        ClientWidth = 314
+        ClientHeight = 114
+        ClientWidth = 312
         TabOrder = 2
         object edtDreamcastToolInternetProtocolAddress: TMaskEdit
           Left = 84
@@ -641,7 +642,7 @@ object frmMain: TfrmMain
         end
         object ckxDreamcastToolInternetProtocolUseARP: TCheckBox
           Left = 4
-          Height = 50
+          Height = 48
           Top = 34
           Width = 308
           AutoSize = False
@@ -654,7 +655,7 @@ object frmMain: TfrmMain
         object edtDreamcastToolInternetProtocolMAC: TMaskEdit
           Left = 84
           Height = 22
-          Top = 89
+          Top = 85
           Width = 132
           Alignment = taCenter
           CharCase = ecNormal
@@ -671,7 +672,7 @@ object frmMain: TfrmMain
         object lblDreamcastToolInternetProtocolInvalidMAC: TLabel
           Left = 220
           Height = 18
-          Top = 93
+          Top = 89
           Width = 92
           Alignment = taCenter
           AutoSize = False
@@ -685,7 +686,7 @@ object frmMain: TfrmMain
         object lblDreamcastToolInternetProtocolMAC: TLabel
           Left = 4
           Height = 15
-          Top = 93
+          Top = 89
           Width = 75
           Caption = 'MAC Address:'
           ParentColor = False
@@ -693,12 +694,12 @@ object frmMain: TfrmMain
       end
       object gbxDreamcastToolCommon: TGroupBox
         Left = 4
-        Height = 121
-        Top = 196
-        Width = 640
+        Height = 113
+        Top = 204
+        Width = 316
         Caption = 'Options:'
-        ClientHeight = 101
-        ClientWidth = 636
+        ClientHeight = 93
+        ClientWidth = 312
         TabOrder = 3
         object ckxDreamcastToolAttachConsoleFileServer: TCheckBox
           Left = 7
@@ -717,6 +718,57 @@ object frmMain: TfrmMain
           Caption = 'Al&ways clear screen before download'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 1
+        end
+      end
+      object gbxDreamcastToolCustomCommand: TGroupBox
+        Left = 328
+        Height = 113
+        Top = 204
+        Width = 316
+        Caption = 'Custom:'
+        ClientHeight = 93
+        ClientWidth = 312
+        TabOrder = 4
+        object btnDreamcastToolCustomExecutable: TButton
+          Left = 284
+          Height = 23
+          Top = 20
+          Width = 25
+          Caption = '...'
+          OnClick = btnDreamcastToolCustomExecutableClick
+          TabOrder = 0
+        end
+        object edtDreamcastToolCustomExecutable: TEdit
+          Left = 4
+          Height = 23
+          Top = 20
+          Width = 276
+          OnChange = cbxDreamcastToolSerialPortSelect
+          TabOrder = 1
+        end
+        object lblDreamcastToolCustomExecutable: TLabel
+          Left = 4
+          Height = 15
+          Top = 4
+          Width = 59
+          Caption = 'Executable:'
+          ParentColor = False
+        end
+        object lblDreamcastToolCustomArguments: TLabel
+          Left = 4
+          Height = 15
+          Top = 44
+          Width = 62
+          Caption = 'Arguments:'
+          ParentColor = False
+        end
+        object edtDreamcastToolCustomArguments: TEdit
+          Left = 4
+          Height = 23
+          Top = 60
+          Width = 305
+          OnChange = cbxDreamcastToolSerialPortSelect
+          TabOrder = 2
         end
       end
     end
@@ -1120,9 +1172,9 @@ object frmMain: TfrmMain
       ClientWidth = 648
       object lblTitleAbout: TLabel
         Left = 4
-        Height = 19
+        Height = 24
         Top = 8
-        Width = 601
+        Width = 641
         Alignment = taCenter
         AutoSize = False
         Caption = 'About %s'
@@ -1216,17 +1268,17 @@ object frmMain: TfrmMain
           Text = 'edtModuleProductVersion'
         end
         object cbxModuleSelection: TComboBox
-          Left = 8
+          Left = 4
           Height = 23
           Top = 28
-          Width = 300
+          Width = 308
           ItemHeight = 15
           OnChange = cbxModuleSelectionChange
           Style = csDropDownList
           TabOrder = 3
         end
         object lblComponentInformation: TLabel
-          Left = 8
+          Left = 4
           Height = 15
           Top = 8
           Width = 68
@@ -1500,19 +1552,25 @@ object frmMain: TfrmMain
     Enabled = False
     Interval = 50
     OnTimer = tmrShellThreadTerminateTimer
-    left = 264
+    left = 444
     top = 352
   end
   object tmDisplayKallistiPorts: TTimer
     Enabled = False
     Interval = 50
     OnTimer = tmDisplayKallistiPortsTimer
-    left = 56
+    left = 52
     top = 352
   end
   object apMain: TApplicationProperties
     OnException = apMainException
-    left = 156
+    left = 168
+    top = 352
+  end
+  object opdDreamcastToolCustom: TOpenDialog
+    Filter = 'Executables (*.exe;*.bat;*.cmd;*.com)|*.exe;*.bat;*.cmd;*.com|All Files (*.*)|*.*'
+    Options = [ofFileMustExist, ofEnableSizing, ofViewDetail]
+    left = 588
     top = 352
   end
 end

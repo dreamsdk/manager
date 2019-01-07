@@ -23,6 +23,7 @@ type
       var UpdateOperationState: TUpdateOperationState;
       var BufferOutput: string): Boolean;
 
+    function GetDreamcastToolExecutableFileName: TFileName;
     function GenerateDreamcastToolCommandLine: string;
 
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
@@ -96,6 +97,8 @@ var
   IsRepositoryReady: Boolean;
 
 begin
+  IsRepositoryReady := True;
+
   if not DirectoryExists(Environment.FileSystem.DreamcastTool.BaseDirectory) then
     ForceDirectories(Environment.FileSystem.DreamcastTool.BaseDirectory);
 
@@ -131,6 +134,27 @@ begin
   end;
 end;
 
+function TDreamcastToolManager.GetDreamcastToolExecutableFileName: TFileName;
+
+  function _Parse(FileName: TFileName): TFileName;
+  begin
+    Result := ExtractFileName(ChangeFileExt(FileName, ''));
+  end;
+
+begin
+  Result := '';
+  if Settings.Kind = dtkCustom then
+    Result := Settings.CustomExecutable
+  else
+    with Environment.FileSystem.DreamcastTool do
+    begin
+      case Settings.Kind of
+        dtkSerial: Result := _Parse(SerialExecutable);
+        dtkInternetProtocol: Result := _Parse(InternetProtocolExecutable);
+      end;
+    end;
+end;
+
 function TDreamcastToolManager.GenerateDreamcastToolCommandLine: string;
 var
   CommandLine: string;
@@ -143,7 +167,8 @@ var
 begin
   CommandLine := '';
 
-  if Settings.Kind <> dtkUndefined then
+  if (Settings.Kind = dtkSerial) or (Settings.Kind = dtkInternetProtocol) then
+  begin
     with Settings do
     begin
 
@@ -169,6 +194,9 @@ begin
       if not ClearScreenBeforeDownload then
         Concat('-q');
     end;
+  end
+  else
+    CommandLine := Settings.CustomArguments;
 
   Result := Trim(CommandLine);
 end;
@@ -279,6 +307,7 @@ var
 begin
   IniFile := TIniFile.Create(Environment.FileSystem.DreamcastTool.ConfigurationFileName);
   try
+    IniFile.WriteString(SECTION_NAME, 'Executable', GetDreamcastToolExecutableFileName);
     IniFile.WriteString(SECTION_NAME, 'CommandLine', GenerateDreamcastToolCommandLine);
     IniFile.WriteString(SECTION_NAME, 'InternetProtocolAddress', Settings.InternetProtocolAddress);
     IniFile.WriteBool(SECTION_NAME, 'MediaAccessControlEnabled', Settings.MediaAccessControlEnabled);

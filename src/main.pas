@@ -27,6 +27,7 @@ type
     btnRestoreDefaults: TButton;
     btnUpdateKallistiOS: TButton;
     btnCredits: TButton;
+    btnDreamcastToolCustomExecutable: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
     cbxUrlDreamcastToolIP: TComboBox;
@@ -40,6 +41,8 @@ type
     ckxDreamcastToolSerialDumbTerminal: TCheckBox;
     ckxDreamcastToolSerialExternalClock: TCheckBox;
     cbxModuleSelection: TComboBox;
+    edtDreamcastToolCustomExecutable: TEdit;
+    edtDreamcastToolCustomArguments: TEdit;
     edtDreamcastToolInternetProtocolAddress: TMaskEdit;
     edtDreamcastToolInternetProtocolMAC: TMaskEdit;
     edtModuleCompiledDate: TLabeledEdit;
@@ -79,9 +82,12 @@ type
     gbxHomeRunShell: TGroupBox;
     gbxHomeFolder: TGroupBox;
     gbxHomeHelp: TGroupBox;
+    gbxDreamcastToolCustomCommand: TGroupBox;
     lblComponentInformation: TLabel;
+    lblDreamcastToolCustomArguments: TLabel;
     lblDreamcastToolInternetProtocolMAC: TLabel;
     lblDreamcastToolInternetProtocolInvalidMAC: TLabel;
+    lblDreamcastToolCustomExecutable: TLabel;
     lblHomeHelp: TLabel;
     lblHomeShell: TLabel;
     lblHomeFolder: TLabel;
@@ -125,6 +131,7 @@ type
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
     memPortShortDescription: TMemo;
+    opdDreamcastToolCustom: TOpenDialog;
     pnlAbout: TPanel;
     pcMain: TPageControl;
     pnlActions: TPanel;
@@ -154,6 +161,7 @@ type
     procedure btnPortUpdateClick(Sender: TObject);
     procedure btnRestoreDefaultsClick(Sender: TObject);
     procedure btnUpdateKallistiOSClick(Sender: TObject);
+    procedure btnDreamcastToolCustomExecutableClick(Sender: TObject);
     procedure cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
     procedure cbxDreamcastToolSerialPortSelect(Sender: TObject);
     procedure cbxModuleSelectionChange(Sender: TObject);
@@ -173,7 +181,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
-    procedure pcMainChanging(Sender: TObject; var AllowChange: Boolean);
+    procedure pcMainChange(Sender: TObject);
     procedure rgbDreamcastToolSelectionChanged(Sender: TObject);
     procedure rgxTerminalOptionClick(Sender: TObject);
     procedure tmDisplayKallistiPortsTimer(Sender: TObject);
@@ -292,9 +300,8 @@ begin
   end;
 end;
 
-procedure TfrmMain.pcMainChanging(Sender: TObject; var AllowChange: Boolean);
+procedure TfrmMain.pcMainChange(Sender: TObject);
 begin
-  AllowChange := True;
   if pcMain.ActivePage = tsOptions then
     UpdateOptionsControls;
 end;
@@ -513,6 +520,8 @@ begin
     ckxDreamcastToolClearScreenBeforeDownload.Checked := DreamcastTool.ClearScreenBeforeDownload;
     ckxDreamcastToolInternetProtocolUseARP.Checked := DreamcastTool.MediaAccessControlEnabled;
     edtDreamcastToolInternetProtocolMAC.Text := DreamcastTool.MediaAccessControlAddress;
+    edtDreamcastToolCustomExecutable.Text := DreamcastTool.CustomExecutable;
+    edtDreamcastToolCustomArguments.Text := DreamcastTool.CustomArguments;
     rgbDreamcastTool.ItemIndex := Integer(DreamcastTool.Kind);
   end;
 end;
@@ -601,10 +610,15 @@ begin
 end;
 
 procedure TfrmMain.RefreshViewDreamcastTool;
+var
+  Kind: Integer;
+
 begin
-  gbxDreamcastToolSerial.Enabled := (rgbDreamcastTool.ItemIndex = 1);
-  gbxDreamcastToolInternetProtocol.Enabled := (rgbDreamcastTool.ItemIndex = 2);
-  gbxDreamcastToolCommon.Enabled := (rgbDreamcastTool.ItemIndex <> 0);
+  Kind := rgbDreamcastTool.ItemIndex;
+  gbxDreamcastToolSerial.Enabled := (Kind = 1);
+  gbxDreamcastToolInternetProtocol.Enabled := (Kind = 2);
+  gbxDreamcastToolCommon.Enabled := (Kind = 1) or (Kind = 2);
+  gbxDreamcastToolCustomCommand.Enabled := (Kind = 3);
   UpdateDreamcastToolAlternateCheckbox;
   UpdateDreamcastToolMediaAccessControlAddressControls;
 end;
@@ -643,6 +657,8 @@ begin
       InternetProtocolAddress := edtDreamcastToolInternetProtocolAddress.Text;
       MediaAccessControlEnabled := ckxDreamcastToolInternetProtocolUseARP.Checked;
       MediaAccessControlAddress := edtDreamcastToolInternetProtocolMAC.Text;
+      CustomExecutable := edtDreamcastToolCustomExecutable.Text;
+      CustomArguments := edtDreamcastToolCustomArguments.Text;
     end;
     DreamcastSoftwareDevelopmentKitManager.Environment.Settings.SaveConfiguration;
     DreamcastSoftwareDevelopmentKitManager.DreamcastTool.Install;
@@ -960,6 +976,13 @@ end;
 procedure TfrmMain.btnUpdateKallistiOSClick(Sender: TObject);
 begin
   ExecuteThreadOperation(stiKallistiManage);
+end;
+
+procedure TfrmMain.btnDreamcastToolCustomExecutableClick(Sender: TObject);
+begin
+  with opdDreamcastToolCustom do
+    if Execute then
+      edtDreamcastToolCustomExecutable.Text := opdDreamcastToolCustom.FileName;
 end;
 
 procedure TfrmMain.cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
