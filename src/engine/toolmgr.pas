@@ -307,6 +307,7 @@ var
 begin
   IniFile := TIniFile.Create(Environment.FileSystem.DreamcastTool.ConfigurationFileName);
   try
+    IniFile.WriteInteger(SECTION_NAME, 'Kind', Integer(Settings.Kind));
     IniFile.WriteString(SECTION_NAME, 'Executable', GetDreamcastToolExecutableFileName);
     IniFile.WriteString(SECTION_NAME, 'CommandLine', GenerateDreamcastToolCommandLine);
     IniFile.WriteString(SECTION_NAME, 'InternetProtocolAddress', Settings.InternetProtocolAddress);
