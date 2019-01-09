@@ -242,11 +242,11 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, IniFiles, UITools, GetVer, SysTools, PostInst, Settings, Version,
-  VerIntf, About, UxTheme, MsgDlg, Progress, ModVer;
+  LCLIntf, IniFiles, StrUtils, UITools, GetVer, SysTools, PostInst, Settings,
+  Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer;
 
 const
-  OFFICIAL_WEBSITE = 'http://dreamsdk.sizious.com/';
+  HELPFILE = 'dreamsdk.chm';
   KALLISTI_VERSION_FORMAT = '%s (%s)';
   UNKNOWN_VALUE = '(Unknown)';
 
@@ -921,8 +921,21 @@ begin
 end;
 
 procedure TfrmMain.btnCheckForUpdatesClick(Sender: TObject);
+const
+  VALID_PREFIX = 'http';
+
+var
+  Url: string;
+
 begin
-  OpenURL(OFFICIAL_WEBSITE);
+  Url := GetComments;
+  if AnsiStartsStr(VALID_PREFIX, LowerCase(Url)) then
+    OpenURL(GetComments)
+{$IFDEF DEBUG}
+  else
+    raise Exception.Create('Invalid website in the File Comments!')
+{$ENDIF}
+  ;
 end;
 
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
@@ -1152,8 +1165,7 @@ end;
 
 initialization
   DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
-  HelpFileName := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))
-    + 'dreamsdk.chm';
+  HelpFileName := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) + HELPFILE;
   ModuleVersionList := CreateModuleVersionList;
 
 finalization
