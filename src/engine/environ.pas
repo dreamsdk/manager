@@ -289,7 +289,6 @@ procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerTermi
   (Sender: TObject);
 begin
   fShellCommandBufferOutput := fShellCommandRunner.BufferOutput.Text;
-  fShellCommandRunner := nil;
 end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.ExecuteShellCommandRunner(
@@ -301,6 +300,7 @@ begin
   Result := '';
   AbortShellCommand;
 
+  FreeAndNil(fShellCommandRunner);
   fShellCommandRunner := TRunCommand.Create(True);
   with fShellCommandRunner do
   begin
@@ -340,6 +340,8 @@ begin
 
   fSettings.Free;
   fFileSystem.Free;
+
+  FreeAndNil(fShellCommandRunner);
 
   inherited Destroy;
 end;
