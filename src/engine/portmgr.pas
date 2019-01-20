@@ -5,15 +5,17 @@ unit PortMgr;
 interface
 
 uses
-  Classes, SysUtils, Environ;
+  Classes, SysUtils, IniFiles, Environ, SysTools;
 
 type
+  TOverridenInformationKind = (oikLibrary, oikInclude);
   TKallistiPortManager = class;
 
   { TKallistiPortItem }
   TKallistiPortItem = class(TObject)
   private
     fOwner: TKallistiPortManager;
+    fListIndex: Integer;
     fSourceDirectory: TFileName;
     fInstallDirectory: TFileName;
     fDescription: string;
@@ -23,24 +25,33 @@ type
     fShortDescription: string;
     fURL: string;
     fVersion: string;
+    fIncludes: string;
+    fLibraries: string;
+    fDependenciesNameList: TStringList;
+    fDependenciesLibrariesList: TStringList;
     function GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+    function GetLibraries: string;
     function IsPortInstalled: Boolean;
     function DeleteInstallPortDirectoryIfNeeded: Boolean;
+    property Index: Integer read fListIndex;
   protected
     function ExecuteShellCommand(const CommandLine: string): string;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read GetEnvironment;
   public
     constructor Create(AOwner: TKallistiPortManager);
+    destructor Destroy; override;
     function Install(var BufferOutput: string): Boolean;
     function Uninstall(var BufferOutput: string): Boolean;
     function Update(var BufferOutput: string): TUpdateOperationState;
     property Name: string read fName;
     property Description: string read fDescription;
     property SourceDirectory: TFileName read fSourceDirectory;
+    property Includes: string read fIncludes;
     property InstallDirectory: TFileName read fInstallDirectory;
     property Installed: Boolean read IsPortInstalled;
     property Maintainer: string read fMaintainer;
+    property Libraries: string read GetLibraries;
     property License: string read fLicense;
     property ShortDescription: string read fShortDescription;
     property URL: string read fURL;
@@ -51,7 +62,10 @@ type
   TKallistiPortManager = class(TObject)
   private
     fList: TList;
+    fPortsMap: TStringIntegerMap;
+    fPortsWithDependencies: TIntegerList;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+    fOverrideInformation: TIniFile;
     function GetCount: Integer;
     function GetInstalled: Boolean;
     function GetItem(Index: Integer): TKallistiPortItem;
@@ -60,6 +74,10 @@ type
     function GetRepositoryReady: Boolean;
     function GetUtilityDirectory: TFileName;
     procedure ProcessPort(const PackagingDescriptionFilename: TFileName);
+    procedure ProcessPortsDependencies;
+    function GetOverridenInformation(InformationKind: TOverridenInformationKind;
+      PortName: string): string;
+    function ProcessDependencies(PortInfo: TKallistiPortItem): string;
   protected
     property UtilityDirectory: TFileName read GetUtilityDirectory;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
@@ -82,7 +100,7 @@ type
 implementation
 
 uses
-  FileUtil, SysTools;
+  FileUtil;
 
 const
   KALLISTI_PORTS_DIRECTORY = '/opt/toolchains/dc/kos-ports/';
@@ -116,9 +134,25 @@ begin
   Result := fOwner.fEnvironment;
 end;
 
+function TKallistiPortItem.GetLibraries: string;
+begin
+  Result := fLibraries;
+  if fDependenciesLibrariesList.Count > 0 then
+    Result := StringReplace(Trim(fDependenciesLibrariesList.Text), sLineBreak, '|', [rfReplaceAll]);
+end;
+
 constructor TKallistiPortItem.Create(AOwner: TKallistiPortManager);
 begin
   fOwner := AOwner;
+  fDependenciesNameList := TStringList.Create;
+  fDependenciesLibrariesList := TStringList.Create;
+end;
+
+destructor TKallistiPortItem.Destroy;
+begin
+  fDependenciesNameList.Free;
+  fDependenciesLibrariesList.Free;
+  inherited Destroy;
 end;
 
 function TKallistiPortItem.Install(var BufferOutput: string): Boolean;
@@ -189,6 +223,7 @@ begin
       KALLISTI_PORTS_PACKAGE_DESCRIPTION, True);
     for i := 0 to PortsAvailable.Count - 1 do
       ProcessPort(PortsAvailable[i]);
+    ProcessPortsDependencies;
   finally
     PortsAvailable.Free;
   end;
@@ -212,7 +247,7 @@ end;
 function TKallistiPortManager.Add: TKallistiPortItem;
 begin
   Result := TKallistiPortItem.Create(Self);
-  fList.Add(Result);
+  Result.fListIndex := fList.Add(Result);
 end;
 
 procedure TKallistiPortManager.Clear;
@@ -223,6 +258,8 @@ begin
   for i := 0 to fList.Count - 1 do
     TKallistiPortItem(fList[i]).Free;
   fList.Clear;
+  fPortsWithDependencies.Clear;
+  fPortsMap.Clear;
 end;
 
 function TKallistiPortManager.GetRepositoryReady: Boolean;
@@ -242,18 +279,48 @@ const
 
 var
   MakefileContent: TStringList;
-  MakefileContentText, ExtractedURL: string;
+  PortName, MakefileContentText, ExtractedURL: string;
   PortDirectory: TFileName;
 
   function GetPackageString(const Key: string): string;
   var
-    S: string;
+    S, Line: string;
+    i: Integer;
+    Buffer: TStringList;
 
   begin
-    Result := '';
+    Result := EmptyStr;
     S := Right(Key, MakefileContentText);
-    if S <> '' then
+    if S <> EmptyStr then
+    begin
+      // Handle simple case
       Result := Trim(ExtractStr('=', #10, S));
+
+      // Handle multilines ('\')
+      if EndsWith('\', Result) then
+      begin
+        Buffer := TStringList.Create;
+        try
+          Buffer.Text := Trim(Right(Result, MakefileContentText));
+          Result := Trim(Left('\', Result));
+          for i := 0 to Buffer.Count - 1 do
+          begin
+            Line := Buffer[i];
+            if EndsWith('\', Line) then
+              // There is another lines to proceed
+              Result := Result + ' ' + Trim(Left('\', Line))
+            else
+            begin
+              // This is the last line, so break
+              Result := Result + ' ' + Trim(Line);
+              Break;
+            end;
+          end;
+        finally
+          Buffer.Free;
+        end;
+      end;
+    end;
   end;
 
   function SanitizeText(Text: string): string;
@@ -300,6 +367,73 @@ var
       Result := PortDirectory + '..\include\' + Result;
   end;
 
+  function GetPackageIncludes: string;
+  var
+    IncludeDirectory, IncludeFiles, IncludeFile: string;
+    InputBuffer, OutputBuffer: TStringList;
+    i: Integer;
+    IsOverriden: Boolean;
+
+  begin
+    Result := EmptyStr;
+
+    IncludeDirectory := EmptyStr;
+    IncludeFiles := GetOverridenInformation(oikInclude, PortName);
+    IsOverriden := not SameText(IncludeFiles, EmptyStr);
+
+    if not IsOverriden then
+    begin
+      // Get the include directory
+      IncludeDirectory := GetPackageString('HDR_INSTDIR');
+      if SameText(IncludeDirectory, EmptyStr) then
+        IncludeDirectory := PortName;
+      IncludeDirectory := IncludeDirectory + '/';
+
+      // Get all includes files
+      IncludeFiles := Trim(StringReplace(GetPackageString('INSTALLED_HDRS'),
+        'include/' + IncludeDirectory, EmptyStr, [rfReplaceAll]));
+      IncludeFiles := Trim(StringReplace(IncludeFiles, 'include/', EmptyStr,
+        [rfReplaceAll]));
+    end;
+
+    // Combine everything
+    InputBuffer := TStringList.Create;
+    OutputBuffer := TStringList.Create;
+    try
+      InputBuffer.Text := StringReplace(IncludeFiles, ' ', sLineBreak, [rfReplaceAll]);
+      for i := 0 to InputBuffer.Count - 1 do
+      begin
+        IncludeFile := IncludeDirectory + Trim(InputBuffer[i]);
+        if not SameText(IncludeFile, EmptyStr) then
+          OutputBuffer.Add(Format('#include <%s>', [IncludeFile]));
+      end;
+      Result := StringReplace(Trim(OutputBuffer.Text), sLineBreak, '|', [rfReplaceAll]);
+    finally
+      OutputBuffer.Free;
+      InputBuffer.Free;
+    end;
+  end;
+
+  function GetPackageLibraries: string;
+  begin
+    Result := GetOverridenInformation(oikLibrary, PortName);
+    if SameText(Result, EmptyStr) then
+    begin
+      Result := ChangeFileExt(GetPackageString('TARGET'), EmptyStr);
+      Result := Copy(Result, 4, Length(Result));
+    end
+    else
+      Result := StringReplace(Trim(Result), ' ', '|', [rfReplaceAll]);
+  end;
+
+  function GetPackageDependencies: string;
+  begin
+    Result := GetPackageString('DEPENDENCIES');
+    if not SameText(Result, EmptyStr) then
+      Result := StringReplace(SuppressUselessWhiteSpaces(Result), WhiteSpaceStr,
+        sLineBreak, [rfReplaceAll]);
+  end;
+
 begin
   PortDirectory := IncludeTrailingPathDelimiter(ExtractFilePath(PackagingDescriptionFilename));
   MakefileContent := TStringList.Create;
@@ -307,10 +441,11 @@ begin
     MakefileContent.LoadFromFile(PortDirectory + MAKEFILE_FILE_NAME);
     MakefileContentText := SanitizeText(MakefileContent.Text);
 
+    PortName := GetPackageString('PORTNAME');
     with Add do
     begin
       fSourceDirectory := PortDirectory;
-      fName := GetPackageString('PORTNAME');
+      fName := PortName;
       fVersion := GetPackageString('PORTVERSION');
       fMaintainer := GetPackageString('MAINTAINER');
       fLicense := GetPackageString('LICENSE');
@@ -318,9 +453,86 @@ begin
       fDescription := GetPackageDescription(ExtractedURL);
       fURL := ExtractedURL;
       fInstallDirectory := GetInstallDirectory;
+      fIncludes := GetPackageIncludes;
+      fLibraries := GetPackageLibraries;
+      fDependenciesNameList.Text := GetPackageDependencies;
+      if not SameText(fDependenciesNameList.Text, EmptyStr) then
+        fPortsWithDependencies.Add(Index);
+      fPortsMap.Add(PortName, Index);
     end;
+
   finally
     MakefileContent.Free;
+  end;
+end;
+
+procedure TKallistiPortManager.ProcessPortsDependencies;
+var
+  i: Integer;
+  PortInfo: TKallistiPortItem;
+
+begin
+{$IFDEF DEBUG}
+  DebugLog('*** Process Ports Dependencies: Start ***');
+{$ENDIF}
+
+  for i := 0 to fPortsWithDependencies.Count - 1 do
+  begin
+    PortInfo := Items[fPortsWithDependencies[i]];
+{$IFDEF DEBUG}
+    DebugLog('  Processing: ' + PortInfo.Name);
+{$ENDIF}
+    PortInfo.fDependenciesLibrariesList.Text := ProcessDependencies(PortInfo);
+  end;
+
+{$IFDEF DEBUG}
+  DebugLog(sLineBreak + 'Results:');
+  for i := 0 to fPortsWithDependencies.Count - 1 do
+  begin
+    PortInfo := Items[fPortsWithDependencies[i]];
+    DebugLog('  ' + PortInfo.Name + ': "' + StringReplace(
+      Trim(PortInfo.fDependenciesLibrariesList.Text), sLineBreak, ' + ', [rfReplaceAll]) + '"');
+  end;
+
+  DebugLog('*** Process Ports Dependencies: End ***');
+{$ENDIF}
+end;
+
+function TKallistiPortManager.GetOverridenInformation(
+  InformationKind: TOverridenInformationKind; PortName: string): string;
+var
+  SectionName: string;
+
+begin
+  SectionName := 'Libraries';
+  if InformationKind = oikInclude then
+    SectionName := 'Includes';
+  Result := fOverrideInformation.ReadString(SectionName, PortName, EmptyStr);
+end;
+
+// NOTE: THIS DOESN'T HANDLE CIRCULAR REFERENCES BETWEEN KOS PORTS!
+function TKallistiPortManager.ProcessDependencies(PortInfo: TKallistiPortItem): string;
+var
+  j, DependencyPortIndex: Integer;
+  SubPortInfo: TKallistiPortItem;
+
+begin
+  if PortInfo.fDependenciesNameList.Count = 0 then
+  begin
+    Result := PortInfo.fLibraries;
+  end
+  else
+  begin
+    Result := PortInfo.fLibraries;
+    for j := 0 to PortInfo.fDependenciesNameList.Count - 1 do
+    begin
+      DependencyPortIndex := fPortsMap.IndexOf(PortInfo.fDependenciesNameList[j]);
+      if DependencyPortIndex <> -1 then
+      begin
+        SubPortInfo := Items[DependencyPortIndex];
+        Result := Result + sLineBreak + ProcessDependencies(SubPortInfo);
+      end;
+    end;
   end;
 end;
 
@@ -329,13 +541,19 @@ constructor TKallistiPortManager.Create(
 begin
   fEnvironment := AEnvironment;
   fList := TList.Create;
+  fPortsWithDependencies := TIntegerList.Create;
+  fPortsMap := TStringIntegerMap.Create;
+  fOverrideInformation := TIniFile.Create(Environment.FileSystem.Kallisti.KallistiPortsOverrideFile);
   RetrieveAvailablePorts;
 end;
 
 destructor TKallistiPortManager.Destroy;
 begin
   Clear;
+  fPortsWithDependencies.Free;
   fList.Free;
+  fPortsMap.Free;
+  fOverrideInformation.Free;
   inherited Destroy;
 end;
 

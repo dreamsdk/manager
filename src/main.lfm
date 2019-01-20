@@ -27,8 +27,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsDreamcastTool
-    TabIndex = 3
+    ActivePage = tsHome
+    TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -423,8 +423,8 @@ object frmMain: TfrmMain
         end
         object memPortDescription: TMemo
           Left = 6
-          Height = 94
-          Top = 64
+          Height = 86
+          Top = 72
           Width = 378
           BorderSpacing.Around = 2
           Lines.Strings = (
@@ -437,7 +437,7 @@ object frmMain: TfrmMain
         object memPortShortDescription: TMemo
           Left = 6
           Height = 28
-          Top = 28
+          Top = 36
           Width = 378
           BorderStyle = bsNone
           Color = clForm
@@ -449,7 +449,7 @@ object frmMain: TfrmMain
         end
         object lblPortName: TLabel
           Left = 6
-          Height = 19
+          Height = 24
           Top = 4
           Width = 378
           Alignment = taCenter

@@ -297,6 +297,14 @@ begin
     edtPortURL.Text := SelectedKallistiPort.URL;
     memPortDescription.Text := SelectedKallistiPort.Description;
     UpdateKallistiPortControls;
+{$IFDEF DEBUG}
+    DebugLog(
+      sLineBreak +
+      SelectedKallistiPort.Name + ': ' + sLineBreak +
+      '  Includes: ' + SelectedKallistiPort.Includes + sLineBreak +
+      '  Libraries: ' + SelectedKallistiPort.Libraries + sLineBreak
+    );
+{$ENDIF}
   end;
 end;
 

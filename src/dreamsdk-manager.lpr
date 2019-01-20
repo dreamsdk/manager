@@ -2,6 +2,12 @@ program Manager;
 
 {$mode objfpc}{$H+}
 
+{$IFDEF DEBUG}
+{$IFDEF CONSOLE}
+{$APPTYPE Console}
+{$ENDIF}
+{$ENDIF}
+
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,

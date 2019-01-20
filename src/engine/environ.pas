@@ -58,8 +58,10 @@ type
     fKallistiLibrary: TFileName;
     fKallistiChangeLogFile: TFileName;
     fKallistiPortsDirectory: TFileName;
+    fKallistiPortsOverrideFile: TFileName;
   public
     property KallistiPortsDirectory: TFileName read fKallistiPortsDirectory;
+    property KallistiPortsOverrideFile: TFileName read fKallistiPortsOverrideFile;
     property KallistiDirectory: TFileName read fKallistiDirectory;
     property KallistiLibrary: TFileName read fKallistiLibrary;
     property KallistiChangeLogFile: TFileName read fKallistiChangeLogFile;
@@ -248,6 +250,7 @@ begin
     fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
     fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
     fKallistiConfigurationFileName := KallistiDirectory + 'environ.sh';
+    fKallistiPortsOverrideFile := GetConfigurationDirectory + 'koslib.conf';
   end;
 end;
 
