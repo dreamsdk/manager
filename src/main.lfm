@@ -27,13 +27,13 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsHome
-    TabIndex = 0
+    ActivePage = tsKallistiPorts
+    TabIndex = 2
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
       Caption = 'H&ome'
-      ClientHeight = 320
+      ClientHeight = 322
       ClientWidth = 648
       object lblTitleHome: TLabel
         Left = 4
@@ -54,7 +54,7 @@ object frmMain: TfrmMain
         Top = 72
         Width = 640
         Caption = 'Shell:'
-        ClientHeight = 57
+        ClientHeight = 59
         ClientWidth = 636
         TabOrder = 0
         object btnOpenMSYS: TButton
@@ -84,7 +84,7 @@ object frmMain: TfrmMain
         Top = 156
         Width = 640
         Caption = 'Home:'
-        ClientHeight = 57
+        ClientHeight = 59
         ClientWidth = 636
         TabOrder = 1
         object btnOpenHome: TButton
@@ -114,7 +114,7 @@ object frmMain: TfrmMain
         Top = 240
         Width = 640
         Caption = 'Help:'
-        ClientHeight = 57
+        ClientHeight = 59
         ClientWidth = 636
         TabOrder = 2
         object btnOpenHelp: TButton
@@ -140,22 +140,22 @@ object frmMain: TfrmMain
       end
       object lblIntroduction: TLabel
         Left = 4
-        Height = 15
+        Height = 13
         Top = 44
-        Width = 451
+        Width = 414
         Caption = 'Please choose a task below or manage your %s installation by clicking the tabs above.'
         ParentColor = False
       end
     end
     object tsKallistiOS: TTabSheet
       Caption = '&KallistiOS'
-      ClientHeight = 320
+      ClientHeight = 322
       ClientWidth = 648
       object lblVersionKallistiOS: TLabel
         Left = 72
-        Height = 15
+        Height = 13
         Top = 8
-        Width = 207
+        Width = 185
         Caption = '(KallistiOS Version/ChangeLog Version)'
         ParentColor = False
       end
@@ -170,9 +170,9 @@ object frmMain: TfrmMain
       end
       object lblBuildDateKallistiOS: TLabel
         Left = 72
-        Height = 15
+        Height = 13
         Top = 28
-        Width = 62
+        Width = 56
         Caption = '(Build Date)'
         ParentColor = False
       end
@@ -182,12 +182,12 @@ object frmMain: TfrmMain
         Top = 52
         Width = 640
         Caption = 'Change Log:'
-        ClientHeight = 245
+        ClientHeight = 247
         ClientWidth = 636
         TabOrder = 1
         object memKallistiChangeLog: TMemo
           Left = 4
-          Height = 237
+          Height = 239
           Top = 4
           Width = 628
           Align = alClient
@@ -203,7 +203,7 @@ object frmMain: TfrmMain
       end
       object lblTextKallistiOS: TLabel
         Left = 8
-        Height = 15
+        Height = 13
         Top = 8
         Width = 42
         Caption = 'Version'
@@ -213,7 +213,7 @@ object frmMain: TfrmMain
       end
       object lblTextBuildDateKallistiOS: TLabel
         Left = 8
-        Height = 15
+        Height = 13
         Top = 28
         Width = 56
         Caption = 'Build date'
@@ -224,7 +224,7 @@ object frmMain: TfrmMain
     end
     object tsKallistiPorts: TTabSheet
       Caption = 'KallistiOS &Ports'
-      ClientHeight = 320
+      ClientHeight = 322
       ClientWidth = 648
       object gbxAvailablePorts: TGroupBox
         Left = 4
@@ -232,12 +232,12 @@ object frmMain: TfrmMain
         Top = 4
         Width = 240
         Caption = ' Ports: '
-        ClientHeight = 240
+        ClientHeight = 242
         ClientWidth = 236
         TabOrder = 0
         object lbxPorts: TCheckListBox
           Left = 4
-          Height = 232
+          Height = 234
           Top = 4
           Width = 228
           Align = alClient
@@ -257,7 +257,7 @@ object frmMain: TfrmMain
         Top = 264
         Width = 240
         Caption = 'Mass Operation:'
-        ClientHeight = 33
+        ClientHeight = 35
         ClientWidth = 236
         TabOrder = 1
         object btnAllPortUninstall: TButton
@@ -285,7 +285,7 @@ object frmMain: TfrmMain
         Top = 4
         Width = 392
         Caption = 'Selected KallistiOS Port Details:'
-        ClientHeight = 293
+        ClientHeight = 295
         ClientWidth = 388
         TabOrder = 2
         object btnPortUninstall: TButton
@@ -317,7 +317,7 @@ object frmMain: TfrmMain
         end
         object edtPortURL: TLabeledEdit
           Left = 72
-          Height = 15
+          Height = 13
           Top = 240
           Width = 312
           BorderStyle = bsNone
@@ -327,10 +327,10 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideRight.Control = edtPortURL
           EditLabel.AnchorSideBottom.Control = edtPortURL
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 46
-          EditLabel.Height = 15
+          EditLabel.Left = 47
+          EditLabel.Height = 13
           EditLabel.Top = 240
-          EditLabel.Width = 23
+          EditLabel.Width = 22
           EditLabel.Caption = 'URL'
           EditLabel.ParentColor = False
           EditLabel.ParentFont = False
@@ -345,7 +345,7 @@ object frmMain: TfrmMain
         end
         object edtPortLicense: TLabeledEdit
           Left = 72
-          Height = 15
+          Height = 13
           Top = 216
           Width = 312
           BorderStyle = bsNone
@@ -355,10 +355,10 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideRight.Control = edtPortLicense
           EditLabel.AnchorSideBottom.Control = edtPortLicense
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 28
-          EditLabel.Height = 15
+          EditLabel.Left = 27
+          EditLabel.Height = 13
           EditLabel.Top = 216
-          EditLabel.Width = 41
+          EditLabel.Width = 42
           EditLabel.Caption = 'License'
           EditLabel.ParentColor = False
           EditLabel.ParentFont = False
@@ -370,7 +370,7 @@ object frmMain: TfrmMain
         end
         object edtPortMaintainer: TLabeledEdit
           Left = 72
-          Height = 15
+          Height = 13
           Top = 192
           Width = 312
           BorderStyle = bsNone
@@ -380,10 +380,10 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideRight.Control = edtPortMaintainer
           EditLabel.AnchorSideBottom.Control = edtPortMaintainer
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 9
-          EditLabel.Height = 15
+          EditLabel.Left = 8
+          EditLabel.Height = 13
           EditLabel.Top = 192
-          EditLabel.Width = 60
+          EditLabel.Width = 61
           EditLabel.Caption = 'Maintainer'
           EditLabel.ParentColor = False
           EditLabel.ParentFont = False
@@ -398,7 +398,7 @@ object frmMain: TfrmMain
         end
         object edtPortVersion: TLabeledEdit
           Left = 72
-          Height = 15
+          Height = 13
           Top = 168
           Width = 312
           BorderStyle = bsNone
@@ -409,7 +409,7 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideBottom.Control = edtPortVersion
           EditLabel.AnchorSideBottom.Side = asrBottom
           EditLabel.Left = 27
-          EditLabel.Height = 15
+          EditLabel.Height = 13
           EditLabel.Top = 168
           EditLabel.Width = 42
           EditLabel.Caption = 'Version'
@@ -480,7 +480,7 @@ object frmMain: TfrmMain
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 4
-        ClientHeight = 37
+        ClientHeight = 39
         ClientWidth = 636
         Columns = 4
         ItemIndex = 0
@@ -499,15 +499,15 @@ object frmMain: TfrmMain
         Top = 64
         Width = 316
         Caption = 'Serial Settings:'
-        ClientHeight = 114
+        ClientHeight = 116
         ClientWidth = 312
         TabOrder = 1
         object cbxDreamcastToolSerialBaudrate: TComboBox
           Left = 84
-          Height = 23
+          Height = 21
           Top = 32
           Width = 84
-          ItemHeight = 15
+          ItemHeight = 13
           ItemIndex = 0
           Items.Strings = (
             '300'
@@ -554,10 +554,10 @@ object frmMain: TfrmMain
         end
         object cbxDreamcastToolSerialPort: TComboBox
           Left = 84
-          Height = 23
+          Height = 21
           Top = 4
           Width = 84
-          ItemHeight = 15
+          ItemHeight = 13
           ItemIndex = 0
           Items.Strings = (
             'COM1'
@@ -598,7 +598,7 @@ object frmMain: TfrmMain
         Top = 64
         Width = 316
         Caption = 'Internet Protocol (IP) Settings:'
-        ClientHeight = 114
+        ClientHeight = 116
         ClientWidth = 312
         TabOrder = 2
         object edtDreamcastToolInternetProtocolAddress: TMaskEdit
@@ -698,7 +698,7 @@ object frmMain: TfrmMain
         Top = 204
         Width = 316
         Caption = 'Options:'
-        ClientHeight = 93
+        ClientHeight = 95
         ClientWidth = 312
         TabOrder = 3
         object ckxDreamcastToolAttachConsoleFileServer: TCheckBox
@@ -726,7 +726,7 @@ object frmMain: TfrmMain
         Top = 204
         Width = 316
         Caption = 'Custom:'
-        ClientHeight = 93
+        ClientHeight = 95
         ClientWidth = 312
         TabOrder = 4
         object btnDreamcastToolCustomExecutable: TButton
@@ -782,7 +782,7 @@ object frmMain: TfrmMain
         Top = 4
         Width = 316
         Caption = 'SuperH Toolchain Versions:'
-        ClientHeight = 173
+        ClientHeight = 175
         ClientWidth = 312
         TabOrder = 0
         object lblVersionBinutils: TLabel
@@ -864,7 +864,7 @@ object frmMain: TfrmMain
         Top = 148
         Width = 316
         Caption = 'Dependencies Versions:'
-        ClientHeight = 149
+        ClientHeight = 151
         ClientWidth = 312
         TabOrder = 1
         object lblVersionSVN: TLabel
@@ -946,7 +946,7 @@ object frmMain: TfrmMain
         Top = 204
         Width = 316
         Caption = 'Dreamcast Tool Versions:'
-        ClientHeight = 93
+        ClientHeight = 95
         ClientWidth = 312
         TabOrder = 2
         object lblVersionToolSerial: TLabel
@@ -992,7 +992,7 @@ object frmMain: TfrmMain
         Top = 4
         Width = 316
         Caption = 'ARM Toolchain Versions:'
-        ClientHeight = 120
+        ClientHeight = 122
         ClientWidth = 312
         TabOrder = 3
         object lblVersionBinutilsARM: TLabel
@@ -1035,7 +1035,7 @@ object frmMain: TfrmMain
     end
     object tsOptions: TTabSheet
       Caption = '&Options'
-      ClientHeight = 320
+      ClientHeight = 322
       ClientWidth = 648
       object gbxUrlKallistiOS: TGroupBox
         Left = 4
@@ -1043,15 +1043,15 @@ object frmMain: TfrmMain
         Top = 4
         Width = 641
         Caption = 'KallistiOS Repository URL:'
-        ClientHeight = 32
+        ClientHeight = 34
         ClientWidth = 637
         TabOrder = 0
         object cbxUrlKallisti: TComboBox
           Left = 4
-          Height = 23
+          Height = 21
           Top = 4
           Width = 630
-          ItemHeight = 15
+          ItemHeight = 13
           OnChange = cbxUrlKallistiChange
           TabOrder = 0
         end
@@ -1062,15 +1062,15 @@ object frmMain: TfrmMain
         Top = 60
         Width = 641
         Caption = 'KallistiOS Ports Repository URL:'
-        ClientHeight = 32
+        ClientHeight = 34
         ClientWidth = 637
         TabOrder = 1
         object cbxUrlKallistiPorts: TComboBox
           Left = 4
-          Height = 23
+          Height = 21
           Top = 4
           Width = 630
-          ItemHeight = 15
+          ItemHeight = 13
           OnChange = cbxUrlKallistiPortsChange
           TabOrder = 0
         end
@@ -1089,7 +1089,7 @@ object frmMain: TfrmMain
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 65
+        ClientHeight = 67
         ClientWidth = 312
         ItemIndex = 0
         Items.Strings = (
@@ -1133,15 +1133,15 @@ object frmMain: TfrmMain
         Top = 116
         Width = 641
         Caption = 'Dreamcast Tool Serial URL:'
-        ClientHeight = 32
+        ClientHeight = 34
         ClientWidth = 637
         TabOrder = 3
         object cbxUrlDreamcastToolSerial: TComboBox
           Left = 4
-          Height = 23
+          Height = 21
           Top = 4
           Width = 630
-          ItemHeight = 15
+          ItemHeight = 13
           OnChange = cbxUrlDreamcastToolSerialChange
           TabOrder = 0
         end
@@ -1152,15 +1152,15 @@ object frmMain: TfrmMain
         Top = 172
         Width = 641
         Caption = 'Dreamcast Tool Internet Protocol (IP) URL:'
-        ClientHeight = 32
+        ClientHeight = 34
         ClientWidth = 637
         TabOrder = 5
         object cbxUrlDreamcastToolIP: TComboBox
           Left = 4
-          Height = 23
+          Height = 21
           Top = 4
           Width = 630
-          ItemHeight = 15
+          ItemHeight = 13
           OnChange = cbxUrlDreamcastToolIPChange
           TabOrder = 0
         end
@@ -1168,7 +1168,7 @@ object frmMain: TfrmMain
     end
     object tsAbout: TTabSheet
       Caption = '&About'
-      ClientHeight = 320
+      ClientHeight = 322
       ClientWidth = 648
       object lblTitleAbout: TLabel
         Left = 4
@@ -1189,12 +1189,12 @@ object frmMain: TfrmMain
         Top = 36
         Width = 318
         Caption = 'Components Information:'
-        ClientHeight = 170
+        ClientHeight = 172
         ClientWidth = 314
         TabOrder = 0
         object edtModuleFileVersion: TLabeledEdit
           Left = 120
-          Height = 15
+          Height = 13
           Top = 60
           Width = 176
           BorderStyle = bsNone
@@ -1205,7 +1205,7 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideBottom.Control = edtModuleFileVersion
           EditLabel.AnchorSideBottom.Side = asrBottom
           EditLabel.Left = 53
-          EditLabel.Height = 15
+          EditLabel.Height = 13
           EditLabel.Top = 60
           EditLabel.Width = 64
           EditLabel.Caption = 'File Version'
@@ -1219,7 +1219,7 @@ object frmMain: TfrmMain
         end
         object edtModuleCompiledDate: TLabeledEdit
           Left = 120
-          Height = 15
+          Height = 13
           Top = 80
           Width = 176
           BorderStyle = bsNone
@@ -1229,10 +1229,10 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideRight.Control = edtModuleCompiledDate
           EditLabel.AnchorSideBottom.Control = edtModuleCompiledDate
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 59
-          EditLabel.Height = 15
+          EditLabel.Left = 60
+          EditLabel.Height = 13
           EditLabel.Top = 80
-          EditLabel.Width = 58
+          EditLabel.Width = 57
           EditLabel.Caption = 'Build Date'
           EditLabel.ParentColor = False
           EditLabel.ParentFont = False
@@ -1244,7 +1244,7 @@ object frmMain: TfrmMain
         end
         object edtModuleProductVersion: TLabeledEdit
           Left = 120
-          Height = 15
+          Height = 13
           Top = 100
           Width = 176
           BorderStyle = bsNone
@@ -1255,7 +1255,7 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideBottom.Control = edtModuleProductVersion
           EditLabel.AnchorSideBottom.Side = asrBottom
           EditLabel.Left = 28
-          EditLabel.Height = 15
+          EditLabel.Height = 13
           EditLabel.Top = 100
           EditLabel.Width = 89
           EditLabel.Caption = 'Product Version'
@@ -1269,17 +1269,17 @@ object frmMain: TfrmMain
         end
         object cbxModuleSelection: TComboBox
           Left = 4
-          Height = 23
+          Height = 21
           Top = 28
-          Width = 308
-          ItemHeight = 15
+          Width = 307
+          ItemHeight = 13
           OnChange = cbxModuleSelectionChange
           Style = csDropDownList
           TabOrder = 3
         end
         object lblComponentInformation: TLabel
           Left = 4
-          Height = 15
+          Height = 13
           Top = 8
           Width = 68
           Caption = 'Component:'
@@ -1294,12 +1294,12 @@ object frmMain: TfrmMain
         Top = 232
         Width = 316
         Caption = 'Compiler Information:'
-        ClientHeight = 65
+        ClientHeight = 67
         ClientWidth = 312
         TabOrder = 1
         object edtManagerCompilerInfo: TLabeledEdit
           Left = 124
-          Height = 15
+          Height = 13
           Top = 8
           Width = 176
           BorderStyle = bsNone
@@ -1310,7 +1310,7 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideBottom.Control = edtManagerCompilerInfo
           EditLabel.AnchorSideBottom.Side = asrBottom
           EditLabel.Left = 56
-          EditLabel.Height = 15
+          EditLabel.Height = 13
           EditLabel.Top = 8
           EditLabel.Width = 65
           EditLabel.Caption = 'FPC Version'
@@ -1324,7 +1324,7 @@ object frmMain: TfrmMain
         end
         object edtManagerLCLVersion: TLabeledEdit
           Left = 124
-          Height = 15
+          Height = 13
           Top = 32
           Width = 176
           BorderStyle = bsNone
@@ -1335,7 +1335,7 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideBottom.Control = edtManagerLCLVersion
           EditLabel.AnchorSideBottom.Side = asrBottom
           EditLabel.Left = 57
-          EditLabel.Height = 15
+          EditLabel.Height = 13
           EditLabel.Top = 32
           EditLabel.Width = 64
           EditLabel.Caption = 'LCL Version'
@@ -1354,12 +1354,12 @@ object frmMain: TfrmMain
         Top = 136
         Width = 316
         Caption = 'Host Environment Information:'
-        ClientHeight = 70
+        ClientHeight = 72
         ClientWidth = 312
         TabOrder = 2
         object edtManagerOS: TLabeledEdit
           Left = 124
-          Height = 15
+          Height = 13
           Top = 8
           Width = 176
           BorderStyle = bsNone
@@ -1369,10 +1369,10 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideRight.Control = edtManagerOS
           EditLabel.AnchorSideBottom.Control = edtManagerOS
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 21
-          EditLabel.Height = 15
+          EditLabel.Left = 19
+          EditLabel.Height = 13
           EditLabel.Top = 8
-          EditLabel.Width = 100
+          EditLabel.Width = 102
           EditLabel.Caption = 'Operating System'
           EditLabel.ParentColor = False
           EditLabel.ParentFont = False
@@ -1384,7 +1384,7 @@ object frmMain: TfrmMain
         end
         object edtManagerWidgetSet: TLabeledEdit
           Left = 124
-          Height = 15
+          Height = 13
           Top = 48
           Width = 176
           BorderStyle = bsNone
@@ -1394,10 +1394,10 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideRight.Control = edtManagerWidgetSet
           EditLabel.AnchorSideBottom.Control = edtManagerWidgetSet
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 58
-          EditLabel.Height = 15
+          EditLabel.Left = 59
+          EditLabel.Height = 13
           EditLabel.Top = 48
-          EditLabel.Width = 63
+          EditLabel.Width = 62
           EditLabel.Caption = 'Widget Set'
           EditLabel.ParentColor = False
           EditLabel.ParentFont = False
@@ -1409,7 +1409,7 @@ object frmMain: TfrmMain
         end
         object edtManagerTargetInfo: TLabeledEdit
           Left = 124
-          Height = 15
+          Height = 13
           Top = 28
           Width = 176
           BorderStyle = bsNone
@@ -1419,10 +1419,10 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideRight.Control = edtManagerTargetInfo
           EditLabel.AnchorSideBottom.Control = edtManagerTargetInfo
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 58
-          EditLabel.Height = 15
+          EditLabel.Left = 57
+          EditLabel.Height = 13
           EditLabel.Top = 28
-          EditLabel.Width = 63
+          EditLabel.Width = 64
           EditLabel.Caption = 'Target Info'
           EditLabel.ParentColor = False
           EditLabel.ParentFont = False
@@ -1439,12 +1439,12 @@ object frmMain: TfrmMain
         Top = 36
         Width = 316
         Caption = '%s Package Information:'
-        ClientHeight = 72
+        ClientHeight = 74
         ClientWidth = 312
         TabOrder = 3
         object edtProductVersion: TLabeledEdit
           Left = 123
-          Height = 15
+          Height = 13
           Top = 8
           Width = 176
           BorderStyle = bsNone
@@ -1455,7 +1455,7 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideBottom.Control = edtProductVersion
           EditLabel.AnchorSideBottom.Side = asrBottom
           EditLabel.Left = 31
-          EditLabel.Height = 15
+          EditLabel.Height = 13
           EditLabel.Top = 8
           EditLabel.Width = 89
           EditLabel.Caption = 'Product Version'
@@ -1469,7 +1469,7 @@ object frmMain: TfrmMain
         end
         object edtProductBuildDate: TLabeledEdit
           Left = 123
-          Height = 15
+          Height = 13
           Top = 28
           Width = 176
           BorderStyle = bsNone
@@ -1479,10 +1479,10 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideRight.Control = edtProductBuildDate
           EditLabel.AnchorSideBottom.Control = edtProductBuildDate
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 62
-          EditLabel.Height = 15
+          EditLabel.Left = 63
+          EditLabel.Height = 13
           EditLabel.Top = 28
-          EditLabel.Width = 58
+          EditLabel.Width = 57
           EditLabel.Caption = 'Build Date'
           EditLabel.ParentColor = False
           EditLabel.ParentFont = False
@@ -1494,7 +1494,7 @@ object frmMain: TfrmMain
         end
         object edtProductHelpVersion: TLabeledEdit
           Left = 123
-          Height = 15
+          Height = 13
           Top = 48
           Width = 176
           BorderStyle = bsNone
@@ -1504,10 +1504,10 @@ object frmMain: TfrmMain
           EditLabel.AnchorSideRight.Control = edtProductHelpVersion
           EditLabel.AnchorSideBottom.Control = edtProductHelpVersion
           EditLabel.AnchorSideBottom.Side = asrBottom
-          EditLabel.Left = 49
-          EditLabel.Height = 15
+          EditLabel.Left = 50
+          EditLabel.Height = 13
           EditLabel.Top = 48
-          EditLabel.Width = 71
+          EditLabel.Width = 70
           EditLabel.Caption = 'Help Version'
           EditLabel.ParentColor = False
           EditLabel.ParentFont = False

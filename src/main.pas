@@ -345,10 +345,13 @@ begin
     for i := 0 to DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Count - 1 do
     begin
       PortInfo := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[i];
-      j := lbxPorts.Items.Add(PortInfo.Name);
-      lbxPorts.Items.Objects[j] := TObject(i);
-      if PortInfo.Installed then
-        lbxPorts.State[j] := cbGrayed;
+      if not PortInfo.Hidden then
+      begin
+        j := lbxPorts.Items.Add(PortInfo.Name);
+        lbxPorts.Items.Objects[j] := TObject(i);
+        if PortInfo.Installed then
+          lbxPorts.State[j] := cbGrayed;
+      end;
       Application.ProcessMessages;
     end;
 
@@ -392,6 +395,7 @@ begin
   tmrShellThreadTerminate.Enabled := False;
 
   if fShellThreadSuccess then
+  begin
     case fShellThreadOutputResult of
       // No action was done
       stoNothing:
@@ -425,6 +429,11 @@ begin
             MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
         end;
     end;
+
+    // Handle IDE files
+    DreamcastSoftwareDevelopmentKitManager.KallistiPorts
+      .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
+  end;
 
   if not IsPostInstallMode then
   begin

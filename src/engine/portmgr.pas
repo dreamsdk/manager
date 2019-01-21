@@ -5,7 +5,7 @@ unit PortMgr;
 interface
 
 uses
-  Classes, SysUtils, IniFiles, Environ, SysTools;
+  Classes, SysUtils, IniFiles, SysTools, Environ, IDEMgr;
 
 type
   TOverridenInformationKind = (oikLibrary, oikInclude);
@@ -15,6 +15,7 @@ type
   TKallistiPortItem = class(TObject)
   private
     fOwner: TKallistiPortManager;
+    fVirtualAddon: Boolean;
     fListIndex: Integer;
     fSourceDirectory: TFileName;
     fInstallDirectory: TFileName;
@@ -34,8 +35,8 @@ type
     function GetLibraries: string;
     function IsPortInstalled: Boolean;
     function DeleteInstallPortDirectoryIfNeeded: Boolean;
-    property Index: Integer read fListIndex;
   protected
+    function DoInstallOrUpdate: string;
     function ExecuteShellCommand(const CommandLine: string): string;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read GetEnvironment;
@@ -57,6 +58,7 @@ type
     property ShortDescription: string read fShortDescription;
     property URL: string read fURL;
     property Version: string read fVersion;
+    property Hidden: Boolean read fVirtualAddon;
   end;
 
   { TKallistiPortManager }
@@ -66,9 +68,13 @@ type
     fPortsMap: TStringIntegerMap;
     fPortsWithDependencies: TIntegerList;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
-    fOverrideInformation: TIniFile;
+    fIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment;
+    fKallistiLibraryInformation: TIniFile;
     fProcessDependenciesCurrentPortInfo: TKallistiPortItem;
     fProcessDependenciesCallCount: LongWord;
+    fAddonsId: TStringList;
+    fAddonsIncludes: TStringList;
+    fAddonsLibraries: TStringList;
     function GetCount: Integer;
     function GetInstalled: Boolean;
     function GetItem(Index: Integer): TKallistiPortItem;
@@ -76,7 +82,7 @@ type
     procedure Clear;
     function GetRepositoryReady: Boolean;
     function GetUtilityDirectory: TFileName;
-    procedure ProcessPort(const PackagingDescriptionFilename: TFileName);
+    procedure ProcessPort(const PortDirectoryBaseName: TFileName);
     procedure ProcessPortsDependencies;
     function GetPortLibrary(const PortName: string): string;
     function GetPortWeight(const PortName: string): Integer;
@@ -84,14 +90,24 @@ type
       PortName: string): string;
     procedure ProcessDependenciesInitialize(PortInfo: TKallistiPortItem);
     function ProcessPortDependencies(PortInfo: TKallistiPortItem): string;
+    function GenerateIncludeHeader(const IncludeFiles: string;
+      const IncludeDirectory: TFileName): string;
+    function GetPortIndex(const PortName: string): Integer;
   protected
+    function GetAddonIncludes(const AddonIndex: Integer): string;
+    function GetAddonIndex(const AddonName: string): Integer;
+    procedure RetrieveAvailableAddons;
     property UtilityDirectory: TFileName read GetUtilityDirectory;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
+    property IntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment
+      read fIntegratedDevelopmentEnvironment;
   public
-    constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
+    constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+      AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment);
     destructor Destroy; override;
     function CloneRepository(var BufferOutput: string): Boolean;
+    procedure GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
     function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
     function InitializeEnvironment: Boolean;
     function Install(var OutputBuffer: string): Boolean;
@@ -109,6 +125,7 @@ uses
   FileUtil;
 
 const
+  KALLISTI_PORTS_PACKAGE_DESCRIPTION = 'pkg-descr';
   KALLISTI_PORTS_DIRECTORY = '/opt/toolchains/dc/kos-ports/';
   KALLISTI_PORTS_UTILS_DIRECTORY = KALLISTI_PORTS_DIRECTORY + 'utils/';
   KALLISTI_PORTS_ALL_BUILD = KALLISTI_PORTS_UTILS_DIRECTORY + 'build-all.sh';
@@ -123,7 +140,8 @@ const
 
 function TKallistiPortItem.IsPortInstalled: Boolean;
 begin
-  Result := FileExists(fSourceDirectory + '..\lib\.kos-ports\' + Name);
+  Result := FileExists(fSourceDirectory + '..\lib\.kos-ports\' + Name)
+    or fVirtualAddon;
 end;
 
 function TKallistiPortItem.DeleteInstallPortDirectoryIfNeeded: Boolean;
@@ -131,6 +149,12 @@ begin
   Result := False;
   if DirectoryExists(InstallDirectory) then
     Result := DeleteDirectory(InstallDirectory, False);
+end;
+
+function TKallistiPortItem.DoInstallOrUpdate: string;
+begin
+  Result := ExecuteShellCommand('make install');
+  ExecuteShellCommand('make clean');
 end;
 
 function TKallistiPortItem.ExecuteShellCommand(const CommandLine: string): string;
@@ -174,8 +198,7 @@ var
 begin
   DeleteInstallPortDirectoryIfNeeded;
   SuccessTag := Format(SUCCESS_TAG, [Name, Version]);
-  BufferOutput := ExecuteShellCommand('make install');
-  ExecuteShellCommand('make clean');
+  BufferOutput := DoInstallOrUpdate;
   Result := IsInString(SuccessTag, BufferOutput);
 end;
 
@@ -195,20 +218,24 @@ end;
 
 function TKallistiPortItem.Update(var BufferOutput: string): TUpdateOperationState;
 const
-  SUCCESS_TAG = '%s is already installed';
+  USELESS_TAG = '%s is already installed';
+  SUCCESS_TAG = 'Marking %s %s as installed.';
 
 var
-  SuccessTag: string;
+  SuccessTag,
+  UselessTag: string;
 
 begin
   Result := uosUndefined;
 
-  SuccessTag := Format(SUCCESS_TAG, [Name]);
+  SuccessTag := Format(SUCCESS_TAG, [Name, Version]);
+  UselessTag := Format(USELESS_TAG, [Name]);
 
-  if Install(BufferOutput) then
+  BufferOutput := DoInstallOrUpdate;
+  if IsInString(SuccessTag, BufferOutput) then
     Result := uosUpdateSuccess
   else
-    if IsInString(SuccessTag, BufferOutput) then
+    if IsInString(UselessTag, BufferOutput) then
       Result := uosUpdateUseless
     else
       Result := uosUpdateFailed;
@@ -217,21 +244,41 @@ end;
 { TKallistiPortManager }
 
 procedure TKallistiPortManager.RetrieveAvailablePorts;
-const
-  KALLISTI_PORTS_PACKAGE_DESCRIPTION = 'pkg-descr';
-
 var
   PortsAvailable: TStringList;
   i: Integer;
 
 begin
   Clear;
+  RetrieveAvailableAddons;
+
   PortsAvailable := TStringList.Create;
   try
     FindAllFiles(PortsAvailable, Environment.FileSystem.Kallisti.KallistiPortsDirectory,
       KALLISTI_PORTS_PACKAGE_DESCRIPTION, True);
+
+    // Keeping only PortName information...
+    for i := 0 to PortsAvailable.Count - 1 do
+      PortsAvailable[i] :=
+        ExtractStr(
+          Environment.FileSystem.Kallisti.KallistiPortsDirectory,
+          DirectorySeparator + KALLISTI_PORTS_PACKAGE_DESCRIPTION,
+          PortsAvailable[i]
+        );
+
+    // Adding addons
+    PortsAvailable.AddStrings(fAddonsId);
+
+    // Sorting everything
+    PortsAvailable.Sort;
+
+{$IFDEF DEBUG}
+    DebugLog(StringListToString(PortsAvailable, sLineBreak));
+{$ENDIF}
+
     for i := 0 to PortsAvailable.Count - 1 do
       ProcessPort(PortsAvailable[i]);
+
     ProcessPortsDependencies;
   finally
     PortsAvailable.Free;
@@ -282,14 +329,15 @@ begin
   Result := Environment.FileSystem.Kallisti.KallistiPortsDirectory + 'utils\';
 end;
 
-procedure TKallistiPortManager.ProcessPort(const PackagingDescriptionFilename: TFileName);
+procedure TKallistiPortManager.ProcessPort(const PortDirectoryBaseName: TFileName);
 const
   MAKEFILE_FILE_NAME = 'Makefile';
 
 var
   MakefileContent: TStringList;
   PortName, MakefileContentText, ExtractedURL: string;
-  PortDirectory: TFileName;
+  PortDirectory, Makefile, PortDescriptionFileName: TFileName;
+  AddonIndex: Integer;
 
   function GetPackageString(const Key: string): string;
   var
@@ -351,9 +399,10 @@ var
     Result := '';
     DescriptionContent := TStringList.Create;
     try
-      if FileExists(PackagingDescriptionFilename) then
+      PortDescriptionFileName := PortDirectory + KALLISTI_PORTS_PACKAGE_DESCRIPTION;
+      if FileExists(PortDescriptionFileName) then
       begin
-        DescriptionContent.LoadFromFile(PackagingDescriptionFilename);
+        DescriptionContent.LoadFromFile(PortDescriptionFileName);
         Result := SanitizeText(DescriptionContent.Text);
         Result := StringReplace(Result, #10, ' ', [rfReplaceAll]);
         Result := StringReplace(Result, '  ', ' ', [rfReplaceAll]);
@@ -378,9 +427,7 @@ var
 
   function GetPackageIncludes: string;
   var
-    IncludeDirectory, IncludeFiles, IncludeFile: string;
-    InputBuffer, OutputBuffer: TStringList;
-    i: Integer;
+    IncludeDirectory, IncludeFiles: string;
     IsOverriden: Boolean;
 
   begin
@@ -406,21 +453,7 @@ var
     end;
 
     // Combine everything
-    InputBuffer := TStringList.Create;
-    OutputBuffer := TStringList.Create;
-    try
-      InputBuffer.Text := StringReplace(IncludeFiles, ' ', sLineBreak, [rfReplaceAll]);
-      for i := 0 to InputBuffer.Count - 1 do
-      begin
-        IncludeFile := IncludeDirectory + Trim(InputBuffer[i]);
-        if not SameText(IncludeFile, EmptyStr) then
-          OutputBuffer.Add(Format('#include <%s>', [IncludeFile]));
-      end;
-      Result := StringListToString(OutputBuffer, '|');
-    finally
-      OutputBuffer.Free;
-      InputBuffer.Free;
-    end;
+    Result := GenerateIncludeHeader(IncludeFiles, IncludeDirectory);
   end;
 
   function GetPackageLibraries: string;
@@ -444,34 +477,53 @@ var
   end;
 
 begin
-  PortDirectory := IncludeTrailingPathDelimiter(ExtractFilePath(PackagingDescriptionFilename));
-  MakefileContent := TStringList.Create;
-  try
-    MakefileContent.LoadFromFile(PortDirectory + MAKEFILE_FILE_NAME);
-    MakefileContentText := SanitizeText(MakefileContent.Text);
+  PortDirectory := IncludeTrailingPathDelimiter(
+    Environment.FileSystem.Kallisti.KallistiPortsDirectory + PortDirectoryBaseName);
+  Makefile := PortDirectory + MAKEFILE_FILE_NAME;
+  if FileExists(Makefile) then
+  begin
+    // Normal KallistiOS Port
+    MakefileContent := TStringList.Create;
+    try
+      MakefileContent.LoadFromFile(Makefile);
+      MakefileContentText := SanitizeText(MakefileContent.Text);
 
-    PortName := GetPackageString('PORTNAME');
+      ExtractedURL := EmptyStr;
+      PortName := GetPackageString('PORTNAME');
+      with Add do
+      begin
+        fSourceDirectory := PortDirectory;
+        fName := PortName;
+        fVersion := GetPackageString('PORTVERSION');
+        fMaintainer := GetPackageString('MAINTAINER');
+        fLicense := GetPackageString('LICENSE');
+        fShortDescription := GetPackageString('SHORT_DESC');
+        fDescription := GetPackageDescription(ExtractedURL);
+        fURL := ExtractedURL;
+        fInstallDirectory := GetInstallDirectory;
+        fSelfIncludes := GetPackageIncludes;
+        fSelfLibraries := GetPackageLibraries;
+        fDeclaredDependenciesNameList.Text := GetPackageDependencies;
+        if not SameText(fDeclaredDependenciesNameList.Text, EmptyStr) then
+          fPortsWithDependencies.Add(fListIndex);
+        fPortsMap.Add(PortName, fListIndex);
+      end;
+
+    finally
+      MakefileContent.Free;
+    end;
+  end
+  else
+  begin
+    // KallistiOS Addon
+    AddonIndex := GetAddonIndex(PortDirectoryBaseName);
     with Add do
     begin
-      fSourceDirectory := PortDirectory;
-      fName := PortName;
-      fVersion := GetPackageString('PORTVERSION');
-      fMaintainer := GetPackageString('MAINTAINER');
-      fLicense := GetPackageString('LICENSE');
-      fShortDescription := GetPackageString('SHORT_DESC');
-      fDescription := GetPackageDescription(ExtractedURL);
-      fURL := ExtractedURL;
-      fInstallDirectory := GetInstallDirectory;
-      fSelfIncludes := GetPackageIncludes;
-      fSelfLibraries := GetPackageLibraries;
-      fDeclaredDependenciesNameList.Text := GetPackageDependencies;
-      if not SameText(fDeclaredDependenciesNameList.Text, EmptyStr) then
-        fPortsWithDependencies.Add(Index);
-      fPortsMap.Add(PortName, Index);
+      fName := PortDirectoryBaseName;
+      fSelfIncludes := GetAddonIncludes(AddonIndex);
+      fSelfLibraries := fAddonsLibraries[AddonIndex];
+      fVirtualAddon := True;
     end;
-
-  finally
-    MakefileContent.Free;
   end;
 end;
 
@@ -546,14 +598,14 @@ var
 
 begin
   Result := EmptyStr;
-  Index := fPortsMap.IndexOf(PortName);
+  Index := GetPortIndex(PortName);
   if Index <> -1 then
     Result := Items[Index].fSelfLibraries;
 end;
 
 function TKallistiPortManager.GetPortWeight(const PortName: string): Integer;
 begin
-  Result := fOverrideInformation.ReadInteger('Weights', PortName, 0);
+  Result := fKallistiLibraryInformation.ReadInteger('Weights', PortName, 0);
 end;
 
 function TKallistiPortManager.GetOverridenInformation(
@@ -565,7 +617,7 @@ begin
   SectionName := 'Libraries';
   if InformationKind = oikInclude then
     SectionName := 'Includes';
-  Result := fOverrideInformation.ReadString(SectionName, PortName, EmptyStr);
+  Result := fKallistiLibraryInformation.ReadString(SectionName, PortName, EmptyStr);
 end;
 
 procedure TKallistiPortManager.ProcessDependenciesInitialize(
@@ -604,7 +656,7 @@ begin
     Result := PortInfo.Name;
     for j := 0 to PortInfo.fDeclaredDependenciesNameList.Count - 1 do
     begin
-      DependencyPortIndex := fPortsMap.IndexOf(PortInfo.fDeclaredDependenciesNameList[j]);
+      DependencyPortIndex := GetPortIndex(PortInfo.fDeclaredDependenciesNameList[j]);
       if DependencyPortIndex <> -1 then
       begin
         SubPortInfo := Items[DependencyPortIndex];
@@ -614,14 +666,78 @@ begin
   end;
 end;
 
+function TKallistiPortManager.GenerateIncludeHeader(const IncludeFiles: string;
+  const IncludeDirectory: TFileName): string;
+var
+  InputBuffer,
+  OutputBuffer: TStringList;
+  i: Integer;
+  IncludeFile: string;
+
+begin
+  InputBuffer := TStringList.Create;
+  OutputBuffer := TStringList.Create;
+  try
+    InputBuffer.Text := StringReplace(IncludeFiles, ' ', sLineBreak, [rfReplaceAll]);
+    for i := 0 to InputBuffer.Count - 1 do
+    begin
+      IncludeFile := IncludeDirectory + Trim(InputBuffer[i]);
+      if not SameText(IncludeFile, EmptyStr) then
+        OutputBuffer.Add(IncludeFile);
+    end;
+    Result := StringListToString(OutputBuffer, '|');
+  finally
+    OutputBuffer.Free;
+    InputBuffer.Free;
+  end;
+end;
+
+function TKallistiPortManager.GetPortIndex(const PortName: string): Integer;
+var
+  KeyIndex: Integer;
+
+begin
+  Result := -1;
+  KeyIndex := fPortsMap.IndexOf(PortName);
+  if KeyIndex <> -1 then
+    Result := fPortsMap.Data[KeyIndex];
+end;
+
+function TKallistiPortManager.GetAddonIncludes(const AddonIndex: Integer): string;
+var
+  IncludeFiles: string;
+
+begin
+  IncludeFiles := StringReplace(fAddonsIncludes[AddonIndex], '|', WhiteSpaceStr, [rfReplaceAll]);
+  Result := GenerateIncludeHeader(IncludeFiles , EmptyStr);
+end;
+
+function TKallistiPortManager.GetAddonIndex(const AddonName: string): Integer;
+begin
+  Result := fAddonsId.IndexOf(AddonName);
+end;
+
+procedure TKallistiPortManager.RetrieveAvailableAddons;
+begin
+  StringToStringList(fKallistiLibraryInformation.ReadString('Addons', 'Id', EmptyStr), ';', fAddonsId);
+  StringToStringList(fKallistiLibraryInformation.ReadString('Addons', 'Includes', EmptyStr), ';', fAddonsIncludes);
+  StringToStringList(fKallistiLibraryInformation.ReadString('Addons', 'Libraries', EmptyStr), ';', fAddonsLibraries);
+end;
+
 constructor TKallistiPortManager.Create(
-  AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
+  AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+  AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment
+);
 begin
   fEnvironment := AEnvironment;
+  fIntegratedDevelopmentEnvironment := AIntegratedDevelopmentEnvironment;
   fList := TList.Create;
   fPortsWithDependencies := TIntegerList.Create;
   fPortsMap := TStringIntegerMap.Create;
-  fOverrideInformation := TIniFile.Create(Environment.FileSystem.Kallisti.KallistiPortsOverrideFile);
+  fKallistiLibraryInformation := TIniFile.Create(Environment.FileSystem.Kallisti.KallistiPortsLibraryInformationFile);
+  fAddonsId := TStringList.Create;
+  fAddonsIncludes := TStringList.Create;
+  fAddonsLibraries := TStringList.Create;
   RetrieveAvailablePorts;
 end;
 
@@ -631,7 +747,10 @@ begin
   fPortsWithDependencies.Free;
   fList.Free;
   fPortsMap.Free;
-  fOverrideInformation.Free;
+  fKallistiLibraryInformation.Free;
+  fAddonsId.Free;
+  fAddonsIncludes.Free;
+  fAddonsLibraries.Free;
   inherited Destroy;
 end;
 
@@ -643,6 +762,51 @@ begin
   Result := Environment.CloneRepository(Environment.Settings.Repositories.KallistiPortsURL,
     KALLISTI_PORTS_INSTALLATION_DIRECTORY,
     Environment.FileSystem.Kallisti.KallistiPortsDirectory + '..\', BufferOutput);
+end;
+
+procedure TKallistiPortManager.GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
+const
+  LIBINFO_ID = 'id.dat';
+  LIBINFO_INC = 'inc.dat';
+  LIBINFO_LIB = 'lib.dat';
+
+var
+  OutputDirectory: TFileName;
+  BufferId,
+  BufferIncludes,
+  BufferLibraries: TStringList;
+  i: Integer;
+  PortInfo: TKallistiPortItem;
+
+begin
+  if IntegratedDevelopmentEnvironment.ExportLibraryInformation then
+  begin
+    OutputDirectory := IntegratedDevelopmentEnvironment.ExportLibraryInformationPath;
+
+    BufferId := TStringList.Create;
+    BufferIncludes := TStringList.Create;
+    BufferLibraries := TStringList.Create;
+    try
+      for i := 0 to Count - 1 do
+      begin
+        PortInfo := Items[i];
+        if PortInfo.Installed then
+        begin
+          BufferId.Add(PortInfo.Name);
+          BufferIncludes.Add(PortInfo.Includes);
+          BufferLibraries.Add(PortInfo.Libraries);
+        end;
+      end;
+
+      SaveStringToFile(StringListToString(BufferId, ';'), OutputDirectory + LIBINFO_ID);
+      SaveStringToFile(StringListToString(BufferIncludes, ';'), OutputDirectory + LIBINFO_INC);
+      SaveStringToFile(StringListToString(BufferLibraries, ';'), OutputDirectory + LIBINFO_LIB);
+    finally
+      BufferId.Free;
+      BufferIncludes.Free;
+      BufferLibraries.Free;
+    end;
+  end;
 end;
 
 function TKallistiPortManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;

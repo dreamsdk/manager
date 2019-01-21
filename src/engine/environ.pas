@@ -58,10 +58,10 @@ type
     fKallistiLibrary: TFileName;
     fKallistiChangeLogFile: TFileName;
     fKallistiPortsDirectory: TFileName;
-    fKallistiPortsOverrideFile: TFileName;
+    fKallistiPortsLibraryInformationFile: TFileName;
   public
     property KallistiPortsDirectory: TFileName read fKallistiPortsDirectory;
-    property KallistiPortsOverrideFile: TFileName read fKallistiPortsOverrideFile;
+    property KallistiPortsLibraryInformationFile: TFileName read fKallistiPortsLibraryInformationFile;
     property KallistiDirectory: TFileName read fKallistiDirectory;
     property KallistiLibrary: TFileName read fKallistiLibrary;
     property KallistiChangeLogFile: TFileName read fKallistiChangeLogFile;
@@ -94,6 +94,7 @@ type
     fDreamSDKDirectory: TFileName;
     fDreamSDKExecutable: TFileName;
     fHomeDirectory: TFileName;
+    fIntegratedDevelopmentEnvironmentConfigurationFile: TFileName;
     fMinGWGetExecutable: TFileName;
     fRunnerExecutable: TFileName;
     fShellExecutable: TFileName;
@@ -105,6 +106,8 @@ type
     property ShellExecutable: TFileName read fShellExecutable;
     property MinGWGetExecutable: TFileName read fMinGWGetExecutable;
     property HomeDirectory: TFileName read fHomeDirectory;
+    property IntegratedDevelopmentEnvironmentConfigurationFile: TFileName
+      read fIntegratedDevelopmentEnvironmentConfigurationFile;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystem }
@@ -207,6 +210,7 @@ begin
     fDreamSDKExecutable := fDreamSDKDirectory + DREAMSDK_LAUNCHER_EXECUTABLE;
     fRunnerExecutable := fDreamSDKDirectory + DREAMSDK_RUNNER_EXECUTABLE;
     fConfigurationDirectory := MSYSBase + UnixPathToSystem(SETTINGS_DIRECTORY);
+    fIntegratedDevelopmentEnvironmentConfigurationFile := GetConfigurationDirectory + 'ide.conf';
   end;
 
   // Toolchain for Super-H (Hitachi SH-4)
@@ -250,7 +254,7 @@ begin
     fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
     fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
     fKallistiConfigurationFileName := KallistiDirectory + 'environ.sh';
-    fKallistiPortsOverrideFile := GetConfigurationDirectory + 'koslib.conf';
+    fKallistiPortsLibraryInformationFile := GetConfigurationDirectory + 'koslib.conf';
   end;
 end;
 
