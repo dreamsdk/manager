@@ -25,10 +25,11 @@ type
     fShortDescription: string;
     fURL: string;
     fVersion: string;
-    fIncludes: string;
-    fLibraries: string;
-    fDependenciesNameList: TStringList;
-    fDependenciesLibrariesList: TStringList;
+    fSelfIncludes: string;
+    fSelfLibraries: string;
+    fDeclaredDependenciesNameList: TStringList;
+    fFullComputedDependenciesNameList: TStringList;
+    fFullComputedDependenciesLibraries: string;
     function GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     function GetLibraries: string;
     function IsPortInstalled: Boolean;
@@ -47,7 +48,7 @@ type
     property Name: string read fName;
     property Description: string read fDescription;
     property SourceDirectory: TFileName read fSourceDirectory;
-    property Includes: string read fIncludes;
+    property Includes: string read fSelfIncludes;
     property InstallDirectory: TFileName read fInstallDirectory;
     property Installed: Boolean read IsPortInstalled;
     property Maintainer: string read fMaintainer;
@@ -66,6 +67,8 @@ type
     fPortsWithDependencies: TIntegerList;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fOverrideInformation: TIniFile;
+    fProcessDependenciesCurrentPortInfo: TKallistiPortItem;
+    fProcessDependenciesCallCount: LongWord;
     function GetCount: Integer;
     function GetInstalled: Boolean;
     function GetItem(Index: Integer): TKallistiPortItem;
@@ -75,9 +78,12 @@ type
     function GetUtilityDirectory: TFileName;
     procedure ProcessPort(const PackagingDescriptionFilename: TFileName);
     procedure ProcessPortsDependencies;
+    function GetPortLibrary(const PortName: string): string;
+    function GetPortWeight(const PortName: string): Integer;
     function GetOverridenInformation(InformationKind: TOverridenInformationKind;
       PortName: string): string;
-    function ProcessDependencies(PortInfo: TKallistiPortItem): string;
+    procedure ProcessDependenciesInitialize(PortInfo: TKallistiPortItem);
+    function ProcessPortDependencies(PortInfo: TKallistiPortItem): string;
   protected
     property UtilityDirectory: TFileName read GetUtilityDirectory;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
@@ -110,6 +116,9 @@ const
   KALLISTI_PORTS_ALL_UNINSTALL = KALLISTI_PORTS_UTILS_DIRECTORY + 'uninstall-all.sh';
   KALLISTI_PORTS_RESET = DREAMSDK_MSYS_INSTALL_SCRIPTS_DIRECTORY + 'kos-ports-reset';
 
+  PROCESS_DEPENDENCIES_MAX_DEPTH = 128;
+  PROCESS_DEPENDENCIES_CIRCULAR_REFERENCE_ERROR = '#CIRCULAR_REFERENCE_ERROR#';
+
 { TKallistiPortItem }
 
 function TKallistiPortItem.IsPortInstalled: Boolean;
@@ -136,22 +145,22 @@ end;
 
 function TKallistiPortItem.GetLibraries: string;
 begin
-  Result := fLibraries;
-  if fDependenciesLibrariesList.Count > 0 then
-    Result := StringReplace(Trim(fDependenciesLibrariesList.Text), sLineBreak, '|', [rfReplaceAll]);
+  Result := fSelfLibraries;
+  if fFullComputedDependenciesNameList.Count > 0 then
+    Result := fFullComputedDependenciesLibraries;
 end;
 
 constructor TKallistiPortItem.Create(AOwner: TKallistiPortManager);
 begin
   fOwner := AOwner;
-  fDependenciesNameList := TStringList.Create;
-  fDependenciesLibrariesList := TStringList.Create;
+  fDeclaredDependenciesNameList := TStringList.Create;
+  fFullComputedDependenciesNameList := TStringList.Create;
 end;
 
 destructor TKallistiPortItem.Destroy;
 begin
-  fDependenciesNameList.Free;
-  fDependenciesLibrariesList.Free;
+  fDeclaredDependenciesNameList.Free;
+  fFullComputedDependenciesNameList.Free;
   inherited Destroy;
 end;
 
@@ -407,7 +416,7 @@ var
         if not SameText(IncludeFile, EmptyStr) then
           OutputBuffer.Add(Format('#include <%s>', [IncludeFile]));
       end;
-      Result := StringReplace(Trim(OutputBuffer.Text), sLineBreak, '|', [rfReplaceAll]);
+      Result := StringListToString(OutputBuffer, '|');
     finally
       OutputBuffer.Free;
       InputBuffer.Free;
@@ -453,10 +462,10 @@ begin
       fDescription := GetPackageDescription(ExtractedURL);
       fURL := ExtractedURL;
       fInstallDirectory := GetInstallDirectory;
-      fIncludes := GetPackageIncludes;
-      fLibraries := GetPackageLibraries;
-      fDependenciesNameList.Text := GetPackageDependencies;
-      if not SameText(fDependenciesNameList.Text, EmptyStr) then
+      fSelfIncludes := GetPackageIncludes;
+      fSelfLibraries := GetPackageLibraries;
+      fDeclaredDependenciesNameList.Text := GetPackageDependencies;
+      if not SameText(fDeclaredDependenciesNameList.Text, EmptyStr) then
         fPortsWithDependencies.Add(Index);
       fPortsMap.Add(PortName, Index);
     end;
@@ -468,8 +477,10 @@ end;
 
 procedure TKallistiPortManager.ProcessPortsDependencies;
 var
-  i: Integer;
+  i, j: Integer;
   PortInfo: TKallistiPortItem;
+  PortDependenciesStr, DependencyPortName, DependencyPortLibrary: string;
+  PortOrderingBuffer: TStringList;
 
 begin
 {$IFDEF DEBUG}
@@ -482,7 +493,37 @@ begin
 {$IFDEF DEBUG}
     DebugLog('  Processing: ' + PortInfo.Name);
 {$ENDIF}
-    PortInfo.fDependenciesLibrariesList.Text := ProcessDependencies(PortInfo);
+    ProcessDependenciesInitialize(PortInfo);
+    PortDependenciesStr := ProcessPortDependencies(PortInfo);
+    if not IsInString(PROCESS_DEPENDENCIES_CIRCULAR_REFERENCE_ERROR, PortDependenciesStr) then
+    begin
+      PortInfo.fFullComputedDependenciesNameList.Text := PortDependenciesStr;
+      PortOrderingBuffer := TStringList.Create;
+      try
+        // Sort by Port weights
+        for j := 0 to PortInfo.fFullComputedDependenciesNameList.Count - 1 do
+        begin
+          DependencyPortName := PortInfo.fFullComputedDependenciesNameList[j];
+          DependencyPortLibrary := GetPortLibrary(DependencyPortName);
+          PortOrderingBuffer.Add(Format('%0.8d:%s', [GetPortWeight(DependencyPortName), DependencyPortLibrary]));
+        end;
+        PortOrderingBuffer.Sort;
+
+{$IFDEF DEBUG}
+        DebugLog(StringListToString(PortOrderingBuffer, ' + '));
+{$ENDIF}
+
+        // Remove all weight information
+        for j := 0 to PortOrderingBuffer.Count - 1 do
+          PortOrderingBuffer[j] := Right(':', PortOrderingBuffer[j]);
+
+        // Store all the dependencies libraries, ordered in the good way!
+        // This is the final result of all of this...
+        PortInfo.fFullComputedDependenciesLibraries := StringListToString(PortOrderingBuffer, '|');
+      finally
+        PortOrderingBuffer.Free;
+      end;
+    end;
   end;
 
 {$IFDEF DEBUG}
@@ -490,12 +531,29 @@ begin
   for i := 0 to fPortsWithDependencies.Count - 1 do
   begin
     PortInfo := Items[fPortsWithDependencies[i]];
-    DebugLog('  ' + PortInfo.Name + ': "' + StringReplace(
-      Trim(PortInfo.fDependenciesLibrariesList.Text), sLineBreak, ' + ', [rfReplaceAll]) + '"');
+    DebugLog('  ' + PortInfo.Name + ': "' +
+      StringListToString(PortInfo.fFullComputedDependenciesNameList, ' + ') + '"' +
+      ' (vs. "' + StringListToString(PortInfo.fDeclaredDependenciesNameList, ' + ') + '")');
   end;
 
   DebugLog('*** Process Ports Dependencies: End ***');
 {$ENDIF}
+end;
+
+function TKallistiPortManager.GetPortLibrary(const PortName: string): string;
+var
+  Index: Integer;
+
+begin
+  Result := EmptyStr;
+  Index := fPortsMap.IndexOf(PortName);
+  if Index <> -1 then
+    Result := Items[Index].fSelfLibraries;
+end;
+
+function TKallistiPortManager.GetPortWeight(const PortName: string): Integer;
+begin
+  Result := fOverrideInformation.ReadInteger('Weights', PortName, 0);
 end;
 
 function TKallistiPortManager.GetOverridenInformation(
@@ -510,27 +568,47 @@ begin
   Result := fOverrideInformation.ReadString(SectionName, PortName, EmptyStr);
 end;
 
-// NOTE: THIS DOESN'T HANDLE CIRCULAR REFERENCES BETWEEN KOS PORTS!
-function TKallistiPortManager.ProcessDependencies(PortInfo: TKallistiPortItem): string;
+procedure TKallistiPortManager.ProcessDependenciesInitialize(
+  PortInfo: TKallistiPortItem);
+begin
+  fProcessDependenciesCurrentPortInfo := PortInfo;
+  fProcessDependenciesCallCount := 0;
+end;
+
+function TKallistiPortManager.ProcessPortDependencies(PortInfo: TKallistiPortItem): string;
 var
   j, DependencyPortIndex: Integer;
   SubPortInfo: TKallistiPortItem;
 
 begin
-  if PortInfo.fDependenciesNameList.Count = 0 then
+  // Fail-safe for circular references detection...
+  Inc(fProcessDependenciesCallCount);
+{$IFDEF DEBUG}
+  DebugLog(Format('ProcessPortDependencies for %s: %d',
+    [fProcessDependenciesCurrentPortInfo.Name, fProcessDependenciesCallCount]
+  ));
+{$ENDIF}
+  if fProcessDependenciesCallCount >= PROCESS_DEPENDENCIES_MAX_DEPTH then
   begin
-    Result := PortInfo.fLibraries;
+    Result := PROCESS_DEPENDENCIES_CIRCULAR_REFERENCE_ERROR;
+    Exit;
+  end;
+
+  // Recursive code
+  if PortInfo.fDeclaredDependenciesNameList.Count = 0 then
+  begin
+    Result := PortInfo.Name;
   end
   else
   begin
-    Result := PortInfo.fLibraries;
-    for j := 0 to PortInfo.fDependenciesNameList.Count - 1 do
+    Result := PortInfo.Name;
+    for j := 0 to PortInfo.fDeclaredDependenciesNameList.Count - 1 do
     begin
-      DependencyPortIndex := fPortsMap.IndexOf(PortInfo.fDependenciesNameList[j]);
+      DependencyPortIndex := fPortsMap.IndexOf(PortInfo.fDeclaredDependenciesNameList[j]);
       if DependencyPortIndex <> -1 then
       begin
         SubPortInfo := Items[DependencyPortIndex];
-        Result := Result + sLineBreak + ProcessDependencies(SubPortInfo);
+        Result := Result + sLineBreak + ProcessPortDependencies(SubPortInfo);
       end;
     end;
   end;
