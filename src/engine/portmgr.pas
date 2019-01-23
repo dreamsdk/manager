@@ -8,7 +8,9 @@ uses
   Classes, SysUtils, IniFiles, SysTools, Environ, IDEMgr;
 
 type
+  TLibraryLanguageKind = (llkAll, llkC, llkCPP);
   TOverridenInformationKind = (oikLibrary, oikInclude);
+
   TKallistiPortManager = class;
 
   { TKallistiPortItem }
@@ -31,6 +33,8 @@ type
     fDeclaredDependenciesNameList: TStringList;
     fFullComputedDependenciesNameList: TStringList;
     fFullComputedDependenciesLibraries: string;
+    fFullComputedDependenciesLibraryWeights: string;
+    fLibraryLanguageKind: TLibraryLanguageKind;
     function GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     function GetLibraries: string;
     function IsPortInstalled: Boolean;
@@ -59,6 +63,7 @@ type
     property URL: string read fURL;
     property Version: string read fVersion;
     property Hidden: Boolean read fVirtualAddon;
+    property LibraryWeights: string read fFullComputedDependenciesLibraryWeights;
   end;
 
   { TKallistiPortManager }
@@ -67,6 +72,7 @@ type
     fList: TList;
     fPortsMap: TStringIntegerMap;
     fPortsWithDependencies: TIntegerList;
+    fPortsWithoutDependencies: TIntegerList;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment;
     fKallistiLibraryInformation: TIniFile;
@@ -84,8 +90,10 @@ type
     function GetUtilityDirectory: TFileName;
     procedure ProcessPort(const PortDirectoryBaseName: TFileName);
     procedure ProcessPortsDependencies;
+    procedure ProcessPortsWithoutDependencies;
     function GetPortLibrary(const PortName: string): string;
-    function GetPortWeight(const PortName: string): Integer;
+    function GetPortWeight(const PortName: string): string;
+    function GetPortLanguageKind(const PortName: string): TLibraryLanguageKind;
     function GetOverridenInformation(InformationKind: TOverridenInformationKind;
       PortName: string): string;
     procedure ProcessDependenciesInitialize(PortInfo: TKallistiPortItem);
@@ -93,7 +101,12 @@ type
     function GenerateIncludeHeader(const IncludeFiles: string;
       const IncludeDirectory: TFileName): string;
     function GetPortIndex(const PortName: string): Integer;
+    procedure HandleLibrary(OutputBuffer: TStringList; PortName: string);
+    procedure SetPortAdditionalInformation(PortInfo: TKallistiPortItem;
+      ProcessDependencies: Boolean);
   protected
+    procedure GenerateIntegratedDevelopmentEnvironmentLibraryInformation(
+      const LibraryLanguageKind: TLibraryLanguageKind);
     function GetAddonIncludes(const AddonIndex: Integer): string;
     function GetAddonIndex(const AddonName: string): Integer;
     procedure RetrieveAvailableAddons;
@@ -280,6 +293,8 @@ begin
       ProcessPort(PortsAvailable[i]);
 
     ProcessPortsDependencies;
+
+    ProcessPortsWithoutDependencies;
   finally
     PortsAvailable.Free;
   end;
@@ -315,6 +330,7 @@ begin
     TKallistiPortItem(fList[i]).Free;
   fList.Clear;
   fPortsWithDependencies.Clear;
+  fPortsWithoutDependencies.Clear;
   fPortsMap.Clear;
 end;
 
@@ -442,7 +458,11 @@ var
       // Get the include directory
       IncludeDirectory := GetPackageString('HDR_INSTDIR');
       if SameText(IncludeDirectory, EmptyStr) then
-        IncludeDirectory := PortName;
+      begin
+        IncludeDirectory := GetPackageString('HDR_COMDIR');
+        if SameText(IncludeDirectory, EmptyStr) then
+          IncludeDirectory := PortName;
+      end;
       IncludeDirectory := IncludeDirectory + '/';
 
       // Get all includes files
@@ -465,7 +485,7 @@ var
       Result := Copy(Result, 4, Length(Result));
     end
     else
-      Result := StringReplace(Trim(Result), ' ', '|', [rfReplaceAll]);
+      Result := StringReplace(Trim(Result), ' ', ArraySeparator, [rfReplaceAll]);
   end;
 
   function GetPackageDependencies: string;
@@ -505,8 +525,11 @@ begin
         fSelfLibraries := GetPackageLibraries;
         fDeclaredDependenciesNameList.Text := GetPackageDependencies;
         if not SameText(fDeclaredDependenciesNameList.Text, EmptyStr) then
-          fPortsWithDependencies.Add(fListIndex);
+          fPortsWithDependencies.Add(fListIndex)
+        else
+          fPortsWithoutDependencies.Add(fListIndex);
         fPortsMap.Add(PortName, fListIndex);
+        fLibraryLanguageKind := GetPortLanguageKind(PortName);
       end;
 
     finally
@@ -529,10 +552,9 @@ end;
 
 procedure TKallistiPortManager.ProcessPortsDependencies;
 var
-  i, j: Integer;
+  i: Integer;
   PortInfo: TKallistiPortItem;
-  PortDependenciesStr, DependencyPortName, DependencyPortLibrary: string;
-  PortOrderingBuffer: TStringList;
+  PortDependenciesStr: string;
 
 begin
 {$IFDEF DEBUG}
@@ -550,31 +572,7 @@ begin
     if not IsInString(PROCESS_DEPENDENCIES_CIRCULAR_REFERENCE_ERROR, PortDependenciesStr) then
     begin
       PortInfo.fFullComputedDependenciesNameList.Text := PortDependenciesStr;
-      PortOrderingBuffer := TStringList.Create;
-      try
-        // Sort by Port weights
-        for j := 0 to PortInfo.fFullComputedDependenciesNameList.Count - 1 do
-        begin
-          DependencyPortName := PortInfo.fFullComputedDependenciesNameList[j];
-          DependencyPortLibrary := GetPortLibrary(DependencyPortName);
-          PortOrderingBuffer.Add(Format('%0.8d:%s', [GetPortWeight(DependencyPortName), DependencyPortLibrary]));
-        end;
-        PortOrderingBuffer.Sort;
-
-{$IFDEF DEBUG}
-        DebugLog(StringListToString(PortOrderingBuffer, ' + '));
-{$ENDIF}
-
-        // Remove all weight information
-        for j := 0 to PortOrderingBuffer.Count - 1 do
-          PortOrderingBuffer[j] := Right(':', PortOrderingBuffer[j]);
-
-        // Store all the dependencies libraries, ordered in the good way!
-        // This is the final result of all of this...
-        PortInfo.fFullComputedDependenciesLibraries := StringListToString(PortOrderingBuffer, '|');
-      finally
-        PortOrderingBuffer.Free;
-      end;
+      SetPortAdditionalInformation(PortInfo, True);
     end;
   end;
 
@@ -592,6 +590,19 @@ begin
 {$ENDIF}
 end;
 
+procedure TKallistiPortManager.ProcessPortsWithoutDependencies;
+var
+  i: Integer;
+  PortInfo: TKallistiPortItem;
+
+begin
+  for i := 0 to fPortsWithoutDependencies.Count - 1 do
+  begin
+    PortInfo := Items[fPortsWithoutDependencies[i]];
+    SetPortAdditionalInformation(PortInfo, False);
+  end;
+end;
+
 function TKallistiPortManager.GetPortLibrary(const PortName: string): string;
 var
   Index: Integer;
@@ -603,9 +614,26 @@ begin
     Result := Items[Index].fSelfLibraries;
 end;
 
-function TKallistiPortManager.GetPortWeight(const PortName: string): Integer;
+function TKallistiPortManager.GetPortWeight(const PortName: string): string;
+var
+  Weight: Integer;
+
+  function LibraryNameToPortName(const LibraryName: string): string;
+  begin
+    Result := fKallistiLibraryInformation.ReadString('Reverse', LibraryName, LibraryName);
+  end;
+
 begin
-  Result := fKallistiLibraryInformation.ReadInteger('Weights', PortName, 0);
+  Weight := fKallistiLibraryInformation.ReadInteger('Weights',
+    LibraryNameToPortName(PortName), 0);
+  Result := Format('%0.8d', [Weight]);
+end;
+
+function TKallistiPortManager.GetPortLanguageKind(const PortName: string
+  ): TLibraryLanguageKind;
+begin
+  Result := TLibraryLanguageKind(
+    fKallistiLibraryInformation.ReadInteger('Languages', PortName, 0));
 end;
 
 function TKallistiPortManager.GetOverridenInformation(
@@ -685,7 +713,7 @@ begin
       if not SameText(IncludeFile, EmptyStr) then
         OutputBuffer.Add(IncludeFile);
     end;
-    Result := StringListToString(OutputBuffer, '|');
+    Result := StringListToString(OutputBuffer, ArraySeparator);
   finally
     OutputBuffer.Free;
     InputBuffer.Free;
@@ -703,12 +731,186 @@ begin
     Result := fPortsMap.Data[KeyIndex];
 end;
 
+procedure TKallistiPortManager.HandleLibrary(OutputBuffer: TStringList;
+  PortName: string);
+var
+  DependencyPortLibrary: string;
+
+  function GenerateLine(const LibraryCode: string): string;
+  begin
+    Result := Format('%s:%s', [GetPortWeight(LibraryCode), LibraryCode]);
+  end;
+
+  function HandleMultipleLibrary(OutputBuffer: TStringList;
+    MultipleLibraryStr: string): Boolean;
+  var
+    Buffer: TStringList;
+    k: Integer;
+    SinglePortName: string;
+
+  begin
+    Result := False;
+    Buffer := TStringList.Create;
+    try
+      StringToStringList(MultipleLibraryStr, ArraySeparator, Buffer);
+      for k := 0 to Buffer.Count - 1 do
+      begin
+        SinglePortName := Buffer[k];
+        OutputBuffer.Add(GenerateLine(SinglePortName));
+      end;
+      Result := True;
+    finally
+      Buffer.Free;
+    end;
+  end;
+
+begin
+  if Assigned(OutputBuffer) then
+  begin
+    DependencyPortLibrary := GetPortLibrary(PortName);
+    if IsInString(ArraySeparator, DependencyPortLibrary) then
+      HandleMultipleLibrary(OutputBuffer, DependencyPortLibrary)
+    else
+    begin
+      OutputBuffer.Add(GenerateLine(DependencyPortLibrary));
+    end;
+  end;
+end;
+
+procedure TKallistiPortManager.SetPortAdditionalInformation(
+  PortInfo: TKallistiPortItem; ProcessDependencies: Boolean);
+var
+  j: Integer;
+  DependencyPortName, DependencyPortLibrary, DependencyPortWeight: string;
+  PortOrderingBuffer, WeightsBuffer: TStringList;
+
+begin
+  PortOrderingBuffer := TStringList.Create;
+  try
+    // Populate PortOrderingBuffer to sort by weight
+    if ProcessDependencies then
+    begin
+      for j := 0 to PortInfo.fFullComputedDependenciesNameList.Count - 1 do
+      begin
+        DependencyPortName := PortInfo.fFullComputedDependenciesNameList[j];
+        HandleLibrary(PortOrderingBuffer, DependencyPortName);
+      end;
+    end
+    else
+      HandleLibrary(PortOrderingBuffer, PortInfo.Name);
+
+    // Sort by Port weights
+    PortOrderingBuffer.Sort;
+
+{$IFDEF DEBUG}
+    DebugLog(StringListToString(PortOrderingBuffer, ' + '));
+{$ENDIF}
+
+    // Remove all weight information from the libraries names
+    // Save the weight in a separate list
+    WeightsBuffer := TStringList.Create;
+    try
+      for j := 0 to PortOrderingBuffer.Count - 1 do
+      begin
+        DependencyPortLibrary := Right(':', PortOrderingBuffer[j]);
+        DependencyPortWeight := Left(':', PortOrderingBuffer[j]);
+
+        // Saving only library name (without weight)
+        PortOrderingBuffer[j] := DependencyPortLibrary;
+
+        // Saving the libraries weight
+        WeightsBuffer.Add(DependencyPortWeight);
+      end;
+
+      // Save the weights!
+      PortInfo.fFullComputedDependenciesLibraryWeights :=
+        StringListToString(WeightsBuffer, ArraySeparator);
+    finally
+      WeightsBuffer.Free;
+    end;
+
+    // Store all the dependencies libraries, ordered in the good way!
+    // This is the final result of all of this...
+    PortInfo.fFullComputedDependenciesLibraries :=
+      StringListToString(PortOrderingBuffer, ArraySeparator);
+  finally
+    PortOrderingBuffer.Free;
+  end;
+end;
+
+procedure TKallistiPortManager.GenerateIntegratedDevelopmentEnvironmentLibraryInformation
+  (const LibraryLanguageKind: TLibraryLanguageKind);
+const
+  LIBINFO_PATH_C = 'c';
+  LIBINFO_PATH_CPP = 'cpp';
+  LIBINFO_ID = 'id.dat';
+  LIBINFO_INC = 'inc.dat';
+  LIBINFO_LIB = 'lib.dat';
+  LIBINFO_SORT = 'sort.dat';
+
+var
+  OutputDirectory: TFileName;
+  BufferId,
+  BufferIncludes,
+  BufferLibraries,
+  BufferSort: TStringList;
+  i: Integer;
+  PortInfo: TKallistiPortItem;
+
+  function LibraryLanguageKindToDirectory: TFileName;
+  begin
+    Result := LIBINFO_PATH_C;
+    if LibraryLanguageKind = llkCPP then
+      Result := LIBINFO_PATH_CPP;
+  end;
+
+  function IsValidPort: Boolean;
+  begin
+    Result := (PortInfo.fLibraryLanguageKind = llkAll)
+      or (PortInfo.fLibraryLanguageKind = LibraryLanguageKind);
+  end;
+
+begin
+  OutputDirectory := IntegratedDevelopmentEnvironment.ExportLibraryInformationPath
+    + LibraryLanguageKindToDirectory + DirectorySeparator;
+  ForceDirectories(OutputDirectory);
+
+  BufferId := TStringList.Create;
+  BufferIncludes := TStringList.Create;
+  BufferLibraries := TStringList.Create;
+  BufferSort := TStringList.Create;
+  try
+    for i := 0 to Count - 1 do
+    begin
+      PortInfo := Items[i];
+      if PortInfo.Installed and IsValidPort then
+      begin
+        BufferId.Add(PortInfo.Name);
+        BufferIncludes.Add(PortInfo.Includes);
+        BufferLibraries.Add(PortInfo.Libraries);
+        BufferSort.Add(PortInfo.LibraryWeights);
+      end;
+    end;
+
+    SaveStringToFile(StringListToString(BufferId, ';'), OutputDirectory + LIBINFO_ID);
+    SaveStringToFile(StringListToString(BufferIncludes, ';'), OutputDirectory + LIBINFO_INC);
+    SaveStringToFile(StringListToString(BufferLibraries, ';'), OutputDirectory + LIBINFO_LIB);
+    SaveStringToFile(StringListToString(BufferSort, ';'), OutputDirectory + LIBINFO_SORT);
+  finally
+    BufferId.Free;
+    BufferIncludes.Free;
+    BufferLibraries.Free;
+    BufferSort.Free;
+  end;
+end;
+
 function TKallistiPortManager.GetAddonIncludes(const AddonIndex: Integer): string;
 var
   IncludeFiles: string;
 
 begin
-  IncludeFiles := StringReplace(fAddonsIncludes[AddonIndex], '|', WhiteSpaceStr, [rfReplaceAll]);
+  IncludeFiles := StringReplace(fAddonsIncludes[AddonIndex],
+    ArraySeparator, WhiteSpaceStr, [rfReplaceAll]);
   Result := GenerateIncludeHeader(IncludeFiles , EmptyStr);
 end;
 
@@ -733,6 +935,7 @@ begin
   fIntegratedDevelopmentEnvironment := AIntegratedDevelopmentEnvironment;
   fList := TList.Create;
   fPortsWithDependencies := TIntegerList.Create;
+  fPortsWithoutDependencies := TIntegerList.Create;
   fPortsMap := TStringIntegerMap.Create;
   fKallistiLibraryInformation := TIniFile.Create(Environment.FileSystem.Kallisti.KallistiPortsLibraryInformationFile);
   fAddonsId := TStringList.Create;
@@ -745,6 +948,7 @@ destructor TKallistiPortManager.Destroy;
 begin
   Clear;
   fPortsWithDependencies.Free;
+  fPortsWithoutDependencies.Free;
   fList.Free;
   fPortsMap.Free;
   fKallistiLibraryInformation.Free;
@@ -765,47 +969,11 @@ begin
 end;
 
 procedure TKallistiPortManager.GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
-const
-  LIBINFO_ID = 'id.dat';
-  LIBINFO_INC = 'inc.dat';
-  LIBINFO_LIB = 'lib.dat';
-
-var
-  OutputDirectory: TFileName;
-  BufferId,
-  BufferIncludes,
-  BufferLibraries: TStringList;
-  i: Integer;
-  PortInfo: TKallistiPortItem;
-
 begin
   if IntegratedDevelopmentEnvironment.ExportLibraryInformation then
   begin
-    OutputDirectory := IntegratedDevelopmentEnvironment.ExportLibraryInformationPath;
-
-    BufferId := TStringList.Create;
-    BufferIncludes := TStringList.Create;
-    BufferLibraries := TStringList.Create;
-    try
-      for i := 0 to Count - 1 do
-      begin
-        PortInfo := Items[i];
-        if PortInfo.Installed then
-        begin
-          BufferId.Add(PortInfo.Name);
-          BufferIncludes.Add(PortInfo.Includes);
-          BufferLibraries.Add(PortInfo.Libraries);
-        end;
-      end;
-
-      SaveStringToFile(StringListToString(BufferId, ';'), OutputDirectory + LIBINFO_ID);
-      SaveStringToFile(StringListToString(BufferIncludes, ';'), OutputDirectory + LIBINFO_INC);
-      SaveStringToFile(StringListToString(BufferLibraries, ';'), OutputDirectory + LIBINFO_LIB);
-    finally
-      BufferId.Free;
-      BufferIncludes.Free;
-      BufferLibraries.Free;
-    end;
+    GenerateIntegratedDevelopmentEnvironmentLibraryInformation(llkC);
+    GenerateIntegratedDevelopmentEnvironmentLibraryInformation(llkCPP);
   end;
 end;
 

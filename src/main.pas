@@ -302,7 +302,8 @@ begin
       sLineBreak +
       SelectedKallistiPort.Name + ': ' + sLineBreak +
       '  Includes: ' + SelectedKallistiPort.Includes + sLineBreak +
-      '  Libraries: ' + SelectedKallistiPort.Libraries + sLineBreak
+      '  Libraries: ' + SelectedKallistiPort.Libraries + sLineBreak +
+      '    Weights: ' + SelectedKallistiPort.LibraryWeights + sLineBreak
     );
 {$ENDIF}
   end;
