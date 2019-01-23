@@ -626,6 +626,10 @@ var
 begin
   Weight := fKallistiLibraryInformation.ReadInteger('Weights',
     LibraryNameToPortName(PortName), 0);
+  if Weight = 0 then
+    Weight := fKallistiLibraryInformation.ReadInteger('Weights',
+      LibraryNameToPortName('lib' + PortName), 0);
+
   Result := Format('%0.8d', [Weight]);
 end;
 
