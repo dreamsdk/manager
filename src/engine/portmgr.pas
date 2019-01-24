@@ -470,6 +470,8 @@ var
         'include/' + IncludeDirectory, EmptyStr, [rfReplaceAll]));
       IncludeFiles := Trim(StringReplace(IncludeFiles, 'include/', EmptyStr,
         [rfReplaceAll]));
+      IncludeFiles := Trim(StringReplace(IncludeFiles, 'src/', EmptyStr,
+        [rfReplaceAll]));
     end;
 
     // Combine everything
@@ -545,6 +547,7 @@ begin
       fName := PortDirectoryBaseName;
       fSelfIncludes := GetAddonIncludes(AddonIndex);
       fSelfLibraries := fAddonsLibraries[AddonIndex];
+      fFullComputedDependenciesLibraryWeights := GetPortWeight(fName);
       fVirtualAddon := True;
     end;
   end;
@@ -626,6 +629,7 @@ var
 begin
   Weight := fKallistiLibraryInformation.ReadInteger('Weights',
     LibraryNameToPortName(PortName), 0);
+
   if Weight = 0 then
     Weight := fKallistiLibraryInformation.ReadInteger('Weights',
       LibraryNameToPortName('lib' + PortName), 0);
@@ -713,9 +717,13 @@ begin
     InputBuffer.Text := StringReplace(IncludeFiles, ' ', sLineBreak, [rfReplaceAll]);
     for i := 0 to InputBuffer.Count - 1 do
     begin
-      IncludeFile := IncludeDirectory + Trim(InputBuffer[i]);
+      IncludeFile := Trim(InputBuffer[i]);
       if not SameText(IncludeFile, EmptyStr) then
-        OutputBuffer.Add(IncludeFile);
+      begin
+        IncludeFile := IncludeDirectory + IncludeFile;
+        if not SameText(IncludeFile, EmptyStr) then
+          OutputBuffer.Add(IncludeFile);
+      end;
     end;
     Result := StringListToString(OutputBuffer, ArraySeparator);
   finally
