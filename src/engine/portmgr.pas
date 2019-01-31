@@ -1014,26 +1014,26 @@ begin
   Result := FileExists(ConfigFileName) and FileExists(BuildFileName);
   if Result then
   begin
-    Environment.PatchTextFile(
+    PatchTextFile(
       ConfigFileName,
       '#FETCH_CMD = wget',
       'FETCH_CMD = wget --no-check-certificate'
     );
 
-    Environment.PatchTextFile(
+    PatchTextFile(
       ConfigFileName,
       'FETCH_CMD = curl',
       '#FETCH_CMD = curl'
     );
 
-    Environment.PatchTextFile(
+    PatchTextFile(
       DownloadFileName,
       'svn checkout',
       'svn checkout --non-interactive --trust-server-cert'
     );
 
     // ln doesn't work very well under MinGW/MSYS...
-    Environment.PatchTextFile(
+    PatchTextFile(
       BuildFileName,
       'ln -s',
       'cp -r'

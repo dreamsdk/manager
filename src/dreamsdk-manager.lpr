@@ -14,7 +14,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress, KOSMgr, ShellThd,
-  SysTools, RunCmd, Version, PostInst, FirstRun, StrRes, ToolMgr, Settings,
+  SysTools, RunCmd, Version, PostInst, StrRes, ToolMgr, Settings,
   VerIntf, About, UITools, MsgDlg, modver, idemgr;
 
 {$R *.res}

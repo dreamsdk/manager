@@ -159,8 +159,6 @@ type
       WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
       var BufferOutput: string): TUpdateOperationState; overload;
-    procedure PatchTextFile(const FileName: TFileName;
-      OldValue, NewValue: string);
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystem read fFileSystem;
     property Settings: TDreamcastSoftwareDevelopmentSettings read fSettings;
     property OnShellCommandNewLine: TNewLineEvent read fShellCommandNewLine
@@ -421,25 +419,6 @@ begin
     Result := uosUpdateUseless
   else if IsInString(SUCCESS_TAG, TempBuffer) then
     Result := uosUpdateSuccess;
-end;
-
-procedure TDreamcastSoftwareDevelopmentEnvironment.PatchTextFile(
-  const FileName: TFileName; OldValue, NewValue: string);
-var
-  Buffer: TStringList;
-
-begin
-  Buffer := TStringList.Create;
-  try
-    Buffer.LoadFromFile(FileName);
-    if IsInString(OldValue, Buffer.Text) then
-    begin
-      Buffer.Text := StringReplace(Buffer.Text, OldValue, NewValue, [rfReplaceAll]);
-      Buffer.SaveToFile(FileName);
-    end;
-  finally
-    Buffer.Free;
-  end;
 end;
 
 end.
