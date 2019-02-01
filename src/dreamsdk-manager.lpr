@@ -15,7 +15,7 @@ uses
   Interfaces, // this includes the LCL widgetset
   Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress, KOSMgr, ShellThd,
   SysTools, RunCmd, Version, PostInst, StrRes, ToolMgr, Settings,
-  VerIntf, About, UITools, MsgDlg, modver, idemgr;
+  VerIntf, About, UITools, MsgDlg, ModVer, IDEMgr, Splash;
 
 {$R *.res}
 
@@ -24,10 +24,12 @@ begin
   Application.Title:='DreamSDK Manager';
   RequireDerivedFormResource:=True;
   Application.Initialize;
+  SplashInitialize;
   Application.CreateForm(TfrmMain, frmMain);
   Application.CreateForm(TfrmAbout, frmAbout);
   Application.ShowMainForm := not IsPostInstallMode;
   ExecutePostInstall;
+  SplashFinalize;
   Application.Run;
 end.
 

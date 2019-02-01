@@ -991,15 +991,42 @@ begin
 end;
 
 procedure TfrmMain.btnRestoreDefaultsClick(Sender: TObject);
+
+  procedure ResetText(ComboBox: TComboBox; Value: string);
+  begin
+    if ComboBox.Enabled then
+      ComboBox.Text := Value;
+  end;
+
 begin
   if MsgBox(DialogQuestionTitle, RestoreDefaultsText, mtConfirmation, [mbYes, mbNo]) = mrYes then
   begin
     rgxTerminalOption.ItemIndex := 0;
     rgxTerminalOptionClick(Self);
-    cbxUrlKallisti.Text := DEFAULT_KALLISTI_URL;
-    cbxUrlKallistiPorts.Text := DEFAULT_KALLISTI_PORTS_URL;
-    cbxUrlDreamcastToolSerial.Text := DEFAULT_DREAMCAST_TOOL_SERIAL_URL;
-    cbxUrlDreamcastToolIP.Text := DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL;
+
+    // Repositories
+    ResetText(cbxUrlKallisti, DEFAULT_KALLISTI_URL);
+    ResetText(cbxUrlKallistiPorts, DEFAULT_KALLISTI_PORTS_URL);
+    ResetText(cbxUrlDreamcastToolSerial, DEFAULT_DREAMCAST_TOOL_SERIAL_URL);
+    ResetText(cbxUrlDreamcastToolIP, DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL);
+
+    // Dreamcast Tool (only Options...)
+    rgbDreamcastTool.ItemIndex := DREAMCAST_TOOL_DEFAULT_KIND;
+    rgbDreamcastToolSelectionChanged(Self);
+    ckxDreamcastToolAttachConsoleFileServer.Checked := DREAMCAST_TOOL_DEFAULT_ATTACH_CONSOLE_FILESERVER;
+    ckxDreamcastToolClearScreenBeforeDownload.Checked := DREAMCAST_TOOL_DEFAULT_CLEAR_SCREEN_BEFORE_DOWNLOAD;
+//    edtDreamcastToolInternetProtocolAddress.Text := DREAMCAST_TOOL_DEFAULT_INTERNET_PROTOCOL_ADDRESS;
+    ckxDreamcastToolInternetProtocolUseARP.Checked := DREAMCAST_TOOL_DEFAULT_MEDIA_ACCESS_CONTROL_ENABLED;
+//    edtDreamcastToolInternetProtocolMAC.Text := DREAMCAST_TOOL_DEFAULT_MEDIA_ACCESS_CONTROL_ADDRESS;
+    ckxDreamcastToolSerialDumbTerminal.Checked := DREAMCAST_TOOL_DEFAULT_SERIAL_DUMB_TERMINAL;
+    ckxDreamcastToolSerialExternalClock.Checked := DREAMCAST_TOOL_DEFAULT_SERIAL_EXTERNAL_CLOCK;
+    cbxDreamcastToolSerialBaudrate.ItemIndex := DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE;
+    ckxDreamcastToolSerialAlternateBaudrate.Checked := DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_ALTERNATE;
+//    cbxDreamcastToolSerialPort.ItemIndex := DREAMCAST_TOOL_DEFAULT_SERIAL_PORT;
+//    edtDreamcastToolCustomExecutable.Text := DREAMCAST_TOOL_DEFAULT_CUSTOM_EXECUTABLE;
+//    edtDreamcastToolCustomArguments.Text := DREAMCAST_TOOL_DEFAULT_CUSTOM_ARGUMENTS;
+
+    // Save changes
     DreamcastSoftwareDevelopmentKitManager.Environment.Settings.SaveConfiguration;
   end;
 end;

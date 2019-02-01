@@ -27,8 +27,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsKallistiPorts
-    TabIndex = 2
+    ActivePage = tsDreamcastTool
+    TabIndex = 3
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -464,7 +464,7 @@ object frmMain: TfrmMain
     end
     object tsDreamcastTool: TTabSheet
       Caption = '&Dreamcast Tool'
-      ClientHeight = 320
+      ClientHeight = 322
       ClientWidth = 648
       object rgbDreamcastTool: TRadioGroup
         Left = 4
@@ -527,27 +527,27 @@ object frmMain: TfrmMain
         end
         object ckxDreamcastToolSerialAlternateBaudrate: TCheckBox
           Left = 180
-          Height = 19
+          Height = 17
           Top = 34
-          Width = 68
+          Width = 65
           Caption = 'Al&ternate'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 2
         end
         object ckxDreamcastToolSerialExternalClock: TCheckBox
           Left = 8
-          Height = 19
+          Height = 17
           Top = 88
-          Width = 207
+          Width = 194
           Caption = 'Us&e external clock for the serial port'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 3
         end
         object ckxDreamcastToolSerialDumbTerminal: TCheckBox
           Left = 8
-          Height = 19
+          Height = 17
           Top = 63
-          Width = 278
+          Width = 254
           Caption = '&Use dumb terminal rather than console/fileserver'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 4
@@ -577,17 +577,17 @@ object frmMain: TfrmMain
         end
         object lblDreamcastToolSerialPort: TLabel
           Left = 53
-          Height = 15
+          Height = 13
           Top = 8
-          Width = 25
+          Width = 24
           Caption = 'Port:'
           ParentColor = False
         end
         object lblDreamcastToolSerialBaudrate: TLabel
           Left = 29
-          Height = 15
+          Height = 13
           Top = 36
-          Width = 50
+          Width = 48
           Caption = 'Baudrate:'
           ParentColor = False
         end
@@ -620,9 +620,9 @@ object frmMain: TfrmMain
         end
         object lblDreamcastToolInternetProtocolAddress: TLabel
           Left = 4
-          Height = 15
+          Height = 13
           Top = 9
-          Width = 58
+          Width = 56
           Caption = 'IP Address:'
           ParentColor = False
         end
@@ -685,9 +685,9 @@ object frmMain: TfrmMain
         end
         object lblDreamcastToolInternetProtocolMAC: TLabel
           Left = 4
-          Height = 15
+          Height = 13
           Top = 89
-          Width = 75
+          Width = 68
           Caption = 'MAC Address:'
           ParentColor = False
         end
@@ -703,18 +703,18 @@ object frmMain: TfrmMain
         TabOrder = 3
         object ckxDreamcastToolAttachConsoleFileServer: TCheckBox
           Left = 7
-          Height = 19
+          Height = 17
           Top = 4
-          Width = 189
+          Width = 176
           Caption = '&Always attach console/fileserver'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 0
         end
         object ckxDreamcastToolClearScreenBeforeDownload: TCheckBox
           Left = 7
-          Height = 19
+          Height = 17
           Top = 32
-          Width = 215
+          Width = 199
           Caption = 'Al&ways clear screen before download'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 1
@@ -740,7 +740,7 @@ object frmMain: TfrmMain
         end
         object edtDreamcastToolCustomExecutable: TEdit
           Left = 4
-          Height = 23
+          Height = 21
           Top = 20
           Width = 276
           OnChange = cbxDreamcastToolSerialPortSelect
@@ -748,23 +748,23 @@ object frmMain: TfrmMain
         end
         object lblDreamcastToolCustomExecutable: TLabel
           Left = 4
-          Height = 15
+          Height = 13
           Top = 4
-          Width = 59
+          Width = 57
           Caption = 'Executable:'
           ParentColor = False
         end
         object lblDreamcastToolCustomArguments: TLabel
           Left = 4
-          Height = 15
+          Height = 13
           Top = 44
-          Width = 62
+          Width = 56
           Caption = 'Arguments:'
           ParentColor = False
         end
         object edtDreamcastToolCustomArguments: TEdit
           Left = 4
-          Height = 23
+          Height = 21
           Top = 60
           Width = 305
           OnChange = cbxDreamcastToolSerialPortSelect
@@ -774,7 +774,7 @@ object frmMain: TfrmMain
     end
     object tsEnvironment: TTabSheet
       Caption = '&Environment'
-      ClientHeight = 320
+      ClientHeight = 322
       ClientWidth = 648
       object gbxToolchain: TGroupBox
         Left = 4
@@ -787,39 +787,39 @@ object frmMain: TfrmMain
         TabOrder = 0
         object lblVersionBinutils: TLabel
           Left = 99
-          Height = 15
+          Height = 13
           Top = 12
-          Width = 47
+          Width = 41
           Caption = '(Binutils)'
           ParentColor = False
         end
         object lblVersionGCC: TLabel
           Left = 99
-          Height = 15
+          Height = 13
           Top = 40
-          Width = 32
+          Width = 29
           Caption = '(GCC)'
           ParentColor = False
         end
         object lblVersionNewlib: TLabel
           Left = 99
-          Height = 15
+          Height = 13
           Top = 68
-          Width = 45
+          Width = 39
           Caption = '(Newlib)'
           ParentColor = False
         end
         object lblVersionGDB: TLabel
           Left = 99
-          Height = 15
+          Height = 13
           Top = 96
-          Width = 31
+          Width = 28
           Caption = '(GDB)'
           ParentColor = False
         end
         object lblTextBinutils: TLabel
           Left = 8
-          Height = 15
+          Height = 13
           Top = 12
           Width = 41
           Caption = 'Binutils'
@@ -829,9 +829,9 @@ object frmMain: TfrmMain
         end
         object lblTextGCC: TLabel
           Left = 8
-          Height = 15
+          Height = 13
           Top = 40
-          Width = 23
+          Width = 22
           Caption = 'GCC'
           Font.Style = [fsBold]
           ParentColor = False
@@ -839,9 +839,9 @@ object frmMain: TfrmMain
         end
         object lblTextNewlib: TLabel
           Left = 8
-          Height = 15
+          Height = 13
           Top = 68
-          Width = 39
+          Width = 36
           Caption = 'Newlib'
           Font.Style = [fsBold]
           ParentColor = False
@@ -849,9 +849,9 @@ object frmMain: TfrmMain
         end
         object lblTextGDB: TLabel
           Left = 8
-          Height = 15
+          Height = 13
           Top = 96
-          Width = 26
+          Width = 23
           Caption = 'GDB'
           Font.Style = [fsBold]
           ParentColor = False
@@ -869,41 +869,41 @@ object frmMain: TfrmMain
         TabOrder = 1
         object lblVersionSVN: TLabel
           Left = 104
-          Height = 15
+          Height = 13
           Top = 40
-          Width = 30
+          Width = 27
           Caption = '(SVN)'
           ParentColor = False
         end
         object lblVersionGit: TLabel
           Left = 104
-          Height = 15
+          Height = 13
           Top = 12
-          Width = 23
+          Width = 21
           Caption = '(Git)'
           ParentColor = False
         end
         object lblVersionPython: TLabel
           Left = 104
-          Height = 15
+          Height = 13
           Top = 68
-          Width = 46
+          Width = 42
           Caption = '(Python)'
           ParentColor = False
         end
         object lblVersionMinGW: TLabel
           Left = 104
-          Height = 15
+          Height = 13
           Top = 96
-          Width = 69
+          Width = 61
           Caption = '(MinGW Get)'
           ParentColor = False
         end
         object lblTextGit: TLabel
           Left = 12
-          Height = 15
+          Height = 13
           Top = 12
-          Width = 17
+          Width = 16
           Caption = 'Git'
           Font.Style = [fsBold]
           ParentColor = False
@@ -911,9 +911,9 @@ object frmMain: TfrmMain
         end
         object lblTextPython: TLabel
           Left = 12
-          Height = 15
+          Height = 13
           Top = 68
-          Width = 39
+          Width = 40
           Caption = 'Python'
           Font.Style = [fsBold]
           ParentColor = False
@@ -921,9 +921,9 @@ object frmMain: TfrmMain
         end
         object lblTextSVN: TLabel
           Left = 12
-          Height = 15
+          Height = 13
           Top = 40
-          Width = 24
+          Width = 21
           Caption = 'SVN'
           Font.Style = [fsBold]
           ParentColor = False
@@ -931,9 +931,9 @@ object frmMain: TfrmMain
         end
         object lblTextMinGW: TLabel
           Left = 12
-          Height = 15
+          Height = 13
           Top = 96
-          Width = 42
+          Width = 39
           Caption = 'MinGW'
           Font.Style = [fsBold]
           ParentColor = False
@@ -951,25 +951,25 @@ object frmMain: TfrmMain
         TabOrder = 2
         object lblVersionToolSerial: TLabel
           Left = 100
-          Height = 15
+          Height = 13
           Top = 15
-          Width = 91
+          Width = 82
           Caption = '(DC-TOOL Serial)'
           ParentColor = False
         end
         object lblVersionToolIP: TLabel
           Left = 100
-          Height = 15
+          Height = 13
           Top = 43
-          Width = 73
+          Width = 66
           Caption = '(DC-TOOL IP)'
           ParentColor = False
         end
         object lblTextToolSerial: TLabel
           Left = 8
-          Height = 15
+          Height = 13
           Top = 15
-          Width = 31
+          Width = 32
           Caption = 'Serial'
           Font.Style = [fsBold]
           ParentColor = False
@@ -977,9 +977,9 @@ object frmMain: TfrmMain
         end
         object lblTextToolIP: TLabel
           Left = 8
-          Height = 15
+          Height = 13
           Top = 43
-          Width = 11
+          Width = 12
           Caption = 'IP'
           Font.Style = [fsBold]
           ParentColor = False
@@ -997,23 +997,23 @@ object frmMain: TfrmMain
         TabOrder = 3
         object lblVersionBinutilsARM: TLabel
           Left = 104
-          Height = 15
+          Height = 13
           Top = 12
-          Width = 47
+          Width = 41
           Caption = '(Binutils)'
           ParentColor = False
         end
         object lblVersionGCCARM: TLabel
           Left = 104
-          Height = 15
+          Height = 13
           Top = 40
-          Width = 32
+          Width = 29
           Caption = '(GCC)'
           ParentColor = False
         end
         object lblTextBinutilsARM: TLabel
           Left = 12
-          Height = 15
+          Height = 13
           Top = 12
           Width = 41
           Caption = 'Binutils'
@@ -1023,9 +1023,9 @@ object frmMain: TfrmMain
         end
         object lblTextGCCARM: TLabel
           Left = 12
-          Height = 15
+          Height = 13
           Top = 40
-          Width = 23
+          Width = 22
           Caption = 'GCC'
           Font.Style = [fsBold]
           ParentColor = False

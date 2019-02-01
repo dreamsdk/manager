@@ -15,7 +15,7 @@ resourcestring
 
   // Main
   MailToSubject = 'Question about the KallistiOS Port: %s';
-  RestoreDefaultsText = 'Are you sure to restore settings to its defaults?';
+  RestoreDefaultsText = 'Are you sure to restore Options and Dreamcast Tool settings to their defaults?';
   UserInterfaceNotInstalledText = 'Not installed';
   UserInterfaceInstalledText = 'OK';
   UpdateProcessEverythingUpdate = 'Everything is up-to-date.';
