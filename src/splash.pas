@@ -41,7 +41,7 @@ begin
     frmSplash := TfrmSplash.Create(Application);
     frmSplash.Show;
     frmSplash.Update;
-    Delay(3000);
+    Delay(1500);
   end;
 end;
 
