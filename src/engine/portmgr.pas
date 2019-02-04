@@ -532,6 +532,7 @@ begin
           fPortsWithoutDependencies.Add(fListIndex);
         fPortsMap.Add(PortName, fListIndex);
         fLibraryLanguageKind := GetPortLanguageKind(PortName);
+        fVirtualAddon := False;
       end;
 
     finally

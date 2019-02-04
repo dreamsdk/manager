@@ -291,7 +291,7 @@ end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
 begin
-  Cursor := crHourGlass;
+  Screen.Cursor := crHourGlass;
   InitializeHomeScreen;
   InitializeAboutScreen;
   fLoadingConfiguration := True;
@@ -300,7 +300,7 @@ begin
   RefreshEverything(False);
   DisplayKallistiPorts(True);
   fLoadingConfiguration := False;
-  Cursor := crDefault;
+  Screen.Cursor := crDefault;
 end;
 
 procedure TfrmMain.lbxPortsClickCheck(Sender: TObject);
@@ -474,7 +474,8 @@ begin
       RefreshViewKallistiPorts(False); // Single KallistiPorts change
   end;
 
-  Cursor := crDefault;
+  Application.ProcessMessages;
+  Screen.Cursor := crDefault;
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
@@ -893,8 +894,8 @@ procedure TfrmMain.OnCommandTerminateThread(Sender: TObject;
   Request: TShellThreadInputRequest; Response: TShellThreadOutputResponse;
   Success: Boolean; UpdateState: TUpdateOperationState);
 begin
-  Cursor := crHourGlass;
-  Application.ProcessMessages;
+  Screen.Cursor := crHourGlass;
+  Delay(200);
   fShellThreadSuccess := Success;
   fShellThreadInputRequest := Request;
   fShellThreadOutputResult := Response;
