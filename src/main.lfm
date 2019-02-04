@@ -10,6 +10,7 @@ object frmMain: TfrmMain
   ClientWidth = 670
   OnActivate = FormActivate
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
@@ -27,8 +28,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsDreamcastTool
-    TabIndex = 3
+    ActivePage = tsHome
+    TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet

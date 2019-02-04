@@ -11,7 +11,6 @@ type
   TIntegratedDevelopmentEnvironmentKind = (ideNone, ideCodeBlocks);
 
   { TIntegratedDevelopmentEnvironment }
-
   TIntegratedDevelopmentEnvironment = class(TObject)
   private
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;

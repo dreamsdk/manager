@@ -178,6 +178,7 @@ type
     procedure edtPortURLMouseLeave(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
@@ -254,14 +255,38 @@ var
   HelpFileName: TFileName;
   ModuleVersionList: TModuleVersionList;
 
+function CreateModuleVersionList: TModuleVersionList;
+var
+  ModulesList: TStringList;
+
+begin
+  ModulesList := TStringList.Create;
+  try
+    ModulesList.Add(SELF_MODULE_REFERENCE);
+    ModulesList.Add(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.LauncherExecutable);
+    ModulesList.Add(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.RunnerExecutable);
+    Result := TModuleVersionList.Create(ModulesList, UNKNOWN_VALUE);
+  finally
+    ModulesList.Free;
+  end;
+  end;
+
 { TfrmMain }
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
+  DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
+  ModuleVersionList := CreateModuleVersionList;
   DoubleBuffered := True;
   pcMain.TabIndex := 0;
   Application.Title := Caption;
   HandleAero;
+end;
+
+procedure TfrmMain.FormDestroy(Sender: TObject);
+begin
+  ModuleVersionList.Free;
+  DreamcastSoftwareDevelopmentKitManager.Free;
 end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
@@ -1192,30 +1217,8 @@ begin
       ExecuteThreadOperation(stiKallistiManage);
 end;
 
-function CreateModuleVersionList: TModuleVersionList;
-var
-  ModulesList: TStringList;
-
-begin
-  ModulesList := TStringList.Create;
-  try
-    ModulesList.Add(SELF_MODULE_REFERENCE);
-    ModulesList.Add(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.LauncherExecutable);
-    ModulesList.Add(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.RunnerExecutable);
-    Result := TModuleVersionList.Create(ModulesList, UNKNOWN_VALUE);
-  finally
-    ModulesList.Free;
-  end;
-end;
-
 initialization
-  DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
   HelpFileName := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) + HELPFILE;
-  ModuleVersionList := CreateModuleVersionList;
-
-finalization
-  DreamcastSoftwareDevelopmentKitManager.Free;
-  ModuleVersionList.Free;
 
 end.
 
