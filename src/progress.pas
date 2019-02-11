@@ -87,6 +87,8 @@ begin
   SetIdleState(False);
   SetCloseButtonState(True);
   Finished := False;
+  if IsPostInstallMode then
+    FormStyle := fsSystemStayOnTop;
 end;
 
 procedure TfrmProgress.SetIdleState(State: Boolean);
