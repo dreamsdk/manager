@@ -792,6 +792,8 @@ var
   begin
     HelpFileVersion := RetrieveVersionWithFind(HelpFileName, 'DreamSDK Help', sLineBreak);
     HelpFileVersion := Right('Ver. ', HelpFileVersion);
+    if HelpFileVersion = EmptyStr then
+      HelpFileVersion := UNKNOWN_VALUE;
     edtProductHelpVersion.Text := HelpFileVersion;
   end;
 
