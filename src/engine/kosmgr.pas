@@ -109,9 +109,37 @@ begin
 end;
 
 function TKallistiManager.Build(var BufferOutput: string): Boolean;
+const
+  ADDITIONAL_UTILITIES: array[0..2] of string = ('bin2c', 'bincnv', 'kmgenc');
+
+var
+  i: Integer;
+  AdditionalUtility: string;
+
+  procedure AdditionalUtilityExecuteCommand(const CommandLine: string);
+  var
+    AdditionalBufferOutput: string;
+
+  begin
+    AdditionalBufferOutput := Environment.ExecuteShellCommand(CommandLine,
+      Environment.FileSystem.Kallisti.KallistiUtilitiesDirectory + AdditionalUtility);
+    BufferOutput := BufferOutput + AdditionalBufferOutput;
+  end;
+
 begin
+  // Build libkallisti
   BufferOutput := Environment.ExecuteShellCommand('make',
     Environment.FileSystem.Kallisti.KallistiDirectory);
+
+  // Additional utilities
+  for i := Low(ADDITIONAL_UTILITIES) to High(ADDITIONAL_UTILITIES) do
+  begin
+    AdditionalUtility := ADDITIONAL_UTILITIES[i];
+    AdditionalUtilityExecuteCommand(Format('echo %s:', [AdditionalUtility]));
+    AdditionalUtilityExecuteCommand(Format('make', [AdditionalUtility]));
+  end;
+
+  // The result is OK if libkallisti is present, addons are optional...
   Result := FileExists(Environment.FileSystem.Kallisti.KallistiLibrary);
 end;
 
