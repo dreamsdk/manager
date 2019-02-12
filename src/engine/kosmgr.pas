@@ -110,7 +110,7 @@ end;
 
 function TKallistiManager.Build(var BufferOutput: string): Boolean;
 const
-  ADDITIONAL_UTILITIES: array[0..2] of string = ('bin2c', 'bincnv', 'kmgenc');
+  ADDITIONAL_UTILITIES: array[0..1] of string = ('bin2c', 'kmgenc');
 
 var
   i: Integer;
