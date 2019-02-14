@@ -190,6 +190,7 @@ type
   private
     fLoadingConfiguration: Boolean;
     fKallistiPortsClearList: Boolean;
+    fShellThreadExecutedAtLeastOnce: Boolean;
     fShellThreadSuccess: Boolean;
     fShellThreadInputRequest: TShellThreadInputRequest;
     fShellThreadOutputResult: TShellThreadOutputResponse;
@@ -275,6 +276,7 @@ begin
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
+  fShellThreadExecutedAtLeastOnce := False;
   DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
   ModuleVersionList := CreateModuleVersionList;
   DoubleBuffered := True;
@@ -285,6 +287,8 @@ end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
+  if not fShellThreadExecutedAtLeastOnce then
+    DreamcastSoftwareDevelopmentKitManager.KallistiPorts.GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
   ModuleVersionList.Free;
   DreamcastSoftwareDevelopmentKitManager.Free;
 end;
@@ -476,6 +480,7 @@ begin
 
   Application.ProcessMessages;
   Screen.Cursor := crDefault;
+  fShellThreadExecutedAtLeastOnce := True;
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
