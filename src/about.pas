@@ -77,9 +77,10 @@ resourcestring
   ComponentMainIcon = 'Settings Icon made by Martz90\nIconset: Circle Icons\nLicense: CC Attribution-Noncommercial-No Derivate 4.0';
   ComponentSetupIcon = 'Setup Icon made by Roundicons from FlatIcon\nLicensed by Creative Commons BY 3.0.';
   ComponentElevate = 'Elevate is an utility that executes a command with UAC privilege elevation. This is useful for working inside command prompts or with batch files.';
+  ComponentDirHash = 'DirHash is a Windows console program that computes the hash of a given directory content or a single file. Recursive Lexicographical order is used for browsing the directory hierarchy so that the computed hash can be seen as unique fingerprint of the target directory. Supported hashing algorithms are MD5, SHA-1, SHA-256, SHA-384, SHA-512 and Streebog.';
 
 const
-  COMPONENTS_INFORMATION: array[0..23] of TComponentItem = (
+  COMPONENTS_INFORMATION: array[0..24] of TComponentItem = (
     (Text: ComponentEnvironment;    Url: ''), // Environment
     (Text: ComponentMinGW;          Url: 'http://mingw.org/'), // MinGW
     (Text: ComponentMSYS;           Url: 'http://mingw.org/wiki/MSYS'), // MSYS
@@ -103,7 +104,8 @@ const
     (Text: ComponentResources;      Url: ''), // ComponentResources
     (Text: ComponentMainIcon;       Url: 'https://www.deviantart.com/martz90'), // Main Icon
     (Text: ComponentSetupIcon;      Url: 'https://www.flaticon.com/authors/roundicons'), // Setup Icon
-    (Text: ComponentElevate;        Url: 'http://code.kliu.org/misc/elevate/') // Misc/Elevate
+    (Text: ComponentElevate;        Url: 'http://code.kliu.org/misc/elevate/'), // Misc/Elevate
+    (Text: ComponentDirHash;        Url: 'https://idrassi.github.io/DirHash/') //Misc/DirHash
   );
 
 { TfrmAbout }
