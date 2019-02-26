@@ -859,18 +859,34 @@ procedure TfrmMain.RefreshViewKallistiPorts(ForceRefresh: Boolean);
 
   procedure RefreshKallistiPortsControls;
   var
-    i, PortsCount, InstalledPortsCount: Integer;
+    i, PortsCount, PortsVisibleCount, InstalledPortsCount: Integer;
+    CurrentPort: TKallistiPortItem;
 
   begin
     PortsCount := DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Count;
+    PortsVisibleCount := DreamcastSoftwareDevelopmentKitManager.KallistiPorts.CountVisible;
 
     InstalledPortsCount := 0;
     for i := 0 to PortsCount - 1 do
-      if DreamcastSoftwareDevelopmentKitManager.KallistiPorts[i].Installed then
+    begin
+      CurrentPort := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[i];
+      if (not CurrentPort.Hidden) and (CurrentPort.Installed) then
         Inc(InstalledPortsCount);
+    end;
 
-    btnAllPortInstall.Enabled := (PortsCount <> InstalledPortsCount);
+    btnAllPortInstall.Enabled := (PortsVisibleCount <> InstalledPortsCount);
     btnAllPortUninstall.Enabled := (InstalledPortsCount > 0);
+
+{$IFDEF DEBUG}
+    with DreamcastSoftwareDevelopmentKitManager.KallistiPorts do
+    begin
+      WriteLn(
+        'AllCount: ', Count,
+        ', CountVisible: ', CountVisible,
+        ', InstalledPortsCount: ', InstalledPortsCount
+      );
+    end;
+{$ENDIF}
   end;
 
 begin

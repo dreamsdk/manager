@@ -69,6 +69,7 @@ type
   { TKallistiPortManager }
   TKallistiPortManager = class(TObject)
   private
+    fOnlyVisibleListCount: Integer;
     fList: TList;
     fPortsMap: TStringIntegerMap;
     fPortsWithDependencies: TIntegerList;
@@ -127,6 +128,7 @@ type
     function Uninstall(var OutputBuffer: string): Boolean;
     procedure RetrieveAvailablePorts;
     property Count: Integer read GetCount;
+    property CountVisible: Integer read fOnlyVisibleListCount;
     property Installed: Boolean read GetInstalled;
     property Items[Index: Integer]: TKallistiPortItem read GetItem; default;
     property RepositoryReady: Boolean read GetRepositoryReady;
@@ -332,6 +334,7 @@ begin
   fPortsWithDependencies.Clear;
   fPortsWithoutDependencies.Clear;
   fPortsMap.Clear;
+  fOnlyVisibleListCount := 0;
 end;
 
 function TKallistiPortManager.GetRepositoryReady: Boolean;
@@ -535,6 +538,7 @@ begin
         fVirtualAddon := False;
       end;
 
+      Inc(fOnlyVisibleListCount);
     finally
       MakefileContent.Free;
     end;

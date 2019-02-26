@@ -383,6 +383,7 @@ var
   begin
     IsSuccess := False;
     Result := roNothing;
+    TempBuffer := EmptyStr;
     RepositoryName := RepositoryKindToString(RepositoryKind);
     if CanContinue then
     begin
@@ -471,6 +472,7 @@ var
 
   begin
     // Handle KallistiOS Repository
+    TempBuffer := EmptyStr;
     UpdateState := uosUndefined;
     RepositoryOperation := HandleRepository(Manager.KallistiOS.Installed,
       rkKallisti, UpdateState);
@@ -532,6 +534,7 @@ var
 
   begin
     // Handle Dreamcast Tool(dc-tool) repository
+    TempBuffer := EmptyStr;
     UpdateState := uosUndefined;
     RepositoryOperation := HandleRepository(Manager.DreamcastTool.Installed,
       rkDreamcastTool, UpdateState);
