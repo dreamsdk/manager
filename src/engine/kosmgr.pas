@@ -145,7 +145,7 @@ end;
 
 function TKallistiManager.FixupHitachiNewlib(var BufferOutput: string): Boolean;
 const
-  FIXUP_SUPERH_NEWLIB = DREAMSDK_MSYS_INSTALL_SCRIPTS_DIRECTORY + 'fixup-sh4-newlib';
+  FIXUP_SUPERH_NEWLIB = DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY + 'fixup-sh4-newlib';
   SUCCESS_TAG = 'Done!';
 
 var
