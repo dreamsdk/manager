@@ -135,7 +135,7 @@ begin
   for i := Low(ADDITIONAL_UTILITIES) to High(ADDITIONAL_UTILITIES) do
   begin
     AdditionalUtility := ADDITIONAL_UTILITIES[i];
-    AdditionalUtilityExecuteCommand(Format('echo "Building %s..."', [AdditionalUtility]));
+    AdditionalUtilityExecuteCommand(Format('echo Building %s...', [AdditionalUtility]));
     AdditionalUtilityExecuteCommand(Format('make', [AdditionalUtility]));
   end;
 
