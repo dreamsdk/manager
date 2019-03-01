@@ -69,7 +69,7 @@ object frmMain: TfrmMain
         end
         object lblHomeShell: TLabel
           Left = 8
-          Height = 32
+          Height = 44
           Top = 12
           Width = 482
           AutoSize = False
@@ -99,7 +99,7 @@ object frmMain: TfrmMain
         end
         object lblHomeFolder: TLabel
           Left = 8
-          Height = 32
+          Height = 44
           Top = 12
           Width = 482
           AutoSize = False
@@ -129,7 +129,7 @@ object frmMain: TfrmMain
         end
         object lblHomeHelp: TLabel
           Left = 8
-          Height = 32
+          Height = 39
           Top = 12
           Width = 482
           AutoSize = False
