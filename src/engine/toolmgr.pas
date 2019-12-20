@@ -97,10 +97,15 @@ var
   IsRepositoryReady: Boolean;
 
 begin
+  Result := True;
   IsRepositoryReady := True;
 
   if not DirectoryExists(Environment.FileSystem.DreamcastTool.BaseDirectory) then
     ForceDirectories(Environment.FileSystem.DreamcastTool.BaseDirectory);
+
+  Url := EmptyStr;
+  InstallationDirectoryName := EmptyStr;
+  InstallationDirectoryPath := EmptyStr;
 
   case Kind of
     dtkSerial:
@@ -117,21 +122,27 @@ begin
         InstallationDirectoryPath := Environment.FileSystem.DreamcastTool.InternetProtocolDirectory;
         IsRepositoryReady := RepositoryReadyInternetProtocol;
       end;
+    dtkUndefined:
+      begin
+        Result := False;
+        Exit;
+      end;
   end;
 
-  if IsRepositoryReady then
-  begin
-    // Update the repository if it already exists
-    UpdateOperationState := Environment.UpdateRepository(
-      InstallationDirectoryPath, BufferOutput);
-    Result := (UpdateOperationState <> uosUpdateFailed);
-  end
-  else
-  begin
-    // Initialize the repository
-    Result := Environment.CloneRepository(Url, InstallationDirectoryName,
-      Environment.FileSystem.DreamcastTool.BaseDirectory, BufferOutput);
-  end;
+  if Result then
+    if IsRepositoryReady then
+    begin
+      // Update the repository if it already exists
+      UpdateOperationState := Environment.UpdateRepository(
+        InstallationDirectoryPath, BufferOutput);
+      Result := (UpdateOperationState <> uosUpdateFailed);
+    end
+    else
+    begin
+      // Initialize the repository
+      Result := Environment.CloneRepository(Url, InstallationDirectoryName,
+        Environment.FileSystem.DreamcastTool.BaseDirectory, BufferOutput);
+    end;
 end;
 
 function TDreamcastToolManager.GetDreamcastToolExecutableFileName: TFileName;

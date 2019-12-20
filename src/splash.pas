@@ -39,9 +39,11 @@ begin
   if IsSplashActive then
   begin
     frmSplash := TfrmSplash.Create(Application);
+{$IFDEF RELEASE}
     frmSplash.Show;
     frmSplash.Update;
     Delay(1500);
+{$ENDIF}
   end;
 end;
 

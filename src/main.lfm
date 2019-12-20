@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 950
+  Left = 745
   Height = 400
-  Top = 512
+  Top = 398
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -13,7 +13,7 @@ object frmMain: TfrmMain
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poScreenCenter
-  LCLVersion = '2.0.0.4'
+  LCLVersion = '2.0.2.0'
   object btnClose: TButton
     Left = 266
     Height = 25
@@ -28,8 +28,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsHome
-    TabIndex = 0
+    ActivePage = tsDreamcastTool
+    TabIndex = 3
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -892,34 +892,42 @@ object frmMain: TfrmMain
         ClientWidth = 312
         TabOrder = 0
         object lblVersionBinutils: TLabel
-          Left = 99
+          Left = 187
           Height = 13
           Top = 12
-          Width = 41
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(Binutils)'
           ParentColor = False
         end
         object lblVersionGCC: TLabel
-          Left = 99
+          Left = 187
           Height = 13
           Top = 40
-          Width = 29
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(GCC)'
           ParentColor = False
         end
         object lblVersionNewlib: TLabel
-          Left = 99
+          Left = 187
           Height = 13
           Top = 68
-          Width = 39
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(Newlib)'
           ParentColor = False
         end
         object lblVersionGDB: TLabel
-          Left = 99
+          Left = 187
           Height = 13
           Top = 96
-          Width = 28
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(GDB)'
           ParentColor = False
         end
@@ -927,8 +935,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 12
-          Width = 41
-          Caption = 'Binutils'
+          Width = 67
+          Caption = 'GNU Binutils'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -937,8 +945,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 40
-          Width = 22
-          Caption = 'GCC'
+          Width = 169
+          Caption = 'GNU Compiler Collection (GCC)'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -957,8 +965,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 96
-          Width = 23
-          Caption = 'GDB'
+          Width = 117
+          Caption = 'GNU Debugger (GDB)'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -974,41 +982,49 @@ object frmMain: TfrmMain
         ClientWidth = 312
         TabOrder = 1
         object lblVersionSVN: TLabel
-          Left = 104
+          Left = 187
           Height = 13
-          Top = 40
-          Width = 27
+          Top = 43
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(SVN)'
           ParentColor = False
         end
         object lblVersionGit: TLabel
-          Left = 104
+          Left = 187
           Height = 13
-          Top = 12
-          Width = 21
+          Top = 15
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(Git)'
           ParentColor = False
         end
         object lblVersionPython: TLabel
-          Left = 104
+          Left = 187
           Height = 13
-          Top = 68
-          Width = 42
+          Top = 71
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(Python)'
           ParentColor = False
         end
         object lblVersionMinGW: TLabel
-          Left = 104
+          Left = 187
           Height = 13
-          Top = 96
-          Width = 61
+          Top = 99
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(MinGW Get)'
           ParentColor = False
         end
         object lblTextGit: TLabel
           Left = 12
           Height = 13
-          Top = 12
+          Top = 15
           Width = 16
           Caption = 'Git'
           Font.Style = [fsBold]
@@ -1018,7 +1034,7 @@ object frmMain: TfrmMain
         object lblTextPython: TLabel
           Left = 12
           Height = 13
-          Top = 68
+          Top = 71
           Width = 40
           Caption = 'Python'
           Font.Style = [fsBold]
@@ -1028,9 +1044,9 @@ object frmMain: TfrmMain
         object lblTextSVN: TLabel
           Left = 12
           Height = 13
-          Top = 40
-          Width = 21
-          Caption = 'SVN'
+          Top = 43
+          Width = 97
+          Caption = 'Subversion (SVN)'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -1038,7 +1054,7 @@ object frmMain: TfrmMain
         object lblTextMinGW: TLabel
           Left = 12
           Height = 13
-          Top = 96
+          Top = 99
           Width = 39
           Caption = 'MinGW'
           Font.Style = [fsBold]
@@ -1056,18 +1072,22 @@ object frmMain: TfrmMain
         ClientWidth = 312
         TabOrder = 2
         object lblVersionToolSerial: TLabel
-          Left = 100
+          Left = 187
           Height = 13
           Top = 15
-          Width = 82
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(DC-TOOL Serial)'
           ParentColor = False
         end
         object lblVersionToolIP: TLabel
-          Left = 100
+          Left = 187
           Height = 13
           Top = 43
-          Width = 66
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(DC-TOOL IP)'
           ParentColor = False
         end
@@ -1075,8 +1095,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 15
-          Width = 32
-          Caption = 'Serial'
+          Width = 86
+          Caption = 'Serial (RS-232)'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -1085,8 +1105,8 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 43
-          Width = 12
-          Caption = 'IP'
+          Width = 123
+          Caption = 'Internet Protocol (IP)'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -1102,18 +1122,22 @@ object frmMain: TfrmMain
         ClientWidth = 312
         TabOrder = 3
         object lblVersionBinutilsARM: TLabel
-          Left = 104
+          Left = 187
           Height = 13
           Top = 12
-          Width = 41
+          Width = 118
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(Binutils)'
           ParentColor = False
         end
         object lblVersionGCCARM: TLabel
-          Left = 104
+          Left = 187
           Height = 13
           Top = 40
-          Width = 29
+          Width = 116
+          Alignment = taRightJustify
+          AutoSize = False
           Caption = '(GCC)'
           ParentColor = False
         end
@@ -1121,8 +1145,8 @@ object frmMain: TfrmMain
           Left = 12
           Height = 13
           Top = 12
-          Width = 41
-          Caption = 'Binutils'
+          Width = 67
+          Caption = 'GNU Binutils'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -1131,8 +1155,8 @@ object frmMain: TfrmMain
           Left = 12
           Height = 13
           Top = 40
-          Width = 22
-          Caption = 'GCC'
+          Width = 169
+          Caption = 'GNU Compiler Collection (GCC)'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -1170,6 +1194,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 60
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13
@@ -1188,6 +1213,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 80
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13
@@ -1206,6 +1232,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 100
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13
@@ -1254,6 +1281,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 8
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13
@@ -1272,6 +1300,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 32
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13
@@ -1300,6 +1329,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 8
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13
@@ -1318,6 +1348,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 48
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13
@@ -1336,6 +1367,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 28
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13
@@ -1364,6 +1396,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 8
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13
@@ -1382,6 +1415,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 28
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13
@@ -1400,6 +1434,7 @@ object frmMain: TfrmMain
           Height = 13
           Top = 48
           Width = 176
+          Alignment = taRightJustify
           BorderStyle = bsNone
           Color = clForm
           EditLabel.Height = 13

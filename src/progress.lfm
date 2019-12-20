@@ -1,7 +1,7 @@
 object frmProgress: TfrmProgress
-  Left = 871
+  Left = 676
   Height = 450
-  Top = 485
+  Top = 436
   Width = 750
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
@@ -9,21 +9,17 @@ object frmProgress: TfrmProgress
   ClientHeight = 450
   ClientWidth = 750
   OnClose = FormClose
+  OnCreate = FormCreate
   OnShow = FormShow
   Position = poScreenCenter
-  LCLVersion = '1.8.4.0'
-  object pgbOperationProgress: TProgressBar
-    Left = 4
-    Height = 20
-    Top = 28
-    Width = 742
-    TabOrder = 0
-  end
+  LCLVersion = '2.0.2.0'
   object memBufferOutput: TMemo
-    Left = 4
-    Height = 352
-    Top = 56
-    Width = 742
+    Left = 2
+    Height = 335
+    Top = 52
+    Width = 746
+    Align = alClient
+    BorderSpacing.Around = 2
     Font.Height = -12
     Font.Name = 'Courier New'
     Lines.Strings = (
@@ -32,26 +28,77 @@ object frmProgress: TfrmProgress
     ParentFont = False
     ReadOnly = True
     ScrollBars = ssAutoBoth
-    TabOrder = 1
+    TabOrder = 0
     WordWrap = False
   end
-  object btnAbort: TButton
-    Left = 300
-    Height = 25
-    Top = 416
-    Width = 150
-    Caption = '(Dynamic)'
-    OnClick = btnAbortClick
-    TabOrder = 2
-  end
-  object lblProgressStep: TLabel
-    Left = 4
-    Height = 13
-    Top = 8
-    Width = 89
-    Caption = 'lblProgressStep'
-    Font.Style = [fsBold]
+  object pnlTop: TPanel
+    Left = 0
+    Height = 50
+    Top = 0
+    Width = 750
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 50
+    ClientWidth = 750
     ParentColor = False
-    ParentFont = False
+    TabOrder = 1
+    object lblProgressStep: TLabel
+      Left = 2
+      Height = 18
+      Top = 8
+      Width = 746
+      Align = alClient
+      BorderSpacing.Left = 2
+      BorderSpacing.Top = 8
+      BorderSpacing.Right = 2
+      Caption = 'lblProgressStep'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object pgbOperationProgress: TProgressBar
+      Left = 2
+      Height = 20
+      Top = 28
+      Width = 746
+      Align = alBottom
+      BorderSpacing.Around = 2
+      TabOrder = 0
+    end
+  end
+  object pnlBottom: TPanel
+    Left = 0
+    Height = 42
+    Top = 408
+    Width = 750
+    Align = alBottom
+    BevelOuter = bvNone
+    ClientHeight = 42
+    ClientWidth = 750
+    ParentColor = False
+    TabOrder = 2
+    object btnAbort: TButton
+      Left = 300
+      Height = 25
+      Top = 8
+      Width = 150
+      Caption = '(Dynamic)'
+      OnClick = btnAbortClick
+      TabOrder = 0
+    end
+  end
+  object cbxAutocloseWindow: TCheckBox
+    Left = 2
+    Height = 17
+    Top = 391
+    Width = 748
+    Align = alBottom
+    BorderSpacing.Left = 2
+    BorderSpacing.Top = 4
+    Caption = '&Autoclose the window when the operation is completed'
+    Checked = True
+    OnClick = cbxAutocloseWindowClick
+    State = cbChecked
+    TabOrder = 3
   end
 end

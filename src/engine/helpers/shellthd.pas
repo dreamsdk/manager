@@ -216,6 +216,7 @@ var
         ShowModal;
       finally
         Free;
+        frmProgress := nil;
       end;
   end;
 
@@ -570,7 +571,8 @@ var
   end;
 
 begin
-  Result := '';
+  Result := EmptyStr;
+  OutputBuffer := EmptyStr;
   IsEnvironShellScriptUpdated := False;
 
   IsModifiedKallisti := HandleKallisti;

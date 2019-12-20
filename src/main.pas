@@ -217,6 +217,9 @@ type
     procedure InitializeHomeScreen;
     procedure HandleAero;
     function GetMsgBoxWindowHandle: THandle;
+    function GetAllKallistiPortsIcon(const Operation: TShellThreadInputRequest): TMsgDlgType;
+    function GetAllKallistiPortsMessage(const Message: string): string;
+    function CheckKallistiSinglePortPossibleInstallation: Boolean;
   public
     procedure RefreshViewDreamcastTool;
     procedure RefreshViewKallistiPorts(ForceRefresh: Boolean);
@@ -330,6 +333,7 @@ begin
     DebugLog(
       sLineBreak +
       SelectedKallistiPort.Name + ': ' + sLineBreak +
+      '  Use SVN: ' + BoolToStr(SelectedKallistiPort.UseSubversion, 'Yes', 'No') + sLineBreak +
       '  Includes: ' + SelectedKallistiPort.Includes + sLineBreak +
       '  Libraries: ' + SelectedKallistiPort.Libraries + sLineBreak +
       '    Weights: ' + SelectedKallistiPort.LibraryWeights + sLineBreak
@@ -458,6 +462,16 @@ begin
           uosUpdateUseless:
             MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
         end;
+
+      // A single KallistiOS Port was installed
+      stoKallistiSinglePortInstall:
+        if not DreamcastSoftwareDevelopmentKitManager.Environment.Settings.ProgressWindowAutoClose then
+          MsgBox(DialogInformationTitle, Format('INSTALL %s', [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
+
+      // A single KallistiOS Port was uninstalled
+      stoKallistiSinglePortUninstall:
+        if not DreamcastSoftwareDevelopmentKitManager.Environment.Settings.ProgressWindowAutoClose then
+          MsgBox(DialogInformationTitle, Format('UNINSTALL %s', [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
     end;
 
     // Handle IDE files
@@ -644,6 +658,9 @@ begin
   else
     VersionLabel.Caption := Version;
   SetVersionLabelState(VersionLabel, not ValidVersion);
+{$IFDEF DEBUG}
+  WriteLn(VersionLabel.Name, ': ', VersionLabel.Caption);
+{$ENDIF}
 end;
 
 procedure TfrmMain.UpdateDreamcastToolMediaAccessControlAddressControls;
@@ -849,10 +866,44 @@ begin
 end;
 
 function TfrmMain.GetMsgBoxWindowHandle: THandle;
+var
+  IsProgressHandlePreferred: Boolean;
+
 begin
   Result := Handle;
-  if IsPostInstallMode then
+  IsProgressHandlePreferred := (not IsPostInstallMode and (not IsProgressAutoClose))
+    and Assigned(frmProgress) and frmProgress.Visible;
+
+  if IsPostInstallMode or IsProgressHandlePreferred then
     Result := frmProgress.Handle;
+end;
+
+function TfrmMain.GetAllKallistiPortsIcon(
+  const Operation: TShellThreadInputRequest): TMsgDlgType;
+begin
+  Result := mtWarning;
+  if (Operation = stiKallistiPortsInstall) and
+     (DreamcastSoftwareDevelopmentKitManager.Versions.SubversionInstalled) then
+       Result := mtConfirmation;
+end;
+
+function TfrmMain.GetAllKallistiPortsMessage(const Message: string): string;
+begin
+  Result := Message;
+  if (not DreamcastSoftwareDevelopmentKitManager.Versions.SubversionInstalled) then
+     Result := Message + MsgBoxWrapStr + UseSubversionAllKallistiPorts;
+end;
+
+function TfrmMain.CheckKallistiSinglePortPossibleInstallation: Boolean;
+begin
+  Result := True;
+  if SelectedKallistiPort.UseSubversion
+    and (not DreamcastSoftwareDevelopmentKitManager.Versions.SubversionInstalled) then
+    begin
+      Result := False;
+      MsgBox(DialogWarningTitle, Format(UseSubversionKallistiSinglePort,
+        [SelectedKallistiPort.Name]), mtWarning, [mbOK]);
+    end;
 end;
 
 procedure TfrmMain.RefreshViewKallistiPorts(ForceRefresh: Boolean);
@@ -962,8 +1013,9 @@ end;
 
 procedure TfrmMain.btnAllPortInstallClick(Sender: TObject);
 begin
-  if MsgBox(DialogQuestionTitle, InstallAllKallistiPorts, mtConfirmation, [mbYes, mbNo]) = mrYes then
-    ExecuteThreadOperation(stiKallistiPortsInstall);
+  if MsgBox(DialogQuestionTitle, GetAllKallistiPortsMessage(InstallAllKallistiPorts),
+     GetAllKallistiPortsIcon(stiKallistiPortsInstall), [mbYes, mbNo]) = mrYes then
+       ExecuteThreadOperation(stiKallistiPortsInstall);
 end;
 
 procedure TfrmMain.apMainException(Sender: TObject; E: Exception);
@@ -983,8 +1035,9 @@ end;
 
 procedure TfrmMain.btnAllPortUninstallClick(Sender: TObject);
 begin
-  if MsgBox(DialogWarningTitle, UninstallAllKallistiPorts, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
-    ExecuteThreadOperation(stiKallistiPortsUninstall);
+  if MsgBox(DialogWarningTitle, GetAllKallistiPortsMessage(UninstallAllKallistiPorts),
+    GetAllKallistiPortsIcon(stiKallistiPortsUninstall), [mbYes, mbNo], mbNo) = mrYes then
+      ExecuteThreadOperation(stiKallistiPortsUninstall);
 end;
 
 procedure TfrmMain.btnCheckForUpdatesClick(Sender: TObject);
@@ -1018,7 +1071,8 @@ end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
 begin
-  ExecuteThreadOperation(stiKallistiSinglePortInstall);
+  if CheckKallistiSinglePortPossibleInstallation then
+    ExecuteThreadOperation(stiKallistiSinglePortInstall);
 end;
 
 procedure TfrmMain.btnPortUninstallClick(Sender: TObject);
@@ -1028,15 +1082,19 @@ var
 begin
   if Assigned(SelectedKallistiPort) then
   begin
-    Msg := Format(UninstallKallistiSinglePort, [SelectedKallistiPort.Name]);
-    if MsgBox(DialogQuestionTitle, Msg, mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
-      ExecuteThreadOperation(stiKallistiSinglePortUninstall);
+    if CheckKallistiSinglePortPossibleInstallation then
+    begin
+      Msg := Format(UninstallKallistiSinglePort, [SelectedKallistiPort.Name]);
+      if MsgBox(DialogQuestionTitle, Msg, mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
+        ExecuteThreadOperation(stiKallistiSinglePortUninstall);
+    end;
   end;
 end;
 
 procedure TfrmMain.btnPortUpdateClick(Sender: TObject);
 begin
-  ExecuteThreadOperation(stiKallistiSinglePortUpdate);
+  if CheckKallistiSinglePortPossibleInstallation then
+    ExecuteThreadOperation(stiKallistiSinglePortUpdate);
 end;
 
 procedure TfrmMain.btnRestoreDefaultsClick(Sender: TObject);

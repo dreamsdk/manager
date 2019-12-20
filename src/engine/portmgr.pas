@@ -17,6 +17,7 @@ type
   TKallistiPortItem = class(TObject)
   private
     fOwner: TKallistiPortManager;
+    fUseSubversion: Boolean;
     fVirtualAddon: Boolean;
     fListIndex: Integer;
     fSourceDirectory: TFileName;
@@ -64,6 +65,7 @@ type
     property Version: string read fVersion;
     property Hidden: Boolean read fVirtualAddon;
     property LibraryWeights: string read fFullComputedDependenciesLibraryWeights;
+    property UseSubversion: Boolean read fUseSubversion;
   end;
 
   { TKallistiPortManager }
@@ -536,6 +538,7 @@ begin
         fPortsMap.Add(PortName, fListIndex);
         fLibraryLanguageKind := GetPortLanguageKind(PortName);
         fVirtualAddon := False;
+        fUseSubversion := not SameText(GetPackageString('SVN_REPOSITORY'), EmptyStr);
       end;
 
       Inc(fOnlyVisibleListCount);

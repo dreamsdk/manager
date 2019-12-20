@@ -32,6 +32,8 @@ resourcestring
   InvalidMediaAccessControlAddressValue = 'Invalid MAC';
   UninstallKallistiSinglePort = 'Are you sure to uninstall %s?';
   InstallOrUpdateRequiredDoItNow = 'A management operation of KallistiOS components is necessary. Do it now?';
+  UseSubversionKallistiSinglePort = 'Unable to install %s, as it needs the Subversion Client (SVN) which wasn''t detected.';
+  UseSubversionAllKallistiPorts = 'Note: The Subversion Client (SVN) wasn''t detected and this may causes issues.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';

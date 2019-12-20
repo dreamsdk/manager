@@ -170,7 +170,7 @@ type
 implementation
 
 uses
-  SysTools;
+  RefBase, SysTools;
 
 { TDreamcastSoftwareDevelopmentFileSystemToolchain }
 
@@ -192,7 +192,7 @@ var
   ToolchainBaseARM: TFileName;
 
 begin
-  MSYSBase := InstallPath + 'msys\1.0\';
+  MSYSBase := GetMSysBaseDirectory;
   ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
 
   // Translate DREAMSDK_MSYS_INSTALL_DIRECTORY to Windows location
