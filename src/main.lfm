@@ -28,8 +28,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsDreamcastTool
-    TabIndex = 3
+    ActivePage = tsHome
+    TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -628,7 +628,7 @@ object frmMain: TfrmMain
         object edtDreamcastToolInternetProtocolMAC: TMaskEdit
           Left = 84
           Height = 22
-          Top = 120
+          Top = 88
           Width = 132
           Alignment = taCenter
           CharCase = ecNormal
@@ -645,7 +645,7 @@ object frmMain: TfrmMain
         object lblDreamcastToolInternetProtocolInvalidMAC: TLabel
           Left = 220
           Height = 18
-          Top = 124
+          Top = 92
           Width = 92
           Alignment = taCenter
           AutoSize = False
@@ -659,7 +659,7 @@ object frmMain: TfrmMain
         object lblDreamcastToolInternetProtocolMAC: TLabel
           Left = 4
           Height = 13
-          Top = 124
+          Top = 92
           Width = 68
           Caption = 'MAC Address:'
           ParentColor = False
@@ -667,7 +667,7 @@ object frmMain: TfrmMain
         object cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox
           Left = 84
           Height = 21
-          Top = 88
+          Top = 120
           Width = 220
           ItemHeight = 13
           OnSelect = cbxDreamcastToolSerialPortSelect
@@ -678,7 +678,7 @@ object frmMain: TfrmMain
         object lblDreamcastToolInternetProtocolNetworkAdapter: TLabel
           Left = 4
           Height = 13
-          Top = 92
+          Top = 124
           Width = 70
           Caption = 'Network Card:'
           ParentColor = False
