@@ -41,6 +41,7 @@ type
     ckxDreamcastToolSerialDumbTerminal: TCheckBox;
     ckxDreamcastToolSerialExternalClock: TCheckBox;
     cbxModuleSelection: TComboBox;
+    cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox;
     edtDreamcastToolCustomExecutable: TEdit;
     edtDreamcastToolCustomArguments: TEdit;
     edtDreamcastToolInternetProtocolAddress: TMaskEdit;
@@ -83,6 +84,7 @@ type
     gbxHomeFolder: TGroupBox;
     gbxHomeHelp: TGroupBox;
     gbxDreamcastToolCustomCommand: TGroupBox;
+    lblDreamcastToolInternetProtocolNetworkAdapter: TLabel;
     lblComponentInformation: TLabel;
     lblDreamcastToolCustomArguments: TLabel;
     lblDreamcastToolInternetProtocolMAC: TLabel;
@@ -199,6 +201,7 @@ type
     procedure DisplayKallistiPorts(ClearList: Boolean);
     function GetSelectedKallistiPort: TKallistiPortItem;
     function GetSelectedKallistiPortItemIndex: Integer;
+    function GetSelectedMediaAccessControlHostAddress: string;
     procedure LoadConfiguration;
     function BooleanToCaption(Value: Boolean): string;
     function BooleanToCheckboxState(State: Boolean): TCheckBoxState;
@@ -220,6 +223,9 @@ type
     function GetAllKallistiPortsIcon(const Operation: TShellThreadInputRequest): TMsgDlgType;
     function GetAllKallistiPortsMessage(const Message: string): string;
     function CheckKallistiSinglePortPossibleInstallation: Boolean;
+    procedure CreateNetworkAdapterList;
+    procedure FreeNetworkAdapterList;
+    function HostMacToItemIndex(const HostMediaAccessControlAddress: string): Integer;
   public
     procedure RefreshViewDreamcastTool;
     procedure RefreshViewKallistiPorts(ForceRefresh: Boolean);
@@ -236,6 +242,8 @@ type
       read GetSelectedKallistiPortItemIndex;
     property SelectedKallistiPort: TKallistiPortItem
       read GetSelectedKallistiPort;
+    property SelectedHostMediaAccessControlAddress: string
+      read GetSelectedMediaAccessControlHostAddress;
   end;
 
 var
@@ -248,12 +256,22 @@ implementation
 
 uses
   LCLIntf, IniFiles, StrUtils, UITools, GetVer, SysTools, PostInst, Settings,
-  Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer;
+  Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil;
 
 const
   HELPFILE = 'dreamsdk.chm';
   KALLISTI_VERSION_FORMAT = '%s (%s)';
   UNKNOWN_VALUE = '(Unknown)';
+
+type
+  { TNetworkAdapterListUserInterfaceItem }
+  TNetworkAdapterListUserInterfaceItem = class(TObject)
+  private
+    fMacAddress: string;
+  public
+    constructor Create(AMacAddress: string);
+    property MacAddress: string read fMacAddress;
+  end;
 
 var
   HelpFileName: TFileName;
@@ -273,7 +291,14 @@ begin
   finally
     ModulesList.Free;
   end;
-  end;
+end;
+
+{ TNetworkAdapterListUserInterfaceItem }
+
+constructor TNetworkAdapterListUserInterfaceItem.Create(AMacAddress: string);
+begin
+  fMacAddress := AMacAddress;
+end;
 
 { TfrmMain }
 
@@ -282,6 +307,7 @@ begin
   fShellThreadExecutedAtLeastOnce := False;
   DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
   ModuleVersionList := CreateModuleVersionList;
+  CreateNetworkAdapterList;
   DoubleBuffered := True;
   pcMain.TabIndex := 0;
   Application.Title := Caption;
@@ -292,6 +318,7 @@ procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
   if not fShellThreadExecutedAtLeastOnce then
     DreamcastSoftwareDevelopmentKitManager.KallistiPorts.GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
+  FreeNetworkAdapterList;
   ModuleVersionList.Free;
   DreamcastSoftwareDevelopmentKitManager.Free;
 end;
@@ -558,6 +585,21 @@ begin
     Result := Integer(lbxPorts.Items.Objects[Result]);
 end;
 
+function TfrmMain.GetSelectedMediaAccessControlHostAddress: string;
+var
+  SelectedItem: TNetworkAdapterListUserInterfaceItem;
+
+begin
+  Result := EmptyStr;
+  with cbxDreamcastToolInternetProtocolNetworkAdapter do
+    if ItemIndex <> -1 then
+    begin
+      SelectedItem := TNetworkAdapterListUserInterfaceItem(Items.Objects[ItemIndex]);
+      if Assigned(SelectedItem) then
+        Result := SelectedItem.MacAddress;
+    end;
+end;
+
 procedure TfrmMain.LoadConfiguration;
 begin
   with DreamcastSoftwareDevelopmentKitManager.Environment.Settings do
@@ -583,6 +625,8 @@ begin
     ckxDreamcastToolClearScreenBeforeDownload.Checked := DreamcastTool.ClearScreenBeforeDownload;
     ckxDreamcastToolInternetProtocolUseARP.Checked := DreamcastTool.MediaAccessControlEnabled;
     edtDreamcastToolInternetProtocolMAC.Text := DreamcastTool.MediaAccessControlAddress;
+    cbxDreamcastToolInternetProtocolNetworkAdapter.ItemIndex :=
+      HostMacToItemIndex(DreamcastTool.HostMediaAccessControlAddress);
     edtDreamcastToolCustomExecutable.Text := DreamcastTool.CustomExecutable;
     edtDreamcastToolCustomArguments.Text := DreamcastTool.CustomArguments;
     rgbDreamcastTool.ItemIndex := Integer(DreamcastTool.Kind);
@@ -673,6 +717,8 @@ begin
   edtDreamcastToolInternetProtocolMAC.Enabled := EnabledControls;
   lblDreamcastToolInternetProtocolInvalidMAC.Enabled := EnabledControls;
   lblDreamcastToolInternetProtocolMAC.Enabled := EnabledControls;
+  cbxDreamcastToolInternetProtocolNetworkAdapter.Enabled := EnabledControls;
+  lblDreamcastToolInternetProtocolNetworkAdapter.Enabled := EnabledControls;
 end;
 
 procedure TfrmMain.RefreshViewDreamcastTool;
@@ -722,7 +768,9 @@ begin
       SerialExternalClock := ckxDreamcastToolSerialExternalClock.Checked;
       InternetProtocolAddress := edtDreamcastToolInternetProtocolAddress.Text;
       MediaAccessControlEnabled := ckxDreamcastToolInternetProtocolUseARP.Checked;
-      MediaAccessControlAddress := edtDreamcastToolInternetProtocolMAC.Text;
+      MediaAccessControlAddress := SanitizeMediaAccessControlAddress(
+        edtDreamcastToolInternetProtocolMAC.Text);
+      HostMediaAccessControlAddress := SelectedHostMediaAccessControlAddress;
       CustomExecutable := edtDreamcastToolCustomExecutable.Text;
       CustomArguments := edtDreamcastToolCustomArguments.Text;
     end;
@@ -903,6 +951,61 @@ begin
       Result := False;
       MsgBox(DialogWarningTitle, Format(UseSubversionKallistiSinglePort,
         [SelectedKallistiPort.Name]), mtWarning, [mbOK]);
+    end;
+end;
+
+procedure TfrmMain.CreateNetworkAdapterList;
+var
+  NetworkCardAdapters: TNetworkCardAdapterList;
+  i: Integer;
+
+begin
+  NetworkCardAdapters := Default(TNetworkCardAdapterList);
+  GetNetworkCardAdapterList(NetworkCardAdapters);
+
+  cbxDreamcastToolInternetProtocolNetworkAdapter.Clear;
+  for i := Low(NetworkCardAdapters) to High(NetworkCardAdapters) do
+  begin
+    if Length(NetworkCardAdapters[i].IPv4Addresses) > 0 then
+      with NetworkCardAdapters[i] do
+        cbxDreamcastToolInternetProtocolNetworkAdapter.Items.AddObject(
+          NetworkCardName, TNetworkAdapterListUserInterfaceItem.Create(MacAddress));
+  end;
+
+  cbxDreamcastToolInternetProtocolNetworkAdapter.ItemIndex := -1;
+end;
+
+procedure TfrmMain.FreeNetworkAdapterList;
+var
+  i: Integer;
+
+begin
+  with cbxDreamcastToolInternetProtocolNetworkAdapter.Items do
+  begin
+    for i := Count - 1 downto 0 do
+      Objects[i].Free;
+    Clear;
+  end;
+end;
+
+function TfrmMain.HostMacToItemIndex(
+  const HostMediaAccessControlAddress: string): Integer;
+var
+  i: Integer;
+  CurrentItem: TNetworkAdapterListUserInterfaceItem;
+
+begin
+  Result := -1;
+  with cbxDreamcastToolInternetProtocolNetworkAdapter.Items do
+    for i := 0 to Count - 1 do
+    begin
+      CurrentItem := TNetworkAdapterListUserInterfaceItem(Objects[i]);
+      if Assigned(CurrentItem) and
+        (CurrentItem.MacAddress = HostMediaAccessControlAddress) then
+      begin
+        Result := i;
+        Break;
+      end;
     end;
 end;
 

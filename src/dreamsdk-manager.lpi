@@ -22,7 +22,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="3"/>
       <RevisionNr Value="2"/>
-      <BuildNr Value="337"/>
+      <BuildNr Value="344"/>
       <StringTable Comments="http://dreamsdk.org/" CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" LegalCopyright="© Copyleft 2019" LegalTrademarks="Sega and Dreamcast are registered trademark of Sega Games Co., Ltd." OriginalFilename="dreamsdk-manager.exe" ProductName="DreamSDK" ProductVersion="3.0"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -83,15 +83,18 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="2">
+    <RequiredPackages Count="3">
       <Item1>
-        <PackageName Value="FCL"/>
+        <PackageName Value="laz_synapse"/>
       </Item1>
       <Item2>
-        <PackageName Value="LCL"/>
+        <PackageName Value="FCL"/>
       </Item2>
+      <Item3>
+        <PackageName Value="LCL"/>
+      </Item3>
     </RequiredPackages>
-    <Units Count="25">
+    <Units Count="26">
       <Unit0>
         <Filename Value="dreamsdk-manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -228,6 +231,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="RefBase"/>
       </Unit24>
+      <Unit25>
+        <Filename Value="D:\common\src\sys\inetutil.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="InetUtil"/>
+      </Unit25>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

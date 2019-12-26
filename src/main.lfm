@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 745
+  Left = 300
   Height = 400
-  Top = 398
+  Top = 103
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -13,7 +13,7 @@ object frmMain: TfrmMain
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poScreenCenter
-  LCLVersion = '2.0.2.0'
+  LCLVersion = '2.0.6.0'
   object btnClose: TButton
     Left = 266
     Height = 25
@@ -567,11 +567,11 @@ object frmMain: TfrmMain
       end
       object gbxDreamcastToolInternetProtocol: TGroupBox
         Left = 328
-        Height = 134
+        Height = 174
         Top = 64
         Width = 316
         Caption = 'Internet Protocol (IP) Settings:'
-        ClientHeight = 116
+        ClientHeight = 156
         ClientWidth = 312
         TabOrder = 2
         object edtDreamcastToolInternetProtocolAddress: TMaskEdit
@@ -628,7 +628,7 @@ object frmMain: TfrmMain
         object edtDreamcastToolInternetProtocolMAC: TMaskEdit
           Left = 84
           Height = 22
-          Top = 85
+          Top = 120
           Width = 132
           Alignment = taCenter
           CharCase = ecNormal
@@ -645,7 +645,7 @@ object frmMain: TfrmMain
         object lblDreamcastToolInternetProtocolInvalidMAC: TLabel
           Left = 220
           Height = 18
-          Top = 89
+          Top = 124
           Width = 92
           Alignment = taCenter
           AutoSize = False
@@ -659,19 +659,38 @@ object frmMain: TfrmMain
         object lblDreamcastToolInternetProtocolMAC: TLabel
           Left = 4
           Height = 13
-          Top = 89
+          Top = 124
           Width = 68
           Caption = 'MAC Address:'
           ParentColor = False
         end
+        object cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox
+          Left = 84
+          Height = 21
+          Top = 88
+          Width = 220
+          ItemHeight = 13
+          OnSelect = cbxDreamcastToolSerialPortSelect
+          Sorted = True
+          Style = csDropDownList
+          TabOrder = 3
+        end
+        object lblDreamcastToolInternetProtocolNetworkAdapter: TLabel
+          Left = 4
+          Height = 13
+          Top = 92
+          Width = 70
+          Caption = 'Network Card:'
+          ParentColor = False
+        end
       end
       object gbxDreamcastToolCommon: TGroupBox
-        Left = 4
-        Height = 113
-        Top = 204
+        Left = 328
+        Height = 73
+        Top = 240
         Width = 316
         Caption = 'Options:'
-        ClientHeight = 95
+        ClientHeight = 55
         ClientWidth = 312
         TabOrder = 3
         object ckxDreamcastToolAttachConsoleFileServer: TCheckBox
@@ -694,9 +713,9 @@ object frmMain: TfrmMain
         end
       end
       object gbxDreamcastToolCustomCommand: TGroupBox
-        Left = 328
+        Left = 4
         Height = 113
-        Top = 204
+        Top = 200
         Width = 316
         Caption = 'Custom:'
         ClientHeight = 95
