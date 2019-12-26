@@ -324,6 +324,7 @@ begin
     IniFile.WriteString(SECTION_NAME, 'InternetProtocolAddress', Settings.InternetProtocolAddress);
     IniFile.WriteBool(SECTION_NAME, 'MediaAccessControlEnabled', Settings.MediaAccessControlEnabled);
     IniFile.WriteString(SECTION_NAME, 'MediaAccessControlAddress', Settings.MediaAccessControlAddress);
+    IniFile.WriteString(SECTION_NAME, 'HostMediaAccessControlAddress', Settings.HostMediaAccessControlAddress);
   finally
     IniFile.Free;
   end;
