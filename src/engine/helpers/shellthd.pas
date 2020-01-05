@@ -343,7 +343,6 @@ end;
 function TShellThread.ProcessKallistiOS: string;
 type
   TRepositoryOperation = (roNothing, roClone, roUpdate);
-  TRepositoryKind = (rkKallisti, rkKallistiPorts, rkDreamcastTool);
 
 var
   OutputBuffer: string;

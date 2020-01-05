@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 300
+  Left = 285
   Height = 400
-  Top = 103
+  Top = 116
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -13,6 +13,7 @@ object frmMain: TfrmMain
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poScreenCenter
+  ShowHint = True
   LCLVersion = '2.0.6.0'
   object btnClose: TButton
     Left = 266
@@ -28,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsHome
-    TabIndex = 0
+    ActivePage = tsOptions
+    TabIndex = 4
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -471,7 +472,7 @@ object frmMain: TfrmMain
         Height = 134
         Top = 64
         Width = 316
-        Caption = 'Serial Settings:'
+        Caption = 'Serial (RS-232) Settings:'
         ClientHeight = 116
         ClientWidth = 312
         TabOrder = 1
@@ -781,10 +782,19 @@ object frmMain: TfrmMain
           Left = 4
           Height = 21
           Top = 4
-          Width = 630
+          Width = 558
           ItemHeight = 13
           OnChange = cbxUrlKallistiChange
           TabOrder = 0
+        end
+        object btnUrlKallisti: TButton
+          Left = 568
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Change...'
+          OnClick = btnUrlKallistiClick
+          TabOrder = 1
         end
       end
       object gbxUrlKallistiPorts: TGroupBox
@@ -800,10 +810,20 @@ object frmMain: TfrmMain
           Left = 4
           Height = 21
           Top = 4
-          Width = 630
+          Width = 558
           ItemHeight = 13
           OnChange = cbxUrlKallistiPortsChange
           TabOrder = 0
+        end
+        object Button2: TButton
+          Tag = 1
+          Left = 568
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Change...'
+          OnClick = btnUrlKallistiClick
+          TabOrder = 1
         end
       end
       object rgxTerminalOption: TRadioGroup
@@ -863,7 +883,7 @@ object frmMain: TfrmMain
         Height = 52
         Top = 116
         Width = 641
-        Caption = 'Dreamcast Tool Serial URL:'
+        Caption = 'Dreamcast Tool Serial (RS-232) URL:'
         ClientHeight = 34
         ClientWidth = 637
         TabOrder = 3
@@ -871,10 +891,20 @@ object frmMain: TfrmMain
           Left = 4
           Height = 21
           Top = 4
-          Width = 630
+          Width = 558
           ItemHeight = 13
           OnChange = cbxUrlDreamcastToolSerialChange
           TabOrder = 0
+        end
+        object btnUrlKallistiPorts: TButton
+          Tag = 2
+          Left = 568
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Change...'
+          OnClick = btnUrlKallistiClick
+          TabOrder = 1
         end
       end
       object gbxUrlDreamcastToolIP: TGroupBox
@@ -890,10 +920,20 @@ object frmMain: TfrmMain
           Left = 4
           Height = 21
           Top = 4
-          Width = 630
+          Width = 558
           ItemHeight = 13
           OnChange = cbxUrlDreamcastToolIPChange
           TabOrder = 0
+        end
+        object btnUrlDreamcastToolIP: TButton
+          Tag = 3
+          Left = 568
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Change...'
+          OnClick = btnUrlKallistiClick
+          TabOrder = 1
         end
       end
     end
@@ -903,11 +943,11 @@ object frmMain: TfrmMain
       ClientWidth = 648
       object gbxToolchain: TGroupBox
         Left = 4
-        Height = 193
+        Height = 168
         Top = 4
         Width = 316
         Caption = 'SuperH Toolchain Versions:'
-        ClientHeight = 175
+        ClientHeight = 150
         ClientWidth = 312
         TabOrder = 0
         object lblVersionBinutils: TLabel
@@ -992,12 +1032,12 @@ object frmMain: TfrmMain
         end
       end
       object gbxDependencies: TGroupBox
-        Left = 328
-        Height = 169
-        Top = 148
+        Left = 4
+        Height = 141
+        Top = 176
         Width = 316
         Caption = 'Dependencies Versions:'
-        ClientHeight = 151
+        ClientHeight = 123
         ClientWidth = 312
         TabOrder = 1
         object lblVersionSVN: TLabel
@@ -1082,29 +1122,29 @@ object frmMain: TfrmMain
         end
       end
       object gbxDreamcastTool: TGroupBox
-        Left = 4
-        Height = 113
-        Top = 204
+        Left = 328
+        Height = 100
+        Top = 217
         Width = 316
         Caption = 'Dreamcast Tool Versions:'
-        ClientHeight = 95
+        ClientHeight = 82
         ClientWidth = 312
         TabOrder = 2
         object lblVersionToolSerial: TLabel
-          Left = 187
+          Left = 136
           Height = 13
           Top = 15
-          Width = 116
+          Width = 167
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL Serial)'
           ParentColor = False
         end
         object lblVersionToolIP: TLabel
-          Left = 187
+          Left = 136
           Height = 13
           Top = 43
-          Width = 116
+          Width = 167
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL IP)'
@@ -1133,11 +1173,11 @@ object frmMain: TfrmMain
       end
       object gbxToolchain1: TGroupBox
         Left = 328
-        Height = 140
+        Height = 100
         Top = 4
         Width = 316
         Caption = 'ARM Toolchain Versions:'
-        ClientHeight = 122
+        ClientHeight = 82
         ClientWidth = 312
         TabOrder = 3
         object lblVersionBinutilsARM: TLabel
@@ -1176,6 +1216,56 @@ object frmMain: TfrmMain
           Top = 40
           Width = 169
           Caption = 'GNU Compiler Collection (GCC)'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+      end
+      object gbxKallistiCore: TGroupBox
+        Left = 328
+        Height = 100
+        Top = 112
+        Width = 316
+        Caption = 'KallistiOS Core:'
+        ClientHeight = 82
+        ClientWidth = 312
+        TabOrder = 4
+        object lblTextRepoKallistiOS: TLabel
+          Left = 8
+          Height = 13
+          Top = 12
+          Width = 52
+          Caption = 'KallistiOS'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object lblVersionRepoKallistiOS: TLabel
+          Left = 104
+          Height = 13
+          Top = 12
+          Width = 199
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(KallistiOS)'
+          ParentColor = False
+        end
+        object lblVersionRepoKallistiPorts: TLabel
+          Left = 104
+          Height = 13
+          Top = 40
+          Width = 199
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(KallistiOS Ports)'
+          ParentColor = False
+        end
+        object lblTextRepoKallistiPorts: TLabel
+          Left = 8
+          Height = 13
+          Top = 40
+          Width = 85
+          Caption = 'KallistiOS Ports'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False

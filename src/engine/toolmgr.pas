@@ -12,11 +12,18 @@ type
   TDreamcastToolManager = class(TObject)
   private
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+    fRepositoryOffline: Boolean;
+    fRepositoryOfflineInternetProtocol: Boolean;
+    fRepositoryOfflineSerial: Boolean;
+    fRepositoryOfflineVersionInternetProtocol: string;
+    fRepositoryOfflineVersionSerial: string;
     function GetBuilt: Boolean;
     function GetInstalled: Boolean;
     function GetRepositoryReady: Boolean;
     function GetRepositoryReadyInternetProtocol: Boolean;
     function GetRepositoryReadySerial: Boolean;
+    function GetRepositoryVersionInternetProtocol: string;
+    function GetRepositoryVersionSerial: string;
     function GetSettings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool;
   protected
     function DoRepositoryOperation(Kind: TDreamcastToolKind;
@@ -42,14 +49,19 @@ type
     property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
     property RepositoryReady: Boolean read GetRepositoryReady;
+    property RepositoryOffline: Boolean read fRepositoryOffline;
     property RepositoryReadySerial: Boolean read GetRepositoryReadySerial;
+    property RepositoryOfflineSerial: Boolean read fRepositoryOfflineSerial;
+    property RepositoryVersionSerial: string read GetRepositoryVersionSerial;
     property RepositoryReadyInternetProtocol: Boolean read GetRepositoryReadyInternetProtocol;
+    property RepositoryOfflineInternetProtocol: Boolean read fRepositoryOfflineInternetProtocol;
+    property RepositoryVersionInternetProtocol: string read GetRepositoryVersionInternetProtocol;
   end;
 
 implementation
 
 uses
-  SysTools, FileUtil, IniFiles;
+  FSTools, FileUtil, IniFiles;
 
 { TDreamcastToolManager }
 
@@ -72,14 +84,34 @@ end;
 
 function TDreamcastToolManager.GetRepositoryReadyInternetProtocol: Boolean;
 begin
-  Result := DirectoryExists(Environment.FileSystem.DreamcastTool.InternetProtocolDirectory
-    + GIT_SYSTEM_DIRECTORY);
+  Result := Environment.IsRepositoryReady(
+    Environment.FileSystem.DreamcastTool.InternetProtocolDirectory);
 end;
 
 function TDreamcastToolManager.GetRepositoryReadySerial: Boolean;
 begin
-  Result := DirectoryExists(Environment.FileSystem.DreamcastTool.SerialDirectory
-    + GIT_SYSTEM_DIRECTORY);
+  Result := Environment.IsRepositoryReady(
+    Environment.FileSystem.DreamcastTool.SerialDirectory);
+end;
+
+function TDreamcastToolManager.GetRepositoryVersionInternetProtocol: string;
+begin
+  Result := EmptyStr;
+  if fRepositoryOfflineInternetProtocol then
+    Result := fRepositoryOfflineVersionInternetProtocol
+  else
+    Result := Environment.GetRepositoryVersion(
+      Environment.FileSystem.DreamcastTool.InternetProtocolDirectory);
+end;
+
+function TDreamcastToolManager.GetRepositoryVersionSerial: string;
+begin
+  Result := EmptyStr;
+  if fRepositoryOfflineSerial then
+    Result := fRepositoryOfflineVersionSerial
+  else
+    Result := Environment.GetRepositoryVersion(
+      Environment.FileSystem.DreamcastTool.SerialDirectory);
 end;
 
 function TDreamcastToolManager.GetSettings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool;
@@ -216,6 +248,17 @@ constructor TDreamcastToolManager.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
 begin
   fEnvironment := AEnvironment;
+
+  fRepositoryOfflineSerial := Environment.IsOfflineRepository(
+    Environment.FileSystem.DreamcastTool.SerialDirectory,
+      fRepositoryOfflineVersionSerial);
+
+  fRepositoryOfflineInternetProtocol := Environment.IsOfflineRepository(
+    Environment.FileSystem.DreamcastTool.InternetProtocolDirectory,
+      fRepositoryOfflineVersionInternetProtocol);
+
+  fRepositoryOffline := fRepositoryOfflineSerial
+    and fRepositoryOfflineInternetProtocol;
 end;
 
 function TDreamcastToolManager.CloneRepository(var BufferOutput: string): Boolean;

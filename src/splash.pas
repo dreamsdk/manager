@@ -27,7 +27,10 @@ implementation
 {$R *.lfm}
 
 uses
-  PostInst, SysTools, UITools;
+  PostInst, UITools
+{$IFDEF RELEASE}
+  , SysTools
+{$ENDIF};
 
 function IsSplashActive: Boolean;
 begin

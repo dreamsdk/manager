@@ -84,12 +84,15 @@ type
     fAddonsId: TStringList;
     fAddonsIncludes: TStringList;
     fAddonsLibraries: TStringList;
+    fRepositoryOffline: Boolean;
+    fRepositoryOfflineVersion: string;
     function GetCount: Integer;
     function GetInstalled: Boolean;
     function GetItem(Index: Integer): TKallistiPortItem;
     function Add: TKallistiPortItem;
     procedure Clear;
     function GetRepositoryReady: Boolean;
+    function GetRepositoryVersion: string;
     function GetUtilityDirectory: TFileName;
     procedure ProcessPort(const PortDirectoryBaseName: TFileName);
     procedure ProcessPortsDependencies;
@@ -129,17 +132,20 @@ type
     function Install(var OutputBuffer: string): Boolean;
     function Uninstall(var OutputBuffer: string): Boolean;
     procedure RetrieveAvailablePorts;
+
     property Count: Integer read GetCount;
     property CountVisible: Integer read fOnlyVisibleListCount;
     property Installed: Boolean read GetInstalled;
     property Items[Index: Integer]: TKallistiPortItem read GetItem; default;
     property RepositoryReady: Boolean read GetRepositoryReady;
+    property RepositoryOffline: Boolean read fRepositoryOffline;
+    property RepositoryVersion: string read GetRepositoryVersion;
   end;
 
 implementation
 
 uses
-  FileUtil;
+  FileUtil, FSTools;
 
 const
   KALLISTI_PORTS_PACKAGE_DESCRIPTION = 'pkg-descr';
@@ -163,9 +169,7 @@ end;
 
 function TKallistiPortItem.DeleteInstallPortDirectoryIfNeeded: Boolean;
 begin
-  Result := False;
-  if DirectoryExists(InstallDirectory) then
-    Result := DeleteDirectory(InstallDirectory, False);
+  Result := KillDirectory(InstallDirectory);
 end;
 
 function TKallistiPortItem.DoInstallOrUpdate: string;
@@ -341,8 +345,18 @@ end;
 
 function TKallistiPortManager.GetRepositoryReady: Boolean;
 begin
-  Result := DirectoryExists(Environment.FileSystem.Kallisti.KallistiPortsDirectory
-    + GIT_SYSTEM_DIRECTORY);
+  Result := Environment.IsRepositoryReady(
+    Environment.FileSystem.Kallisti.KallistiPortsDirectory);
+end;
+
+function TKallistiPortManager.GetRepositoryVersion: string;
+begin
+  Result := EmptyStr;
+  if fRepositoryOffline then
+    Result := fRepositoryOfflineVersion
+  else
+    Result := Environment.GetRepositoryVersion(
+      Environment.FileSystem.Kallisti.KallistiPortsDirectory);
 end;
 
 function TKallistiPortManager.GetUtilityDirectory: TFileName;
@@ -401,12 +415,12 @@ var
     end;
   end;
 
-  function SanitizeText(Text: string): string;
+  function SanitizeText(const Text: string): string;
   begin
-    Text := StringReplace(Text, #13#10, #10, [rfReplaceAll]);
-    Text := StringReplace(Text, #13, #10, [rfReplaceAll]);
-    Text := StringReplace(Text, #9, '', [rfReplaceAll]);
     Result := Text;
+    Result := StringReplace(Result, #13#10, #10, [rfReplaceAll]);
+    Result := StringReplace(Result, #13, #10, [rfReplaceAll]);
+    Result := StringReplace(Result, #9, '', [rfReplaceAll]);
   end;
 
   function GetPackageDescription(var URL: string): string;
@@ -961,6 +975,9 @@ begin
   fAddonsId := TStringList.Create;
   fAddonsIncludes := TStringList.Create;
   fAddonsLibraries := TStringList.Create;
+  fRepositoryOffline := Environment.IsOfflineRepository(
+    Environment.FileSystem.Kallisti.KallistiPortsDirectory,
+      fRepositoryOfflineVersion);
   RetrieveAvailablePorts;
 end;
 

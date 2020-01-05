@@ -28,6 +28,10 @@ type
     btnUpdateKallistiOS: TButton;
     btnCredits: TButton;
     btnDreamcastToolCustomExecutable: TButton;
+    btnUrlKallisti: TButton;
+    Button2: TButton;
+    btnUrlKallistiPorts: TButton;
+    btnUrlDreamcastToolIP: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
     cbxUrlDreamcastToolIP: TComboBox;
@@ -61,6 +65,7 @@ type
     edtPortURL: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
     edtProductBuildDate: TLabeledEdit;
+    gbxKallistiCore: TGroupBox;
     gbxModuleInfo: TGroupBox;
     gbxAvailablePorts: TGroupBox;
     gbxCompilerInfo: TGroupBox;
@@ -113,7 +118,9 @@ type
     lblTextPython: TLabel;
     lblTextSVN: TLabel;
     lblTextToolIP: TLabel;
+    lblTextRepoKallistiPorts: TLabel;
     lblTextToolSerial: TLabel;
+    lblTextRepoKallistiOS: TLabel;
     lblTitleAbout: TLabel;
     lblTitleHome: TLabel;
     lblVersionBinutils: TLabel;
@@ -128,7 +135,9 @@ type
     lblVersionPython: TLabel;
     lblVersionSVN: TLabel;
     lblVersionToolIP: TLabel;
+    lblVersionRepoKallistiPorts: TLabel;
     lblVersionToolSerial: TLabel;
+    lblVersionRepoKallistiOS: TLabel;
     lbxPorts: TCheckListBox;
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
@@ -164,6 +173,7 @@ type
     procedure btnRestoreDefaultsClick(Sender: TObject);
     procedure btnUpdateKallistiOSClick(Sender: TObject);
     procedure btnDreamcastToolCustomExecutableClick(Sender: TObject);
+    procedure btnUrlKallistiClick(Sender: TObject);
     procedure cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
     procedure cbxDreamcastToolSerialPortSelect(Sender: TObject);
     procedure cbxModuleSelectionChange(Sender: TObject);
@@ -226,6 +236,7 @@ type
     procedure CreateNetworkAdapterList;
     procedure FreeNetworkAdapterList;
     function HostMacToItemIndex(const HostMediaAccessControlAddress: string): Integer;
+    function HasNetworkAdapters: Boolean;
   public
     procedure RefreshViewDreamcastTool;
     procedure RefreshViewKallistiPorts(ForceRefresh: Boolean);
@@ -256,10 +267,10 @@ implementation
 
 uses
   LCLIntf, IniFiles, StrUtils, UITools, GetVer, SysTools, PostInst, Settings,
-  Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil;
+  Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil,
+  RunTools;
 
 const
-  HELPFILE = 'dreamsdk.chm';
   KALLISTI_VERSION_FORMAT = '%s (%s)';
   UNKNOWN_VALUE = '(Unknown)';
 
@@ -306,6 +317,8 @@ procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   fShellThreadExecutedAtLeastOnce := False;
   DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
+  HelpFileName := DreamcastSoftwareDevelopmentKitManager.Environment
+    .FileSystem.Shell.HelpFileName;
   ModuleVersionList := CreateModuleVersionList;
   CreateNetworkAdapterList;
   DoubleBuffered := True;
@@ -493,12 +506,12 @@ begin
       // A single KallistiOS Port was installed
       stoKallistiSinglePortInstall:
         if not DreamcastSoftwareDevelopmentKitManager.Environment.Settings.ProgressWindowAutoClose then
-          MsgBox(DialogInformationTitle, Format('INSTALL %s', [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
+          MsgBox(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
 
       // A single KallistiOS Port was uninstalled
       stoKallistiSinglePortUninstall:
         if not DreamcastSoftwareDevelopmentKitManager.Environment.Settings.ProgressWindowAutoClose then
-          MsgBox(DialogInformationTitle, Format('UNINSTALL %s', [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
+          MsgBox(DialogInformationTitle, Format(UpdateProcessUninstallSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
     end;
 
     // Handle IDE files
@@ -525,6 +538,8 @@ begin
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
+const
+  GIT_REPO_FORMAT = '%s / %s';
 var
   ComponentName: TComponentName;
   ComponentVersion, ComponentNameString: string;
@@ -559,6 +574,26 @@ begin
   if FileExists(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Kallisti.KallistiChangeLogFile) then
     memKallistiChangeLog.Lines.LoadFromFile(DreamcastSoftwareDevelopmentKitManager
       .Environment.FileSystem.Kallisti.KallistiChangeLogFile);
+
+  // Repository versions
+  with DreamcastSoftwareDevelopmentKitManager do
+  begin
+    // KallistiOS
+    lblVersionRepoKallistiOS.Caption := KallistiOS.RepositoryVersion;
+
+    // KallistiOS Ports
+    lblVersionRepoKallistiPorts.Caption := KallistiPorts.RepositoryVersion;
+
+    // Dreamcast Tool Serial
+    if IsVersionValid(lblVersionToolSerial.Caption) then
+      lblVersionToolSerial.Caption := Format(GIT_REPO_FORMAT, [
+        lblVersionToolSerial.Caption, DreamcastTool.RepositoryVersionSerial]);
+
+    // Dreamcast Tool IP
+    if IsVersionValid(lblVersionToolIP.Caption) then
+      lblVersionToolIP.Caption := Format(GIT_REPO_FORMAT, [
+        lblVersionToolIP.Caption, DreamcastTool.RepositoryVersionInternetProtocol]);
+  end;
 end;
 
 procedure TfrmMain.DisplayKallistiPorts(ClearList: Boolean);
@@ -667,7 +702,8 @@ begin
   begin
     btnPortInstall.Enabled := not SelectedKallistiPort.Installed;
     btnPortUninstall.Enabled := SelectedKallistiPort.Installed;
-    btnPortUpdate.Enabled := SelectedKallistiPort.Installed;
+    btnPortUpdate.Enabled := SelectedKallistiPort.Installed and
+      (not DreamcastSoftwareDevelopmentKitManager.KallistiPorts.RepositoryOffline);
   end
   else
   begin
@@ -717,8 +753,11 @@ begin
   edtDreamcastToolInternetProtocolMAC.Enabled := EnabledControls;
   lblDreamcastToolInternetProtocolInvalidMAC.Enabled := EnabledControls;
   lblDreamcastToolInternetProtocolMAC.Enabled := EnabledControls;
-  cbxDreamcastToolInternetProtocolNetworkAdapter.Enabled := EnabledControls;
-  lblDreamcastToolInternetProtocolNetworkAdapter.Enabled := EnabledControls;
+  if HasNetworkAdapters then
+  begin
+    cbxDreamcastToolInternetProtocolNetworkAdapter.Enabled := EnabledControls;
+    lblDreamcastToolInternetProtocolNetworkAdapter.Enabled := EnabledControls;
+  end;
 end;
 
 procedure TfrmMain.RefreshViewDreamcastTool;
@@ -745,10 +784,14 @@ procedure TfrmMain.UpdateOptionsControls;
 begin
   with DreamcastSoftwareDevelopmentKitManager do
   begin
-    cbxUrlKallisti.Enabled := not KallistiOS.RepositoryReady;
-    cbxUrlKallistiPorts.Enabled := not KallistiPorts.RepositoryReady;
-    cbxUrlDreamcastToolSerial.Enabled := not DreamcastTool.RepositoryReadySerial;
-    cbxUrlDreamcastToolIP.Enabled := not DreamcastTool.RepositoryReadyInternetProtocol;
+    cbxUrlKallisti.Enabled := (not KallistiOS.RepositoryReady)
+      and (not KallistiOS.RepositoryOffline);
+    cbxUrlKallistiPorts.Enabled := (not KallistiPorts.RepositoryReady)
+      and (not KallistiPorts.RepositoryOffline);
+    cbxUrlDreamcastToolSerial.Enabled := (not DreamcastTool.RepositoryReadySerial)
+      and (not DreamcastTool.RepositoryOfflineSerial);
+    cbxUrlDreamcastToolIP.Enabled := (not DreamcastTool.RepositoryReadyInternetProtocol)
+      and (not DreamcastTool.RepositoryOfflineInternetProtocol);
   end;
 end;
 
@@ -958,6 +1001,7 @@ procedure TfrmMain.CreateNetworkAdapterList;
 var
   NetworkCardAdapters: TNetworkCardAdapterList;
   i: Integer;
+  ListEnabled: Boolean;
 
 begin
   NetworkCardAdapters := Default(TNetworkCardAdapterList);
@@ -973,6 +1017,15 @@ begin
   end;
 
   cbxDreamcastToolInternetProtocolNetworkAdapter.ItemIndex := -1;
+
+  ListEnabled := HasNetworkAdapters;
+  cbxDreamcastToolInternetProtocolNetworkAdapter.Enabled := ListEnabled;
+  lblDreamcastToolInternetProtocolNetworkAdapter.Enabled := ListEnabled;
+  if not ListEnabled then
+  begin
+    cbxDreamcastToolInternetProtocolNetworkAdapter.Hint := NoNetworkAdapterAvailable;
+    lblDreamcastToolInternetProtocolNetworkAdapter.Hint := NoNetworkAdapterAvailable;
+  end;
 end;
 
 procedure TfrmMain.FreeNetworkAdapterList;
@@ -1007,6 +1060,11 @@ begin
         Break;
       end;
     end;
+end;
+
+function TfrmMain.HasNetworkAdapters: Boolean;
+begin
+  Result := cbxDreamcastToolInternetProtocolNetworkAdapter.Items.Count > 0;
 end;
 
 procedure TfrmMain.RefreshViewKallistiPorts(ForceRefresh: Boolean);
@@ -1062,7 +1120,7 @@ procedure TfrmMain.RefreshEverything(ForceRefresh: Boolean);
 begin
   Application.ProcessMessages;
 
-  RefreshViewEnvironment(ForceRefresh);
+  RefreshViewEnvironment(ForceRefresh); // TODO: Slow function, need to be cached
   RefreshViewKallistiPorts(ForceRefresh);
   RefreshViewDreamcastTool;
 end;
@@ -1253,6 +1311,53 @@ begin
       edtDreamcastToolCustomExecutable.Text := opdDreamcastToolCustom.FileName;
 end;
 
+procedure TfrmMain.btnUrlKallistiClick(Sender: TObject);
+var
+  Index: Integer;
+  Msg: string;
+
+  function TagToRepositoryKind: TRepositoryKind;
+  begin
+    Result := rkUndefined;
+    case Index of
+      0: Result := rkKallisti;
+      1: Result := rkKallistiPorts;
+      2: Result := rkDreamcastToolSerial;
+      3: Result := rkDreamcastToolInternetProtocol;
+    end;
+  end;
+
+  function TagToString: string;
+  begin
+    Result := '(Undefined)';
+    case Index of
+      0: Result := KallistiText;
+      1: Result := KallistiPortsText;
+      2: Result := DreamcastToolSerialText;
+      3: Result := DreamcastToolInternetProtocolText;
+    end;
+  end;
+
+begin
+  if not IsInternetConnectionAvailable then
+    MsgBox(DialogWarningTitle, InternetConnectionNeeded, mtWarning, [mbOK])
+  else
+  begin
+    Index := (Sender as TButton).Tag;
+
+    Msg := Format(ResetRepository, [TagToString]) + MsgBoxWrapStr
+      + ResetRepositoryUpdate + MsgBoxWrapStr
+      + ResetRepositoryContinue;
+
+    if MsgBox(DialogWarningTitle, Msg, mtWarning, [mbYes, mbNo]) = mrYes then
+    begin
+      DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem
+        .ResetRepository(TagToRepositoryKind);
+      UpdateOptionsControls;
+    end;
+  end;
+end;
+
 procedure TfrmMain.cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
 begin
   UpdateDreamcastToolAlternateCheckbox;
@@ -1401,9 +1506,6 @@ begin
     if MsgBox(DialogQuestionTitle, InstallOrUpdateRequiredDoItNow, mtConfirmation, [mbYes, mbNo]) = mrYes then
       ExecuteThreadOperation(stiKallistiManage);
 end;
-
-initialization
-  HelpFileName := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) + HELPFILE;
 
 end.
 

@@ -8,18 +8,26 @@ uses
   Classes, SysUtils, RunCmd, Settings;
 
 const
-  GIT_SYSTEM_DIRECTORY = '.git';
-
   DCLOAD_IP_INSTALLATION_DIRECTORY = 'dcload-ip';
   DCLOAD_SERIAL_INSTALLATION_DIRECTORY = 'dcload-serial';
 
   DREAMSDK_RUNNER_EXECUTABLE = 'dreamsdk-runner.exe';
   DREAMSDK_LAUNCHER_EXECUTABLE = 'dreamsdk.exe';
+  DREAMSDK_HELP_FILE = 'dreamsdk.chm';
   DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dreamsdk/';
   DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'helpers/';
   DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
 
 type
+  TRepositoryKind = (
+    rkUndefined,
+    rkKallisti,
+    rkKallistiPorts,
+    rkDreamcastTool, // Both Serial and Internet Protocol
+    rkDreamcastToolSerial,
+    rkDreamcastToolInternetProtocol
+  );
+
   TUpdateOperationState = (
     uosUndefined,
     uosUpdateSuccess,
@@ -42,6 +50,9 @@ type
     fSerialDirectory: TFileName;
     fSerialExecutable: TFileName;
   public
+    function ResetRepository: Boolean;
+    function ResetRepositorySerial: Boolean;
+    function ResetRepositoryInternetProtocol: Boolean;
     property BaseDirectory: TFileName read fBaseDirectory;
     property ConfigurationFileName: TFileName read fConfigurationFileName;
     property InternetProtocolDirectory: TFileName read fInternetProtocolDirectory;
@@ -61,6 +72,9 @@ type
     fKallistiPortsLibraryInformationFile: TFileName;
     fKallistiUtilitiesDirectory: TFileName;
   public
+    function ResetRespository: Boolean;
+    function ResetRepositoryKallisti: Boolean;
+    function ResetRepositoryKallistiPorts: Boolean;
     property KallistiPortsDirectory: TFileName read fKallistiPortsDirectory;
     property KallistiPortsLibraryInformationFile: TFileName read fKallistiPortsLibraryInformationFile;
     property KallistiDirectory: TFileName read fKallistiDirectory;
@@ -95,6 +109,7 @@ type
     fConfigurationDirectory: TFileName;
     fDreamSDKDirectory: TFileName;
     fDreamSDKExecutable: TFileName;
+    fHelpFileName: TFileName;
     fHomeDirectory: TFileName;
     fIntegratedDevelopmentEnvironmentConfigurationFile: TFileName;
     fMinGWGetExecutable: TFileName;
@@ -102,6 +117,7 @@ type
     fShellExecutable: TFileName;
   public
     property DreamSDKDirectory: TFileName read fDreamSDKDirectory;
+    property HelpFileName: TFileName read fHelpFileName;
     property LauncherExecutable: TFileName read fDreamSDKExecutable;
     property RunnerExecutable: TFileName read fRunnerExecutable;
     property ConfigurationDirectory: TFileName read fConfigurationDirectory;
@@ -125,6 +141,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    function ResetRepository(const RepositoryKind: TRepositoryKind): Boolean;
     property DreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool
       read fDreamcastTool;
     property Kallisti: TDreamcastSoftwareDevelopmentFileSystemKallisti
@@ -159,6 +176,10 @@ type
     procedure ResumeShellCommand;
     function CloneRepository(const URL: string; const TargetDirectoryName,
       WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
+    function GetRepositoryVersion(const WorkingDirectory: TFileName): string;
+    function IsRepositoryReady(const WorkingDirectory: TFileName): Boolean;
+    function IsOfflineRepository(const WorkingDirectory: TFileName;
+       var OfflineVersion: string): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
       var BufferOutput: string): TUpdateOperationState; overload;
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystem read fFileSystem;
@@ -170,7 +191,41 @@ type
 implementation
 
 uses
-  RefBase, SysTools;
+  RefBase, SysTools, FSTools;
+
+{ TDreamcastSoftwareDevelopmentFileSystemKallisti }
+
+function TDreamcastSoftwareDevelopmentFileSystemKallisti.ResetRespository: Boolean;
+begin
+  Result := ResetRepositoryKallisti and ResetRepositoryKallistiPorts;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemKallisti.ResetRepositoryKallisti: Boolean;
+begin
+  Result := KillDirectory(KallistiDirectory);
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemKallisti.ResetRepositoryKallistiPorts: Boolean;
+begin
+  Result := KillDirectory(KallistiPortsDirectory);
+end;
+
+{ TDreamcastSoftwareDevelopmentFileSystemDreamcastTool }
+
+function TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.ResetRepository: Boolean;
+begin
+  Result := ResetRepositorySerial and ResetRepositoryInternetProtocol;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.ResetRepositorySerial: Boolean;
+begin
+  Result := KillDirectory(SerialDirectory);
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.ResetRepositoryInternetProtocol: Boolean;
+begin
+  Result := KillDirectory(InternetProtocolDirectory);
+end;
 
 { TDreamcastSoftwareDevelopmentFileSystemToolchain }
 
@@ -211,6 +266,7 @@ begin
     fRunnerExecutable := fDreamSDKDirectory + DREAMSDK_RUNNER_EXECUTABLE;
     fConfigurationDirectory := MSYSBase + UnixPathToSystem(SETTINGS_DIRECTORY);
     fIntegratedDevelopmentEnvironmentConfigurationFile := GetConfigurationDirectory + 'ide.conf';
+    fHelpFileName := fDreamSDKDirectory + DREAMSDK_HELP_FILE;
   end;
 
   // Toolchain for Super-H (Hitachi SH-4)
@@ -278,6 +334,24 @@ begin
   inherited Destroy;
 end;
 
+function TDreamcastSoftwareDevelopmentFileSystem.ResetRepository(
+  const RepositoryKind: TRepositoryKind): Boolean;
+begin
+  Result := False;
+  case RepositoryKind of
+    rkKallisti:
+      Result := Kallisti.ResetRepositoryKallisti;
+    rkKallistiPorts:
+      Result := Kallisti.ResetRepositoryKallistiPorts;
+    rkDreamcastTool:
+      Result := DreamcastTool.ResetRepository;
+    rkDreamcastToolSerial:
+      Result := DreamcastTool.ResetRepositorySerial;
+    rkDreamcastToolInternetProtocol:
+      Result := DreamcastTool.ResetRepositoryInternetProtocol;
+  end;
+end;
+
 { TDreamcastSoftwareDevelopmentEnvironment }
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.LoadConfig;
@@ -333,6 +407,15 @@ begin
   end;
 end;
 
+function TDreamcastSoftwareDevelopmentEnvironment.IsRepositoryReady(
+  const WorkingDirectory: TFileName): Boolean;
+const
+  GIT_SYSTEM_DIRECTORY = '.git';
+
+begin
+  Result := DirectoryExists(WorkingDirectory + GIT_SYSTEM_DIRECTORY);
+end;
+
 constructor TDreamcastSoftwareDevelopmentEnvironment.Create;
 begin
   fFileSystem := TDreamcastSoftwareDevelopmentFileSystem.Create;
@@ -369,8 +452,6 @@ begin
   CurrentDir := GetCurrentDir;
   SetCurrentDir(WorkingDirectory);
 
-  CommandLine := Format('%s', [CommandLine]);
-
   Result := ExecuteShellCommandRunner(CommandLine);
 
   SetCurrentDir(CurrentDir);
@@ -395,12 +476,57 @@ const
   FAIL_TAG = 'fatal: ';
 
 var
+  CommandLine,
+  OfflineVersion: string;
+  TargetDirectoryFileName: TFileName;
+
+begin
+  TargetDirectoryFileName := WorkingDirectory + TargetDirectoryName;
+
+  OfflineVersion := EmptyStr;
+  if not IsOfflineRepository(TargetDirectoryFileName, OfflineVersion) then
+  begin
+    CommandLine := Format('git clone %s %s --progress', [URL, TargetDirectoryName]);
+    BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
+    Result := not IsInString(FAIL_TAG, BufferOutput);
+  end
+  else
+  begin
+{$IFDEF DEBUG}
+    BufferOutput := ExtractDirectoryName(TargetDirectoryFileName);
+    DebugLog('Offline Repository for ' + BufferOutput + ': ' + OfflineVersion);
+{$ENDIF}
+    // Offline (special case)
+    Result := DirectoryExists(TargetDirectoryFileName);
+  end;
+end;
+
+function TDreamcastSoftwareDevelopmentEnvironment.GetRepositoryVersion(
+  const WorkingDirectory: TFileName): string;
+var
   CommandLine: string;
 
 begin
-  CommandLine := Format('git clone %s %s --progress', [URL, TargetDirectoryName]);
-  BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
-  Result := not IsInString(FAIL_TAG, BufferOutput);
+  CommandLine := 'git describe --dirty --always';
+  Result := ExecuteShellCommand(CommandLine, WorkingDirectory);
+end;
+
+function TDreamcastSoftwareDevelopmentEnvironment.IsOfflineRepository(
+  const WorkingDirectory: TFileName; var OfflineVersion: string): Boolean;
+const
+  OFFLINE_FILE = 'OFFLINE';
+
+var
+  OfflineFileName: TFileName;
+
+begin
+  OfflineFileName := IncludeTrailingPathDelimiter(WorkingDirectory) + OFFLINE_FILE;
+
+  Result := not IsRepositoryReady(WorkingDirectory)
+    and FileExists(OfflineFileName);
+
+  if Result then
+    OfflineVersion := LoadFileToString(OfflineFileName);
 end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.UpdateRepository(
@@ -410,18 +536,36 @@ const
   USELESS_TAG = 'Already up to date.';
 
 var
-  TempBuffer: string;
+  TempBuffer,
+  OfflineVersion: string;
 
 begin
   Result := uosUpdateFailed;
 
-  BufferOutput := ExecuteShellCommand('git pull', WorkingDirectory);
-  TempBuffer := StringReplace(BufferOutput, '-', ' ', [rfReplaceAll]);
+  OfflineVersion := EmptyStr;
+  if not IsOfflineRepository(WorkingDirectory, OfflineVersion) then
+  begin
+    // Online (normal path)
+    BufferOutput := ExecuteShellCommand('git pull', WorkingDirectory);
+    TempBuffer := StringReplace(BufferOutput, '-', ' ', [rfReplaceAll]);
 
-  if IsInString(USELESS_TAG, TempBuffer) then
-    Result := uosUpdateUseless
-  else if IsInString(SUCCESS_TAG, TempBuffer) then
-    Result := uosUpdateSuccess;
+    if IsInString(USELESS_TAG, TempBuffer) then
+      Result := uosUpdateUseless
+    else if IsInString(SUCCESS_TAG, TempBuffer) then
+      Result := uosUpdateSuccess;
+  end
+  else
+  begin
+{$IFDEF DEBUG}
+    TempBuffer := ExtractDirectoryName(WorkingDirectory);
+    DebugLog('Offline Repository for ' + TempBuffer + ': ' + OfflineVersion);
+{$ENDIF}
+    // Offline (special case)
+    if DirectoryExists(WorkingDirectory) then
+      Result := uosUpdateSuccess
+    else
+      Result := uosUpdateFailed;
+  end;
 end;
 
 end.

@@ -14,9 +14,12 @@ type
     fGenRomFSFileName: TFileName;
     fEnvironSampleShellScriptFileName: TFileName;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+    fRepositoryOffline: Boolean;
+    fRepositoryOfflineVersion: string;
     function GetBuilt: Boolean;
     function GetInstalled: Boolean;
     function GetRepositoryReady: Boolean;
+    function GetRepositoryVersion: string;
   protected
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
@@ -30,6 +33,8 @@ type
     property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
     property RepositoryReady: Boolean read GetRepositoryReady;
+    property RepositoryOffline: Boolean read fRepositoryOffline;
+    property RepositoryVersion: string read GetRepositoryVersion;
   end;
 
 implementation
@@ -41,13 +46,23 @@ uses
 
 function TKallistiManager.GetInstalled: Boolean;
 begin
-  Result := DirectoryExists(Environment.FileSystem.Kallisti.KallistiDirectory);
+  Result := DirectoryExists(
+    Environment.FileSystem.Kallisti.KallistiDirectory);
 end;
 
 function TKallistiManager.GetRepositoryReady: Boolean;
 begin
-  Result := DirectoryExists(Environment.FileSystem.Kallisti.KallistiDirectory
-    + GIT_SYSTEM_DIRECTORY);
+  Result := Environment.IsRepositoryReady(Environment.FileSystem.Kallisti.KallistiDirectory);
+end;
+
+function TKallistiManager.GetRepositoryVersion: string;
+begin
+  Result := EmptyStr;
+  if fRepositoryOffline then
+    Result := fRepositoryOfflineVersion
+  else
+    Result := Environment.GetRepositoryVersion(
+      Environment.FileSystem.Kallisti.KallistiDirectory);
 end;
 
 function TKallistiManager.GetBuilt: Boolean;
@@ -67,6 +82,8 @@ begin
   fEnvironSampleShellScriptFileName := Environment.FileSystem.Kallisti.KallistiDirectory
     + ENVIRON_SHELL_SCRIPT_SAMPLE_FILE_LOCATION;
   fGenRomFSFileName := Environment.FileSystem.Kallisti.KallistiDirectory + GENROMFS_LOCATION_FILE;
+  fRepositoryOffline := Environment.IsOfflineRepository(
+    Environment.FileSystem.Kallisti.KallistiDirectory, fRepositoryOfflineVersion);
 end;
 
 function TKallistiManager.CloneRepository(var BufferOutput: string): Boolean;

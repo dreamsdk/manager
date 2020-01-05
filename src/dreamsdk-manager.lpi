@@ -21,9 +21,9 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="3"/>
-      <RevisionNr Value="2"/>
-      <BuildNr Value="344"/>
-      <StringTable Comments="http://dreamsdk.org/" CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" LegalCopyright="© Copyleft 2019" LegalTrademarks="Sega and Dreamcast are registered trademark of Sega Games Co., Ltd." OriginalFilename="dreamsdk-manager.exe" ProductName="DreamSDK" ProductVersion="3.0"/>
+      <RevisionNr Value="4"/>
+      <BuildNr Value="400"/>
+      <StringTable Comments="http://dreamsdk.org/" CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" LegalCopyright="© Copyleft 2018-2020" LegalTrademarks="Sega and Dreamcast are registered trademark of Sega Games Co., Ltd." OriginalFilename="dreamsdk-manager.exe" ProductName="DreamSDK" ProductVersion="3.0.4.2001"/>
     </VersionInfo>
     <BuildModes Count="2">
       <Item1 Name="Release" Default="True"/>
@@ -36,7 +36,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="engine;engine\sys;engine\helpers;..\..\common\src;..\..\common\src\sys"/>
+            <OtherUnitFiles Value="engine;engine\helpers;..\..\common\src;..\..\common\src\sys"/>
             <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -94,7 +94,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="26">
+    <Units Count="16">
       <Unit0>
         <Filename Value="dreamsdk-manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -141,101 +141,51 @@
         <UnitName Value="KOSMgr"/>
       </Unit7>
       <Unit8>
-        <Filename Value="D:\common\src\sys\runcmd.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="RunCmd"/>
-      </Unit8>
-      <Unit9>
-        <Filename Value="D:\common\src\sys\systools.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="SysTools"/>
-      </Unit9>
-      <Unit10>
         <Filename Value="engine\helpers\shellthd.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="ShellThd"/>
-      </Unit10>
-      <Unit11>
+      </Unit8>
+      <Unit9>
         <Filename Value="engine\helpers\postinst.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="PostInst"/>
-      </Unit11>
-      <Unit12>
-        <Filename Value="D:\common\src\sys\version.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="Version"/>
-      </Unit12>
-      <Unit13>
+      </Unit9>
+      <Unit10>
         <Filename Value="strres.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="StrRes"/>
-      </Unit13>
-      <Unit14>
+      </Unit10>
+      <Unit11>
         <Filename Value="engine\toolmgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="ToolMgr"/>
-      </Unit14>
-      <Unit15>
-        <Filename Value="D:\common\src\settings.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="Settings"/>
-      </Unit15>
-      <Unit16>
+      </Unit11>
+      <Unit12>
         <Filename Value="about.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmAbout"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="About"/>
-      </Unit16>
-      <Unit17>
-        <Filename Value="D:\common\src\sys\uitools.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="UITools"/>
-      </Unit17>
-      <Unit18>
-        <Filename Value="D:\common\src\sys\msgdlg.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="MsgDlg"/>
-      </Unit18>
-      <Unit19>
-        <Filename Value="D:\common\src\verintf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="VerIntf"/>
-      </Unit19>
-      <Unit20>
+      </Unit12>
+      <Unit13>
         <Filename Value="engine\helpers\modver.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="ModVer"/>
-      </Unit20>
-      <Unit21>
+      </Unit13>
+      <Unit14>
         <Filename Value="engine\idemgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="IDEMgr"/>
-      </Unit21>
-      <Unit22>
-        <Filename Value="D:\common\src\firstrun.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="FirstRun"/>
-      </Unit22>
-      <Unit23>
+      </Unit14>
+      <Unit15>
         <Filename Value="splash.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmSplash"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Splash"/>
-      </Unit23>
-      <Unit24>
-        <Filename Value="D:\common\src\refbase.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="RefBase"/>
-      </Unit24>
-      <Unit25>
-        <Filename Value="D:\common\src\sys\inetutil.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="InetUtil"/>
-      </Unit25>
+      </Unit15>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -246,7 +196,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="engine;engine\sys;engine\helpers;..\..\common\src;..\..\common\src\sys"/>
+      <OtherUnitFiles Value="engine;engine\helpers;..\..\common\src;..\..\common\src\sys"/>
       <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>

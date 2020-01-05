@@ -9,6 +9,8 @@ resourcestring
   KallistiText = 'KallistiOS';
   KallistiPortsText = 'KallistiOS Ports';
   DreamcastToolText = 'Dreamcast Tool';
+  DreamcastToolSerialText = 'Dreamcast Tool Serial (RS-232)';
+  DreamcastToolInternetProtocolText = 'Dreamcast Tool Internet Protocol (IP)';
   DialogInformationTitle = 'Information';
   DialogQuestionTitle = 'Question';
   DialogWarningTitle = 'Warning';
@@ -21,6 +23,7 @@ resourcestring
   UpdateProcessEverythingUpdate = 'Everything is up-to-date.';
   UpdateProcessInstallSuccessText = '%s was successfully installed.';
   UpdateProcessUpdateSuccessText = '%s was successfully updated.';
+  UpdateProcessUninstallSuccessText = '%s was successfully uninstalled.';
   UpdateProcessUpdateUselessText = '%s is up-to-date.';
   UpdateProcessAllKallistiPortsInstalled = 'All KallistiOS Ports were successfully installed.';
   UpdateProcessAllKallistiPortsUninstalled = 'All KallistiOS Ports were successfully uninstalled.';
@@ -30,10 +33,15 @@ resourcestring
   InvalidInternetProtocolAddressValue = 'Invalid IP';
   InvalidMediaAccessControlAddressFormat = 'Use 2 digits!';
   InvalidMediaAccessControlAddressValue = 'Invalid MAC';
+  NoNetworkAdapterAvailable = 'No connected Network Adapter was found on your system. Please verify the connection state.';
   UninstallKallistiSinglePort = 'Are you sure to uninstall %s?';
   InstallOrUpdateRequiredDoItNow = 'A management operation of KallistiOS components is necessary. Do it now?';
   UseSubversionKallistiSinglePort = 'Unable to install %s, as it needs the Subversion Client (SVN) which wasn''t detected.';
   UseSubversionAllKallistiPorts = 'Note: The Subversion Client (SVN) wasn''t detected and this may causes issues.';
+  ResetRepository = 'This will delete the %s repository on the disk, losing all your changes if any.';
+  ResetRepositoryUpdate = 'Then perform an Update operation to apply the changes.';
+  ResetRepositoryContinue = 'Are you sure to continue?';
+  InternetConnectionNeeded = 'This feature requires Internet connection.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';
