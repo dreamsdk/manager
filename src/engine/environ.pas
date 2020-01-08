@@ -19,6 +19,8 @@ const
   DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
 
 type
+  EKallistiReferentialNotAvailable = class(Exception);
+
   TRepositoryKind = (
     rkUndefined,
     rkKallisti,
@@ -137,6 +139,7 @@ type
     fToolchainARM: TDreamcastSoftwareDevelopmentFileSystemToolchain;
     fToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain;
   protected
+    function GetReferentialDirectory: TFileName;
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
   public
     constructor Create;
@@ -166,6 +169,7 @@ type
     procedure HandleShellCommandRunnerNewLine(Sender: TObject; NewLine: string);
     procedure HandleShellCommandRunnerTerminate(Sender: TObject);
     function ExecuteShellCommandRunner(const CommandLine: string): string;
+    function GetOfflineFileName(const WorkingDirectory: TFileName): TFileName;
   public
     constructor Create;
     destructor Destroy; override;
@@ -177,9 +181,8 @@ type
     function CloneRepository(const URL: string; const TargetDirectoryName,
       WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
     function GetRepositoryVersion(const WorkingDirectory: TFileName): string;
+    function IsOfflineRepository(const RepositoryDirectory: TFileName): Boolean;
     function IsRepositoryReady(const WorkingDirectory: TFileName): Boolean;
-    function IsOfflineRepository(const WorkingDirectory: TFileName;
-       var OfflineVersion: string): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
       var BufferOutput: string): TUpdateOperationState; overload;
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystem read fFileSystem;
@@ -188,10 +191,58 @@ type
       write fShellCommandNewLine;
   end;
 
+  { TDreamcastSoftwareDevelopmentRepository }
+  TDreamcastSoftwareDevelopmentRepository = class(TObject)
+  private
+    fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+    fOfflineFileName: TFileName;
+    fRepositoryDirectory: TFileName;
+    function GetOffline: Boolean;
+    function GetReady: Boolean;
+    function GetVersion: string;
+  protected
+    property Environment: TDreamcastSoftwareDevelopmentEnvironment
+      read fEnvironment;
+    property OfflineFileName: TFileName read fOfflineFileName;
+  public
+    constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+      ARepositoryDirectory: TFileName);
+    property Directory: TFileName read fRepositoryDirectory;
+    property Ready: Boolean read GetReady;
+    property Offline: Boolean read GetOffline;
+    property Version: string read GetVersion;
+  end;
+
 implementation
 
 uses
-  RefBase, SysTools, FSTools;
+  RefBase, SysTools, FSTools, RunTools;
+
+{ TDreamcastSoftwareDevelopmentRepository }
+
+function TDreamcastSoftwareDevelopmentRepository.GetOffline: Boolean;
+begin
+  Result := FileExists(OfflineFileName);
+end;
+
+function TDreamcastSoftwareDevelopmentRepository.GetReady: Boolean;
+begin
+  Result := Environment.IsRepositoryReady(Directory);
+end;
+
+function TDreamcastSoftwareDevelopmentRepository.GetVersion: string;
+begin
+  Result := Environment.GetRepositoryVersion(Directory);
+end;
+
+constructor TDreamcastSoftwareDevelopmentRepository.Create(
+  AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+  ARepositoryDirectory: TFileName);
+begin
+  fEnvironment := AEnvironment;
+  fRepositoryDirectory := ARepositoryDirectory;
+  fOfflineFileName := Environment.GetOfflineFileName(fRepositoryDirectory);
+end;
 
 { TDreamcastSoftwareDevelopmentFileSystemKallisti }
 
@@ -236,6 +287,11 @@ begin
 end;
 
 { TDreamcastSoftwareDevelopmentFileSystem }
+
+function TDreamcastSoftwareDevelopmentFileSystem.GetReferentialDirectory: TFileName;
+begin
+  Result := GetConfigurationDirectory + 'referentials' + DirectorySeparator;
+end;
 
 procedure TDreamcastSoftwareDevelopmentFileSystem.ComputeFileSystemObjectValues(
   InstallPath: TFileName);
@@ -311,7 +367,10 @@ begin
     fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
     fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
     fKallistiConfigurationFileName := KallistiDirectory + 'environ.sh';
-    fKallistiPortsLibraryInformationFile := GetConfigurationDirectory + 'koslib.conf';
+    fKallistiPortsLibraryInformationFile := GetReferentialDirectory + 'koslib.conf';
+    if not FileExists(fKallistiPortsLibraryInformationFile) then
+      raise EKallistiReferentialNotAvailable.CreateFmt(
+        'The KallistiOS Ports library referential file was not found: %s', [fKallistiPortsLibraryInformationFile]);
   end;
 end;
 
@@ -407,6 +466,16 @@ begin
   end;
 end;
 
+function TDreamcastSoftwareDevelopmentEnvironment.GetOfflineFileName(
+  const WorkingDirectory: TFileName): TFileName;
+const
+  OFFLINE_FILE = 'OFFLINE';
+
+begin
+  Result := IncludeTrailingPathDelimiter(WorkingDirectory)
+    + OFFLINE_FILE;
+end;
+
 function TDreamcastSoftwareDevelopmentEnvironment.IsRepositoryReady(
   const WorkingDirectory: TFileName): Boolean;
 const
@@ -477,14 +546,15 @@ const
 
 var
   CommandLine,
-  OfflineVersion: string;
   TargetDirectoryFileName: TFileName;
+{$IFDEF DEBUG}
+  OfflineVersion: string;
+{$ENDIF}
 
 begin
   TargetDirectoryFileName := WorkingDirectory + TargetDirectoryName;
 
-  OfflineVersion := EmptyStr;
-  if not IsOfflineRepository(TargetDirectoryFileName, OfflineVersion) then
+  if not IsOfflineRepository(TargetDirectoryFileName) then
   begin
     CommandLine := Format('git clone %s %s --progress', [URL, TargetDirectoryName]);
     BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
@@ -494,6 +564,7 @@ begin
   begin
 {$IFDEF DEBUG}
     BufferOutput := ExtractDirectoryName(TargetDirectoryFileName);
+    OfflineVersion := GetRepositoryVersion(TargetDirectoryFileName);
     DebugLog('Offline Repository for ' + BufferOutput + ': ' + OfflineVersion);
 {$ENDIF}
     // Offline (special case)
@@ -503,30 +574,19 @@ end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.GetRepositoryVersion(
   const WorkingDirectory: TFileName): string;
-var
-  CommandLine: string;
-
 begin
-  CommandLine := 'git describe --dirty --always';
-  Result := ExecuteShellCommand(CommandLine, WorkingDirectory);
+  Result := EmptyStr;
+  if IsOfflineRepository(WorkingDirectory) then
+    Result := LoadFileToString(GetOfflineFileName(WorkingDirectory))
+  else
+    Result := Run('git', 'describe --dirty --always', WorkingDirectory, False);
 end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.IsOfflineRepository(
-  const WorkingDirectory: TFileName; var OfflineVersion: string): Boolean;
-const
-  OFFLINE_FILE = 'OFFLINE';
-
-var
-  OfflineFileName: TFileName;
-
+  const RepositoryDirectory: TFileName): Boolean;
 begin
-  OfflineFileName := IncludeTrailingPathDelimiter(WorkingDirectory) + OFFLINE_FILE;
-
-  Result := not IsRepositoryReady(WorkingDirectory)
-    and FileExists(OfflineFileName);
-
-  if Result then
-    OfflineVersion := LoadFileToString(OfflineFileName);
+  Result := not IsRepositoryReady(RepositoryDirectory)
+    and FileExists(GetOfflineFileName(RepositoryDirectory));
 end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.UpdateRepository(
@@ -536,14 +596,15 @@ const
   USELESS_TAG = 'Already up to date.';
 
 var
-  TempBuffer,
+  TempBuffer: string;
+{$IFDEF DEBUG}
   OfflineVersion: string;
+{$ENDIF}
 
 begin
   Result := uosUpdateFailed;
 
-  OfflineVersion := EmptyStr;
-  if not IsOfflineRepository(WorkingDirectory, OfflineVersion) then
+  if not IsOfflineRepository(WorkingDirectory) then
   begin
     // Online (normal path)
     BufferOutput := ExecuteShellCommand('git pull', WorkingDirectory);
@@ -558,6 +619,7 @@ begin
   begin
 {$IFDEF DEBUG}
     TempBuffer := ExtractDirectoryName(WorkingDirectory);
+    OfflineVersion := GetRepositoryVersion(WorkingDirectory);
     DebugLog('Offline Repository for ' + TempBuffer + ': ' + OfflineVersion);
 {$ENDIF}
     // Offline (special case)

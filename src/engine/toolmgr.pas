@@ -12,18 +12,11 @@ type
   TDreamcastToolManager = class(TObject)
   private
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
-    fRepositoryOffline: Boolean;
-    fRepositoryOfflineInternetProtocol: Boolean;
-    fRepositoryOfflineSerial: Boolean;
-    fRepositoryOfflineVersionInternetProtocol: string;
-    fRepositoryOfflineVersionSerial: string;
+    fRepositoryInternetProtocol: TDreamcastSoftwareDevelopmentRepository;
+    fRepositorySerial: TDreamcastSoftwareDevelopmentRepository;
     function GetBuilt: Boolean;
     function GetInstalled: Boolean;
     function GetRepositoryReady: Boolean;
-    function GetRepositoryReadyInternetProtocol: Boolean;
-    function GetRepositoryReadySerial: Boolean;
-    function GetRepositoryVersionInternetProtocol: string;
-    function GetRepositoryVersionSerial: string;
     function GetSettings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool;
   protected
     function DoRepositoryOperation(Kind: TDreamcastToolKind;
@@ -39,6 +32,7 @@ type
       read GetSettings;
   public
     constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
+    destructor Destroy; override;
 
     function CloneRepository(var BufferOutput: string): Boolean;
     function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
@@ -48,14 +42,12 @@ type
 
     property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
+
     property RepositoryReady: Boolean read GetRepositoryReady;
-    property RepositoryOffline: Boolean read fRepositoryOffline;
-    property RepositoryReadySerial: Boolean read GetRepositoryReadySerial;
-    property RepositoryOfflineSerial: Boolean read fRepositoryOfflineSerial;
-    property RepositoryVersionSerial: string read GetRepositoryVersionSerial;
-    property RepositoryReadyInternetProtocol: Boolean read GetRepositoryReadyInternetProtocol;
-    property RepositoryOfflineInternetProtocol: Boolean read fRepositoryOfflineInternetProtocol;
-    property RepositoryVersionInternetProtocol: string read GetRepositoryVersionInternetProtocol;
+    property RepositorySerial: TDreamcastSoftwareDevelopmentRepository
+      read fRepositorySerial;
+    property RepositoryInternetProtocol: TDreamcastSoftwareDevelopmentRepository
+      read fRepositoryInternetProtocol;
   end;
 
 implementation
@@ -79,39 +71,7 @@ end;
 
 function TDreamcastToolManager.GetRepositoryReady: Boolean;
 begin
-  Result := RepositoryReadyInternetProtocol and RepositoryReadySerial;
-end;
-
-function TDreamcastToolManager.GetRepositoryReadyInternetProtocol: Boolean;
-begin
-  Result := Environment.IsRepositoryReady(
-    Environment.FileSystem.DreamcastTool.InternetProtocolDirectory);
-end;
-
-function TDreamcastToolManager.GetRepositoryReadySerial: Boolean;
-begin
-  Result := Environment.IsRepositoryReady(
-    Environment.FileSystem.DreamcastTool.SerialDirectory);
-end;
-
-function TDreamcastToolManager.GetRepositoryVersionInternetProtocol: string;
-begin
-  Result := EmptyStr;
-  if fRepositoryOfflineInternetProtocol then
-    Result := fRepositoryOfflineVersionInternetProtocol
-  else
-    Result := Environment.GetRepositoryVersion(
-      Environment.FileSystem.DreamcastTool.InternetProtocolDirectory);
-end;
-
-function TDreamcastToolManager.GetRepositoryVersionSerial: string;
-begin
-  Result := EmptyStr;
-  if fRepositoryOfflineSerial then
-    Result := fRepositoryOfflineVersionSerial
-  else
-    Result := Environment.GetRepositoryVersion(
-      Environment.FileSystem.DreamcastTool.SerialDirectory);
+  Result := RepositorySerial.Ready and RepositoryInternetProtocol.Ready;
 end;
 
 function TDreamcastToolManager.GetSettings: TDreamcastSoftwareDevelopmentSettingsDreamcastTool;
@@ -145,14 +105,14 @@ begin
         Url := Environment.Settings.Repositories.DreamcastToolSerialURL;
         InstallationDirectoryName := DCLOAD_SERIAL_INSTALLATION_DIRECTORY;
         InstallationDirectoryPath := Environment.FileSystem.DreamcastTool.SerialDirectory;
-        IsRepositoryReady := RepositoryReadySerial;
+        IsRepositoryReady := RepositorySerial.Ready;
       end;
     dtkInternetProtocol:
       begin
         Url := Environment.Settings.Repositories.DreamcastToolInternetProtocolURL;
         InstallationDirectoryName := DCLOAD_IP_INSTALLATION_DIRECTORY;
         InstallationDirectoryPath := Environment.FileSystem.DreamcastTool.InternetProtocolDirectory;
-        IsRepositoryReady := RepositoryReadyInternetProtocol;
+        IsRepositoryReady := RepositoryInternetProtocol.Ready;
       end;
     dtkUndefined:
       begin
@@ -249,16 +209,18 @@ constructor TDreamcastToolManager.Create(
 begin
   fEnvironment := AEnvironment;
 
-  fRepositoryOfflineSerial := Environment.IsOfflineRepository(
-    Environment.FileSystem.DreamcastTool.SerialDirectory,
-      fRepositoryOfflineVersionSerial);
+  fRepositorySerial := TDreamcastSoftwareDevelopmentRepository.Create(
+    fEnvironment, Environment.FileSystem.DreamcastTool.SerialDirectory);
 
-  fRepositoryOfflineInternetProtocol := Environment.IsOfflineRepository(
-    Environment.FileSystem.DreamcastTool.InternetProtocolDirectory,
-      fRepositoryOfflineVersionInternetProtocol);
+  fRepositoryInternetProtocol := TDreamcastSoftwareDevelopmentRepository.Create(
+    fEnvironment, Environment.FileSystem.DreamcastTool.InternetProtocolDirectory);
+end;
 
-  fRepositoryOffline := fRepositoryOfflineSerial
-    and fRepositoryOfflineInternetProtocol;
+destructor TDreamcastToolManager.Destroy;
+begin
+  fRepositorySerial.Free;
+  fRepositoryInternetProtocol.Free;
+  inherited Destroy;
 end;
 
 function TDreamcastToolManager.CloneRepository(var BufferOutput: string): Boolean;

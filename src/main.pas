@@ -65,6 +65,7 @@ type
     edtPortURL: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
     edtProductBuildDate: TLabeledEdit;
+    gbxEnvironmentContext: TGroupBox;
     gbxKallistiCore: TGroupBox;
     gbxModuleInfo: TGroupBox;
     gbxAvailablePorts: TGroupBox;
@@ -77,8 +78,8 @@ type
     gbxKallistiChangeLog: TGroupBox;
     gbxPortAll: TGroupBox;
     gbxPortDetails: TGroupBox;
-    gbxToolchain: TGroupBox;
-    gbxToolchain1: TGroupBox;
+    gbxToolchainSuperH: TGroupBox;
+    gbxToolchainARM: TGroupBox;
     gbxUrlDreamcastToolIP: TGroupBox;
     gbxUrlDreamcastToolSerial: TGroupBox;
     gbxUrlKallistiOS: TGroupBox;
@@ -121,6 +122,7 @@ type
     lblTextRepoKallistiPorts: TLabel;
     lblTextToolSerial: TLabel;
     lblTextRepoKallistiOS: TLabel;
+    lblTextHomeBaseDir: TLabel;
     lblTitleAbout: TLabel;
     lblTitleHome: TLabel;
     lblVersionBinutils: TLabel;
@@ -138,6 +140,7 @@ type
     lblVersionRepoKallistiPorts: TLabel;
     lblVersionToolSerial: TLabel;
     lblVersionRepoKallistiOS: TLabel;
+    lblValueHomeBaseDir: TLabel;
     lbxPorts: TCheckListBox;
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
@@ -217,6 +220,7 @@ type
     function BooleanToCheckboxState(State: Boolean): TCheckBoxState;
     procedure ClearKallistiPortPanel;
     procedure UpdateKallistiPortControls;
+    function IsVersionLabelValid(VersionLabel: TLabel): Boolean;
     procedure SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
     procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
     procedure UpdateDreamcastToolMediaAccessControlAddressControls;
@@ -228,6 +232,7 @@ type
     procedure LoadRepositoriesSelectionList;
     procedure InitializeAboutScreen;
     procedure InitializeHomeScreen;
+    procedure InitializeEnvironmentScreen;
     procedure HandleAero;
     function GetMsgBoxWindowHandle: THandle;
     function GetAllKallistiPortsIcon(const Operation: TShellThreadInputRequest): TMsgDlgType;
@@ -268,7 +273,7 @@ implementation
 uses
   LCLIntf, IniFiles, StrUtils, UITools, GetVer, SysTools, PostInst, Settings,
   Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil,
-  RunTools;
+  RunTools, RefBase;
 
 const
   KALLISTI_VERSION_FORMAT = '%s (%s)';
@@ -330,7 +335,8 @@ end;
 procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
   if not fShellThreadExecutedAtLeastOnce then
-    DreamcastSoftwareDevelopmentKitManager.KallistiPorts.GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
+    DreamcastSoftwareDevelopmentKitManager.KallistiPorts
+      .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
   FreeNetworkAdapterList;
   ModuleVersionList.Free;
   DreamcastSoftwareDevelopmentKitManager.Free;
@@ -341,6 +347,7 @@ begin
   Screen.Cursor := crHourGlass;
   InitializeHomeScreen;
   InitializeAboutScreen;
+  InitializeEnvironmentScreen;
   fLoadingConfiguration := True;
   LoadRepositoriesSelectionList;
   LoadConfiguration;
@@ -539,7 +546,8 @@ end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
 const
-  GIT_REPO_FORMAT = '%s / %s';
+  GIT_REPO_FORMAT = '%s / %s';  // Repository versions
+
 var
   ComponentName: TComponentName;
   ComponentVersion, ComponentNameString: string;
@@ -575,24 +583,23 @@ begin
     memKallistiChangeLog.Lines.LoadFromFile(DreamcastSoftwareDevelopmentKitManager
       .Environment.FileSystem.Kallisti.KallistiChangeLogFile);
 
-  // Repository versions
   with DreamcastSoftwareDevelopmentKitManager do
   begin
     // KallistiOS
-    lblVersionRepoKallistiOS.Caption := KallistiOS.RepositoryVersion;
+    lblVersionRepoKallistiOS.Caption := KallistiOS.Repository.Version;
 
     // KallistiOS Ports
-    lblVersionRepoKallistiPorts.Caption := KallistiPorts.RepositoryVersion;
+    lblVersionRepoKallistiPorts.Caption := KallistiPorts.Repository.Version;
 
     // Dreamcast Tool Serial
-    if IsVersionValid(lblVersionToolSerial.Caption) then
+    if IsVersionLabelValid(lblVersionToolSerial) then
       lblVersionToolSerial.Caption := Format(GIT_REPO_FORMAT, [
-        lblVersionToolSerial.Caption, DreamcastTool.RepositoryVersionSerial]);
+        lblVersionToolSerial.Caption, DreamcastTool.RepositorySerial.Version]);
 
     // Dreamcast Tool IP
-    if IsVersionValid(lblVersionToolIP.Caption) then
+    if IsVersionLabelValid(lblVersionToolIP) then
       lblVersionToolIP.Caption := Format(GIT_REPO_FORMAT, [
-        lblVersionToolIP.Caption, DreamcastTool.RepositoryVersionInternetProtocol]);
+        lblVersionToolIP.Caption, DreamcastTool.RepositoryInternetProtocol.Version]);
   end;
 end;
 
@@ -703,7 +710,7 @@ begin
     btnPortInstall.Enabled := not SelectedKallistiPort.Installed;
     btnPortUninstall.Enabled := SelectedKallistiPort.Installed;
     btnPortUpdate.Enabled := SelectedKallistiPort.Installed and
-      (not DreamcastSoftwareDevelopmentKitManager.KallistiPorts.RepositoryOffline);
+      (not DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Repository.Offline);
   end
   else
   begin
@@ -711,6 +718,12 @@ begin
     btnPortUninstall.Enabled := False;
     btnPortUpdate.Enabled := False;
   end;
+end;
+
+function TfrmMain.IsVersionLabelValid(VersionLabel: TLabel): Boolean;
+begin
+  Result := (VersionLabel.Caption <> UserInterfaceNotInstalledText)
+    and (VersionLabel.Caption <> EmptyStr) and IsVersionValid(VersionLabel.Caption);
 end;
 
 procedure TfrmMain.SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
@@ -784,14 +797,14 @@ procedure TfrmMain.UpdateOptionsControls;
 begin
   with DreamcastSoftwareDevelopmentKitManager do
   begin
-    cbxUrlKallisti.Enabled := (not KallistiOS.RepositoryReady)
-      and (not KallistiOS.RepositoryOffline);
-    cbxUrlKallistiPorts.Enabled := (not KallistiPorts.RepositoryReady)
-      and (not KallistiPorts.RepositoryOffline);
-    cbxUrlDreamcastToolSerial.Enabled := (not DreamcastTool.RepositoryReadySerial)
-      and (not DreamcastTool.RepositoryOfflineSerial);
-    cbxUrlDreamcastToolIP.Enabled := (not DreamcastTool.RepositoryReadyInternetProtocol)
-      and (not DreamcastTool.RepositoryOfflineInternetProtocol);
+    cbxUrlKallisti.Enabled := (not KallistiOS.Repository.Ready)
+      and (not KallistiOS.Repository.Offline);
+    cbxUrlKallistiPorts.Enabled := (not KallistiPorts.Repository.Ready)
+      and (not KallistiPorts.Repository.Offline);
+    cbxUrlDreamcastToolSerial.Enabled := (not DreamcastTool.RepositorySerial.Ready)
+      and (not DreamcastTool.RepositorySerial.Offline);
+    cbxUrlDreamcastToolIP.Enabled := (not DreamcastTool.RepositoryInternetProtocol.Ready)
+      and (not DreamcastTool.RepositoryInternetProtocol.Offline);
   end;
 end;
 
@@ -940,6 +953,13 @@ begin
   lblHomeShell.Caption := Format(lblHomeShell.Caption, [GetProductName]);
   lblHomeFolder.Caption := Format(lblHomeFolder.Caption, [GetProductName]);
   lblHomeHelp.Caption := Format(lblHomeHelp.Caption, [GetProductName]);
+end;
+
+procedure TfrmMain.InitializeEnvironmentScreen;
+begin
+  gbxEnvironmentContext.Caption := Format(gbxEnvironmentContext.Caption,
+    [GetProductName]);
+  lblValueHomeBaseDir.Caption := GetInstallationBaseDirectory;
 end;
 
 procedure TfrmMain.HandleAero;
@@ -1191,7 +1211,9 @@ begin
       HandleInvalidInternetProtocolAddress(True)
     else
       HandleInvalidMediaAccessControlAddress(True);
-  end;
+  end
+  else
+    Application.ShowException(E);
 end;
 
 procedure TfrmMain.btnAllPortUninstallClick(Sender: TObject);

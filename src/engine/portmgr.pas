@@ -84,6 +84,7 @@ type
     fAddonsId: TStringList;
     fAddonsIncludes: TStringList;
     fAddonsLibraries: TStringList;
+    fRepository: TDreamcastSoftwareDevelopmentRepository;
     fRepositoryOffline: Boolean;
     fRepositoryOfflineVersion: string;
     function GetCount: Integer;
@@ -137,9 +138,8 @@ type
     property CountVisible: Integer read fOnlyVisibleListCount;
     property Installed: Boolean read GetInstalled;
     property Items[Index: Integer]: TKallistiPortItem read GetItem; default;
-    property RepositoryReady: Boolean read GetRepositoryReady;
-    property RepositoryOffline: Boolean read fRepositoryOffline;
-    property RepositoryVersion: string read GetRepositoryVersion;
+    property Repository: TDreamcastSoftwareDevelopmentRepository
+      read fRepository;
   end;
 
 implementation
@@ -975,15 +975,15 @@ begin
   fAddonsId := TStringList.Create;
   fAddonsIncludes := TStringList.Create;
   fAddonsLibraries := TStringList.Create;
-  fRepositoryOffline := Environment.IsOfflineRepository(
-    Environment.FileSystem.Kallisti.KallistiPortsDirectory,
-      fRepositoryOfflineVersion);
+  fRepository := TDreamcastSoftwareDevelopmentRepository.Create(Environment,
+    Environment.FileSystem.Kallisti.KallistiPortsDirectory);
   RetrieveAvailablePorts;
 end;
 
 destructor TKallistiPortManager.Destroy;
 begin
   Clear;
+  fRepository.Free;
   fPortsWithDependencies.Free;
   fPortsWithoutDependencies.Free;
   fList.Free;

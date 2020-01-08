@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 285
+  Left = 879
   Height = 400
-  Top = 116
+  Top = 647
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsOptions
-    TabIndex = 4
+    ActivePage = tsEnvironment
+    TabIndex = 5
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -688,7 +688,7 @@ object frmMain: TfrmMain
       object gbxDreamcastToolCommon: TGroupBox
         Left = 328
         Height = 73
-        Top = 240
+        Top = 244
         Width = 316
         Caption = 'Options:'
         ClientHeight = 55
@@ -716,7 +716,7 @@ object frmMain: TfrmMain
       object gbxDreamcastToolCustomCommand: TGroupBox
         Left = 4
         Height = 113
-        Top = 200
+        Top = 204
         Width = 316
         Caption = 'Custom:'
         ClientHeight = 95
@@ -941,13 +941,13 @@ object frmMain: TfrmMain
       Caption = '&Environment'
       ClientHeight = 322
       ClientWidth = 648
-      object gbxToolchain: TGroupBox
+      object gbxToolchainSuperH: TGroupBox
         Left = 4
-        Height = 168
+        Height = 172
         Top = 4
         Width = 316
         Caption = 'SuperH Toolchain Versions:'
-        ClientHeight = 150
+        ClientHeight = 154
         ClientWidth = 312
         TabOrder = 0
         object lblVersionBinutils: TLabel
@@ -1033,17 +1033,17 @@ object frmMain: TfrmMain
       end
       object gbxDependencies: TGroupBox
         Left = 4
-        Height = 141
-        Top = 176
+        Height = 137
+        Top = 180
         Width = 316
         Caption = 'Dependencies Versions:'
-        ClientHeight = 123
+        ClientHeight = 119
         ClientWidth = 312
         TabOrder = 1
         object lblVersionSVN: TLabel
-          Left = 187
+          Left = 183
           Height = 13
-          Top = 43
+          Top = 36
           Width = 116
           Alignment = taRightJustify
           AutoSize = False
@@ -1051,9 +1051,9 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionGit: TLabel
-          Left = 187
+          Left = 183
           Height = 13
-          Top = 15
+          Top = 8
           Width = 116
           Alignment = taRightJustify
           AutoSize = False
@@ -1061,9 +1061,9 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionPython: TLabel
-          Left = 187
+          Left = 183
           Height = 13
-          Top = 71
+          Top = 64
           Width = 116
           Alignment = taRightJustify
           AutoSize = False
@@ -1071,9 +1071,9 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionMinGW: TLabel
-          Left = 187
+          Left = 183
           Height = 13
-          Top = 99
+          Top = 92
           Width = 116
           Alignment = taRightJustify
           AutoSize = False
@@ -1081,9 +1081,9 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblTextGit: TLabel
-          Left = 12
+          Left = 8
           Height = 13
-          Top = 15
+          Top = 8
           Width = 16
           Caption = 'Git'
           Font.Style = [fsBold]
@@ -1091,9 +1091,9 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblTextPython: TLabel
-          Left = 12
+          Left = 8
           Height = 13
-          Top = 71
+          Top = 64
           Width = 40
           Caption = 'Python'
           Font.Style = [fsBold]
@@ -1101,9 +1101,9 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblTextSVN: TLabel
-          Left = 12
+          Left = 8
           Height = 13
-          Top = 43
+          Top = 36
           Width = 97
           Caption = 'Subversion (SVN)'
           Font.Style = [fsBold]
@@ -1111,9 +1111,9 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblTextMinGW: TLabel
-          Left = 12
+          Left = 8
           Height = 13
-          Top = 99
+          Top = 92
           Width = 39
           Caption = 'MinGW'
           Font.Style = [fsBold]
@@ -1123,17 +1123,17 @@ object frmMain: TfrmMain
       end
       object gbxDreamcastTool: TGroupBox
         Left = 328
-        Height = 100
-        Top = 217
+        Height = 84
+        Top = 180
         Width = 316
         Caption = 'Dreamcast Tool Versions:'
-        ClientHeight = 82
+        ClientHeight = 66
         ClientWidth = 312
         TabOrder = 2
         object lblVersionToolSerial: TLabel
           Left = 136
           Height = 13
-          Top = 15
+          Top = 8
           Width = 167
           Alignment = taRightJustify
           AutoSize = False
@@ -1143,7 +1143,7 @@ object frmMain: TfrmMain
         object lblVersionToolIP: TLabel
           Left = 136
           Height = 13
-          Top = 43
+          Top = 36
           Width = 167
           Alignment = taRightJustify
           AutoSize = False
@@ -1153,7 +1153,7 @@ object frmMain: TfrmMain
         object lblTextToolSerial: TLabel
           Left = 8
           Height = 13
-          Top = 15
+          Top = 8
           Width = 86
           Caption = 'Serial (RS-232)'
           Font.Style = [fsBold]
@@ -1163,7 +1163,7 @@ object frmMain: TfrmMain
         object lblTextToolIP: TLabel
           Left = 8
           Height = 13
-          Top = 43
+          Top = 36
           Width = 123
           Caption = 'Internet Protocol (IP)'
           Font.Style = [fsBold]
@@ -1171,13 +1171,13 @@ object frmMain: TfrmMain
           ParentFont = False
         end
       end
-      object gbxToolchain1: TGroupBox
+      object gbxToolchainARM: TGroupBox
         Left = 328
-        Height = 100
+        Height = 84
         Top = 4
         Width = 316
         Caption = 'ARM Toolchain Versions:'
-        ClientHeight = 82
+        ClientHeight = 66
         ClientWidth = 312
         TabOrder = 3
         object lblVersionBinutilsARM: TLabel
@@ -1223,17 +1223,17 @@ object frmMain: TfrmMain
       end
       object gbxKallistiCore: TGroupBox
         Left = 328
-        Height = 100
-        Top = 112
+        Height = 84
+        Top = 92
         Width = 316
-        Caption = 'KallistiOS Core:'
-        ClientHeight = 82
+        Caption = 'KallistiOS Core Versions:'
+        ClientHeight = 66
         ClientWidth = 312
         TabOrder = 4
         object lblTextRepoKallistiOS: TLabel
           Left = 8
           Height = 13
-          Top = 12
+          Top = 8
           Width = 52
           Caption = 'KallistiOS'
           Font.Style = [fsBold]
@@ -1243,7 +1243,7 @@ object frmMain: TfrmMain
         object lblVersionRepoKallistiOS: TLabel
           Left = 104
           Height = 13
-          Top = 12
+          Top = 8
           Width = 199
           Alignment = taRightJustify
           AutoSize = False
@@ -1253,7 +1253,7 @@ object frmMain: TfrmMain
         object lblVersionRepoKallistiPorts: TLabel
           Left = 104
           Height = 13
-          Top = 40
+          Top = 36
           Width = 199
           Alignment = taRightJustify
           AutoSize = False
@@ -1263,9 +1263,39 @@ object frmMain: TfrmMain
         object lblTextRepoKallistiPorts: TLabel
           Left = 8
           Height = 13
-          Top = 40
+          Top = 36
           Width = 85
           Caption = 'KallistiOS Ports'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+      end
+      object gbxEnvironmentContext: TGroupBox
+        Left = 328
+        Height = 51
+        Top = 266
+        Width = 316
+        Caption = '%s Context:'
+        ClientHeight = 33
+        ClientWidth = 312
+        TabOrder = 5
+        object lblValueHomeBaseDir: TLabel
+          Left = 136
+          Height = 13
+          Top = 6
+          Width = 167
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(Home Base Dir)'
+          ParentColor = False
+        end
+        object lblTextHomeBaseDir: TLabel
+          Left = 8
+          Height = 13
+          Top = 6
+          Width = 89
+          Caption = 'Home Directory'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
