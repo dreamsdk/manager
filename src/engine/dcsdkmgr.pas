@@ -39,7 +39,8 @@ begin
   fEnvironment := TDreamcastSoftwareDevelopmentEnvironment.Create;
   fIntegratedDevelopmentEnvironment := TIntegratedDevelopmentEnvironment.Create(fEnvironment);
   fVersionRetriever := TComponentVersion.Create(fEnvironment);
-  fKallistiPortsManager := TKallistiPortManager.Create(fEnvironment, fIntegratedDevelopmentEnvironment);
+  fKallistiPortsManager := TKallistiPortManager.Create(fEnvironment,
+    fIntegratedDevelopmentEnvironment, fVersionRetriever);
   fKallistiManager := TKallistiManager.Create(fEnvironment);
   fDreamcastTool := TDreamcastToolManager.Create(fEnvironment);
 end;

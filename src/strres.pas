@@ -42,6 +42,7 @@ resourcestring
   ResetRepositoryUpdate = 'Then perform an Update operation to apply the changes.';
   ResetRepositoryContinue = 'Are you sure to continue?';
   InternetConnectionNeeded = 'This feature requires Internet connection.';
+  FailedToResetRepository = 'Failed to reset the %s repository. You have to delete it manually.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';

@@ -5,7 +5,7 @@ unit PortMgr;
 interface
 
 uses
-  Classes, SysUtils, IniFiles, SysTools, Environ, IDEMgr;
+  Classes, SysUtils, IniFiles, SysTools, Environ, IDEMgr, GetVer;
 
 type
   TLibraryLanguageKind = (llkAll, llkC, llkCPP);
@@ -71,6 +71,7 @@ type
   { TKallistiPortManager }
   TKallistiPortManager = class(TObject)
   private
+    fComponentVersion: TComponentVersion;
     fOnlyVisibleListCount: Integer;
     fList: TList;
     fPortsMap: TStringIntegerMap;
@@ -120,11 +121,13 @@ type
     property UtilityDirectory: TFileName read GetUtilityDirectory;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
+    property Versions: TComponentVersion read fComponentVersion;
     property IntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment
       read fIntegratedDevelopmentEnvironment;
   public
     constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
-      AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment);
+      AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment;
+      AComponentVersion: TComponentVersion);
     destructor Destroy; override;
     function CloneRepository(var BufferOutput: string): Boolean;
     procedure GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
@@ -962,10 +965,11 @@ end;
 
 constructor TKallistiPortManager.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
-  AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment
-);
+  AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment;
+  AComponentVersion: TComponentVersion);
 begin
   fEnvironment := AEnvironment;
+  fComponentVersion := AComponentVersion;
   fIntegratedDevelopmentEnvironment := AIntegratedDevelopmentEnvironment;
   fList := TList.Create;
   fPortsWithDependencies := TIntegerList.Create;
@@ -1063,6 +1067,14 @@ begin
       'ln -s',
       'cp -r'
     );
+
+    // Only if Python is not installed
+    if not Versions.PythonInstalled then
+      PatchTextFile(
+        ConfigFileName,
+        'VALIDATE_DISTFILES = true',
+        '#VALIDATE_DISTFILES = true'
+      );
   end;
 end;
 

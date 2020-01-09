@@ -1373,9 +1373,14 @@ begin
 
     if MsgBox(DialogWarningTitle, Msg, mtWarning, [mbYes, mbNo]) = mrYes then
     begin
-      DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem
-        .ResetRepository(TagToRepositoryKind);
-      UpdateOptionsControls;
+      if DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem
+        .ResetRepository(TagToRepositoryKind) then
+      begin
+        UpdateOptionsControls;
+      end
+      else
+        MsgBox(DialogWarningTitle, Format(FailedToResetRepository, [TagToString]),
+          mtWarning, [mbOk])
     end;
   end;
 end;

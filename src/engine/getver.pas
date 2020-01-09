@@ -47,6 +47,7 @@ type
   private
     fBuildDateKallistiOS: TDateTime;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+    fPythonInstalled: Boolean;
     fSubversionInstalled: Boolean;
     fToolchainVersionARM: TToolchainVersion;
     fToolchainVersionSuperH: TToolchainVersion;
@@ -76,6 +77,7 @@ type
     property Subversion: string read fVersionSVN;
     property SubversionInstalled: Boolean read fSubversionInstalled;
     property Python: string read fVersionPython;
+    property PythonInstalled: Boolean read fPythonInstalled;
     property ToolSerial: string read fVersionToolSerial;
     property ToolIP: string read fVersionToolIP;
     property KallistiOS: string read fVersionKallistiOS;
@@ -201,6 +203,7 @@ begin
     fVersionSVN := RetrieveVersion('svn', '--version', 'svn, version', sLineBreak);
     fSubversionInstalled := not SameText(fVersionSVN, INVALID_VERSION);
     fVersionPython := RetrieveVersion('python', '--version', 'Python', sLineBreak);
+    fPythonInstalled := not SameText(fVersionPython, INVALID_VERSION);
     fVersionMinGW := RetrieveVersion(Shell.MinGWGetExecutable,
       '--version', 'mingw-get version', sLineBreak);
 

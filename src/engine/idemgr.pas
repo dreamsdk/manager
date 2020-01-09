@@ -57,7 +57,7 @@ begin
       begin
         fExportLibraryInformationPath := IncludeTrailingPathDelimiter(fExportLibraryInformationPath);
         ForceDirectories(fExportLibraryInformationPath);
-        SetDirectoryRights(fExportLibraryInformationPath, EVERYONE_GROUP_SID, ACL_RIGHT_FULL);
+        SetDirectoryRights(fExportLibraryInformationPath, GetEveryoneName, ACL_RIGHT_FULL);
       end;
     finally
       IniFile.Free;
