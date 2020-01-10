@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsOptions
-    TabIndex = 4
+    ActivePage = tsHome
+    TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -792,7 +792,7 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 64
-          Caption = '&Change...'
+          Caption = '&Reset...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
         end
@@ -821,7 +821,7 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 64
-          Caption = '&Change...'
+          Caption = '&Reset...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
         end
@@ -902,7 +902,7 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 64
-          Caption = '&Change...'
+          Caption = '&Reset...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
         end
@@ -931,7 +931,7 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 64
-          Caption = '&Change...'
+          Caption = '&Reset...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
         end
@@ -951,40 +951,40 @@ object frmMain: TfrmMain
         ClientWidth = 312
         TabOrder = 0
         object lblVersionBinutils: TLabel
-          Left = 187
+          Left = 196
           Height = 13
           Top = 12
-          Width = 116
+          Width = 109
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Binutils)'
           ParentColor = False
         end
         object lblVersionGCC: TLabel
-          Left = 187
+          Left = 196
           Height = 13
           Top = 40
-          Width = 116
+          Width = 109
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(GCC)'
           ParentColor = False
         end
         object lblVersionNewlib: TLabel
-          Left = 187
+          Left = 196
           Height = 13
           Top = 68
-          Width = 116
+          Width = 109
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Newlib)'
           ParentColor = False
         end
         object lblVersionGDB: TLabel
-          Left = 187
+          Left = 196
           Height = 13
           Top = 96
-          Width = 116
+          Width = 109
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(GDB)'
@@ -1030,6 +1030,26 @@ object frmMain: TfrmMain
           ParentColor = False
           ParentFont = False
         end
+        object lblTextPythonGDB: TLabel
+          Left = 8
+          Height = 13
+          Top = 124
+          Width = 179
+          Caption = 'Python for GNU Debugger (GDB)'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object lblVersionPythonGDB: TLabel
+          Left = 196
+          Height = 13
+          Top = 124
+          Width = 109
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(Python for GDB)'
+          ParentColor = False
+        end
       end
       object gbxDependencies: TGroupBox
         Left = 4
@@ -1041,40 +1061,40 @@ object frmMain: TfrmMain
         ClientWidth = 312
         TabOrder = 1
         object lblVersionSVN: TLabel
-          Left = 183
+          Left = 152
           Height = 13
           Top = 36
-          Width = 116
+          Width = 155
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(SVN)'
           ParentColor = False
         end
         object lblVersionGit: TLabel
-          Left = 183
+          Left = 152
           Height = 13
           Top = 8
-          Width = 116
+          Width = 155
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Git)'
           ParentColor = False
         end
         object lblVersionPython: TLabel
-          Left = 183
+          Left = 152
           Height = 13
           Top = 64
-          Width = 116
+          Width = 155
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Python)'
           ParentColor = False
         end
         object lblVersionMinGW: TLabel
-          Left = 183
+          Left = 152
           Height = 13
           Top = 92
-          Width = 116
+          Width = 155
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(MinGW Get)'
@@ -1131,7 +1151,7 @@ object frmMain: TfrmMain
         ClientWidth = 312
         TabOrder = 2
         object lblVersionToolSerial: TLabel
-          Left = 136
+          Left = 140
           Height = 13
           Top = 8
           Width = 167
@@ -1141,7 +1161,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionToolIP: TLabel
-          Left = 136
+          Left = 140
           Height = 13
           Top = 36
           Width = 167
@@ -1181,7 +1201,7 @@ object frmMain: TfrmMain
         ClientWidth = 312
         TabOrder = 3
         object lblVersionBinutilsARM: TLabel
-          Left = 187
+          Left = 189
           Height = 13
           Top = 12
           Width = 118
@@ -1191,7 +1211,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionGCCARM: TLabel
-          Left = 187
+          Left = 191
           Height = 13
           Top = 40
           Width = 116
@@ -1241,7 +1261,7 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblVersionRepoKallistiOS: TLabel
-          Left = 104
+          Left = 108
           Height = 13
           Top = 8
           Width = 199
@@ -1251,7 +1271,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionRepoKallistiPorts: TLabel
-          Left = 104
+          Left = 108
           Height = 13
           Top = 36
           Width = 199
@@ -1281,7 +1301,7 @@ object frmMain: TfrmMain
         ClientWidth = 312
         TabOrder = 5
         object lblValueHomeBaseDir: TLabel
-          Left = 136
+          Left = 140
           Height = 13
           Top = 6
           Width = 167

@@ -112,6 +112,7 @@ type
     lblTextGCC: TLabel;
     lblTextGCCARM: TLabel;
     lblTextGDB: TLabel;
+    lblTextPythonGDB: TLabel;
     lblTextGit: TLabel;
     lblTextKallistiOS: TLabel;
     lblTextMinGW: TLabel;
@@ -130,6 +131,7 @@ type
     lblVersionGCC: TLabel;
     lblVersionGCCARM: TLabel;
     lblVersionGDB: TLabel;
+    lblVersionPythonGDB: TLabel;
     lblVersionGit: TLabel;
     lblVersionKallistiOS: TLabel;
     lblVersionMinGW: TLabel;
@@ -1367,16 +1369,24 @@ begin
   begin
     Index := (Sender as TButton).Tag;
 
-    Msg := Format(ResetRepository, [TagToString]) + MsgBoxWrapStr
-      + ResetRepositoryUpdate + MsgBoxWrapStr
-      + ResetRepositoryContinue;
+    Msg := Format(ResetRepositoryLine1, [TagToString]) + MsgBoxWrapStr
+      + ResetRepositoryLine2 + MsgBoxWrapStr
+      + ResetRepositoryLine3;
 
-    if MsgBox(DialogWarningTitle, Msg, mtWarning, [mbYes, mbNo]) = mrYes then
+    if MsgBox(DialogWarningTitle, Msg, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
     begin
-      if DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem
-        .ResetRepository(TagToRepositoryKind) then
+      if DreamcastSoftwareDevelopmentKitManager
+        .Environment.FileSystem.ResetRepository(TagToRepositoryKind) then
       begin
         UpdateOptionsControls;
+
+        Msg := Format(ResetRepositoryConfirmUpdateLine1, [TagToString]) + MsgBoxWrapStr
+          + ResetRepositoryConfirmUpdateLine2 + MsgBoxWrapStr
+          + Format(ResetRepositoryConfirmUpdateLine3, [KallistiText]);
+
+        if MsgBox(DialogQuestionTitle, Msg,
+          mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
+            ExecuteThreadOperation(stiKallistiManage);
       end
       else
         MsgBox(DialogWarningTitle, Format(FailedToResetRepository, [TagToString]),

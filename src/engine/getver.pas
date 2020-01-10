@@ -17,6 +17,7 @@ type
     cnBinutils,
     cnGCC,
     cnGDB,
+    cnPythonGDB,
     cnNewlib,
     cnToolSerial,
     cnToolIP,
@@ -33,11 +34,13 @@ type
     fVersionGCC: string;
     fVersionGDB: string;
     fVersionNewlib: string;
+    fVersionPythonGDB: string;
   public
     constructor Create(ToolchainKind: TToolchainKind);
     property Binutils: string read fVersionBinutils;
     property GCC: string read fVersionGCC;
     property GDB: string read fVersionGDB;
+    property PythonGDB: string read fVersionPythonGDB;
     property Newlib: string read fVersionNewlib;
     property Kind: TToolchainKind read fKind;
   end;
@@ -60,6 +63,7 @@ type
     fVersionToolIP: string;
     fVersionToolSerial: string;
   protected
+    function IsValidVersion(const Version: string): Boolean;
     function RetrieveKallistiVersion: string;
     function RetrieveKallistiBuildDate: TDateTime;
     procedure RetrieveKallistiInformation;
@@ -93,6 +97,7 @@ implementation
 
 uses
   Forms,
+  StrUtils,
   SysTools,
   VerIntf;
 
@@ -101,7 +106,7 @@ const
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
 const
-  COMPONENTS_NAME: array[0..12] of string = (
+  COMPONENTS_NAME: array[0..13] of string = (
     'Git',
     'SVN',
     'Python',
@@ -109,6 +114,7 @@ const
     'Binutils',
     'GCC',
     'GDB',
+    'PythonGDB',
     'Newlib',
     'ToolSerial',
     'ToolIP',
@@ -129,6 +135,11 @@ begin
 end;
 
 { TComponentVersion }
+
+function TComponentVersion.IsValidVersion(const Version: string): Boolean;
+begin
+  Result := not SameText(Version, INVALID_VERSION);
+end;
 
 function TComponentVersion.RetrieveKallistiVersion: string;
 const
@@ -177,6 +188,16 @@ end;
 
 procedure TComponentVersion.RetrieveVersions;
 
+  function RetrievePythonGdb(const GdbExecutable: TFileName): string;
+  begin
+    Result := RetrieveVersion(GdbExecutable, '--configuration',
+      '--with-python=c:/python/', '/x86'); // Major.Minor.Build
+    Result := Right('.', ReverseString(Result)); // Minor.Major
+    Result := ReverseString(Result); // Major.Minor
+    if SameText(Result, EmptyStr) then
+      Result := INVALID_VERSION;
+  end;
+
   procedure RetrieveVersionToolchain(var AVersion: TToolchainVersion;
     AEnvironment: TDreamcastSoftwareDevelopmentFileSystemToolchain);
   begin
@@ -190,6 +211,7 @@ procedure TComponentVersion.RetrieveVersions;
       begin
         AVersion.fVersionGDB := RetrieveVersion(AEnvironment.GDBExecutable,
           '--version', ' (GDB)', sLineBreak);
+        AVersion.fVersionPythonGDB := RetrievePythonGdb(AEnvironment.GDBExecutable);
         AVersion.fVersionNewlib := RetrieveVersionWithFind(AEnvironment.NewlibBinary,
           '/dc-chain/newlib-', '/newlib/libc/');
       end;
@@ -201,9 +223,9 @@ begin
   begin
     fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak);
     fVersionSVN := RetrieveVersion('svn', '--version', 'svn, version', sLineBreak);
-    fSubversionInstalled := not SameText(fVersionSVN, INVALID_VERSION);
+    fSubversionInstalled := IsValidVersion(fVersionSVN);
     fVersionPython := RetrieveVersion('python', '--version', 'Python', sLineBreak);
-    fPythonInstalled := not SameText(fVersionPython, INVALID_VERSION);
+    fPythonInstalled := IsValidVersion(fVersionPython);
     fVersionMinGW := RetrieveVersion(Shell.MinGWGetExecutable,
       '--version', 'mingw-get version', sLineBreak);
 
@@ -254,6 +276,8 @@ begin
       Result := fToolchainVersionSuperH.fVersionGCC;
     cnGDB:
       Result := fToolchainVersionSuperH.fVersionGDB;
+    cnPythonGDB:
+      Result := fToolchainVersionSuperH.fVersionPythonGDB;
     cnNewlib:
       Result := fToolchainVersionSuperH.fVersionNewlib;
     cnToolSerial:

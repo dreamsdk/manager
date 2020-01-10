@@ -38,9 +38,12 @@ resourcestring
   InstallOrUpdateRequiredDoItNow = 'A management operation of KallistiOS components is necessary. Do it now?';
   UseSubversionKallistiSinglePort = 'Unable to install %s, as it needs the Subversion Client (SVN) which wasn''t detected.';
   UseSubversionAllKallistiPorts = 'Note: The Subversion Client (SVN) wasn''t detected and this may causes issues.';
-  ResetRepository = 'This will delete the %s repository on the disk, losing all your changes if any.';
-  ResetRepositoryUpdate = 'Then perform an Update operation to apply the changes.';
-  ResetRepositoryContinue = 'Are you sure to continue?';
+  ResetRepositoryLine1 = 'This will delete the %s repository on the disk, losing all your changes if any.';
+  ResetRepositoryLine2 = 'Then perform an Update operation to apply the changes.';
+  ResetRepositoryLine3 = 'Are you sure to continue?';
+  ResetRepositoryConfirmUpdateLine1 = '%s repository deleted. Perform the Update operation now?';
+  ResetRepositoryConfirmUpdateLine2 = 'If you want to change the repository URL, answer No.';
+  ResetRepositoryConfirmUpdateLine3 = 'You may do the Update operation later in the %s tab.';
   InternetConnectionNeeded = 'This feature requires Internet connection.';
   FailedToResetRepository = 'Failed to reset the %s repository. You have to delete it manually.';
 
