@@ -17,6 +17,7 @@ type
     fKallistiPortsManager: TKallistiPortManager;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment;
+    procedure UpdateRepositoriesURL;
   public
     constructor Create;
     destructor Destroy; override;
@@ -34,6 +35,17 @@ implementation
 
 { TDreamcastSoftwareDevelopmentKitManager }
 
+procedure TDreamcastSoftwareDevelopmentKitManager.UpdateRepositoriesURL;
+begin
+  with Environment.Settings.Repositories do
+  begin
+    KallistiURL := KallistiOS.Repository.URL;
+    KallistiPortsURL := KallistiPorts.Repository.URL;
+    DreamcastToolSerialURL := DreamcastTool.RepositorySerial.URL;
+    DreamcastToolInternetProtocolURL := DreamcastTool.RepositoryInternetProtocol.URL;
+  end;
+end;
+
 constructor TDreamcastSoftwareDevelopmentKitManager.Create;
 begin
   fEnvironment := TDreamcastSoftwareDevelopmentEnvironment.Create;
@@ -43,6 +55,7 @@ begin
     fIntegratedDevelopmentEnvironment, fVersionRetriever);
   fKallistiManager := TKallistiManager.Create(fEnvironment);
   fDreamcastTool := TDreamcastToolManager.Create(fEnvironment);
+  UpdateRepositoriesURL;
 end;
 
 destructor TDreamcastSoftwareDevelopmentKitManager.Destroy;

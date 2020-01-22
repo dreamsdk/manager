@@ -12,7 +12,7 @@ const
   DCLOAD_SERIAL_INSTALLATION_DIRECTORY = 'dcload-serial';
 
   DREAMSDK_RUNNER_EXECUTABLE = 'dreamsdk-runner.exe';
-  DREAMSDK_LAUNCHER_EXECUTABLE = 'dreamsdk.exe';
+  DREAMSDK_LAUNCHER_EXECUTABLE = 'dreamsdk-shell.exe';
   DREAMSDK_HELP_FILE = 'dreamsdk.chm';
   DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dreamsdk/';
   DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'helpers/';
@@ -39,7 +39,8 @@ type
 
   TToolchainKind = (
     tkSuperH,
-    tkARM
+    tkARM,
+    tkWin32
   );
 
   { TDreamcastSoftwareDevelopmentFileSystemDreamcastTool }
@@ -138,6 +139,7 @@ type
     fShell: TDreamcastSoftwareDevelopmentFileSystemShell;
     fToolchainARM: TDreamcastSoftwareDevelopmentFileSystemToolchain;
     fToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain;
+    fToolchainWin32: TDreamcastSoftwareDevelopmentFileSystemToolchain;
   protected
     function GetReferentialDirectory: TFileName;
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
@@ -154,6 +156,8 @@ type
       read fToolchainARM;
     property ToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain
       read fToolchainSuperH;
+    property ToolchainWin32: TDreamcastSoftwareDevelopmentFileSystemToolchain
+      read fToolchainWin32;
   end;
 
   { TDreamcastSoftwareDevelopmentEnvironment }
@@ -199,6 +203,7 @@ type
     fRepositoryDirectory: TFileName;
     function GetOffline: Boolean;
     function GetReady: Boolean;
+    function GetURL: string;
     function GetVersion: string;
   protected
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
@@ -211,6 +216,7 @@ type
     property Ready: Boolean read GetReady;
     property Offline: Boolean read GetOffline;
     property Version: string read GetVersion;
+    property URL: string read GetURL;
   end;
 
 implementation
@@ -228,6 +234,11 @@ end;
 function TDreamcastSoftwareDevelopmentRepository.GetReady: Boolean;
 begin
   Result := Environment.IsRepositoryReady(Directory);
+end;
+
+function TDreamcastSoftwareDevelopmentRepository.GetURL: string;
+begin
+  Result := Trim(Run('git', 'config --get remote.origin.url', fRepositoryDirectory));
 end;
 
 function TDreamcastSoftwareDevelopmentRepository.GetVersion: string;
@@ -300,7 +311,8 @@ var
   MSYSBase,
   ToolchainBase,
   ToolchainBaseSuperH,
-  ToolchainBaseARM: TFileName;
+  ToolchainBaseARM,
+  ToolchainBaseWin32: TFileName;
 
 begin
   MSYSBase := GetMSysBaseDirectory;
@@ -347,6 +359,17 @@ begin
     fNewlibBinary := ''; // Not Applicable
   end;
 
+  // Toolchain for Win32 (Windows)
+  ToolchainBaseWin32 := GetInstallationBaseDirectory;
+  with fToolchainWin32 do
+  begin
+    fToolchainInstalled := DirectoryExists(ToolchainBaseWin32);
+    fBinutilsExecutable := ToolchainBaseWin32 + 'bin\ld.exe';
+    fGCCExecutable := ToolchainBaseWin32 + 'bin\gcc.exe';
+    fGDBExecutable := ToolchainBaseWin32 + 'bin\gdb.exe';
+    fNewlibBinary := ''; // Not Applicable
+  end;
+
   // dcload/dc-tool
   with fDreamcastTool do
   begin
@@ -380,6 +403,7 @@ begin
   fKallisti := TDreamcastSoftwareDevelopmentFileSystemKallisti.Create;
   fToolchainARM := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkARM);
   fToolchainSuperH := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkSuperH);
+  fToolchainWin32 := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkWin32);
   fShell := TDreamcastSoftwareDevelopmentFileSystemShell.Create;
 end;
 
@@ -387,6 +411,7 @@ destructor TDreamcastSoftwareDevelopmentFileSystem.Destroy;
 begin
   fDreamcastTool.Free;
   fKallisti.Free;
+  fToolchainWin32.Free;
   fToolchainARM.Free;
   fToolchainSuperH.Free;
   fShell.Free;
@@ -508,6 +533,9 @@ end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.AbortShellCommand;
 begin
+{$IFDEF DEBUG}
+  DebugLog('Aborting Shell Command!');
+{$ENDIF}
   if Assigned(fShellCommandRunner) then
     fShellCommandRunner.Abort;
 end;

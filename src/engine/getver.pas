@@ -23,7 +23,10 @@ type
     cnToolIP,
     cnKallistiOS,
     cnBinutilsARM,
-    cnGCCARM
+    cnGCCARM,
+    cnBinutilsWin32,
+    cnGCCWin32,
+    cnGDBWin32
   );
 
   { TToolchainVersion }
@@ -54,6 +57,7 @@ type
     fSubversionInstalled: Boolean;
     fToolchainVersionARM: TToolchainVersion;
     fToolchainVersionSuperH: TToolchainVersion;
+    fToolchainVersionWin32: TToolchainVersion;
     fVersionGit: string;
     fVersionKallistiOS: string;
     fChangeLogKallistiOS: string;
@@ -89,6 +93,7 @@ type
     property KallistiChangeLog: string read fChangeLogKallistiOS;
     property ToolchainSuperH: TToolchainVersion read fToolchainVersionSuperH;
     property ToolchainARM: TToolchainVersion read fToolchainVersionARM;
+    property ToolchainWin32: TToolchainVersion read fToolchainVersionWin32;
   end;
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
@@ -106,7 +111,7 @@ const
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
 const
-  COMPONENTS_NAME: array[0..13] of string = (
+  COMPONENTS_NAME: array[0..16] of string = (
     'Git',
     'SVN',
     'Python',
@@ -120,7 +125,10 @@ const
     'ToolIP',
     'KallistiOS',
     'BinutilsARM',
-    'GCCARM'
+    'GCCARM',
+    'BinutilsWin32',
+    'GCCWin32',
+    'GDBWin32'
   );
 
 begin
@@ -206,11 +214,18 @@ procedure TComponentVersion.RetrieveVersions;
       AVersion.fVersionBinutils := RetrieveVersion(AEnvironment.BinutilsExecutable,
         '--version', ' (GNU Binutils)', sLineBreak);
       AVersion.fVersionGCC := RetrieveVersion(AEnvironment.GCCExecutable,
-        '--version', ' (GCC)', sLineBreak);
-      if AEnvironment.Kind = tkSuperH then
+        '--version', ') ', sLineBreak);
+
+      if AEnvironment.Kind <> tkARM then
       begin
+        // Super-H and Win32
         AVersion.fVersionGDB := RetrieveVersion(AEnvironment.GDBExecutable,
           '--version', ' (GDB)', sLineBreak);
+      end;
+
+      if AEnvironment.Kind = tkSuperH then
+      begin
+        // Super-H only
         AVersion.fVersionPythonGDB := RetrievePythonGdb(AEnvironment.GDBExecutable);
         AVersion.fVersionNewlib := RetrieveVersionWithFind(AEnvironment.NewlibBinary,
           '/dc-chain/newlib-', '/newlib/libc/');
@@ -231,6 +246,7 @@ begin
 
     RetrieveVersionToolchain(fToolchainVersionSuperH, ToolchainSuperH);
     RetrieveVersionToolchain(fToolchainVersionARM, ToolchainARM);
+    RetrieveVersionToolchain(fToolchainVersionWin32, ToolchainWin32);
 
     fVersionToolSerial := RetrieveVersion(DreamcastTool.SerialExecutable,
       '-h', 'dc-tool', 'by <');
@@ -247,11 +263,13 @@ begin
   fEnvironment := AEnvironment;
   fToolchainVersionSuperH := TToolchainVersion.Create(tkSuperH);
   fToolchainVersionARM := TToolchainVersion.Create(tkARM);
+  fToolchainVersionWin32 := TToolchainVersion.Create(tkWin32);
   RetrieveVersions;
 end;
 
 destructor TComponentVersion.Destroy;
 begin
+  fToolchainVersionWin32.Free;
   fToolchainVersionSuperH.Free;
   fToolchainVersionARM.Free;
   inherited Destroy;
@@ -290,6 +308,12 @@ begin
       Result := fToolchainVersionARM.fVersionBinutils;
     cnGCCARM:
       Result := fToolchainVersionARM.fVersionGCC;
+    cnBinutilsWin32:
+      Result := fToolchainVersionWin32.fVersionBinutils;
+    cnGCCWin32:
+      Result := fToolchainVersionWin32.fVersionGCC;
+    cnGDBWin32:
+      Result := fToolchainVersionWin32.fVersionGDB;
   end;
 end;
 

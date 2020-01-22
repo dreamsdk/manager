@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 879
+  Left = 772
   Height = 400
-  Top = 647
+  Top = 438
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsHome
-    TabIndex = 0
+    ActivePage = tsComponents
+    TabIndex = 5
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -773,10 +773,10 @@ object frmMain: TfrmMain
         Left = 4
         Height = 52
         Top = 4
-        Width = 641
+        Width = 640
         Caption = 'KallistiOS Repository URL:'
         ClientHeight = 34
-        ClientWidth = 637
+        ClientWidth = 636
         TabOrder = 0
         object cbxUrlKallisti: TComboBox
           Left = 4
@@ -801,10 +801,10 @@ object frmMain: TfrmMain
         Left = 4
         Height = 52
         Top = 60
-        Width = 641
+        Width = 640
         Caption = 'KallistiOS Ports Repository URL:'
         ClientHeight = 34
-        ClientWidth = 637
+        ClientWidth = 636
         TabOrder = 1
         object cbxUrlKallistiPorts: TComboBox
           Left = 4
@@ -854,10 +854,10 @@ object frmMain: TfrmMain
         Left = 327
         Height = 85
         Top = 232
-        Width = 318
+        Width = 317
         BevelOuter = bvLowered
         ClientHeight = 85
-        ClientWidth = 318
+        ClientWidth = 317
         TabOrder = 2
         object btnOpenMinGWManager: TButton
           Left = 40
@@ -882,10 +882,10 @@ object frmMain: TfrmMain
         Left = 4
         Height = 52
         Top = 116
-        Width = 641
+        Width = 640
         Caption = 'Dreamcast Tool Serial (RS-232) URL:'
         ClientHeight = 34
-        ClientWidth = 637
+        ClientWidth = 636
         TabOrder = 3
         object cbxUrlDreamcastToolSerial: TComboBox
           Left = 4
@@ -911,10 +911,10 @@ object frmMain: TfrmMain
         Left = 4
         Height = 52
         Top = 172
-        Width = 641
+        Width = 640
         Caption = 'Dreamcast Tool Internet Protocol (IP) URL:'
         ClientHeight = 34
-        ClientWidth = 637
+        ClientWidth = 636
         TabOrder = 5
         object cbxUrlDreamcastToolIP: TComboBox
           Left = 4
@@ -937,6 +937,220 @@ object frmMain: TfrmMain
         end
       end
     end
+    object tsComponents: TTabSheet
+      Caption = '&Components'
+      ClientHeight = 322
+      ClientWidth = 648
+      object gbxVersionKallisti: TGroupBox
+        Left = 4
+        Height = 128
+        Top = 60
+        Width = 316
+        Caption = 'KallistiOS Information:'
+        ClientHeight = 110
+        ClientWidth = 312
+        TabOrder = 0
+        object lblTextRepoKallistiOS: TLabel
+          Left = 8
+          Height = 13
+          Top = 8
+          Width = 107
+          Caption = 'Repository Version'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object lblVersionRepoKallistiOS: TLabel
+          Left = 132
+          Height = 13
+          Top = 8
+          Width = 171
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(KallistiOS)'
+          ParentColor = False
+        end
+        object lblVersionKallistiOS2: TLabel
+          Left = 132
+          Height = 13
+          Top = 36
+          Width = 171
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(KallistiOS)'
+          ParentColor = False
+        end
+        object lblTextVersionKallistiOS: TLabel
+          Left = 8
+          Height = 13
+          Top = 36
+          Width = 42
+          Caption = 'Version'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+      end
+      object gbxVersionDreamcastToolSerial: TGroupBox
+        Left = 328
+        Height = 128
+        Top = 60
+        Width = 316
+        Caption = 'Dreamcast Tool Serial (RS-232) Information:'
+        ClientHeight = 110
+        ClientWidth = 312
+        TabOrder = 1
+        object lblVersionRepoToolSerial: TLabel
+          Left = 140
+          Height = 13
+          Top = 8
+          Width = 167
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(DC-TOOL Serial)'
+          ParentColor = False
+        end
+        object lblTextRepoToolSerial: TLabel
+          Left = 8
+          Height = 13
+          Top = 8
+          Width = 107
+          Caption = 'Repository Version'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object lblVersionToolSerial: TLabel
+          Left = 140
+          Height = 13
+          Top = 36
+          Width = 167
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(DC-TOOL Serial)'
+          ParentColor = False
+        end
+        object lblTextVersionDreamcastToolSerial: TLabel
+          Left = 8
+          Height = 13
+          Top = 36
+          Width = 42
+          Caption = 'Version'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+      end
+      object gbxEnvironmentContext: TGroupBox
+        Left = 4
+        Height = 52
+        Top = 4
+        Width = 640
+        Caption = '%s Home Base Directory:'
+        ClientHeight = 34
+        ClientWidth = 636
+        TabOrder = 2
+        object edtValueHomeBaseDir: TEdit
+          Left = 4
+          Height = 21
+          Top = 4
+          Width = 558
+          ParentColor = True
+          ReadOnly = True
+          TabOrder = 0
+          Text = 'edtValueHomeBaseDir'
+        end
+        object btnBrowseHomeBaseDirectory: TButton
+          Left = 568
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Browse...'
+          OnClick = btnBrowseHomeBaseDirectoryClick
+          TabOrder = 1
+        end
+      end
+      object gbxVersionKallistiPorts: TGroupBox
+        Left = 4
+        Height = 124
+        Top = 193
+        Width = 316
+        Caption = 'KallistiOS Ports Information:'
+        ClientHeight = 106
+        ClientWidth = 312
+        TabOrder = 3
+        object lblVersionRepoKallistiPorts: TLabel
+          Left = 132
+          Height = 13
+          Top = 8
+          Width = 171
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(KallistiOS Ports)'
+          ParentColor = False
+        end
+        object lblTextRepoKallistiPorts: TLabel
+          Left = 8
+          Height = 13
+          Top = 8
+          Width = 107
+          Caption = 'Repository Version'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+      end
+      object gbxVersionDreamcastToolIP: TGroupBox
+        Left = 328
+        Height = 124
+        Top = 193
+        Width = 316
+        Caption = 'Dreamcast Tool Internet Protocol (IP) Information:'
+        ClientHeight = 106
+        ClientWidth = 312
+        TabOrder = 4
+        object lblVersionRepoToolIP: TLabel
+          Left = 140
+          Height = 13
+          Top = 8
+          Width = 167
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(DC-TOOL IP)'
+          ParentColor = False
+        end
+        object lblTextRepoToolIP: TLabel
+          Left = 8
+          Height = 13
+          Top = 8
+          Width = 107
+          Caption = 'Repository Version'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object lblVersionToolIP: TLabel
+          Left = 140
+          Height = 13
+          Top = 36
+          Width = 167
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(DC-TOOL IP)'
+          ParentColor = False
+        end
+        object lblTextVersionDreamcastToolIP: TLabel
+          Left = 8
+          Height = 13
+          Top = 36
+          Width = 42
+          Caption = 'Version'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+      end
+    end
     object tsEnvironment: TTabSheet
       Caption = '&Environment'
       ClientHeight = 322
@@ -951,7 +1165,7 @@ object frmMain: TfrmMain
         ClientWidth = 312
         TabOrder = 0
         object lblVersionBinutils: TLabel
-          Left = 196
+          Left = 197
           Height = 13
           Top = 12
           Width = 109
@@ -961,7 +1175,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionGCC: TLabel
-          Left = 196
+          Left = 197
           Height = 13
           Top = 40
           Width = 109
@@ -970,20 +1184,10 @@ object frmMain: TfrmMain
           Caption = '(GCC)'
           ParentColor = False
         end
-        object lblVersionNewlib: TLabel
-          Left = 196
+        object lblVersionGDB: TLabel
+          Left = 197
           Height = 13
           Top = 68
-          Width = 109
-          Alignment = taRightJustify
-          AutoSize = False
-          Caption = '(Newlib)'
-          ParentColor = False
-        end
-        object lblVersionGDB: TLabel
-          Left = 196
-          Height = 13
-          Top = 96
           Width = 109
           Alignment = taRightJustify
           AutoSize = False
@@ -1010,20 +1214,10 @@ object frmMain: TfrmMain
           ParentColor = False
           ParentFont = False
         end
-        object lblTextNewlib: TLabel
-          Left = 8
-          Height = 13
-          Top = 68
-          Width = 36
-          Caption = 'Newlib'
-          Font.Style = [fsBold]
-          ParentColor = False
-          ParentFont = False
-        end
         object lblTextGDB: TLabel
           Left = 8
           Height = 13
-          Top = 96
+          Top = 68
           Width = 117
           Caption = 'GNU Debugger (GDB)'
           Font.Style = [fsBold]
@@ -1033,7 +1227,7 @@ object frmMain: TfrmMain
         object lblTextPythonGDB: TLabel
           Left = 8
           Height = 13
-          Top = 124
+          Top = 96
           Width = 179
           Caption = 'Python for GNU Debugger (GDB)'
           Font.Style = [fsBold]
@@ -1041,27 +1235,47 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblVersionPythonGDB: TLabel
-          Left = 196
+          Left = 197
           Height = 13
-          Top = 124
+          Top = 96
           Width = 109
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Python for GDB)'
           ParentColor = False
         end
+        object lblVersionNewlib: TLabel
+          Left = 197
+          Height = 13
+          Top = 124
+          Width = 109
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(Newlib)'
+          ParentColor = False
+        end
+        object lblTextNewlib: TLabel
+          Left = 8
+          Height = 13
+          Top = 124
+          Width = 36
+          Caption = 'Newlib'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
       end
       object gbxDependencies: TGroupBox
-        Left = 4
-        Height = 137
-        Top = 180
+        Left = 328
+        Height = 133
+        Top = 184
         Width = 316
         Caption = 'Dependencies Versions:'
-        ClientHeight = 119
+        ClientHeight = 115
         ClientWidth = 312
         TabOrder = 1
         object lblVersionSVN: TLabel
-          Left = 152
+          Left = 151
           Height = 13
           Top = 36
           Width = 155
@@ -1071,7 +1285,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionGit: TLabel
-          Left = 152
+          Left = 151
           Height = 13
           Top = 8
           Width = 155
@@ -1081,7 +1295,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionPython: TLabel
-          Left = 152
+          Left = 151
           Height = 13
           Top = 64
           Width = 155
@@ -1091,7 +1305,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionMinGW: TLabel
-          Left = 152
+          Left = 151
           Height = 13
           Top = 92
           Width = 155
@@ -1134,74 +1348,24 @@ object frmMain: TfrmMain
           Left = 8
           Height = 13
           Top = 92
-          Width = 39
-          Caption = 'MinGW'
-          Font.Style = [fsBold]
-          ParentColor = False
-          ParentFont = False
-        end
-      end
-      object gbxDreamcastTool: TGroupBox
-        Left = 328
-        Height = 84
-        Top = 180
-        Width = 316
-        Caption = 'Dreamcast Tool Versions:'
-        ClientHeight = 66
-        ClientWidth = 312
-        TabOrder = 2
-        object lblVersionToolSerial: TLabel
-          Left = 140
-          Height = 13
-          Top = 8
-          Width = 167
-          Alignment = taRightJustify
-          AutoSize = False
-          Caption = '(DC-TOOL Serial)'
-          ParentColor = False
-        end
-        object lblVersionToolIP: TLabel
-          Left = 140
-          Height = 13
-          Top = 36
-          Width = 167
-          Alignment = taRightJustify
-          AutoSize = False
-          Caption = '(DC-TOOL IP)'
-          ParentColor = False
-        end
-        object lblTextToolSerial: TLabel
-          Left = 8
-          Height = 13
-          Top = 8
-          Width = 86
-          Caption = 'Serial (RS-232)'
-          Font.Style = [fsBold]
-          ParentColor = False
-          ParentFont = False
-        end
-        object lblTextToolIP: TLabel
-          Left = 8
-          Height = 13
-          Top = 36
-          Width = 123
-          Caption = 'Internet Protocol (IP)'
+          Width = 62
+          Caption = 'MinGW Get'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
         end
       end
       object gbxToolchainARM: TGroupBox
-        Left = 328
-        Height = 84
-        Top = 4
+        Left = 4
+        Height = 133
+        Top = 184
         Width = 316
         Caption = 'ARM Toolchain Versions:'
-        ClientHeight = 66
+        ClientHeight = 115
         ClientWidth = 312
-        TabOrder = 3
+        TabOrder = 2
         object lblVersionBinutilsARM: TLabel
-          Left = 189
+          Left = 188
           Height = 13
           Top = 12
           Width = 118
@@ -1211,7 +1375,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionGCCARM: TLabel
-          Left = 191
+          Left = 190
           Height = 13
           Top = 40
           Width = 116
@@ -1241,81 +1405,71 @@ object frmMain: TfrmMain
           ParentFont = False
         end
       end
-      object gbxKallistiCore: TGroupBox
+      object gbxToolchainWin32: TGroupBox
         Left = 328
-        Height = 84
-        Top = 92
+        Height = 172
+        Top = 4
         Width = 316
-        Caption = 'KallistiOS Core Versions:'
-        ClientHeight = 66
+        Caption = 'Win32 Toolchain Versions:'
+        ClientHeight = 154
         ClientWidth = 312
-        TabOrder = 4
-        object lblTextRepoKallistiOS: TLabel
+        TabOrder = 3
+        object lblTextBinutilsWin32: TLabel
           Left = 8
           Height = 13
-          Top = 8
-          Width = 52
-          Caption = 'KallistiOS'
+          Top = 12
+          Width = 67
+          Caption = 'GNU Binutils'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
         end
-        object lblVersionRepoKallistiOS: TLabel
-          Left = 108
+        object lblVersionBinutilsWin32: TLabel
+          Left = 197
           Height = 13
-          Top = 8
-          Width = 199
+          Top = 12
+          Width = 109
           Alignment = taRightJustify
           AutoSize = False
-          Caption = '(KallistiOS)'
+          Caption = '(Binutils)'
           ParentColor = False
         end
-        object lblVersionRepoKallistiPorts: TLabel
-          Left = 108
+        object lblVersionGCCWin32: TLabel
+          Left = 197
           Height = 13
-          Top = 36
-          Width = 199
+          Top = 40
+          Width = 109
           Alignment = taRightJustify
           AutoSize = False
-          Caption = '(KallistiOS Ports)'
+          Caption = '(GCC)'
           ParentColor = False
         end
-        object lblTextRepoKallistiPorts: TLabel
+        object lblTextGCCWin32: TLabel
           Left = 8
           Height = 13
-          Top = 36
-          Width = 85
-          Caption = 'KallistiOS Ports'
+          Top = 40
+          Width = 169
+          Caption = 'GNU Compiler Collection (GCC)'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
         end
-      end
-      object gbxEnvironmentContext: TGroupBox
-        Left = 328
-        Height = 51
-        Top = 266
-        Width = 316
-        Caption = '%s Context:'
-        ClientHeight = 33
-        ClientWidth = 312
-        TabOrder = 5
-        object lblValueHomeBaseDir: TLabel
-          Left = 140
+        object lblVersionGDBWin32: TLabel
+          Left = 197
           Height = 13
-          Top = 6
-          Width = 167
+          Top = 68
+          Width = 109
           Alignment = taRightJustify
           AutoSize = False
-          Caption = '(Home Base Dir)'
+          Caption = '(GDB)'
           ParentColor = False
         end
-        object lblTextHomeBaseDir: TLabel
+        object lblTextGDBWin32: TLabel
           Left = 8
           Height = 13
-          Top = 6
-          Width = 89
-          Caption = 'Home Directory'
+          Top = 68
+          Width = 117
+          Caption = 'GNU Debugger (GDB)'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -1330,7 +1484,7 @@ object frmMain: TfrmMain
         Left = 4
         Height = 24
         Top = 8
-        Width = 641
+        Width = 640
         Alignment = taCenter
         AutoSize = False
         Caption = 'About %s'
@@ -1343,10 +1497,10 @@ object frmMain: TfrmMain
         Left = 327
         Height = 190
         Top = 36
-        Width = 318
+        Width = 317
         Caption = 'Components Information:'
         ClientHeight = 172
-        ClientWidth = 314
+        ClientWidth = 313
         TabOrder = 0
         object edtModuleFileVersion: TLabeledEdit
           Left = 120
@@ -1612,10 +1766,10 @@ object frmMain: TfrmMain
         Left = 327
         Height = 85
         Top = 232
-        Width = 318
+        Width = 317
         BevelOuter = bvLowered
         ClientHeight = 85
-        ClientWidth = 318
+        ClientWidth = 317
         TabOrder = 4
         object btnCredits: TButton
           Left = 40

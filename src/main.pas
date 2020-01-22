@@ -29,6 +29,7 @@ type
     btnCredits: TButton;
     btnDreamcastToolCustomExecutable: TButton;
     btnUrlKallisti: TButton;
+    btnBrowseHomeBaseDirectory: TButton;
     Button2: TButton;
     btnUrlKallistiPorts: TButton;
     btnUrlDreamcastToolIP: TButton;
@@ -46,6 +47,7 @@ type
     ckxDreamcastToolSerialExternalClock: TCheckBox;
     cbxModuleSelection: TComboBox;
     cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox;
+    edtValueHomeBaseDir: TEdit;
     edtDreamcastToolCustomExecutable: TEdit;
     edtDreamcastToolCustomArguments: TEdit;
     edtDreamcastToolInternetProtocolAddress: TMaskEdit;
@@ -65,13 +67,14 @@ type
     edtPortURL: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
     edtProductBuildDate: TLabeledEdit;
+    gbxVersionDreamcastToolSerial: TGroupBox;
     gbxEnvironmentContext: TGroupBox;
-    gbxKallistiCore: TGroupBox;
+    gbxVersionDreamcastToolIP: TGroupBox;
+    gbxVersionKallisti: TGroupBox;
     gbxModuleInfo: TGroupBox;
     gbxAvailablePorts: TGroupBox;
     gbxCompilerInfo: TGroupBox;
     gbxDependencies: TGroupBox;
-    gbxDreamcastTool: TGroupBox;
     gbxDreamcastToolCommon: TGroupBox;
     gbxDreamcastToolInternetProtocol: TGroupBox;
     gbxDreamcastToolSerial: TGroupBox;
@@ -90,6 +93,8 @@ type
     gbxHomeFolder: TGroupBox;
     gbxHomeHelp: TGroupBox;
     gbxDreamcastToolCustomCommand: TGroupBox;
+    gbxToolchainWin32: TGroupBox;
+    gbxVersionKallistiPorts: TGroupBox;
     lblDreamcastToolInternetProtocolNetworkAdapter: TLabel;
     lblComponentInformation: TLabel;
     lblDreamcastToolCustomArguments: TLabel;
@@ -107,42 +112,52 @@ type
     lblDreamcastToolInternetProtocolInvalidAddress: TLabel;
     lblPortName: TLabel;
     lblTextBinutils: TLabel;
+    lblTextBinutilsWin32: TLabel;
     lblTextBinutilsARM: TLabel;
     lblTextBuildDateKallistiOS: TLabel;
     lblTextGCC: TLabel;
+    lblTextGCCWin32: TLabel;
     lblTextGCCARM: TLabel;
     lblTextGDB: TLabel;
+    lblTextGDBWin32: TLabel;
+    lblTextNewlib: TLabel;
     lblTextPythonGDB: TLabel;
     lblTextGit: TLabel;
     lblTextKallistiOS: TLabel;
     lblTextMinGW: TLabel;
-    lblTextNewlib: TLabel;
     lblTextPython: TLabel;
-    lblTextSVN: TLabel;
-    lblTextToolIP: TLabel;
-    lblTextRepoKallistiPorts: TLabel;
-    lblTextToolSerial: TLabel;
     lblTextRepoKallistiOS: TLabel;
-    lblTextHomeBaseDir: TLabel;
+    lblTextVersionDreamcastToolSerial: TLabel;
+    lblTextVersionDreamcastToolIP: TLabel;
+    lblTextVersionKallistiOS: TLabel;
+    lblTextRepoKallistiPorts: TLabel;
+    lblTextSVN: TLabel;
+    lblTextRepoToolSerial: TLabel;
+    lblTextRepoToolIP: TLabel;
     lblTitleAbout: TLabel;
     lblTitleHome: TLabel;
     lblVersionBinutils: TLabel;
+    lblVersionBinutilsWin32: TLabel;
     lblVersionBinutilsARM: TLabel;
     lblVersionGCC: TLabel;
+    lblVersionGCCWin32: TLabel;
     lblVersionGCCARM: TLabel;
     lblVersionGDB: TLabel;
+    lblVersionGDBWin32: TLabel;
+    lblVersionNewlib: TLabel;
     lblVersionPythonGDB: TLabel;
     lblVersionGit: TLabel;
     lblVersionKallistiOS: TLabel;
     lblVersionMinGW: TLabel;
-    lblVersionNewlib: TLabel;
     lblVersionPython: TLabel;
-    lblVersionSVN: TLabel;
-    lblVersionToolIP: TLabel;
-    lblVersionRepoKallistiPorts: TLabel;
-    lblVersionToolSerial: TLabel;
     lblVersionRepoKallistiOS: TLabel;
-    lblValueHomeBaseDir: TLabel;
+    lblVersionKallistiOS2: TLabel;
+    lblVersionRepoKallistiPorts: TLabel;
+    lblVersionSVN: TLabel;
+    lblVersionRepoToolSerial: TLabel;
+    lblVersionRepoToolIP: TLabel;
+    lblVersionToolSerial: TLabel;
+    lblVersionToolIP: TLabel;
     lbxPorts: TCheckListBox;
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
@@ -153,6 +168,7 @@ type
     pnlActions: TPanel;
     rgbDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
+    tsComponents: TTabSheet;
     tsHome: TTabSheet;
     tmDisplayKallistiPorts: TTimer;
     tmrShellThreadTerminate: TTimer;
@@ -165,6 +181,7 @@ type
     procedure apMainException(Sender: TObject; E: Exception);
     procedure btnAllPortInstallClick(Sender: TObject);
     procedure btnAllPortUninstallClick(Sender: TObject);
+    procedure btnBrowseHomeBaseDirectoryClick(Sender: TObject);
     procedure btnCheckForUpdatesClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnCreditsClick(Sender: TObject);
@@ -234,7 +251,8 @@ type
     procedure LoadRepositoriesSelectionList;
     procedure InitializeAboutScreen;
     procedure InitializeHomeScreen;
-    procedure InitializeEnvironmentScreen;
+    procedure InitializeComponentsScreen;
+    procedure InitializeOptionsScreen;
     procedure HandleAero;
     function GetMsgBoxWindowHandle: THandle;
     function GetAllKallistiPortsIcon(const Operation: TShellThreadInputRequest): TMsgDlgType;
@@ -349,7 +367,8 @@ begin
   Screen.Cursor := crHourGlass;
   InitializeHomeScreen;
   InitializeAboutScreen;
-  InitializeEnvironmentScreen;
+  InitializeComponentsScreen;
+  InitializeOptionsScreen;
   fLoadingConfiguration := True;
   LoadRepositoriesSelectionList;
   LoadConfiguration;
@@ -547,9 +566,6 @@ begin
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
-const
-  GIT_REPO_FORMAT = '%s / %s';  // Repository versions
-
 var
   ComponentName: TComponentName;
   ComponentVersion, ComponentNameString: string;
@@ -594,15 +610,14 @@ begin
     lblVersionRepoKallistiPorts.Caption := KallistiPorts.Repository.Version;
 
     // Dreamcast Tool Serial
-    if IsVersionLabelValid(lblVersionToolSerial) then
-      lblVersionToolSerial.Caption := Format(GIT_REPO_FORMAT, [
-        lblVersionToolSerial.Caption, DreamcastTool.RepositorySerial.Version]);
+    lblVersionRepoToolSerial.Caption := DreamcastTool.RepositorySerial.Version;
 
     // Dreamcast Tool IP
-    if IsVersionLabelValid(lblVersionToolIP) then
-      lblVersionToolIP.Caption := Format(GIT_REPO_FORMAT, [
-        lblVersionToolIP.Caption, DreamcastTool.RepositoryInternetProtocol.Version]);
+    lblVersionRepoToolIP.Caption := DreamcastTool.RepositoryInternetProtocol.Version;
   end;
+
+  // Update Components page
+  lblVersionKallistiOS2.Caption := lblVersionKallistiOS.Caption;
 end;
 
 procedure TfrmMain.DisplayKallistiPorts(ClearList: Boolean);
@@ -651,12 +666,6 @@ begin
     // Settings
     if UseMinTTY then
       rgxTerminalOption.ItemIndex := 1;
-
-    // Repositories
-    cbxUrlKallisti.Text := Repositories.KallistiURL;
-    cbxUrlKallistiPorts.Text := Repositories.KallistiPortsURL;
-    cbxUrlDreamcastToolSerial.Text := Repositories.DreamcastToolSerialURL;
-    cbxUrlDreamcastToolIP.Text := Repositories.DreamcastToolInternetProtocolURL;
 
     // Dreamcast Tool
     cbxDreamcastToolSerialPort.ItemIndex := Integer(DreamcastTool.SerialPort);
@@ -957,11 +966,22 @@ begin
   lblHomeHelp.Caption := Format(lblHomeHelp.Caption, [GetProductName]);
 end;
 
-procedure TfrmMain.InitializeEnvironmentScreen;
+procedure TfrmMain.InitializeComponentsScreen;
 begin
   gbxEnvironmentContext.Caption := Format(gbxEnvironmentContext.Caption,
     [GetProductName]);
-  lblValueHomeBaseDir.Caption := GetInstallationBaseDirectory;
+  edtValueHomeBaseDir.Caption := GetInstallationBaseDirectory;
+end;
+
+procedure TfrmMain.InitializeOptionsScreen;
+begin
+  with DreamcastSoftwareDevelopmentKitManager do
+  begin
+    cbxUrlKallisti.Text := KallistiOS.Repository.URL;
+    cbxUrlKallistiPorts.Text := KallistiPorts.Repository.URL;
+    cbxUrlDreamcastToolSerial.Text := DreamcastTool.RepositorySerial.URL;
+    cbxUrlDreamcastToolIP.Text := DreamcastTool.RepositoryInternetProtocol.URL;
+  end;
 end;
 
 procedure TfrmMain.HandleAero;
@@ -1225,6 +1245,11 @@ begin
       ExecuteThreadOperation(stiKallistiPortsUninstall);
 end;
 
+procedure TfrmMain.btnBrowseHomeBaseDirectoryClick(Sender: TObject);
+begin
+  RunShellExecute(edtValueHomeBaseDir.Text);
+end;
+
 procedure TfrmMain.btnCheckForUpdatesClick(Sender: TObject);
 const
   VALID_PREFIX = 'http';
@@ -1249,9 +1274,14 @@ begin
 end;
 
 procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);
+var
+  ShellExecutable: TFileName;
+
 begin
   DreamcastSoftwareDevelopmentKitManager.Environment.Settings.SaveConfiguration;
-  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.LauncherExecutable);
+  ShellExecutable := DreamcastSoftwareDevelopmentKitManager.Environment
+    .FileSystem.Shell.LauncherExecutable;
+  RunNoWait(ShellExecutable);
 end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
