@@ -1808,7 +1808,7 @@ object frmMain: TfrmMain
   end
   object apMain: TApplicationProperties
     OnException = apMainException
-    left = 168
+    left = 164
     top = 352
   end
   object opdDreamcastToolCustom: TOpenDialog

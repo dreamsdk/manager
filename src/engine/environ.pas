@@ -332,7 +332,7 @@ begin
     fDreamSDKDirectory := DreamSDKBase;
     fDreamSDKExecutable := fDreamSDKDirectory + DREAMSDK_LAUNCHER_EXECUTABLE;
     fRunnerExecutable := fDreamSDKDirectory + DREAMSDK_RUNNER_EXECUTABLE;
-    fConfigurationDirectory := MSYSBase + UnixPathToSystem(SETTINGS_DIRECTORY);
+    fConfigurationDirectory := GetConfigurationDirectory;
     fIntegratedDevelopmentEnvironmentConfigurationFile := GetConfigurationDirectory + 'ide.conf';
     fHelpFileName := fDreamSDKDirectory + DREAMSDK_HELP_FILE;
   end;
