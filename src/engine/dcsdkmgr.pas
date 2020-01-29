@@ -56,6 +56,7 @@ begin
   fKallistiManager := TKallistiManager.Create(fEnvironment);
   fDreamcastTool := TDreamcastToolManager.Create(fEnvironment);
   UpdateRepositoriesURL;
+  fIntegratedDevelopmentEnvironment.CodeBlocks.RefreshStatus;
 end;
 
 destructor TDreamcastSoftwareDevelopmentKitManager.Destroy;

@@ -46,6 +46,11 @@ resourcestring
   ResetRepositoryConfirmUpdateLine3 = 'You may do the Update operation later in the %s tab.';
   InternetConnectionNeeded = 'This feature requires Internet connection.';
   FailedToResetRepository = 'Failed to reset the %s repository. You have to delete it manually.';
+  ConfirmCodeBlocksMessage = 'Are you sure to %s the Code::Blocks integration?';
+  ConfirmCodeBlocksInstallation = 'install';
+  ConfirmCodeBlocksReinstallation = 'reinstall';
+  ConfirmCodeBlocksUninstallation = 'uninstall definitely';
+  CodeBlocksInstallationDirectoryInvalid = 'The Code::Blocks installation directory doesn''t exists.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';

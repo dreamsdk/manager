@@ -109,6 +109,7 @@ type
   { TDreamcastSoftwareDevelopmentFileSystemShell }
   TDreamcastSoftwareDevelopmentFileSystemShell = class(TObject)
   private
+    fCodeBlocksPatcherExecutable: TFileName;
     fConfigurationDirectory: TFileName;
     fDreamSDKDirectory: TFileName;
     fDreamSDKExecutable: TFileName;
@@ -129,6 +130,8 @@ type
     property HomeDirectory: TFileName read fHomeDirectory;
     property IntegratedDevelopmentEnvironmentConfigurationFile: TFileName
       read fIntegratedDevelopmentEnvironmentConfigurationFile;
+    property CodeBlocksPatcherExecutable: TFileName
+      read fCodeBlocksPatcherExecutable;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystem }
@@ -326,7 +329,8 @@ begin
     // MinGW/MSYS
     fMinGWGetExecutable := InstallPath + 'bin\mingw-get.exe';
     fShellExecutable := MSYSBase + 'bin\sh.exe';
-    fHomeDirectory := MSYSBase + 'home\' + GetEnvironmentVariable('USERNAME') + '\';
+    fHomeDirectory := MSYSBase + 'home\' + GetEnvironmentVariable('USERNAME')
+      + DirectorySeparator;
 
     // DreamSDK
     fDreamSDKDirectory := DreamSDKBase;
@@ -335,6 +339,8 @@ begin
     fConfigurationDirectory := GetConfigurationDirectory;
     fIntegratedDevelopmentEnvironmentConfigurationFile := GetConfigurationDirectory + 'ide.conf';
     fHelpFileName := fDreamSDKDirectory + DREAMSDK_HELP_FILE;
+    fCodeBlocksPatcherExecutable := fDreamSDKDirectory +
+      'packages\ide\codeblocks\codeblocks-patcher.exe';
   end;
 
   // Toolchain for Super-H (Hitachi SH-4)

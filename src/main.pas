@@ -15,8 +15,12 @@ type
     apMain: TApplicationProperties;
     btnAllPortInstall: TButton;
     btnAllPortUninstall: TButton;
+    btnIdeCodeBlocksInstallDir: TButton;
     btnClose: TButton;
     btnCheckForUpdates: TButton;
+    btnIdeInstall: TButton;
+    btnIdeReinstall: TButton;
+    btnIdeUninstall: TButton;
     btnOpenHelp: TButton;
     btnOpenHome: TButton;
     btnOpenMinGWManager: TButton;
@@ -47,6 +51,7 @@ type
     ckxDreamcastToolSerialExternalClock: TCheckBox;
     cbxModuleSelection: TComboBox;
     cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox;
+    edtIdeCodeBlocksInstallDir: TEdit;
     edtValueHomeBaseDir: TEdit;
     edtDreamcastToolCustomExecutable: TEdit;
     edtDreamcastToolCustomArguments: TEdit;
@@ -67,6 +72,8 @@ type
     edtPortURL: TLabeledEdit;
     edtPortVersion: TLabeledEdit;
     edtProductBuildDate: TLabeledEdit;
+    gbxIdeCodeBlocksInstallDir: TGroupBox;
+    gbxIdeList: TGroupBox;
     gbxVersionDreamcastToolSerial: TGroupBox;
     gbxEnvironmentContext: TGroupBox;
     gbxVersionDreamcastToolIP: TGroupBox;
@@ -95,6 +102,9 @@ type
     gbxDreamcastToolCustomCommand: TGroupBox;
     gbxToolchainWin32: TGroupBox;
     gbxVersionKallistiPorts: TGroupBox;
+    gbxIdeCodeBlocksUsersInstalled: TGroupBox;
+    gbxIdeCodeBlocksUsersAvailable: TGroupBox;
+    gbxIdeCodeBlocksActions: TGroupBox;
     lblDreamcastToolInternetProtocolNetworkAdapter: TLabel;
     lblComponentInformation: TLabel;
     lblDreamcastToolCustomArguments: TLabel;
@@ -159,6 +169,9 @@ type
     lblVersionToolSerial: TLabel;
     lblVersionToolIP: TLabel;
     lbxPorts: TCheckListBox;
+    lbxIdeList: TCheckListBox;
+    lbxIdeCodeBlocksUsersInstalled: TListBox;
+    lbxIdeCodeBlocksUsersAvailable: TListBox;
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
     memPortShortDescription: TMemo;
@@ -168,6 +181,8 @@ type
     pnlActions: TPanel;
     rgbDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
+    sddIdeCodeBlocks: TSelectDirectoryDialog;
+    tsIDE: TTabSheet;
     tsComponents: TTabSheet;
     tsHome: TTabSheet;
     tmDisplayKallistiPorts: TTimer;
@@ -185,6 +200,7 @@ type
     procedure btnCheckForUpdatesClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnCreditsClick(Sender: TObject);
+    procedure btnIdeCodeBlocksInstallDirClick(Sender: TObject);
     procedure btnOpenHelpClick(Sender: TObject);
     procedure btnOpenHomeClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
@@ -196,6 +212,7 @@ type
     procedure btnUpdateKallistiOSClick(Sender: TObject);
     procedure btnDreamcastToolCustomExecutableClick(Sender: TObject);
     procedure btnUrlKallistiClick(Sender: TObject);
+    procedure btnIdeInstallClick(Sender: TObject);
     procedure cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
     procedure cbxDreamcastToolSerialPortSelect(Sender: TObject);
     procedure cbxModuleSelectionChange(Sender: TObject);
@@ -214,6 +231,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure lbxIdeListClickCheck(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
     procedure pcMainChange(Sender: TObject);
@@ -252,6 +270,7 @@ type
     procedure InitializeAboutScreen;
     procedure InitializeHomeScreen;
     procedure InitializeComponentsScreen;
+    procedure InitializeIdeScreen;
     procedure InitializeOptionsScreen;
     procedure HandleAero;
     function GetMsgBoxWindowHandle: THandle;
@@ -262,6 +281,7 @@ type
     procedure FreeNetworkAdapterList;
     function HostMacToItemIndex(const HostMediaAccessControlAddress: string): Integer;
     function HasNetworkAdapters: Boolean;
+    procedure RefreshIdeScreen;
   public
     procedure RefreshViewDreamcastTool;
     procedure RefreshViewKallistiPorts(ForceRefresh: Boolean);
@@ -369,6 +389,7 @@ begin
   InitializeAboutScreen;
   InitializeComponentsScreen;
   InitializeOptionsScreen;
+  InitializeIdeScreen;
   fLoadingConfiguration := True;
   LoadRepositoriesSelectionList;
   LoadConfiguration;
@@ -376,6 +397,11 @@ begin
   DisplayKallistiPorts(True);
   fLoadingConfiguration := False;
   Screen.Cursor := crDefault;
+end;
+
+procedure TfrmMain.lbxIdeListClickCheck(Sender: TObject);
+begin
+  RefreshIdeScreen;
 end;
 
 procedure TfrmMain.lbxPortsClickCheck(Sender: TObject);
@@ -973,6 +999,14 @@ begin
   edtValueHomeBaseDir.Caption := GetInstallationBaseDirectory;
 end;
 
+procedure TfrmMain.InitializeIdeScreen;
+begin
+  lbxIdeList.ItemIndex := 0;
+  gbxIdeCodeBlocksUsersInstalled.Caption :=
+    Format(gbxIdeCodeBlocksUsersInstalled.Caption, [GetProductName]);
+  lbxIdeListClickCheck(Self);
+end;
+
 procedure TfrmMain.InitializeOptionsScreen;
 begin
   with DreamcastSoftwareDevelopmentKitManager do
@@ -1109,6 +1143,22 @@ begin
   Result := cbxDreamcastToolInternetProtocolNetworkAdapter.Items.Count > 0;
 end;
 
+procedure TfrmMain.RefreshIdeScreen;
+begin
+  with DreamcastSoftwareDevelopmentKitManager
+    .IntegratedDevelopmentEnvironment.CodeBlocks do
+  begin
+    gbxIdeCodeBlocksInstallDir.Enabled := not Installed;
+    edtIdeCodeBlocksInstallDir.Text := InstallationDirectory;
+    lbxIdeCodeBlocksUsersAvailable.Items.Assign(AvailableUsers);
+    lbxIdeCodeBlocksUsersInstalled.Items.Assign(InstalledUsers);
+    btnIdeInstall.Enabled := not Installed;
+    btnIdeReinstall.Enabled := Installed;
+    btnIdeUninstall.Enabled := Installed;
+    lbxIdeList.State[lbxIdeList.ItemIndex] := BooleanToCheckboxState(Installed);
+  end;
+end;
+
 procedure TfrmMain.RefreshViewKallistiPorts(ForceRefresh: Boolean);
 
   procedure RefreshKallistiPortsControls;
@@ -1202,6 +1252,13 @@ end;
 procedure TfrmMain.btnCreditsClick(Sender: TObject);
 begin
   frmAbout.ShowModal;
+end;
+
+procedure TfrmMain.btnIdeCodeBlocksInstallDirClick(Sender: TObject);
+begin
+  with sddIdeCodeBlocks do
+    if Execute then
+      edtIdeCodeBlocksInstallDir.Text := FileName;
 end;
 
 procedure TfrmMain.btnOpenHelpClick(Sender: TObject);
@@ -1423,6 +1480,46 @@ begin
           mtWarning, [mbOk])
     end;
   end;
+end;
+
+procedure TfrmMain.btnIdeInstallClick(Sender: TObject);
+begin
+  gbxIdeCodeBlocksActions.Enabled := False;
+  Cursor := crHourGlass;
+
+  with DreamcastSoftwareDevelopmentKitManager.IntegratedDevelopmentEnvironment.CodeBlocks do
+    case (Sender as TButton).Tag of
+      0: // Install
+        begin
+          if not DirectoryExists(edtIdeCodeBlocksInstallDir.Text) then
+          begin
+            MsgBox(DialogWarningTitle, CodeBlocksInstallationDirectoryInvalid,
+              mtWarning, [mbOK]);
+            Exit;
+          end;
+
+          if MsgBox(DialogQuestionTitle, Format(ConfirmCodeBlocksMessage,
+            [ConfirmCodeBlocksInstallation]), mtConfirmation, [mbYes, mbNo]) = mrYes then
+              if not Install(edtIdeCodeBlocksInstallDir.Text) then
+                MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+        end;
+
+      1: // Reinstall
+        if MsgBox(DialogWarningTitle, Format(ConfirmCodeBlocksMessage,
+          [ConfirmCodeBlocksReinstallation]), mtWarning, [mbYes, mbNo]) = mrYes then
+            if not Reinstall then
+              MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+
+      2: // Uninstall
+        if MsgBox(DialogWarningTitle, Format(ConfirmCodeBlocksMessage,
+          [ConfirmCodeBlocksUninstallation]), mtWarning, [mbYes, mbNo]) = mrYes then
+            if not Uninstall then
+              MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+    end;
+
+  RefreshIdeScreen;
+  Cursor := crDefault;
+  gbxIdeCodeBlocksActions.Enabled := True;
 end;
 
 procedure TfrmMain.cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
