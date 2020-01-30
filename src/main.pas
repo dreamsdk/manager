@@ -1450,6 +1450,17 @@ var
     end;
   end;
 
+  function TagToComboBox: TComboBox;
+  begin
+    Result := nil;
+    case Index of
+      0: Result := cbxUrlKallisti;
+      1: Result := cbxUrlKallistiPorts;
+      2: Result := cbxUrlDreamcastToolSerial;
+      3: Result := cbxUrlDreamcastToolIP;
+    end;
+  end;
+
 begin
   if not IsInternetConnectionAvailable then
     MsgBox(DialogWarningTitle, InternetConnectionNeeded, mtWarning, [mbOK])
@@ -1467,6 +1478,9 @@ begin
         .Environment.FileSystem.ResetRepository(TagToRepositoryKind) then
       begin
         UpdateOptionsControls;
+
+        if Assigned(TagToComboBox) and (TagToComboBox.Items.Count > 0) then
+          TagToComboBox.ItemIndex := 0;
 
         Msg := Format(ResetRepositoryConfirmUpdateLine1, [TagToString]) + MsgBoxWrapStr
           + ResetRepositoryConfirmUpdateLine2 + MsgBoxWrapStr

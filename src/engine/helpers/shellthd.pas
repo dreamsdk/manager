@@ -95,7 +95,7 @@ procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
 implementation
 
 uses
-  Forms, Main, Progress, PostInst, StrRes;
+  Forms, Main, Progress, StrRes;
 
 type
   { TShellThreadHelper }
