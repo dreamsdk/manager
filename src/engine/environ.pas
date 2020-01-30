@@ -236,7 +236,7 @@ end;
 
 function TDreamcastSoftwareDevelopmentRepository.GetReady: Boolean;
 begin
-  Result := Environment.IsRepositoryReady(Directory);
+  Result := Environment.IsRepositoryReady(fRepositoryDirectory);
 end;
 
 function TDreamcastSoftwareDevelopmentRepository.GetURL: string;
@@ -248,9 +248,7 @@ end;
 
 function TDreamcastSoftwareDevelopmentRepository.GetVersion: string;
 begin
-  Result := EmptyStr;
-  if Ready then
-    Result := Environment.GetRepositoryVersion(Directory);
+  Result := Environment.GetRepositoryVersion(Directory);
 end;
 
 constructor TDreamcastSoftwareDevelopmentRepository.Create(
@@ -516,8 +514,13 @@ function TDreamcastSoftwareDevelopmentEnvironment.IsRepositoryReady(
 const
   GIT_SYSTEM_DIRECTORY = '.git';
 
+var
+  AWorkingDirectory: TFileName;
+
 begin
-  Result := DirectoryExists(WorkingDirectory + GIT_SYSTEM_DIRECTORY);
+  AWorkingDirectory := IncludeTrailingPathDelimiter(WorkingDirectory);
+  Result := DirectoryExists(AWorkingDirectory) and
+    DirectoryExists(AWorkingDirectory + GIT_SYSTEM_DIRECTORY);
 end;
 
 constructor TDreamcastSoftwareDevelopmentEnvironment.Create;
@@ -614,10 +617,11 @@ function TDreamcastSoftwareDevelopmentEnvironment.GetRepositoryVersion(
   const WorkingDirectory: TFileName): string;
 begin
   Result := EmptyStr;
-  if IsOfflineRepository(WorkingDirectory) then
-    Result := LoadFileToString(GetOfflineFileName(WorkingDirectory))
-  else
-    Result := Run('git', 'describe --dirty --always', WorkingDirectory, False);
+  if DirectoryExists(WorkingDirectory) then
+    if IsOfflineRepository(WorkingDirectory) then
+      Result := LoadFileToString(GetOfflineFileName(WorkingDirectory))
+    else
+      Result := Run('git', 'describe --dirty --always', WorkingDirectory, False);
 end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.IsOfflineRepository(
