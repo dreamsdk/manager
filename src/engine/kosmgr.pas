@@ -37,13 +37,13 @@ type
 implementation
 
 uses
-  FileUtil, SysTools;
+  FileUtil, SysTools, PostInst;
 
 { TKallistiManager }
 
 function TKallistiManager.GetInstalled: Boolean;
 begin
-  Result := DirectoryExists(
+  Result := (not IsPostInstallMode) and DirectoryExists(
     Environment.FileSystem.Kallisti.KallistiDirectory);
 end;
 

@@ -53,7 +53,7 @@ type
 implementation
 
 uses
-  FSTools, FileUtil, IniFiles;
+  FSTools, FileUtil, IniFiles, PostInst;
 
 { TDreamcastToolManager }
 
@@ -65,7 +65,8 @@ end;
 
 function TDreamcastToolManager.GetInstalled: Boolean;
 begin
-  Result := DirectoryExists(Environment.FileSystem.DreamcastTool.SerialDirectory)
+  Result := (not IsPostInstallMode)
+    and DirectoryExists(Environment.FileSystem.DreamcastTool.SerialDirectory)
     and DirectoryExists(Environment.FileSystem.DreamcastTool.InternetProtocolDirectory);
 end;
 
