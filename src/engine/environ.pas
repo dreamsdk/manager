@@ -241,12 +241,16 @@ end;
 
 function TDreamcastSoftwareDevelopmentRepository.GetURL: string;
 begin
-  Result := Trim(Run('git', 'config --get remote.origin.url', fRepositoryDirectory));
+  Result := EmptyStr;
+  if Ready then
+    Result := Trim(Run('git', 'config --get remote.origin.url', fRepositoryDirectory));
 end;
 
 function TDreamcastSoftwareDevelopmentRepository.GetVersion: string;
 begin
-  Result := Environment.GetRepositoryVersion(Directory);
+  Result := EmptyStr;
+  if Ready then
+    Result := Environment.GetRepositoryVersion(Directory);
 end;
 
 constructor TDreamcastSoftwareDevelopmentRepository.Create(

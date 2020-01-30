@@ -630,16 +630,16 @@ begin
   with DreamcastSoftwareDevelopmentKitManager do
   begin
     // KallistiOS
-    lblVersionRepoKallistiOS.Caption := KallistiOS.Repository.Version;
+    SetVersionLabel(lblVersionRepoKallistiOS, KallistiOS.Repository.Version);
 
     // KallistiOS Ports
-    lblVersionRepoKallistiPorts.Caption := KallistiPorts.Repository.Version;
+    SetVersionLabel(lblVersionRepoKallistiPorts, KallistiPorts.Repository.Version);
 
     // Dreamcast Tool Serial
-    lblVersionRepoToolSerial.Caption := DreamcastTool.RepositorySerial.Version;
+    SetVersionLabel(lblVersionRepoToolSerial, DreamcastTool.RepositorySerial.Version);
 
     // Dreamcast Tool IP
-    lblVersionRepoToolIP.Caption := DreamcastTool.RepositoryInternetProtocol.Version;
+    SetVersionLabel(lblVersionRepoToolIP, DreamcastTool.RepositoryInternetProtocol.Version);
   end;
 
   // Update Components page
