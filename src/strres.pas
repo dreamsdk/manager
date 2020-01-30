@@ -50,7 +50,10 @@ resourcestring
   ConfirmCodeBlocksInstallation = 'install';
   ConfirmCodeBlocksReinstallation = 'reinstall';
   ConfirmCodeBlocksUninstallation = 'uninstall definitely';
-  CodeBlocksInstallationDirectoryInvalid = 'The Code::Blocks installation directory doesn''t exists.';
+  CodeBlocksInstallationDirectoryNotExists = 'The specified Code::Blocks installation directory does not exists.';
+  CodeBlocksInstallationDirectoryInvalid = 'Code::Blocks is not installed in this directory.';
+  CodeBlocksIncorrectHash1 = 'The installed Code::Blocks version seems NOT to be the expected Code::Blocks 17.12.';
+  CodeBlocksIncorrectHash2 = 'There is no guarantee that it will work. Continue anyway?';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';

@@ -313,7 +313,7 @@ implementation
 uses
   LCLIntf, IniFiles, StrUtils, UITools, GetVer, SysTools, PostInst, Settings,
   Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil,
-  RunTools, RefBase;
+  RunTools, RefBase, MD5;
 
 const
   KALLISTI_VERSION_FORMAT = '%s (%s)';
@@ -1149,7 +1149,8 @@ begin
     .IntegratedDevelopmentEnvironment.CodeBlocks do
   begin
     gbxIdeCodeBlocksInstallDir.Enabled := not Installed;
-    edtIdeCodeBlocksInstallDir.Text := InstallationDirectory;
+    if Installed or (not Installed and IsEmpty(edtIdeCodeBlocksInstallDir.Text)) then
+      edtIdeCodeBlocksInstallDir.Text := InstallationDirectory;
     lbxIdeCodeBlocksUsersAvailable.Items.Assign(AvailableUsers);
     lbxIdeCodeBlocksUsersInstalled.Items.Assign(InstalledUsers);
     btnIdeInstall.Enabled := not Installed;
@@ -1483,43 +1484,99 @@ begin
 end;
 
 procedure TfrmMain.btnIdeInstallClick(Sender: TObject);
+const
+  CODEBLOCKS_DLL_FILE = 'codeblocks.dll';
+  CODEBLOCKS_DLL_HASH = '1575beba73a3ea34465fad9f55fd098a';
+
+var
+  CodeBlocksInstallationDirectory,
+  CodeBlocksBinaryFileName: TFileName;
+  InstallTitle,
+  InstallMessage: string;
+  InstallIcon: TMsgDlgType;
+
+  procedure SetCodeBlocksState(const State: Boolean);
+  begin
+    Cursor := crDefault;
+    gbxIdeCodeBlocksActions.Enabled := State;
+    if not State then
+       Cursor := crHourGlass
+    else
+      RefreshIdeScreen;
+  end;
+
 begin
-  gbxIdeCodeBlocksActions.Enabled := False;
-  Cursor := crHourGlass;
+  CodeBlocksInstallationDirectory := EmptyStr;
+  CodeBlocksBinaryFileName := EmptyStr;
+  if not IsEmpty(edtIdeCodeBlocksInstallDir.Text) then
+  begin
+    CodeBlocksInstallationDirectory := IncludeTrailingPathDelimiter(
+      edtIdeCodeBlocksInstallDir.Text);
+    CodeBlocksBinaryFileName := CodeBlocksInstallationDirectory
+      + CODEBLOCKS_DLL_FILE;
+  end;
 
   with DreamcastSoftwareDevelopmentKitManager.IntegratedDevelopmentEnvironment.CodeBlocks do
     case (Sender as TButton).Tag of
       0: // Install
         begin
-          if not DirectoryExists(edtIdeCodeBlocksInstallDir.Text) then
+          // Check C::B directory
+          if not DirectoryExists(CodeBlocksInstallationDirectory) then
+          begin
+            MsgBox(DialogWarningTitle, CodeBlocksInstallationDirectoryNotExists,
+              mtWarning, [mbOK]);
+            Exit;
+          end;
+
+          // Check if C::B is installed in this directory
+          if not FileExists(CodeBlocksBinaryFileName) then
           begin
             MsgBox(DialogWarningTitle, CodeBlocksInstallationDirectoryInvalid,
               mtWarning, [mbOK]);
             Exit;
           end;
 
-          if MsgBox(DialogQuestionTitle, Format(ConfirmCodeBlocksMessage,
-            [ConfirmCodeBlocksInstallation]), mtConfirmation, [mbYes, mbNo]) = mrYes then
-              if not Install(edtIdeCodeBlocksInstallDir.Text) then
-                MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+          InstallTitle := DialogQuestionTitle;
+          InstallMessage := Format(ConfirmCodeBlocksMessage, [ConfirmCodeBlocksInstallation]);
+          InstallIcon := mtConfirmation;
+
+          // Check if the hash is correct
+          if not SameText(MD5Print(MD5File(CodeBlocksBinaryFileName)), CODEBLOCKS_DLL_HASH) then
+          begin
+            InstallTitle := DialogWarningTitle;
+            InstallMessage := CodeBlocksIncorrectHash1 + MsgBoxWrapStr + CodeBlocksIncorrectHash2;
+            InstallIcon := mtWarning;
+          end;
+
+          // Let's go
+          if MsgBox(InstallTitle, InstallMessage, InstallIcon, [mbYes, mbNo], mbNo) = mrYes then
+          begin
+            SetCodeBlocksState(False);
+            if not Install(CodeBlocksInstallationDirectory) then
+              MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+          end;
         end;
 
       1: // Reinstall
         if MsgBox(DialogWarningTitle, Format(ConfirmCodeBlocksMessage,
           [ConfirmCodeBlocksReinstallation]), mtWarning, [mbYes, mbNo]) = mrYes then
-            if not Reinstall then
-              MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+        begin
+          SetCodeBlocksState(False);
+          if not Reinstall then
+            MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+        end;
 
       2: // Uninstall
         if MsgBox(DialogWarningTitle, Format(ConfirmCodeBlocksMessage,
           [ConfirmCodeBlocksUninstallation]), mtWarning, [mbYes, mbNo]) = mrYes then
-            if not Uninstall then
-              MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+        begin
+          SetCodeBlocksState(False);
+          if not Uninstall then
+            MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+        end;
     end;
 
-  RefreshIdeScreen;
-  Cursor := crDefault;
-  gbxIdeCodeBlocksActions.Enabled := True;
+  SetCodeBlocksState(True);
 end;
 
 procedure TfrmMain.cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);

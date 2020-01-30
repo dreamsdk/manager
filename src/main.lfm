@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 340
+  Left = 905
   Height = 400
-  Top = 119
+  Top = 525
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsIDE
-    TabIndex = 4
+    ActivePage = tsHome
+    TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -774,7 +774,7 @@ object frmMain: TfrmMain
         Height = 313
         Top = 4
         Width = 240
-        Caption = 'IDE List:'
+        Caption = 'Supported IDE List:'
         ClientHeight = 295
         ClientWidth = 236
         TabOrder = 0
@@ -843,7 +843,7 @@ object frmMain: TfrmMain
         Height = 97
         Top = 160
         Width = 392
-        Caption = 'Code::Blocks users available in this system:'
+        Caption = 'Code::Blocks System Available Users:'
         ClientHeight = 79
         ClientWidth = 388
         TabOrder = 2
@@ -863,7 +863,7 @@ object frmMain: TfrmMain
         Height = 97
         Top = 60
         Width = 392
-        Caption = 'Code::Blocks users who may use %s:'
+        Caption = 'Code::Blocks for %s Configured Users:'
         ClientHeight = 79
         ClientWidth = 388
         TabOrder = 3
@@ -883,7 +883,7 @@ object frmMain: TfrmMain
         Height = 52
         Top = 4
         Width = 392
-        Caption = 'Code::Blocks installation directory:'
+        Caption = 'Code::Blocks Installation Directory:'
         ClientHeight = 34
         ClientWidth = 388
         TabOrder = 4
