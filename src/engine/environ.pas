@@ -19,7 +19,9 @@ const
   DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
 
 type
-  EKallistiReferentialNotAvailable = class(Exception);
+  EEnvironment = class(Exception);
+  EKallistiReferentialNotAvailable = class(EEnvironment);
+  EEmptyRepositoryUrl = class(EEnvironment);
 
   TRepositoryKind = (
     rkUndefined,
@@ -597,6 +599,10 @@ begin
 
   if not IsOfflineRepository(TargetDirectoryFileName) then
   begin
+{$IFDEF DEBUG}
+    if IsEmpty(URL) then
+      WriteLn('CloneRepository: URL is empty!');
+{$ENDIF}
     CommandLine := Format('git clone %s %s --progress', [URL, TargetDirectoryName]);
     BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
     Result := not IsInString(FAIL_TAG, BufferOutput);

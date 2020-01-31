@@ -34,8 +34,8 @@ type
     btnDreamcastToolCustomExecutable: TButton;
     btnUrlKallisti: TButton;
     btnBrowseHomeBaseDirectory: TButton;
-    Button2: TButton;
     btnUrlKallistiPorts: TButton;
+    btnUrlDreamcastToolSerial: TButton;
     btnUrlDreamcastToolIP: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
@@ -263,6 +263,7 @@ type
     procedure UpdateDreamcastToolMediaAccessControlAddressControls;
     procedure UpdateDreamcastToolAlternateCheckbox;
     procedure UpdateOptionsControls;
+    procedure UpdateRepositories;
     procedure InstallDreamcastTool;
     procedure HandleInvalidInternetProtocolAddress(const InvalidMaskFormat: Boolean);
     procedure HandleInvalidMediaAccessControlAddress(const InvalidMaskFormat: Boolean);
@@ -845,6 +846,14 @@ begin
   end;
 end;
 
+procedure TfrmMain.UpdateRepositories;
+begin
+  cbxUrlKallistiChange(Self);
+  cbxUrlKallistiPortsChange(Self);
+  cbxUrlDreamcastToolSerialChange(Self);
+  cbxUrlDreamcastToolIPChange(Self);
+end;
+
 procedure TfrmMain.InstallDreamcastTool;
 begin
   if not fLoadingConfiguration then
@@ -1216,6 +1225,7 @@ begin
   RefreshViewEnvironment(ForceRefresh); // TODO: Slow function, need to be cached
   RefreshViewKallistiPorts(ForceRefresh);
   RefreshViewDreamcastTool;
+  UpdateOptionsControls;
 end;
 
 procedure TfrmMain.OnCommandTerminateThread(Sender: TObject;
@@ -1477,10 +1487,13 @@ begin
       if DreamcastSoftwareDevelopmentKitManager
         .Environment.FileSystem.ResetRepository(TagToRepositoryKind) then
       begin
-        UpdateOptionsControls;
-
         if Assigned(TagToComboBox) and (TagToComboBox.Items.Count > 0) then
+        begin
           TagToComboBox.ItemIndex := 0;
+          UpdateRepositories;
+        end;
+
+        UpdateOptionsControls;
 
         Msg := Format(ResetRepositoryConfirmUpdateLine1, [TagToString]) + MsgBoxWrapStr
           + ResetRepositoryConfirmUpdateLine2 + MsgBoxWrapStr

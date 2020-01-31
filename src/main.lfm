@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 905
+  Left = 516
   Height = 400
-  Top = 525
+  Top = 552
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsComponents
-    TabIndex = 6
+    ActivePage = tsOptions
+    TabIndex = 5
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -955,7 +955,7 @@ object frmMain: TfrmMain
           OnChange = cbxUrlKallistiPortsChange
           TabOrder = 0
         end
-        object Button2: TButton
+        object btnUrlKallistiPorts: TButton
           Tag = 1
           Left = 568
           Height = 21
@@ -1036,7 +1036,7 @@ object frmMain: TfrmMain
           OnChange = cbxUrlDreamcastToolSerialChange
           TabOrder = 0
         end
-        object btnUrlKallistiPorts: TButton
+        object btnUrlDreamcastToolSerial: TButton
           Tag = 2
           Left = 568
           Height = 21
