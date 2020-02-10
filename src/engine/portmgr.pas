@@ -5,7 +5,7 @@ unit PortMgr;
 interface
 
 uses
-  Classes, SysUtils, IniFiles, SysTools, Environ, IDEMgr, GetVer;
+  Classes, SysUtils, IniFiles, SysTools, Environ, IDEMgr, GetVer, Settings;
 
 type
   TLibraryLanguageKind = (llkAll, llkC, llkCPP);
@@ -909,8 +909,9 @@ var
   end;
 
 begin
-  OutputDirectory := IntegratedDevelopmentEnvironment.ExportLibraryInformationPath
-    + LibraryLanguageKindToDirectory + DirectorySeparator;
+  OutputDirectory := IntegratedDevelopmentEnvironment.CodeBlocks.Settings.ExportLibraryInformationPath
+    + LibraryLanguageKindToDirectory
+    + DirectorySeparator;
   ForceDirectories(OutputDirectory);
 
   BufferId := TStringList.Create;
@@ -1012,7 +1013,7 @@ end;
 
 procedure TKallistiPortManager.GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
 begin
-  if IntegratedDevelopmentEnvironment.ExportLibraryInformation then
+  if IntegratedDevelopmentEnvironment.CodeBlocks.Settings.ExportLibraryInformation then
   begin
     GenerateIntegratedDevelopmentEnvironmentLibraryInformation(llkC);
     GenerateIntegratedDevelopmentEnvironmentLibraryInformation(llkCPP);

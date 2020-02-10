@@ -5,6 +5,9 @@ unit Main;
 interface
 
 uses
+{$IFDEF Windows}
+  Windows,
+{$ENDIF}
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
   StdCtrls, ExtCtrls, CheckLst, MaskEdit, PortMgr, ShellThd, DCSDKMgr, Environ,
   StrRes;
@@ -14,6 +17,7 @@ type
   TfrmMain = class(TForm)
     apMain: TApplicationProperties;
     btnAllPortInstall: TButton;
+    btnIdeRefresh: TButton;
     btnAllPortUninstall: TButton;
     btnIdeCodeBlocksInstallDir: TButton;
     btnClose: TButton;
@@ -74,6 +78,7 @@ type
     edtProductBuildDate: TLabeledEdit;
     gbxIdeCodeBlocksInstallDir: TGroupBox;
     gbxIdeList: TGroupBox;
+    gbxPortAll1: TGroupBox;
     gbxVersionDreamcastToolSerial: TGroupBox;
     gbxEnvironmentContext: TGroupBox;
     gbxVersionDreamcastToolIP: TGroupBox;
@@ -201,6 +206,7 @@ type
     procedure btnCloseClick(Sender: TObject);
     procedure btnCreditsClick(Sender: TObject);
     procedure btnIdeCodeBlocksInstallDirClick(Sender: TObject);
+    procedure btnIdeRefreshClick(Sender: TObject);
     procedure btnOpenHelpClick(Sender: TObject);
     procedure btnOpenHomeClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
@@ -283,6 +289,9 @@ type
     function HostMacToItemIndex(const HostMediaAccessControlAddress: string): Integer;
     function HasNetworkAdapters: Boolean;
     procedure RefreshIdeScreen;
+  protected
+    function RunElevatedTask(const ATaskName: string): Boolean; overload;
+    function RunElevatedTask(const ATaskName, AParameters: string): Boolean; overload;
   public
     procedure RefreshViewDreamcastTool;
     procedure RefreshViewKallistiPorts(ForceRefresh: Boolean);
@@ -314,11 +323,16 @@ implementation
 uses
   LCLIntf, IniFiles, StrUtils, UITools, GetVer, SysTools, PostInst, Settings,
   Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil,
-  RunTools, RefBase, MD5;
+  RunTools, RefBase, Elevate, FSTools;
 
 const
   KALLISTI_VERSION_FORMAT = '%s (%s)';
   UNKNOWN_VALUE = '(Unknown)';
+
+  ELEVATED_TASK_CODEBLOCKS_IDE_INSTALL = 'elevated_task_cb_ide_install';
+  ELEVATED_TASK_CODEBLOCKS_IDE_REINSTALL = 'elevated_task_cb_ide_reinstall';
+  ELEVATED_TASK_CODEBLOCKS_IDE_UNINSTALL = 'elevated_task_cb_ide_uninstall';
+  ELEVATED_TASK_CODEBLOCKS_IDE_REFRESH = 'elevated_task_cb_ide_refresh';
 
 type
   { TNetworkAdapterListUserInterfaceItem }
@@ -361,43 +375,52 @@ end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
-  fShellThreadExecutedAtLeastOnce := False;
-  DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
-  HelpFileName := DreamcastSoftwareDevelopmentKitManager.Environment
-    .FileSystem.Shell.HelpFileName;
-  ModuleVersionList := CreateModuleVersionList;
-  CreateNetworkAdapterList;
-  DoubleBuffered := True;
-  pcMain.TabIndex := 0;
-  Application.Title := Caption;
-  HandleAero;
+  if not IsElevatedTaskRequested then
+  begin
+    fShellThreadExecutedAtLeastOnce := False;
+    DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
+    HelpFileName := DreamcastSoftwareDevelopmentKitManager.Environment
+      .FileSystem.Shell.HelpFileName;
+    ModuleVersionList := CreateModuleVersionList;
+    CreateNetworkAdapterList;
+    DoubleBuffered := True;
+    pcMain.TabIndex := 0;
+    Application.Title := Caption;
+    HandleAero;
+  end;
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
-  if not fShellThreadExecutedAtLeastOnce then
-    DreamcastSoftwareDevelopmentKitManager.KallistiPorts
-      .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
-  FreeNetworkAdapterList;
-  ModuleVersionList.Free;
-  DreamcastSoftwareDevelopmentKitManager.Free;
+  if not IsElevatedTaskRequested then
+  begin
+    if not fShellThreadExecutedAtLeastOnce then
+      DreamcastSoftwareDevelopmentKitManager.KallistiPorts
+        .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
+    FreeNetworkAdapterList;
+    ModuleVersionList.Free;
+    DreamcastSoftwareDevelopmentKitManager.Free;
+  end;
 end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
 begin
-  Screen.Cursor := crHourGlass;
-  InitializeHomeScreen;
-  InitializeAboutScreen;
-  InitializeComponentsScreen;
-  InitializeOptionsScreen;
-  InitializeIdeScreen;
-  fLoadingConfiguration := True;
-  LoadRepositoriesSelectionList;
-  LoadConfiguration;
-  RefreshEverything(False);
-  DisplayKallistiPorts(True);
-  fLoadingConfiguration := False;
-  Screen.Cursor := crDefault;
+  if not IsElevatedTaskRequested then
+  begin
+    Screen.Cursor := crHourGlass;
+    InitializeHomeScreen;
+    InitializeAboutScreen;
+    InitializeComponentsScreen;
+    InitializeOptionsScreen;
+    InitializeIdeScreen;
+    fLoadingConfiguration := True;
+    LoadRepositoriesSelectionList;
+    LoadConfiguration;
+    RefreshEverything(False);
+    DisplayKallistiPorts(True);
+    fLoadingConfiguration := False;
+    Screen.Cursor := crDefault;
+  end;
 end;
 
 procedure TfrmMain.lbxIdeListClickCheck(Sender: TObject);
@@ -962,8 +985,7 @@ var
     HelpFileVersion: string;
 
   begin
-    HelpFileVersion := RetrieveVersionWithFind(HelpFileName, 'DreamSDK Help', sLineBreak);
-    HelpFileVersion := Right('Ver. ', HelpFileVersion);
+    HelpFileVersion := RetrieveVersionWithFind(HelpFileName, ' Ver. ', #0);
     if HelpFileVersion = EmptyStr then
       HelpFileVersion := UNKNOWN_VALUE;
     edtProductHelpVersion.Text := HelpFileVersion;
@@ -1010,9 +1032,15 @@ end;
 
 procedure TfrmMain.InitializeIdeScreen;
 begin
-  lbxIdeList.ItemIndex := 0;
   gbxIdeCodeBlocksUsersInstalled.Caption :=
     Format(gbxIdeCodeBlocksUsersInstalled.Caption, [GetProductName]);
+
+  SetButtonElevated(btnIdeRefresh.Handle);
+  SetButtonElevated(btnIdeInstall.Handle);
+  SetButtonElevated(btnIdeReinstall.Handle);
+  SetButtonElevated(btnIdeUninstall.Handle);
+
+  lbxIdeList.ItemIndex := 0;
   lbxIdeListClickCheck(Self);
 end;
 
@@ -1034,10 +1062,24 @@ var
 begin
   if IsAeroEnabled or UseThemes then
   begin
+{$IFDEF DEBUG}
+    DebugLog('HandleAero');
+{$ENDIF}
     for i := 0 to frmMain.ComponentCount - 1 do
       if (frmMain.Components[i] is TLabeledEdit) then
         (frmMain.Components[i] as TLabeledEdit).Color := clDefault;
+
     memPortShortDescription.Color := clDefault;
+
+    btnDreamcastToolCustomExecutable.Height :=
+      edtDreamcastToolCustomExecutable.Height;
+    btnIdeCodeBlocksInstallDir.Height :=
+      edtIdeCodeBlocksInstallDir.Height;
+    btnUrlKallisti.Height := cbxUrlKallisti.Height;
+    btnUrlKallistiPorts.Height := cbxUrlKallistiPorts.Height;
+    btnUrlDreamcastToolSerial.Height := cbxUrlDreamcastToolSerial.Height;
+    btnUrlDreamcastToolIP.Height := cbxUrlDreamcastToolIP.Height;
+    btnBrowseHomeBaseDirectory.Height := edtValueHomeBaseDir.Height;
   end;
 end;
 
@@ -1157,6 +1199,7 @@ begin
   with DreamcastSoftwareDevelopmentKitManager
     .IntegratedDevelopmentEnvironment.CodeBlocks do
   begin
+    Refresh;
     gbxIdeCodeBlocksInstallDir.Enabled := not Installed;
     if Installed or (not Installed and IsEmpty(edtIdeCodeBlocksInstallDir.Text)) then
       edtIdeCodeBlocksInstallDir.Text := InstallationDirectory;
@@ -1166,6 +1209,73 @@ begin
     btnIdeReinstall.Enabled := Installed;
     btnIdeUninstall.Enabled := Installed;
     lbxIdeList.State[lbxIdeList.ItemIndex] := BooleanToCheckboxState(Installed);
+  end;
+end;
+
+function TfrmMain.RunElevatedTask(const ATaskName: string): Boolean;
+begin
+  Result := RunElevatedTask(ATaskName, EmptyStr);
+end;
+
+function TfrmMain.RunElevatedTask(const ATaskName, AParameters: string): Boolean;
+var
+  SwapExchangeFileName: TFileName;
+  ElevatedParameters: string;
+
+  procedure StartWait;
+  begin
+    Cursor := crHourglass;
+    Screen.Cursor := crHourglass;
+    Application.ProcessMessages;
+  end;
+
+  procedure EndWait;
+  begin
+    Cursor := crDefault;
+    Screen.Cursor := crDefault;
+    Application.ProcessMessages;
+  end;
+
+  procedure HandleParameters;
+  var
+    Temp: string;
+
+  begin
+    Temp := EmptyStr;
+    if not IsEmpty(AParameters) then
+      Temp := WhiteSpaceStr;
+    Temp := Temp + AParameters;
+    ElevatedParameters := Format('"%s"%s', [SwapExchangeFileName, Temp]);
+  end;
+
+begin
+  Result := False;
+  SwapExchangeFileName := GetTemporaryFileName;
+
+  StartWait;
+  try
+    HandleParameters;
+    SetLastError(RunElevated(ATaskName, ElevatedParameters, Handle,
+      @Application.ProcessMessages));
+
+    if IsRealOSError(GetLastError) then
+      RaiseLastOSError
+    else
+    begin
+      Result := (GetLastError = ERROR_SUCCESS);
+      with DreamcastSoftwareDevelopmentKitManager
+        .IntegratedDevelopmentEnvironment.CodeBlocks do
+      begin
+        LastOperationSuccess := not FileExists(SwapExchangeFileName);
+        if not LastOperationSuccess then
+        begin
+          LastErrorMessage := LoadFileToString(SwapExchangeFileName);
+          KillFile(SwapExchangeFileName);
+        end;
+      end;
+    end;
+  finally
+    EndWait;
   end;
 end;
 
@@ -1270,6 +1380,11 @@ begin
   with sddIdeCodeBlocks do
     if Execute then
       edtIdeCodeBlocksInstallDir.Text := FileName;
+end;
+
+procedure TfrmMain.btnIdeRefreshClick(Sender: TObject);
+begin
+
 end;
 
 procedure TfrmMain.btnOpenHelpClick(Sender: TObject);
@@ -1524,12 +1639,19 @@ var
 
   procedure SetCodeBlocksState(const State: Boolean);
   begin
-    Cursor := crDefault;
-    gbxIdeCodeBlocksActions.Enabled := State;
+    btnIdeRefresh.Enabled := State;
     if not State then
-       Cursor := crHourGlass
+    begin
+       Cursor := crHourGlass;
+       btnIdeInstall.Enabled := False;
+       btnIdeReinstall.Enabled := False;
+       btnIdeUninstall.Enabled := False;
+    end
     else
+    begin
       RefreshIdeScreen;
+      Cursor := crDefault;
+    end;
   end;
 
 begin
@@ -1568,7 +1690,7 @@ begin
           InstallIcon := mtConfirmation;
 
           // Check if the hash is correct
-          if not SameText(MD5Print(MD5File(CodeBlocksBinaryFileName)), CODEBLOCKS_DLL_HASH) then
+          if not IsCorrectFileHash(CodeBlocksBinaryFileName, CODEBLOCKS_DLL_HASH) then
           begin
             InstallTitle := DialogWarningTitle;
             InstallMessage := CodeBlocksIncorrectHash1 + MsgBoxWrapStr + CodeBlocksIncorrectHash2;
@@ -1579,8 +1701,10 @@ begin
           if MsgBox(InstallTitle, InstallMessage, InstallIcon, [mbYes, mbNo], mbNo) = mrYes then
           begin
             SetCodeBlocksState(False);
-            if not Install(CodeBlocksInstallationDirectory) then
-              MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+            if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_INSTALL,
+              Format('"%s"', [CodeBlocksInstallationDirectory])) then
+              if not LastOperationSuccess then
+                MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
           end;
         end;
 
@@ -1589,8 +1713,9 @@ begin
           [ConfirmCodeBlocksReinstallation]), mtWarning, [mbYes, mbNo]) = mrYes then
         begin
           SetCodeBlocksState(False);
-          if not Reinstall then
-            MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+          if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_REINSTALL) then
+            if not LastOperationSuccess then
+              MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
         end;
 
       2: // Uninstall
@@ -1598,8 +1723,17 @@ begin
           [ConfirmCodeBlocksUninstallation]), mtWarning, [mbYes, mbNo]) = mrYes then
         begin
           SetCodeBlocksState(False);
-          if not Uninstall then
-            MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+          if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_UNINSTALL) then
+            if not LastOperationSuccess then
+              MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+        end;
+
+      3: // Refresh
+        begin
+          SetCodeBlocksState(False);
+          if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_REFRESH) then
+            if not LastOperationSuccess then
+              MsgBox(DialogErrorTitle, LastErrorMessage, mtError, [mbOK]);
         end;
     end;
 
@@ -1696,7 +1830,7 @@ var
 
   function EncodeUrl(Value: string): string;
   begin
-    Result := StringReplace(Value, ' ', '%20', [rfReplaceAll]);
+    Result := StringReplace(Value, WhiteSpaceStr, '%20', [rfReplaceAll]);
   end;
 
 begin
@@ -1754,6 +1888,90 @@ begin
     if MsgBox(DialogQuestionTitle, InstallOrUpdateRequiredDoItNow, mtConfirmation, [mbYes, mbNo]) = mrYes then
       ExecuteThreadOperation(stiKallistiManage);
 end;
+
+function DoElevatedTask(const ATaskName, AParameters: string;
+  ASourceWindowHandle: THandle): Cardinal;
+type
+  TElevatedTask = (
+    etUnknown,
+    etCodeBlocksPatchInstall,
+    etCodeBlocksPatchUninstall,
+    etCodeBlocksPatchReinstall,
+    etCodeBlocksPatchRefresh
+  );
+
+var
+  ElevatedDreamcastSoftwareDevelopmentKitManager: TDreamcastSoftwareDevelopmentKitManager;
+  SwapExchangeFileName: TFileName;
+  ParamInstallationDirectory: TFileName;
+
+  function TaskNameToElavatedTask: TElevatedTask;
+  begin
+    Result := etUnknown;
+    if (ATaskName = ELEVATED_TASK_CODEBLOCKS_IDE_INSTALL) then
+      Result := etCodeBlocksPatchInstall
+    else if (ATaskName = ELEVATED_TASK_CODEBLOCKS_IDE_UNINSTALL) then
+      Result := etCodeBlocksPatchUninstall
+    else if (ATaskName = ELEVATED_TASK_CODEBLOCKS_IDE_REINSTALL) then
+      Result := etCodeBlocksPatchReinstall
+    else if (ATaskName = ELEVATED_TASK_CODEBLOCKS_IDE_REFRESH) then
+      Result := etCodeBlocksPatchRefresh;
+  end;
+
+  procedure HandleParameters;
+  var
+    Buffer: TStringList;
+
+  begin
+    Buffer := TStringList.Create;
+    try
+      StringToStringList(AParameters, WhiteSpaceStr, Buffer);
+      if Buffer.Count > 0 then
+        SwapExchangeFileName := AnsiDequotedStr(Buffer[0], '"');
+      if Buffer.Count > 1 then
+        ParamInstallationDirectory := AnsiDequotedStr(Buffer[1], '"');
+    finally
+      Buffer.Free;
+    end;
+  end;
+
+begin
+  Result := ERROR_SUCCESS;
+  ElevatedDreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
+  try
+    HandleParameters;
+    with ElevatedDreamcastSoftwareDevelopmentKitManager
+      .IntegratedDevelopmentEnvironment.CodeBlocks do
+    begin
+      // Execute the C::B Patcher
+      case TaskNameToElavatedTask of
+        etCodeBlocksPatchInstall:
+          Install(ParamInstallationDirectory);
+        etCodeBlocksPatchUninstall:
+          Uninstall;
+        etCodeBlocksPatchReinstall:
+          Reinstall;
+        etCodeBlocksPatchRefresh:
+          Refresh(True);
+        etUnknown:
+          begin
+            MsgBoxDlg(ASourceWindowHandle, sError, UnknownElevatedTask, mtError, [mbOK]);
+            Result := ERROR_GEN_FAILURE;
+          end;
+      end;
+
+      // Handle the output
+      if not LastOperationSuccess then
+        SaveStringToFile(Trim(LastErrorMessage), SwapExchangeFileName);
+    end;
+  finally
+    ElevatedDreamcastSoftwareDevelopmentKitManager.Free;
+  end;
+end;
+
+initialization
+  OnElevateProc := @DoElevatedTask;
+  CheckForElevatedTask;
 
 end.
 

@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 516
+  Left = 473
   Height = 400
-  Top = 552
+  Top = 220
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -29,12 +29,12 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsOptions
-    TabIndex = 5
+    ActivePage = tsHome
+    TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
-      Caption = 'H&ome'
+      Caption = 'Home'
       ClientHeight = 322
       ClientWidth = 648
       object lblTitleHome: TLabel
@@ -150,7 +150,7 @@ object frmMain: TfrmMain
       end
     end
     object tsKallistiOS: TTabSheet
-      Caption = '&KallistiOS'
+      Caption = 'KallistiOS'
       ClientHeight = 322
       ClientWidth = 648
       object lblVersionKallistiOS: TLabel
@@ -225,7 +225,7 @@ object frmMain: TfrmMain
       end
     end
     object tsKallistiPorts: TTabSheet
-      Caption = 'KallistiOS &Ports'
+      Caption = 'KallistiOS Ports'
       ClientHeight = 322
       ClientWidth = 648
       object gbxAvailablePorts: TGroupBox
@@ -437,7 +437,7 @@ object frmMain: TfrmMain
       end
     end
     object tsDreamcastTool: TTabSheet
-      Caption = '&Dreamcast Tool'
+      Caption = 'Dreamcast Tool'
       ClientHeight = 322
       ClientWidth = 648
       object rgbDreamcastTool: TRadioGroup
@@ -724,7 +724,7 @@ object frmMain: TfrmMain
         TabOrder = 4
         object btnDreamcastToolCustomExecutable: TButton
           Left = 284
-          Height = 23
+          Height = 21
           Top = 20
           Width = 25
           Caption = '...'
@@ -766,21 +766,21 @@ object frmMain: TfrmMain
       end
     end
     object tsIDE: TTabSheet
-      Caption = '&IDE'
+      Caption = 'IDE'
       ClientHeight = 322
       ClientWidth = 648
       object gbxIdeList: TGroupBox
         Left = 4
-        Height = 313
+        Height = 260
         Top = 4
         Width = 240
         Caption = 'Supported IDE List:'
-        ClientHeight = 295
+        ClientHeight = 242
         ClientWidth = 236
         TabOrder = 0
         object lbxIdeList: TCheckListBox
           Left = 4
-          Height = 287
+          Height = 234
           Top = 4
           Width = 228
           Align = alClient
@@ -904,9 +904,29 @@ object frmMain: TfrmMain
           TabOrder = 1
         end
       end
+      object gbxPortAll1: TGroupBox
+        Left = 4
+        Height = 53
+        Top = 264
+        Width = 240
+        Caption = 'Mass Operation:'
+        ClientHeight = 35
+        ClientWidth = 236
+        TabOrder = 5
+        object btnIdeRefresh: TButton
+          Tag = 3
+          Left = 4
+          Height = 25
+          Top = 4
+          Width = 228
+          Caption = 'Refres&h'
+          OnClick = btnIdeInstallClick
+          TabOrder = 0
+        end
+      end
     end
     object tsOptions: TTabSheet
-      Caption = '&Options'
+      Caption = 'Options'
       ClientHeight = 322
       ClientWidth = 648
       object gbxUrlKallistiOS: TGroupBox
@@ -961,7 +981,7 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 64
-          Caption = '&Reset...'
+          Caption = 'R&eset...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
         end
@@ -1004,7 +1024,7 @@ object frmMain: TfrmMain
           Height = 25
           Top = 16
           Width = 249
-          Caption = 'MinG&W Installation Manager...'
+          Caption = 'Min&GW Installation Manager...'
           OnClick = btnOpenMinGWManagerClick
           TabOrder = 0
         end
@@ -1013,7 +1033,7 @@ object frmMain: TfrmMain
           Height = 25
           Top = 48
           Width = 249
-          Caption = 'R&eset Defaults...'
+          Caption = 'Reset De&faults...'
           OnClick = btnRestoreDefaultsClick
           TabOrder = 1
         end
@@ -1042,7 +1062,7 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 64
-          Caption = '&Reset...'
+          Caption = 'Re&set...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
         end
@@ -1071,14 +1091,14 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 64
-          Caption = '&Reset...'
+          Caption = 'Rese&t...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
         end
       end
     end
     object tsComponents: TTabSheet
-      Caption = '&Components'
+      Caption = 'Components'
       ClientHeight = 322
       ClientWidth = 648
       object gbxVersionKallisti: TGroupBox
@@ -1292,7 +1312,7 @@ object frmMain: TfrmMain
       end
     end
     object tsEnvironment: TTabSheet
-      Caption = '&Environment'
+      Caption = 'Environment'
       ClientHeight = 322
       ClientWidth = 648
       object gbxToolchainSuperH: TGroupBox
@@ -1617,7 +1637,7 @@ object frmMain: TfrmMain
       end
     end
     object tsAbout: TTabSheet
-      Caption = '&About'
+      Caption = 'About'
       ClientHeight = 322
       ClientWidth = 648
       object lblTitleAbout: TLabel
@@ -1916,7 +1936,7 @@ object frmMain: TfrmMain
           Height = 25
           Top = 16
           Width = 249
-          Caption = '&Additional Information...'
+          Caption = 'Additio&nal Information...'
           OnClick = btnCreditsClick
           TabOrder = 0
         end

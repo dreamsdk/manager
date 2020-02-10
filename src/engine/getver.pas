@@ -154,12 +154,24 @@ const
   START_TAG = 'KallistiOS ';
   END_TAG = ':';
 
+var
+  TargetFileName:  TFileName;
+
 begin
-  Result := RetrieveVersionWithFind(Environment.FileSystem.Kallisti.KallistiLibrary,
-    START_TAG, END_TAG);
-  if IsInString(START_TAG, Result) then
-    Result := Right(START_TAG, Result)
-  else
+  TargetFileName := Environment.FileSystem.Kallisti.KallistiLibrary;
+  Result := GetRegisteredVersion(TargetFileName);
+
+  if IsEmpty(Result) then
+  begin
+    Result := RetrieveVersionWithFind(TargetFileName, START_TAG, END_TAG, False);
+    if IsInString(START_TAG, Result) then
+    begin
+      Result := Right(START_TAG, Result);
+      SetRegisteredVersion(TargetFileName, Result);
+    end;
+  end;
+
+  if IsEmpty(Result) then
     Result := INVALID_VERSION;
 end;
 

@@ -8,43 +8,46 @@ uses
   Classes,
   SysUtils,
   Environ,
-  FSTools;
+  FSTools,
+  Settings;
 
 type
-  TIntegratedDevelopmentEnvironmentKind = (ideNone, ideCodeBlocks);
-
   TIntegratedDevelopmentEnvironment = class;
 
   { TCodeBlocksIntegratedDevelopmentEnvironment }
   TCodeBlocksIntegratedDevelopmentEnvironment = class(TObject)
   private
+    fSettings: TDreamcastSoftwareDevelopmentCodeBlocksSettings;
+    fIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment;
     fLastErrorMessage: string;
+    fLastOperationSuccess: Boolean;
     fPatchState: string;
-    fIDE: TIntegratedDevelopmentEnvironment;
     fAvailableUsers: TStringList;
-    fInstalled: Boolean;
-    fInstallationDirectory: TFileName;
     fInstalledUsers: TStringList;
-    fConfigurationFileNames: TFileList;
+    function GetInstallationDirectory: TFileName;
+    function GetInstalled: Boolean;
     function GetAvailableUsers: TStringList;
-    function GetConfigurationFileNames: TFileList;
     function GetInstalledUsers: TStringList;
-    function GetPatcherValue(const Key: string): string;
     procedure RetrievePatchState;
     function RunCodeBlocksPatcher(const Operation: string): string;
   public
-    constructor Create(AIDE: TIntegratedDevelopmentEnvironment);
+    constructor Create(AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment);
     destructor Destroy; override;
     function Install(const CodeBlocksInstallationDirectory: TFileName): Boolean;
     function Uninstall: Boolean;
     function Reinstall: Boolean;
-    procedure RefreshStatus;
+    procedure Refresh; overload;
+    procedure Refresh(const Force: Boolean);
     property AvailableUsers: TStringList read GetAvailableUsers;
-    property ConfigurationFileNames: TFileList read GetConfigurationFileNames;
-    property Installed: Boolean read fInstalled;
-    property InstallationDirectory: TFileName read fInstallationDirectory;
+    property Installed: Boolean read GetInstalled;
+    property InstallationDirectory: TFileName read GetInstallationDirectory;
     property InstalledUsers: TStringList read GetInstalledUsers;
-    property LastErrorMessage: string read fLastErrorMessage;
+    property LastOperationSuccess: Boolean read fLastOperationSuccess
+      write fLastOperationSuccess;
+    property LastErrorMessage: string read fLastErrorMessage
+      write fLastErrorMessage;
+    property Settings: TDreamcastSoftwareDevelopmentCodeBlocksSettings
+      read fSettings;
   end;
 
   { TIntegratedDevelopmentEnvironment }
@@ -52,20 +55,12 @@ type
   private
     fCodeBlocks: TCodeBlocksIntegratedDevelopmentEnvironment;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
-    fConfigurationFileName: TFileName;
-    fExportLibraryInformation: Boolean;
-    fExportLibraryInformationPath: TFileName;
-    fKind: TIntegratedDevelopmentEnvironmentKind;
   protected
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
   public
     constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
     destructor Destroy; override;
-    procedure ProcessConfigurationFile;
-    property Kind: TIntegratedDevelopmentEnvironmentKind read fKind;
-    property ExportLibraryInformation: Boolean read fExportLibraryInformation;
-    property ExportLibraryInformationPath: TFileName read fExportLibraryInformationPath;
     property CodeBlocks: TCodeBlocksIntegratedDevelopmentEnvironment
       read fCodeBlocks;
   end;
@@ -73,98 +68,88 @@ type
 implementation
 
 uses
-  IniFiles,
   SysTools,
   RunTools,
   RefBase;
 
 const
-  CODEBLOCKS_PATCHER_SEPARATOR = ';';
   CODEBLOCKS_SUCCESSFUL_STATE = 'Code::Blocks is now';
 
 { TCodeBlocksIntegratedDevelopmentEnvironment }
-
-function TCodeBlocksIntegratedDevelopmentEnvironment.GetInstalledUsers: TStringList;
-begin
-  Result := fInstalledUsers;
-end;
 
 function TCodeBlocksIntegratedDevelopmentEnvironment.GetAvailableUsers: TStringList;
 begin
   Result := fAvailableUsers;
 end;
 
-function TCodeBlocksIntegratedDevelopmentEnvironment.GetConfigurationFileNames: TFileList;
-begin
-  Result := fConfigurationFileNames;
-end;
-
-function TCodeBlocksIntegratedDevelopmentEnvironment.GetPatcherValue(
-  const Key: string): string;
-var
-  Buffer: TStringList;
-  i: Integer;
-
-begin
-  Buffer := TStringList.Create;
-  try
-    Buffer.Text := fPatchState;
-    i := StringListSubstringIndexOf(Buffer, Key + '=');
-    if (i <> -1) then
-      Result := Trim(Right('=', Buffer[i]));
-  finally
-    Buffer.Free;
-  end;
-end;
-
 procedure TCodeBlocksIntegratedDevelopmentEnvironment.RetrievePatchState;
 begin
-  fPatchState := RunCodeBlocksPatcher('internal-status');
+  fPatchState := RunCodeBlocksPatcher('internal-refresh');
+end;
+
+function TCodeBlocksIntegratedDevelopmentEnvironment.GetInstallationDirectory: TFileName;
+begin
+  Result := Settings.InstallationDirectory;
+end;
+
+function TCodeBlocksIntegratedDevelopmentEnvironment.GetInstalled: Boolean;
+begin
+  Result := Settings.Installed;
+end;
+
+function TCodeBlocksIntegratedDevelopmentEnvironment.GetInstalledUsers: TStringList;
+begin
+  Result := fInstalledUsers;
 end;
 
 function TCodeBlocksIntegratedDevelopmentEnvironment.RunCodeBlocksPatcher(
   const Operation: string): string;
 begin
-  Result := Run(fIDE.Environment.FileSystem.Shell.CodeBlocksPatcherExecutable,
+  Result := Run(fIntegratedDevelopmentEnvironment.Environment.FileSystem.Shell.CodeBlocksPatcherExecutable,
     Format('--operation=%s --home-dir="%s" --no-logo --show-splash', [
       Operation, GetInstallationBaseDirectory]));
 
-  if Operation <> 'internal-status' then
-    fLastErrorMessage := Trim(Right('Error: ', Result));
+  fLastErrorMessage := Trim(Right('Error: ', Result));
+  fLastOperationSuccess := IsEmpty(fLastErrorMessage);
 end;
 
-procedure TCodeBlocksIntegratedDevelopmentEnvironment.RefreshStatus;
+procedure TCodeBlocksIntegratedDevelopmentEnvironment.Refresh;
 begin
-  RetrievePatchState;
+  Refresh(False);
+end;
 
-  fInstalled := UpperCase(GetPatcherValue('IsPatchInstalled')) = 'TRUE';
-  fInstallationDirectory := GetPatcherValue('InstallationDirectory');
+procedure TCodeBlocksIntegratedDevelopmentEnvironment.Refresh(
+  const Force: Boolean);
+begin
+  if Force then
+    RetrievePatchState;
 
-  fConfigurationFileNames.SetItems(GetPatcherValue('ConfigurationFileNames'),
-    CODEBLOCKS_PATCHER_SEPARATOR);
+  if Settings.LoadConfiguration then
+  begin
+    // Available Users
+    fAvailableUsers.Clear;
+    fAvailableUsers.Assign(Settings.AvailableUsers);
 
-  fInstalledUsers.Clear;
-  StringToStringList(GetPatcherValue('InstalledUsers'),
-    CODEBLOCKS_PATCHER_SEPARATOR, fInstalledUsers);
-
-  fAvailableUsers.Clear;
-  StringToStringList(GetPatcherValue('AvailableUsers'),
-    CODEBLOCKS_PATCHER_SEPARATOR, fAvailableUsers);
+    // Installed Users
+    fInstalledUsers.Clear;
+    if Settings.Installed then
+      fInstalledUsers.Assign(Settings.InstalledUsers);
+  end;
 end;
 
 constructor TCodeBlocksIntegratedDevelopmentEnvironment.Create(
-  AIDE: TIntegratedDevelopmentEnvironment);
+  AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment);
 begin
-  fIDE := AIDE;
+  fIntegratedDevelopmentEnvironment := AIntegratedDevelopmentEnvironment;
   fAvailableUsers := TStringList.Create;
-  fConfigurationFileNames := TFileList.Create;
   fInstalledUsers := TStringList.Create;
+  fSettings := TDreamcastSoftwareDevelopmentCodeBlocksSettings.Create;
 end;
 
 destructor TCodeBlocksIntegratedDevelopmentEnvironment.Destroy;
 begin
+  fSettings.Free;
   fInstalledUsers.Free;
-  fConfigurationFileNames.Free;
   fAvailableUsers.Free;
   inherited Destroy;
 end;
@@ -175,21 +160,21 @@ begin
   Result := IsInString(CODEBLOCKS_SUCCESSFUL_STATE,
     RunCodeBlocksPatcher(Format('install --install-dir="%s"', [
       CodeBlocksInstallationDirectory])));
-  RefreshStatus;
+  Refresh;
 end;
 
 function TCodeBlocksIntegratedDevelopmentEnvironment.Uninstall: Boolean;
 begin
   Result := IsInString(CODEBLOCKS_SUCCESSFUL_STATE,
     RunCodeBlocksPatcher('uninstall'));
-  RefreshStatus;
+  Refresh;
 end;
 
 function TCodeBlocksIntegratedDevelopmentEnvironment.Reinstall: Boolean;
 begin
   Result := IsInString(CODEBLOCKS_SUCCESSFUL_STATE,
     RunCodeBlocksPatcher('reinstall'));
-  RefreshStatus;
+  Refresh;
 end;
 
 { TIntegratedDevelopmentEnvironment }
@@ -199,38 +184,12 @@ constructor TIntegratedDevelopmentEnvironment.Create(
 begin
   fCodeBlocks := TCodeBlocksIntegratedDevelopmentEnvironment.Create(Self);
   fEnvironment := AEnvironment;
-  fConfigurationFileName := fEnvironment.FileSystem.Shell.IntegratedDevelopmentEnvironmentConfigurationFile;
-  ProcessConfigurationFile;
 end;
 
 destructor TIntegratedDevelopmentEnvironment.Destroy;
 begin
   fCodeBlocks.Free;
   inherited Destroy;
-end;
-
-procedure TIntegratedDevelopmentEnvironment.ProcessConfigurationFile;
-var
-  IniFile: TIniFile;
-
-begin
-  if FileExists(fConfigurationFileName) then
-  begin
-    IniFile := TIniFile.Create(fConfigurationFileName);
-    try
-      fKind := TIntegratedDevelopmentEnvironmentKind(IniFile.ReadInteger('IDE', 'Kind', 0));
-      fExportLibraryInformation := IniFile.ReadBool('IDE', 'ExportLibraryInformation', False);
-      fExportLibraryInformationPath := IniFile.ReadString('IDE', 'ExportLibraryInformationPath', EmptyStr);
-      if not SameText(fExportLibraryInformationPath, EmptyStr) then
-      begin
-        fExportLibraryInformationPath := IncludeTrailingPathDelimiter(fExportLibraryInformationPath);
-        ForceDirectories(fExportLibraryInformationPath);
-        SetDirectoryRights(fExportLibraryInformationPath, GetEveryoneName, ACL_RIGHT_FULL);
-      end;
-    finally
-      IniFile.Free;
-    end;
-  end;
 end;
 
 end.

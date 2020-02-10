@@ -5,7 +5,14 @@ unit DCSDKMgr;
 interface
 
 uses
-  Classes, SysUtils, GetVer, Environ, KOSMgr, PortMgr, ToolMgr, IDEMgr;
+  Classes,
+  SysUtils,
+  GetVer,
+  Environ,
+  KOSMgr,
+  PortMgr,
+  ToolMgr,
+  IDEMgr;
 
 type
   { TDreamcastSoftwareDevelopmentKitManager }
@@ -56,7 +63,7 @@ begin
   fKallistiManager := TKallistiManager.Create(fEnvironment);
   fDreamcastTool := TDreamcastToolManager.Create(fEnvironment);
   UpdateRepositoriesURL;
-  fIntegratedDevelopmentEnvironment.CodeBlocks.RefreshStatus;
+  fIntegratedDevelopmentEnvironment.CodeBlocks.Refresh;
 end;
 
 destructor TDreamcastSoftwareDevelopmentKitManager.Destroy;
