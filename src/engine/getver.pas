@@ -211,7 +211,7 @@ procedure TComponentVersion.RetrieveVersions;
   function RetrievePythonGdb(const GdbExecutable: TFileName): string;
   begin
     Result := RetrieveVersion(GdbExecutable, '--configuration',
-      '--with-python=c:/python/', '/x86'); // Major.Minor.Build
+      '--with-python=c:/python/', '/x86', False); // Major.Minor.Build
     Result := Right('.', ReverseString(Result)); // Minor.Major
     Result := ReverseString(Result); // Major.Minor
     if SameText(Result, EmptyStr) then
