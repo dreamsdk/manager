@@ -476,6 +476,10 @@ begin
   Result := '';
   AbortShellCommand;
 
+{$IFDEF DEBUG}
+  DebugLog('ExecuteShellCommandRunner: ' + CommandLine + ' in: ' + GetCurrentDir);
+{$ENDIF}
+
   FreeAndNil(fShellCommandRunner);
   fShellCommandRunner := TRunCommand.Create(True);
   with fShellCommandRunner do
@@ -486,7 +490,9 @@ begin
     Parameters.Add('-i');
 
     for i := 1 to GetEnvironmentVariableCount do
+    begin
       Environment.Add(GetEnvironmentString(i));
+    end;
 
     Environment.Add('_EXTERNAL_COMMAND=' + CommandLine);
     Environment.Add('_AUTOMATED_CALL=1');
@@ -548,9 +554,6 @@ end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.AbortShellCommand;
 begin
-{$IFDEF DEBUG}
-  DebugLog('Aborting Shell Command!');
-{$ENDIF}
   if Assigned(fShellCommandRunner) then
     fShellCommandRunner.Abort;
 end;

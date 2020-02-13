@@ -385,6 +385,8 @@ begin
     CreateNetworkAdapterList;
     DoubleBuffered := True;
     pcMain.TabIndex := 0;
+    if IsElevated then
+      Caption := Format(ElevatedCaption, [Caption]);
     Application.Title := Caption;
     HandleAero;
   end;
@@ -985,9 +987,18 @@ var
     HelpFileVersion: string;
 
   begin
-    HelpFileVersion := RetrieveVersionWithFind(HelpFileName, ' Ver. ', #0);
+    HelpFileVersion := GetRegisteredVersion(HelpFileName);
+    if IsEmpty(HelpFileVersion) then
+    begin
+      HelpFileVersion := RetrieveVersionWithFind(HelpFileName, 'DreamSDK Help', sLineBreak, False);
+      HelpFileVersion := Right('Ver. ', HelpFileVersion);
+    end;
+
     if HelpFileVersion = EmptyStr then
-      HelpFileVersion := UNKNOWN_VALUE;
+      HelpFileVersion := UNKNOWN_VALUE
+    else
+      SetRegisteredVersion(HelpFileName, HelpFileVersion);
+
     edtProductHelpVersion.Text := HelpFileVersion;
   end;
 

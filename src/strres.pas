@@ -17,6 +17,7 @@ resourcestring
   DialogErrorTitle = 'Error';
 
   // Main
+  ElevatedCaption = '%s [Elevated]';
   MailToSubject = 'Question about the KallistiOS Port: %s';
   RestoreDefaultsText = 'Are you sure to restore Options and Dreamcast Tool settings to their defaults?';
   UserInterfaceNotInstalledText = 'Not installed';
