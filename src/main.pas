@@ -253,6 +253,7 @@ type
     fShellThreadInputRequest: TShellThreadInputRequest;
     fShellThreadOutputResult: TShellThreadOutputResponse;
     fShellThreadUpdateState: TUpdateOperationState;
+    function CheckRepositoriesUrl: Boolean;
     procedure DisplayEnvironmentComponentVersions;
     procedure DisplayKallistiPorts(ClearList: Boolean);
     function GetSelectedKallistiPort: TKallistiPortItem;
@@ -615,6 +616,28 @@ begin
   Application.ProcessMessages;
   Screen.Cursor := crDefault;
   fShellThreadExecutedAtLeastOnce := True;
+end;
+
+function TfrmMain.CheckRepositoriesUrl: Boolean;
+
+  function CheckRepositoryUrl(ComboBox: TComboBox): Boolean;
+  begin
+    Result := Assigned(ComboBox) and
+      (not ComboBox.Enabled or (ComboBox.Enabled and not IsEmpty(ComboBox.Text)));
+  end;
+
+begin
+  Result := True;
+  Result := CheckRepositoryUrl(cbxUrlKallisti)
+    and CheckRepositoryUrl(cbxUrlKallistiPorts)
+    and CheckRepositoryUrl(cbxUrlDreamcastToolSerial)
+    and CheckRepositoryUrl(cbxUrlDreamcastToolIP);
+
+  if not Result then
+  begin
+    MsgBox(DialogWarningTitle, PleaseVerifyRepositories, mtWarning, [mbOK]);
+    pcMain.ActivePage := tsOptions;
+  end;
 end;
 
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
@@ -1549,7 +1572,8 @@ end;
 
 procedure TfrmMain.btnUpdateKallistiOSClick(Sender: TObject);
 begin
-  ExecuteThreadOperation(stiKallistiManage);
+  if CheckRepositoriesUrl then
+    ExecuteThreadOperation(stiKallistiManage);
 end;
 
 procedure TfrmMain.btnDreamcastToolCustomExecutableClick(Sender: TObject);

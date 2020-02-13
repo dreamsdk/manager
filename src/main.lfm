@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 946
+  Left = 429
   Height = 400
-  Top = 396
+  Top = 210
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsHome
-    TabIndex = 0
+    ActivePage = tsKallistiOS
+    TabIndex = 1
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet

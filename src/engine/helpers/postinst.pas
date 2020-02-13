@@ -14,7 +14,7 @@ procedure ExecutePostInstall;
 implementation
 
 uses
-  Main, ShellThd, Forms;
+  Main, ShellThd, Forms, Settings;
 
 var
   PostInstallMode: Boolean;
@@ -52,7 +52,17 @@ begin
   if PostInstallMode then
   begin
     if IsInstallOrUpdateRequired then
-      ExecuteThreadOperation(stiKallistiManage)
+    begin
+      with DreamcastSoftwareDevelopmentKitManager.Environment.Settings
+        .Repositories do
+      begin
+        KallistiURL := DEFAULT_KALLISTI_URL;
+        KallistiPortsURL := DEFAULT_KALLISTI_PORTS_URL;
+        DreamcastToolSerialURL := DEFAULT_DREAMCAST_TOOL_SERIAL_URL;
+        DreamcastToolInternetProtocolURL := DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL;
+      end;
+      ExecuteThreadOperation(stiKallistiManage);
+    end
     else
       Application.Terminate;
   end;
