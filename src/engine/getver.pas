@@ -74,7 +74,8 @@ type
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
   public
-    constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
+    constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+      const AutoLoad: Boolean);
     destructor Destroy; override;
 
     function GetComponentVersion(const ComponentName: TComponentName): string;
@@ -270,13 +271,15 @@ begin
 end;
 
 constructor TComponentVersion.Create(
-  AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
+  AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+  const AutoLoad: Boolean);
 begin
   fEnvironment := AEnvironment;
   fToolchainVersionSuperH := TToolchainVersion.Create(tkSuperH);
   fToolchainVersionARM := TToolchainVersion.Create(tkARM);
   fToolchainVersionWin32 := TToolchainVersion.Create(tkWin32);
-  RetrieveVersions;
+  if AutoLoad then
+    RetrieveVersions;
 end;
 
 destructor TComponentVersion.Destroy;

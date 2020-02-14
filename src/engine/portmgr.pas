@@ -127,7 +127,8 @@ type
   public
     constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
       AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment;
-      AComponentVersion: TComponentVersion);
+      AComponentVersion: TComponentVersion;
+      const AutoLoad: Boolean);
     destructor Destroy; override;
     function CloneRepository(var BufferOutput: string): Boolean;
     procedure GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
@@ -968,7 +969,8 @@ end;
 constructor TKallistiPortManager.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
   AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment;
-  AComponentVersion: TComponentVersion);
+  AComponentVersion: TComponentVersion;
+  const AutoLoad: Boolean);
 begin
   fEnvironment := AEnvironment;
   fComponentVersion := AComponentVersion;
@@ -983,7 +985,8 @@ begin
   fAddonsLibraries := TStringList.Create;
   fRepository := TDreamcastSoftwareDevelopmentRepository.Create(Environment,
     Environment.FileSystem.Kallisti.KallistiPortsDirectory);
-  RetrieveAvailablePorts;
+  if AutoLoad then
+    RetrieveAvailablePorts;
 end;
 
 destructor TKallistiPortManager.Destroy;

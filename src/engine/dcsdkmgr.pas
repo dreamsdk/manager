@@ -25,8 +25,10 @@ type
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment;
     procedure UpdateRepositoriesURL;
+    procedure InitializeObject(const AutoLoad: Boolean);
   public
-    constructor Create;
+    constructor Create; overload;
+    constructor Create(const AutoLoad: Boolean); overload;
     destructor Destroy; override;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
@@ -53,17 +55,31 @@ begin
   end;
 end;
 
-constructor TDreamcastSoftwareDevelopmentKitManager.Create;
+procedure TDreamcastSoftwareDevelopmentKitManager.InitializeObject(
+  const AutoLoad: Boolean);
 begin
   fEnvironment := TDreamcastSoftwareDevelopmentEnvironment.Create;
-  fIntegratedDevelopmentEnvironment := TIntegratedDevelopmentEnvironment.Create(fEnvironment);
-  fVersionRetriever := TComponentVersion.Create(fEnvironment);
+  fIntegratedDevelopmentEnvironment := TIntegratedDevelopmentEnvironment
+    .Create(fEnvironment);
+  fVersionRetriever := TComponentVersion.Create(fEnvironment, AutoLoad);
   fKallistiPortsManager := TKallistiPortManager.Create(fEnvironment,
-    fIntegratedDevelopmentEnvironment, fVersionRetriever);
+    fIntegratedDevelopmentEnvironment, fVersionRetriever, AutoLoad);
   fKallistiManager := TKallistiManager.Create(fEnvironment);
   fDreamcastTool := TDreamcastToolManager.Create(fEnvironment);
-  UpdateRepositoriesURL;
+  if AutoLoad then
+    UpdateRepositoriesURL;
   fIntegratedDevelopmentEnvironment.CodeBlocks.Refresh;
+end;
+
+constructor TDreamcastSoftwareDevelopmentKitManager.Create;
+begin
+  InitializeObject(True);
+end;
+
+constructor TDreamcastSoftwareDevelopmentKitManager.Create(
+  const AutoLoad: Boolean);
+begin
+  InitializeObject(AutoLoad);
 end;
 
 destructor TDreamcastSoftwareDevelopmentKitManager.Destroy;

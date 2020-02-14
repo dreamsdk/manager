@@ -104,10 +104,15 @@ end;
 
 function TCodeBlocksIntegratedDevelopmentEnvironment.RunCodeBlocksPatcher(
   const Operation: string): string;
+var
+  CmdLine: string;
+
 begin
-  Result := Run(fIntegratedDevelopmentEnvironment.Environment.FileSystem.Shell.CodeBlocksPatcherExecutable,
-    Format('--operation=%s --home-dir="%s" --no-logo --show-splash', [
-      Operation, GetInstallationBaseDirectory]));
+  CmdLine := Format('--operation=%s --home-dir="%s" --no-logo --show-splash', [
+    Operation, GetInstallationBaseDirectory]);
+//  ShowMessage(CmdLine);
+  Result := Run(fIntegratedDevelopmentEnvironment.Environment.FileSystem.Shell
+    .CodeBlocksPatcherExecutable, CmdLine);
 
   fLastErrorMessage := Trim(Right('Error: ', Result));
   fLastOperationSuccess := IsEmpty(fLastErrorMessage);
@@ -158,7 +163,7 @@ function TCodeBlocksIntegratedDevelopmentEnvironment.Install(
   const CodeBlocksInstallationDirectory: TFileName): Boolean;
 begin
   Result := IsInString(CODEBLOCKS_SUCCESSFUL_STATE,
-    RunCodeBlocksPatcher(Format('install --install-dir="%s"', [
+    RunCodeBlocksPatcher(Format('install --install-dir="%s" ', [
       CodeBlocksInstallationDirectory])));
   Refresh;
 end;

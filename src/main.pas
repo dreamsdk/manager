@@ -292,7 +292,8 @@ type
     procedure RefreshIdeScreen;
   protected
     function RunElevatedTask(const ATaskName: string): Boolean; overload;
-    function RunElevatedTask(const ATaskName, AParameters: string): Boolean; overload;
+    function RunElevatedTask(const ATaskName: string;
+      AParameters: TStringList): Boolean; overload;
   public
     procedure RefreshViewDreamcastTool;
     procedure RefreshViewKallistiPorts(ForceRefresh: Boolean);
@@ -386,7 +387,7 @@ begin
     CreateNetworkAdapterList;
     DoubleBuffered := True;
     pcMain.TabIndex := 0;
-    if IsElevated then
+    if IsWindowsVistaOrGreater and IsElevated then
       Caption := Format(ElevatedCaption, [Caption]);
     Application.Title := Caption;
     HandleAero;
@@ -1247,11 +1248,20 @@ begin
 end;
 
 function TfrmMain.RunElevatedTask(const ATaskName: string): Boolean;
+var
+  WorkingParameters: TStringList;
+
 begin
-  Result := RunElevatedTask(ATaskName, EmptyStr);
+  WorkingParameters := TStringList.Create;
+  try
+    Result := RunElevatedTask(ATaskName, WorkingParameters);
+  finally
+    WorkingParameters.Free;
+  end;
 end;
 
-function TfrmMain.RunElevatedTask(const ATaskName, AParameters: string): Boolean;
+function TfrmMain.RunElevatedTask(const ATaskName: string;
+  AParameters: TStringList): Boolean;
 var
   SwapExchangeFileName: TFileName;
   ElevatedParameters: string;
@@ -1270,25 +1280,14 @@ var
     Application.ProcessMessages;
   end;
 
-  procedure HandleParameters;
-  var
-    Temp: string;
-
-  begin
-    Temp := EmptyStr;
-    if not IsEmpty(AParameters) then
-      Temp := WhiteSpaceStr;
-    Temp := Temp + AParameters;
-    ElevatedParameters := Format('"%s"%s', [SwapExchangeFileName, Temp]);
-  end;
-
 begin
   Result := False;
   SwapExchangeFileName := GetTemporaryFileName;
 
   StartWait;
   try
-    HandleParameters;
+    AParameters.Insert(0, SwapExchangeFileName);
+    ElevatedParameters := EncodeParameters(AParameters);
     SetLastError(RunElevated(ATaskName, ElevatedParameters, Handle,
       @Application.ProcessMessages));
 
@@ -1366,10 +1365,10 @@ procedure TfrmMain.RefreshEverything(ForceRefresh: Boolean);
 begin
   Application.ProcessMessages;
 
+  UpdateOptionsControls;
   RefreshViewEnvironment(ForceRefresh); // TODO: Slow function, need to be cached
   RefreshViewKallistiPorts(ForceRefresh);
   RefreshViewDreamcastTool;
-  UpdateOptionsControls;
 end;
 
 procedure TfrmMain.OnCommandTerminateThread(Sender: TObject;
@@ -1671,6 +1670,7 @@ var
   InstallTitle,
   InstallMessage: string;
   InstallIcon: TMsgDlgType;
+  EncodedParameters: TStringList;
 
   procedure SetCodeBlocksState(const State: Boolean);
   begin
@@ -1736,10 +1736,15 @@ begin
           if MsgBox(InstallTitle, InstallMessage, InstallIcon, [mbYes, mbNo], mbNo) = mrYes then
           begin
             SetCodeBlocksState(False);
-            if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_INSTALL,
-              Format('"%s"', [CodeBlocksInstallationDirectory])) then
-              if not LastOperationSuccess then
-                MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+            EncodedParameters := TStringList.Create;
+            try
+              EncodedParameters.Add(CodeBlocksInstallationDirectory);
+              if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_INSTALL, EncodedParameters) then
+                if not LastOperationSuccess then
+                  MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+            finally
+              EncodedParameters.Free;
+            end;
           end;
         end;
 
@@ -1924,7 +1929,7 @@ begin
       ExecuteThreadOperation(stiKallistiManage);
 end;
 
-function DoElevatedTask(const ATaskName, AParameters: string;
+function DoElevatedTask(const ATaskName: string; AParameters: TStringList;
   ASourceWindowHandle: THandle): Cardinal;
 type
   TElevatedTask = (
@@ -1953,35 +1958,22 @@ var
       Result := etCodeBlocksPatchRefresh;
   end;
 
-  procedure HandleParameters;
-  var
-    Buffer: TStringList;
-
-  begin
-    Buffer := TStringList.Create;
-    try
-      StringToStringList(AParameters, WhiteSpaceStr, Buffer);
-      if Buffer.Count > 0 then
-        SwapExchangeFileName := AnsiDequotedStr(Buffer[0], '"');
-      if Buffer.Count > 1 then
-        ParamInstallationDirectory := AnsiDequotedStr(Buffer[1], '"');
-    finally
-      Buffer.Free;
-    end;
-  end;
-
 begin
   Result := ERROR_SUCCESS;
-  ElevatedDreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
+  SwapExchangeFileName := AParameters[0];
+  ElevatedDreamcastSoftwareDevelopmentKitManager :=
+    TDreamcastSoftwareDevelopmentKitManager.Create(False);
   try
-    HandleParameters;
     with ElevatedDreamcastSoftwareDevelopmentKitManager
       .IntegratedDevelopmentEnvironment.CodeBlocks do
     begin
       // Execute the C::B Patcher
       case TaskNameToElavatedTask of
         etCodeBlocksPatchInstall:
-          Install(ParamInstallationDirectory);
+          begin
+            ParamInstallationDirectory := AParameters[1];
+            Install(ParamInstallationDirectory);
+          end;
         etCodeBlocksPatchUninstall:
           Uninstall;
         etCodeBlocksPatchReinstall:
