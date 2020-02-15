@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 422
+  Left = 398
   Height = 400
-  Top = 240
+  Top = 192
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -297,7 +297,7 @@ object frmMain: TfrmMain
           Width = 125
           Caption = 'Uninst&all...'
           OnClick = btnPortUninstallClick
-          TabOrder = 8
+          TabOrder = 7
         end
         object btnPortUpdate: TButton
           Left = 133
@@ -306,7 +306,7 @@ object frmMain: TfrmMain
           Width = 125
           Caption = 'U&pdate...'
           OnClick = btnPortUpdateClick
-          TabOrder = 7
+          TabOrder = 6
         end
         object btnPortInstall: TButton
           Left = 6
@@ -315,7 +315,7 @@ object frmMain: TfrmMain
           Width = 125
           Caption = '&Install...'
           OnClick = btnPortInstallClick
-          TabOrder = 6
+          TabOrder = 5
         end
         object edtPortURL: TLabeledEdit
           Left = 72
@@ -332,7 +332,7 @@ object frmMain: TfrmMain
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
           ReadOnly = True
-          TabOrder = 5
+          TabOrder = 4
           Text = 'edtPortURL'
           OnClick = edtPortURLClick
           OnMouseEnter = edtPortURLMouseEnter
@@ -353,7 +353,7 @@ object frmMain: TfrmMain
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
           ReadOnly = True
-          TabOrder = 4
+          TabOrder = 3
           Text = 'edtPortLicense'
         end
         object edtPortMaintainer: TLabeledEdit
@@ -371,7 +371,7 @@ object frmMain: TfrmMain
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
           ReadOnly = True
-          TabOrder = 3
+          TabOrder = 2
           Text = 'edtPortMaintainer'
           OnClick = edtPortMaintainerClick
           OnMouseEnter = edtPortURLMouseEnter
@@ -392,13 +392,13 @@ object frmMain: TfrmMain
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
           ReadOnly = True
-          TabOrder = 2
+          TabOrder = 1
           Text = 'edtPortVersion'
         end
         object memPortDescription: TMemo
           Left = 6
-          Height = 86
-          Top = 72
+          Height = 94
+          Top = 64
           Width = 378
           BorderSpacing.Around = 2
           Lines.Strings = (
@@ -406,19 +406,6 @@ object frmMain: TfrmMain
           )
           ReadOnly = True
           ScrollBars = ssAutoVertical
-          TabOrder = 1
-        end
-        object memPortShortDescription: TMemo
-          Left = 6
-          Height = 28
-          Top = 36
-          Width = 378
-          BorderStyle = bsNone
-          Color = clForm
-          Lines.Strings = (
-            'memPortShortDescription'
-          )
-          ReadOnly = True
           TabOrder = 0
         end
         object lblPortName: TLabel
@@ -433,6 +420,15 @@ object frmMain: TfrmMain
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
+        end
+        object memPortShortDescription: TEdit
+          Left = 6
+          Height = 21
+          Top = 35
+          Width = 378
+          ReadOnly = True
+          TabOrder = 8
+          Text = 'memPortShortDescription'
         end
       end
     end
@@ -503,7 +499,7 @@ object frmMain: TfrmMain
           Left = 180
           Height = 17
           Top = 34
-          Width = 65
+          Width = 63
           Caption = 'Al&ternate'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 2
@@ -512,7 +508,7 @@ object frmMain: TfrmMain
           Left = 8
           Height = 17
           Top = 88
-          Width = 194
+          Width = 192
           Caption = 'Us&e external clock for the serial port'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 3
@@ -521,7 +517,7 @@ object frmMain: TfrmMain
           Left = 8
           Height = 17
           Top = 63
-          Width = 254
+          Width = 252
           Caption = '&Use dumb terminal rather than console/fileserver'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 4
@@ -698,7 +694,7 @@ object frmMain: TfrmMain
           Left = 7
           Height = 17
           Top = 4
-          Width = 176
+          Width = 174
           Caption = '&Always attach console/fileserver'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 0
@@ -707,7 +703,7 @@ object frmMain: TfrmMain
           Left = 7
           Height = 17
           Top = 32
-          Width = 199
+          Width = 197
           Caption = 'Al&ways clear screen before download'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 1

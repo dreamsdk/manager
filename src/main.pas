@@ -55,6 +55,7 @@ type
     ckxDreamcastToolSerialExternalClock: TCheckBox;
     cbxModuleSelection: TComboBox;
     cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox;
+    memPortShortDescription: TEdit;
     edtIdeCodeBlocksInstallDir: TEdit;
     edtValueHomeBaseDir: TEdit;
     edtDreamcastToolCustomExecutable: TEdit;
@@ -179,7 +180,6 @@ type
     lbxIdeCodeBlocksUsersAvailable: TListBox;
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
-    memPortShortDescription: TMemo;
     opdDreamcastToolCustom: TOpenDialog;
     pnlAbout: TPanel;
     pcMain: TPageControl;
@@ -1091,8 +1091,22 @@ begin
 end;
 
 procedure TfrmMain.HandleAero;
+const
+  LITTLE_BUTTON_HEIGHT = 21;
+
 var
-  i: Integer;
+  i,
+  ExtraHeight,
+  ExtraTop: Integer;
+  ItemEdit: TLabeledEdit;
+  ItemButton: TButton;
+
+  procedure SetTransparent(Control: TControl);
+  begin
+    Control.ControlStyle := ItemEdit.ControlStyle - [csOpaque]
+      + [csParentBackground];
+    Control.Color := clNone;
+  end;
 
 begin
   if IsAeroEnabled or UseThemes then
@@ -1100,21 +1114,34 @@ begin
 {$IFDEF DEBUG}
     DebugLog('HandleAero');
 {$ENDIF}
+
     for i := 0 to frmMain.ComponentCount - 1 do
       if (frmMain.Components[i] is TLabeledEdit) then
-        (frmMain.Components[i] as TLabeledEdit).Color := clDefault;
+      begin
+        ItemEdit := (frmMain.Components[i] as TLabeledEdit);
+{$IFDEF DEBUG}
+        DebugLog('  ' + ItemEdit.Name);
+{$ENDIF}
+        SetTransparent(ItemEdit);
+        ItemEdit.ParentColor := False;
+      end;
 
-    memPortShortDescription.Color := clDefault;
+    ExtraTop := ScaleY(1, Graphics.ScreenInfo.PixelsPerInchY) * -1;
+    i := 2;
+    if IsWindowsVistaOrGreater then
+      Inc(i, 2);
+    ExtraHeight := ScaleY(i, Graphics.ScreenInfo.PixelsPerInchY);
 
-    btnDreamcastToolCustomExecutable.Height :=
-      edtDreamcastToolCustomExecutable.Height;
-    btnIdeCodeBlocksInstallDir.Height :=
-      edtIdeCodeBlocksInstallDir.Height;
-    btnUrlKallisti.Height := cbxUrlKallisti.Height;
-    btnUrlKallistiPorts.Height := cbxUrlKallistiPorts.Height;
-    btnUrlDreamcastToolSerial.Height := cbxUrlDreamcastToolSerial.Height;
-    btnUrlDreamcastToolIP.Height := cbxUrlDreamcastToolIP.Height;
-    btnBrowseHomeBaseDirectory.Height := edtValueHomeBaseDir.Height;
+    for i := 0 to frmMain.ComponentCount - 1 do
+      if (frmMain.Components[i] is TButton) then
+      begin
+        ItemButton := (frmMain.Components[i] as TButton);
+        if (ItemButton.Height = LITTLE_BUTTON_HEIGHT) then
+        begin
+          ItemButton.Height := ItemButton.Height + ExtraHeight;
+          ItemButton.Top := ItemButton.Top + ExtraTop;
+        end;
+      end;
   end;
 end;
 
