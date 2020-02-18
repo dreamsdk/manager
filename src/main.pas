@@ -55,6 +55,8 @@ type
     ckxDreamcastToolSerialExternalClock: TCheckBox;
     cbxModuleSelection: TComboBox;
     cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox;
+    lblIdeCodeBlocksUsersInstalled: TLabel;
+    lblIdeCodeBlocksUsersAvailable: TLabel;
     memPortShortDescription: TEdit;
     edtIdeCodeBlocksInstallDir: TEdit;
     edtValueHomeBaseDir: TEdit;
@@ -1069,6 +1071,10 @@ procedure TfrmMain.InitializeIdeScreen;
 begin
   gbxIdeCodeBlocksUsersInstalled.Caption :=
     Format(gbxIdeCodeBlocksUsersInstalled.Caption, [GetProductName]);
+  lblIdeCodeBlocksUsersInstalled.Caption :=
+    Format(lblIdeCodeBlocksUsersInstalled.Caption, [GetProductName]);
+  lblIdeCodeBlocksUsersAvailable.Caption :=
+    Format(lblIdeCodeBlocksUsersAvailable.Caption, [GetProductName]);
 
   SetButtonElevated(btnIdeRefresh.Handle);
   SetButtonElevated(btnIdeInstall.Handle);

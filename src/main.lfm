@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 398
+  Left = 809
   Height = 400
-  Top = 192
+  Top = 302
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -499,7 +499,7 @@ object frmMain: TfrmMain
           Left = 180
           Height = 17
           Top = 34
-          Width = 63
+          Width = 65
           Caption = 'Al&ternate'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 2
@@ -508,7 +508,7 @@ object frmMain: TfrmMain
           Left = 8
           Height = 17
           Top = 88
-          Width = 192
+          Width = 194
           Caption = 'Us&e external clock for the serial port'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 3
@@ -517,7 +517,7 @@ object frmMain: TfrmMain
           Left = 8
           Height = 17
           Top = 63
-          Width = 252
+          Width = 254
           Caption = '&Use dumb terminal rather than console/fileserver'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 4
@@ -694,7 +694,7 @@ object frmMain: TfrmMain
           Left = 7
           Height = 17
           Top = 4
-          Width = 174
+          Width = 176
           Caption = '&Always attach console/fileserver'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 0
@@ -703,7 +703,7 @@ object frmMain: TfrmMain
           Left = 7
           Height = 17
           Top = 32
-          Width = 197
+          Width = 199
           Caption = 'Al&ways clear screen before download'
           OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 1
@@ -839,19 +839,30 @@ object frmMain: TfrmMain
         Height = 97
         Top = 160
         Width = 392
-        Caption = 'Code::Blocks System Available Users:'
+        Caption = 'System Available Users:'
         ClientHeight = 79
         ClientWidth = 388
         TabOrder = 2
         object lbxIdeCodeBlocksUsersAvailable: TListBox
           Left = 4
-          Height = 71
-          Top = 4
+          Height = 54
+          Top = 21
           Width = 380
           Align = alClient
           BorderSpacing.Around = 4
           ItemHeight = 0
           TabOrder = 0
+        end
+        object lblIdeCodeBlocksUsersAvailable: TLabel
+          Left = 4
+          Height = 13
+          Top = 4
+          Width = 380
+          Align = alTop
+          BorderSpacing.Around = 4
+          Caption = 'Users that are eligible to the Code::Blocks for %s integration.'
+          ParentColor = False
+          WordWrap = True
         end
       end
       object gbxIdeCodeBlocksUsersInstalled: TGroupBox
@@ -859,19 +870,30 @@ object frmMain: TfrmMain
         Height = 97
         Top = 60
         Width = 392
-        Caption = 'Code::Blocks for %s Configured Users:'
+        Caption = 'Code::Blocks for %s Enabled Users:'
         ClientHeight = 79
         ClientWidth = 388
         TabOrder = 3
         object lbxIdeCodeBlocksUsersInstalled: TListBox
           Left = 4
-          Height = 71
-          Top = 4
+          Height = 54
+          Top = 21
           Width = 380
           Align = alClient
           BorderSpacing.Around = 4
           ItemHeight = 0
           TabOrder = 0
+        end
+        object lblIdeCodeBlocksUsersInstalled: TLabel
+          Left = 4
+          Height = 13
+          Top = 4
+          Width = 380
+          Align = alTop
+          BorderSpacing.Around = 4
+          Caption = 'Users that may right now use the Code::Blocks for %s integration.'
+          ParentColor = False
+          WordWrap = True
         end
       end
       object gbxIdeCodeBlocksInstallDir: TGroupBox
