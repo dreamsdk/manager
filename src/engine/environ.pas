@@ -168,6 +168,7 @@ type
   { TDreamcastSoftwareDevelopmentEnvironment }
   TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
   private
+    fShellCommandError: Boolean;
     fShellCommandNewLine: TNewLineEvent;
     fShellCommandRunner: TRunCommand;
     fFileSystem: TDreamcastSoftwareDevelopmentFileSystem;
@@ -182,6 +183,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+
     procedure AbortShellCommand;
     function ExecuteShellCommand(CommandLine: string;
       WorkingDirectory: TFileName): string;
@@ -194,8 +196,10 @@ type
     function IsRepositoryReady(const WorkingDirectory: TFileName): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
       var BufferOutput: string): TUpdateOperationState; overload;
+
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystem read fFileSystem;
     property Settings: TDreamcastSoftwareDevelopmentSettings read fSettings;
+    property ShellCommandError: Boolean read fShellCommandError;
     property OnShellCommandNewLine: TNewLineEvent read fShellCommandNewLine
       write fShellCommandNewLine;
   end;
@@ -456,9 +460,14 @@ end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerNewLine(
   Sender: TObject; NewLine: string);
+const
+  ERROR_KEYWORD = 'error:';
+
 begin
   if Assigned(fShellCommandNewLine) then
     fShellCommandNewLine(Self, NewLine);
+  if not fShellCommandError then
+    fShellCommandError := IsInString(ERROR_KEYWORD, LowerCase(NewLine));
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerTerminate
@@ -504,6 +513,10 @@ begin
     WaitFor;
 
     Result := fShellCommandBufferOutput;
+
+{$IFDEF DEBUG}
+    DebugLog('  ExitCode: ' + IntToStr(fShellCommandRunner.ExitCode));
+{$ENDIF}
   end;
 end;
 
@@ -548,6 +561,7 @@ begin
   fFileSystem.Free;
 
   FreeAndNil(fShellCommandRunner);
+  fShellCommandError := False;
 
   inherited Destroy;
 end;

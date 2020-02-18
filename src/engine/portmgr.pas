@@ -43,6 +43,7 @@ type
   protected
     function DoInstallOrUpdate: string;
     function ExecuteShellCommand(const CommandLine: string): string;
+    function IsShellCommandOK(const SuccessTag, BufferOutput: string): Boolean;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read GetEnvironment;
   public
@@ -187,6 +188,13 @@ begin
   Result := Environment.ExecuteShellCommand(CommandLine, SourceDirectory);
 end;
 
+function TKallistiPortItem.IsShellCommandOK(const SuccessTag,
+  BufferOutput: string): Boolean;
+begin
+  Result := IsInString(SuccessTag, BufferOutput);
+//    and (not Environment.ShellCommandError);
+end;
+
 function TKallistiPortItem.GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
 begin
   Result := fOwner.fEnvironment;
@@ -224,7 +232,7 @@ begin
   DeleteInstallPortDirectoryIfNeeded;
   SuccessTag := Format(SUCCESS_TAG, [Name, Version]);
   BufferOutput := DoInstallOrUpdate;
-  Result := IsInString(SuccessTag, BufferOutput);
+  Result := IsShellCommandOK(SuccessTag, BufferOutput);
 end;
 
 function TKallistiPortItem.Uninstall(var BufferOutput: string): Boolean;
@@ -237,7 +245,7 @@ var
 begin
   SuccessTag := Format(SUCCESS_TAG, [Name]);
   BufferOutput := ExecuteShellCommand('make uninstall');
-  Result := IsInString(SuccessTag, BufferOutput);
+  Result := IsShellCommandOK(SuccessTag, BufferOutput);
   DeleteInstallPortDirectoryIfNeeded;
 end;
 
@@ -257,10 +265,10 @@ begin
   UselessTag := Format(USELESS_TAG, [Name]);
 
   BufferOutput := DoInstallOrUpdate;
-  if IsInString(SuccessTag, BufferOutput) then
+  if IsShellCommandOK(SuccessTag, BufferOutput) then
     Result := uosUpdateSuccess
   else
-    if IsInString(UselessTag, BufferOutput) then
+    if IsShellCommandOK(UselessTag, BufferOutput) then
       Result := uosUpdateUseless
     else
       Result := uosUpdateFailed;

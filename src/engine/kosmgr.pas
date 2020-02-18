@@ -11,7 +11,8 @@ type
   { TKallistiManager }
   TKallistiManager = class(TObject)
   private
-    fGenRomFSFileName: TFileName;
+    fGenerateRomFileSystemBinaryFileName: TFileName;
+    fGenerateRomFileSystemMakefileFileName: TFileName;
     fEnvironSampleShellScriptFileName: TFileName;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fRepository: TDreamcastSoftwareDevelopmentRepository;
@@ -37,7 +38,7 @@ type
 implementation
 
 uses
-  FileUtil, SysTools, PostInst;
+  FileUtil, SysTools, FSTools, PostInst;
 
 { TKallistiManager }
 
@@ -56,16 +57,23 @@ end;
 constructor TKallistiManager.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
 const
-  ENVIRON_SHELL_SCRIPT_SAMPLE_FILE_LOCATION = 'doc\environ.sh.sample';
-  GENROMFS_LOCATION_FILE = 'utils\genromfs.exe';
+  ENVIRON_SHELL_SCRIPT_SAMPLE_LOCATION_FILE = 'doc\environ.sh.sample';
+  GENROMFS_BINARY_LOCATION_FILE = 'utils\genromfs\genromfs.exe';
+  GENROMFS_MAKEFILE_LOCATION_FILE = 'utils\genromfs\Makefile';
 
 begin
   fEnvironment := AEnvironment;
-  fEnvironSampleShellScriptFileName := Environment.FileSystem.Kallisti.KallistiDirectory
-    + ENVIRON_SHELL_SCRIPT_SAMPLE_FILE_LOCATION;
-  fGenRomFSFileName := Environment.FileSystem.Kallisti.KallistiDirectory + GENROMFS_LOCATION_FILE;
-  fRepository := TDreamcastSoftwareDevelopmentRepository.Create(fEnvironment,
-    Environment.FileSystem.Kallisti.KallistiDirectory);
+  with Environment.FileSystem.Kallisti do
+  begin
+    fEnvironSampleShellScriptFileName := KallistiDirectory
+      + ENVIRON_SHELL_SCRIPT_SAMPLE_LOCATION_FILE;
+    fGenerateRomFileSystemBinaryFileName := KallistiDirectory
+      + GENROMFS_BINARY_LOCATION_FILE;
+    fGenerateRomFileSystemMakefileFileName := KallistiDirectory
+      + GENROMFS_MAKEFILE_LOCATION_FILE;
+    fRepository := TDreamcastSoftwareDevelopmentRepository.Create(fEnvironment,
+      KallistiDirectory);
+  end;
 end;
 
 destructor TKallistiManager.Destroy;
@@ -102,14 +110,22 @@ var
 begin
   Result := True;
 
+  // environ.sh
   if not FileExists(Environment.FileSystem.Kallisti.KallistiConfigurationFileName) then
-    Result := CopyFile(fEnvironSampleShellScriptFileName, Environment.FileSystem.Kallisti.KallistiConfigurationFileName);
+    Result := CopyFile(fEnvironSampleShellScriptFileName, Environment.FileSystem
+      .Kallisti.KallistiConfigurationFileName);
 
-  if not FileExists(fGenRomFSFileName) then
+  // genromfs
+  if not FileExists(fGenerateRomFileSystemBinaryFileName) then
   begin
     CommandLine := Format('tar xf %s', [GENROMFS_PACKAGE_FILENAME]);
     WorkingDirectory := Environment.FileSystem.Kallisti.KallistiDirectory;
     Environment.ExecuteShellCommand(CommandLine, WorkingDirectory);
+    PatchTextFile(
+      fGenerateRomFileSystemMakefileFileName,
+      'all: genromfs',
+      'all:' + sLineBreak + TabStr + '@echo "(genromfs building is disabled)"'
+    );
   end;
 end;
 
@@ -145,7 +161,8 @@ begin
   end;
 
   // The result is OK if libkallisti is present, addons are optional...
-  Result := FileExists(Environment.FileSystem.Kallisti.KallistiLibrary);
+  Result := FileExists(Environment.FileSystem.Kallisti.KallistiLibrary)
+    and (not Environment.ShellCommandError);
 end;
 
 function TKallistiManager.FixupHitachiNewlib(var BufferOutput: string): Boolean;

@@ -305,13 +305,15 @@ var
     BufferOutput := BufferOutput + sLineBreak + TempBuffer;
 
     // Check
-    Result := FileExists(TargetFileName);
+    Result := FileExists(TargetFileName) and (not Environment.ShellCommandError);
   end;
 
 begin
   Result := True;
-  Result := Result and DoBuild(Environment.FileSystem.DreamcastTool.InternetProtocolDirectory, Environment.FileSystem.DreamcastTool.InternetProtocolExecutable);
-  Result := Result and DoBuild(Environment.FileSystem.DreamcastTool.SerialDirectory, Environment.FileSystem.DreamcastTool.SerialExecutable);
+  Result := Result and DoBuild(Environment.FileSystem.DreamcastTool
+    .InternetProtocolDirectory, Environment.FileSystem.DreamcastTool.InternetProtocolExecutable);
+  Result := Result and DoBuild(Environment.FileSystem.DreamcastTool
+    .SerialDirectory, Environment.FileSystem.DreamcastTool.SerialExecutable);
 end;
 
 function TDreamcastToolManager.Install: Boolean;
