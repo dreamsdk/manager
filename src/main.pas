@@ -1102,10 +1102,12 @@ const
 
 var
   i,
-  ExtraHeight,
-  ExtraTop: Integer;
+  ItemLabelExtraHeight,
+  ItemButtonExtraHeight,
+  ItemButtonExtraTop: Integer;
   ItemEdit: TLabeledEdit;
   ItemButton: TButton;
+  ItemLabel: TLabel;
 
   procedure SetTransparent(Control: TControl);
   begin
@@ -1121,34 +1123,58 @@ begin
     DebugLog('HandleAero');
 {$ENDIF}
 
+    // Compute extra height for TLabels
+    ItemLabelExtraHeight := ScaleY(2, Graphics.ScreenInfo.PixelsPerInchY);
+
+    // Compute extra height and top for small TButtons
+    ItemButtonExtraTop := ScaleY(1, Graphics.ScreenInfo.PixelsPerInchY) * -1;
+    i := 2;
+    if IsWindowsVistaOrGreater then
+      Inc(i, 2);
+    ItemButtonExtraHeight := ScaleY(i, Graphics.ScreenInfo.PixelsPerInchY);
+
+    // Applying these new values
     for i := 0 to frmMain.ComponentCount - 1 do
+    begin
+      // TLabeledEdit
       if (frmMain.Components[i] is TLabeledEdit) then
       begin
         ItemEdit := (frmMain.Components[i] as TLabeledEdit);
 {$IFDEF DEBUG}
         DebugLog('  ' + ItemEdit.Name);
 {$ENDIF}
+        // Handle background color
         SetTransparent(ItemEdit);
         ItemEdit.ParentColor := False;
       end;
 
-    ExtraTop := ScaleY(1, Graphics.ScreenInfo.PixelsPerInchY) * -1;
-    i := 2;
-    if IsWindowsVistaOrGreater then
-      Inc(i, 2);
-    ExtraHeight := ScaleY(i, Graphics.ScreenInfo.PixelsPerInchY);
+      // TLabel
+      if (frmMain.Components[i] is TLabel) then
+      begin
+        ItemLabel := (frmMain.Components[i] as TLabel);
+{$IFDEF DEBUG}
+        DebugLog('  ' + ItemEdit.Name);
+{$ENDIF}
+        if not ItemLabel.AutoSize then
+          ItemLabel.Height := ItemLabel.Height + ItemLabelExtraHeight;
+      end;
 
-    for i := 0 to frmMain.ComponentCount - 1 do
+      // TButton
       if (frmMain.Components[i] is TButton) then
       begin
         ItemButton := (frmMain.Components[i] as TButton);
         if (ItemButton.Height = LITTLE_BUTTON_HEIGHT) then
         begin
-          ItemButton.Height := ItemButton.Height + ExtraHeight;
-          ItemButton.Top := ItemButton.Top + ExtraTop;
+{$IFDEF DEBUG}
+          DebugLog('  ' + ItemEdit.Name);
+{$ENDIF}
+          ItemButton.Height := ItemButton.Height + ItemButtonExtraHeight;
+          ItemButton.Top := ItemButton.Top + ItemButtonExtraTop;
         end;
       end;
-  end;
+    end; // for
+
+  end; // IsAeroEnabled / UseThemes
 end;
 
 function TfrmMain.GetMsgBoxWindowHandle: THandle;
