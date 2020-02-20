@@ -2017,6 +2017,13 @@ var
       Result := etCodeBlocksPatchRefresh;
   end;
 
+  procedure WriteLibraryInformation;
+  begin
+    // Handle IDE files
+    ElevatedDreamcastSoftwareDevelopmentKitManager.KallistiPorts
+      .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
+  end;
+
 begin
   Result := ERROR_SUCCESS;
   SwapExchangeFileName := AParameters[0];
@@ -2032,11 +2039,15 @@ begin
           begin
             ParamInstallationDirectory := AParameters[1];
             Install(ParamInstallationDirectory);
+            WriteLibraryInformation;
           end;
         etCodeBlocksPatchUninstall:
           Uninstall;
         etCodeBlocksPatchReinstall:
-          Reinstall;
+          begin
+            Reinstall;
+            WriteLibraryInformation;
+          end;
         etCodeBlocksPatchRefresh:
           Refresh(True);
         etUnknown:
