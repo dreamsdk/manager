@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 809
+  Left = 420
   Height = 400
-  Top = 302
+  Top = 107
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -401,9 +401,6 @@ object frmMain: TfrmMain
           Top = 64
           Width = 378
           BorderSpacing.Around = 2
-          Lines.Strings = (
-            'memPortDescription'
-          )
           ReadOnly = True
           ScrollBars = ssAutoVertical
           TabOrder = 0
@@ -428,7 +425,6 @@ object frmMain: TfrmMain
           Width = 378
           ReadOnly = True
           TabOrder = 8
-          Text = 'memPortShortDescription'
         end
       end
     end
@@ -860,7 +856,7 @@ object frmMain: TfrmMain
           Width = 380
           Align = alTop
           BorderSpacing.Around = 4
-          Caption = 'Users that are eligible to the Code::Blocks for %s integration.'
+          Caption = 'Users below are eligible to %s in Code::Blocks.'
           ParentColor = False
           WordWrap = True
         end
@@ -891,7 +887,7 @@ object frmMain: TfrmMain
           Width = 380
           Align = alTop
           BorderSpacing.Around = 4
-          Caption = 'Users that may right now use the Code::Blocks for %s integration.'
+          Caption = 'Users below may use %s in Code::Blocks.'
           ParentColor = False
           WordWrap = True
         end
@@ -1236,7 +1232,6 @@ object frmMain: TfrmMain
           ParentColor = True
           ReadOnly = True
           TabOrder = 0
-          Text = 'edtValueHomeBaseDir'
         end
         object btnBrowseHomeBaseDirectory: TButton
           Left = 568
