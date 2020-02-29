@@ -9,6 +9,7 @@ resourcestring
   KallistiText = 'KallistiOS';
   KallistiPortsText = 'KallistiOS Ports';
   DreamcastToolText = 'Dreamcast Tool';
+  RubyText = 'Ruby';
   DreamcastToolSerialText = 'Dreamcast Tool Serial (RS-232)';
   DreamcastToolInternetProtocolText = 'Dreamcast Tool Internet Protocol (IP)';
   DialogInformationTitle = 'Information';
@@ -57,7 +58,11 @@ resourcestring
   CodeBlocksIncorrectHash1 = 'The installed Code::Blocks version seems NOT to be the expected Code::Blocks 17.12.';
   CodeBlocksIncorrectHash2 = 'There is no guarantee that it will work. Continue anyway?';
   UnknownElevatedTask = 'Unknown elevated task!';
-  PleaseVerifyRepositories = 'Repositories options are incorrect!';
+  PleaseVerifyRepositories = 'Repositories settings are incorrect!';
+  PleaseVerifyRubyRepository = 'Ruby repository setting is incorrect!';
+  InstallRubyText = 'Ruby for the Sega Dreamcast is experimental. Are you sure to enable it?';
+  UninstallRubyText = 'Are you sure to disable the Ruby support?';
+  UninstallRubyFailedText = 'Failed to uninstall the Ruby directory. You may delete it manually.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';
@@ -95,6 +100,8 @@ resourcestring
   KallistiPortUpdateText = 'Updating the KallistiOS Port...';
   KallistiPortsInstallText = 'Installing all KallistiOS Ports...';
   KallistiPortsUninstallText = 'Uninstalling all KallistiOS Ports...';
+  RubyInitializeText = 'Initialize Ruby configuration...';
+  RubyBuildText = 'Building Ruby library...';
 
 implementation
 

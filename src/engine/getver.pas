@@ -26,7 +26,9 @@ type
     cnGCCARM,
     cnBinutilsWin32,
     cnGCCWin32,
-    cnGDBWin32
+    cnGDBWin32,
+    cnRuby,
+    cnRake
   );
 
   { TToolchainVersion }
@@ -54,6 +56,7 @@ type
     fBuildDateKallistiOS: TDateTime;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fPythonInstalled: Boolean;
+    fMRubyBuildDate: TDateTime;
     fSubversionInstalled: Boolean;
     fToolchainVersionARM: TToolchainVersion;
     fToolchainVersionSuperH: TToolchainVersion;
@@ -66,10 +69,13 @@ type
     fVersionSVN: string;
     fVersionToolIP: string;
     fVersionToolSerial: string;
+    fVersionRuby: string;
+    fVersionRake: string;
   protected
     function IsValidVersion(const Version: string): Boolean;
     function RetrieveKallistiVersion: string;
     function RetrieveKallistiBuildDate: TDateTime;
+    function RetrieveMRubyBuildDate: TDateTime;
     procedure RetrieveKallistiInformation;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
@@ -95,6 +101,9 @@ type
     property ToolchainSuperH: TToolchainVersion read fToolchainVersionSuperH;
     property ToolchainARM: TToolchainVersion read fToolchainVersionARM;
     property ToolchainWin32: TToolchainVersion read fToolchainVersionWin32;
+    property Ruby: string read fVersionRuby;
+    property Rake: string read fVersionRake;
+    property MRubyBuildDate: TDateTime read fMRubyBuildDate;
   end;
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
@@ -105,14 +114,15 @@ uses
   Forms,
   StrUtils,
   SysTools,
-  VerIntf;
+  VerIntf,
+  FSTools;
 
 const
   DEVELOPMENT_VERSION_SUFFIX = '-dev';
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
 const
-  COMPONENTS_NAME: array[0..16] of string = (
+  COMPONENTS_NAME: array[0..18] of string = (
     'Git',
     'SVN',
     'Python',
@@ -129,7 +139,9 @@ const
     'GCCARM',
     'BinutilsWin32',
     'GCCWin32',
-    'GDBWin32'
+    'GDBWin32',
+    'Ruby',
+    'Rake'
   );
 
 begin
@@ -177,17 +189,13 @@ begin
 end;
 
 function TComponentVersion.RetrieveKallistiBuildDate: TDateTime;
-const
-  c_UnassignedDate = -693594;
-
-var
-  BuildDate: Integer;
-
 begin
-  Result := c_UnassignedDate;
-  BuildDate := FileAge(Environment.FileSystem.Kallisti.KallistiLibrary);
-  if BuildDate <> -1 then
-    Result := FileDateToDateTime(BuildDate);
+  Result := GetFileDate(Environment.FileSystem.Kallisti.KallistiLibrary);
+end;
+
+function TComponentVersion.RetrieveMRubyBuildDate: TDateTime;
+begin
+  Result := GetFileDate(Environment.FileSystem.Ruby.RubyLibrary);
 end;
 
 procedure TComponentVersion.RetrieveKallistiInformation;
@@ -256,6 +264,8 @@ begin
     fPythonInstalled := IsValidVersion(fVersionPython);
     fVersionMinGW := RetrieveVersion(Shell.MinGWGetExecutable,
       '--version', 'mingw-get version', sLineBreak);
+    fVersionRuby := RetrieveVersion('ruby', '--version', 'ruby ', WhiteSpaceStr);
+    fVersionRake := RetrieveVersion('rake.bat', '--version', 'version ', sLineBreak);
 
     RetrieveVersionToolchain(fToolchainVersionSuperH, ToolchainSuperH);
     RetrieveVersionToolchain(fToolchainVersionARM, ToolchainARM);
@@ -267,6 +277,8 @@ begin
       '-h', 'dc-tool-ip', 'by <');
 
     RetrieveKallistiInformation;
+
+    fMRubyBuildDate := RetrieveMRubyBuildDate;
   end;
 end;
 
@@ -329,6 +341,10 @@ begin
       Result := fToolchainVersionWin32.fVersionGCC;
     cnGDBWin32:
       Result := fToolchainVersionWin32.fVersionGDB;
+    cnRuby:
+      Result := fVersionRuby;
+    cnRake:
+      Result := fVersionRake;
   end;
 end;
 

@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 420
+  Left = 407
   Height = 400
-  Top = 107
+  Top = 193
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -757,6 +757,177 @@ object frmMain: TfrmMain
         end
       end
     end
+    object tsRuby: TTabSheet
+      Caption = 'Ruby'
+      ClientHeight = 322
+      ClientWidth = 648
+      object lblTextMRuby: TLabel
+        Left = 8
+        Height = 13
+        Top = 8
+        Width = 42
+        Caption = 'Version'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
+      object lblVersionMRuby: TLabel
+        Left = 72
+        Height = 13
+        Top = 8
+        Width = 76
+        Caption = '(mruby version)'
+        ParentColor = False
+      end
+      object lblTextBuildDateMRuby: TLabel
+        Left = 8
+        Height = 13
+        Top = 28
+        Width = 56
+        Caption = 'Build date'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
+      object lblBuildDateMRuby: TLabel
+        Left = 72
+        Height = 13
+        Top = 28
+        Width = 88
+        Caption = '(mruby build date)'
+        ParentColor = False
+      end
+      object btnUninstallMRuby: TButton
+        Tag = 1
+        Left = 522
+        Height = 25
+        Top = 14
+        Width = 122
+        Caption = 'U&ninstall...'
+        OnClick = btnInstallMRubyClick
+        TabOrder = 0
+      end
+      object btnInstallMRuby: TButton
+        Left = 274
+        Height = 25
+        Top = 14
+        Width = 122
+        Caption = '&Install...'
+        OnClick = btnInstallMRubyClick
+        TabOrder = 1
+      end
+      object gbxUrlRuby: TGroupBox
+        Left = 4
+        Height = 52
+        Top = 96
+        Width = 640
+        Caption = 'Ruby Repository URL:'
+        ClientHeight = 34
+        ClientWidth = 636
+        TabOrder = 2
+        object cbxUrlRuby: TComboBox
+          Left = 4
+          Height = 21
+          Top = 4
+          Width = 558
+          ItemHeight = 13
+          OnChange = cbxUrlRubyChange
+          TabOrder = 0
+        end
+        object btnUrlRuby: TButton
+          Tag = 4
+          Left = 568
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Reset...'
+          OnClick = btnUrlKallistiClick
+          TabOrder = 1
+        end
+      end
+      object gbxRubyRunShell: TGroupBox
+        Left = 4
+        Height = 77
+        Top = 156
+        Width = 640
+        Caption = 'Open Shell in Ruby Sample Projects Directory:'
+        ClientHeight = 59
+        ClientWidth = 636
+        TabOrder = 3
+        object btnRubyOpenMSYS: TButton
+          Left = 500
+          Height = 25
+          Top = 16
+          Width = 129
+          Caption = '&Start Shell...'
+          OnClick = btnRubyOpenMSYSClick
+          TabOrder = 0
+        end
+        object lblRubyShell: TLabel
+          Left = 8
+          Height = 44
+          Top = 12
+          Width = 482
+          AutoSize = False
+          Caption = 'This task will start the Shell in the Ruby sample projects directory.'
+          ParentColor = False
+          ParentFont = False
+          WordWrap = True
+        end
+      end
+      object gbxRubyFolder: TGroupBox
+        Left = 4
+        Height = 77
+        Top = 240
+        Width = 640
+        Caption = 'Open Ruby Sample Projects Directory in Windows Explorer:'
+        ClientHeight = 59
+        ClientWidth = 636
+        TabOrder = 4
+        object btnRubyOpenHome: TButton
+          Left = 500
+          Height = 25
+          Top = 16
+          Width = 129
+          Caption = 'Open Ho&me...'
+          OnClick = btnRubyOpenHomeClick
+          TabOrder = 0
+        end
+        object lblHomeFolder1: TLabel
+          Left = 8
+          Height = 44
+          Top = 12
+          Width = 482
+          AutoSize = False
+          Caption = 'This task will open the sample projects for Ruby directly in Windows Explorer.'
+          ParentColor = False
+          ParentFont = False
+          WordWrap = True
+        end
+      end
+      object pnlRuby: TPanel
+        Left = 4
+        Height = 44
+        Top = 48
+        Width = 640
+        BevelOuter = bvLowered
+        Caption = 'Ruby for Sega Dreamcast is experimental. A lot of features are missing, not working and/or not tested, like debugging or profiling. Also, Ruby projects are not supported in IDEs. Sample projects are provided.'
+        Font.Color = clHighlight
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 5
+        Wordwrap = True
+      end
+      object btnUpdateMRuby: TButton
+        Left = 398
+        Height = 25
+        Top = 14
+        Width = 122
+        Caption = 'Upd&ate...'
+        OnClick = btnUpdateMRubyClick
+        TabOrder = 6
+      end
+    end
     object tsIDE: TTabSheet
       Caption = 'IDE'
       ClientHeight = 322
@@ -1145,10 +1316,10 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblVersionKallistiOS2: TLabel
-          Left = 132
+          Left = 64
           Height = 13
           Top = 36
-          Width = 171
+          Width = 239
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(KallistiOS)'
@@ -1195,10 +1366,10 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblVersionToolSerial: TLabel
-          Left = 140
+          Left = 64
           Height = 13
           Top = 36
-          Width = 167
+          Width = 243
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL Serial)'
@@ -1303,10 +1474,10 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblVersionToolIP: TLabel
-          Left = 140
+          Left = 64
           Height = 13
           Top = 36
-          Width = 167
+          Width = 243
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL IP)'
@@ -1440,11 +1611,11 @@ object frmMain: TfrmMain
       end
       object gbxDependencies: TGroupBox
         Left = 328
-        Height = 133
-        Top = 184
+        Height = 185
+        Top = 132
         Width = 316
         Caption = 'Dependencies Versions:'
-        ClientHeight = 115
+        ClientHeight = 167
         ClientWidth = 312
         TabOrder = 1
         object lblVersionSVN: TLabel
@@ -1527,6 +1698,46 @@ object frmMain: TfrmMain
           ParentColor = False
           ParentFont = False
         end
+        object lblTextRuby: TLabel
+          Left = 8
+          Height = 13
+          Top = 120
+          Width = 29
+          Caption = 'Ruby'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object lblVersionRuby: TLabel
+          Left = 151
+          Height = 13
+          Top = 120
+          Width = 155
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(Ruby)'
+          ParentColor = False
+        end
+        object lblVersionRake: TLabel
+          Left = 151
+          Height = 13
+          Top = 148
+          Width = 155
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(Rake)'
+          ParentColor = False
+        end
+        object lblTextRake: TLabel
+          Left = 8
+          Height = 13
+          Top = 148
+          Width = 29
+          Caption = 'Rake'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
       end
       object gbxToolchainARM: TGroupBox
         Left = 4
@@ -1580,11 +1791,11 @@ object frmMain: TfrmMain
       end
       object gbxToolchainWin32: TGroupBox
         Left = 328
-        Height = 172
+        Height = 120
         Top = 4
         Width = 316
         Caption = 'Win32 Toolchain Versions:'
-        ClientHeight = 154
+        ClientHeight = 102
         ClientWidth = 312
         TabOrder = 3
         object lblTextBinutilsWin32: TLabel

@@ -15,6 +15,7 @@ const
   DREAMSDK_LAUNCHER_EXECUTABLE = 'dreamsdk-shell.exe';
   DREAMSDK_HELP_FILE = 'dreamsdk.chm';
   DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dreamsdk/';
+  DREAMSDK_MRUBY_INSTALL_DIRECTORY = '/opt/mruby';
   DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'helpers/';
   DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
 
@@ -29,7 +30,8 @@ type
     rkKallistiPorts,
     rkDreamcastTool, // Both Serial and Internet Protocol
     rkDreamcastToolSerial,
-    rkDreamcastToolInternetProtocol
+    rkDreamcastToolInternetProtocol,
+    rkRuby
   );
 
   TUpdateOperationState = (
@@ -44,6 +46,8 @@ type
     tkARM,
     tkWin32
   );
+
+  TDreamcastSoftwareDevelopmentEnvironment = class;
 
   { TDreamcastSoftwareDevelopmentFileSystemDreamcastTool }
   TDreamcastSoftwareDevelopmentFileSystemDreamcastTool = class(TObject)
@@ -136,11 +140,28 @@ type
       read fCodeBlocksPatcherExecutable;
   end;
 
+  { TDreamcastSoftwareDevelopmentFileSystemRuby }
+  TDreamcastSoftwareDevelopmentFileSystemRuby = class(TObject)
+  private
+    fRubyDirectory: TFileName;
+    fRubyLibrary: TFileName;
+    fSamplesDirectory: TFileName;
+    fSamplesLibraryInformationFile: TFileName;
+  public
+    function ResetRepository: Boolean;
+    property BaseDirectory: TFileName read fRubyDirectory;
+    property RubyLibrary: TFileName read fRubyLibrary;
+    property SamplesDirectory: TFileName read fSamplesDirectory;
+    property SamplesLibraryInformationFile: TFileName
+      read fSamplesLibraryInformationFile;
+  end;
+
   { TDreamcastSoftwareDevelopmentFileSystem }
   TDreamcastSoftwareDevelopmentFileSystem = class(TObject)
   private
     fDreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool;
     fKallisti: TDreamcastSoftwareDevelopmentFileSystemKallisti;
+    fRuby: TDreamcastSoftwareDevelopmentFileSystemRuby;
     fShell: TDreamcastSoftwareDevelopmentFileSystemShell;
     fToolchainARM: TDreamcastSoftwareDevelopmentFileSystemToolchain;
     fToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain;
@@ -163,6 +184,32 @@ type
       read fToolchainSuperH;
     property ToolchainWin32: TDreamcastSoftwareDevelopmentFileSystemToolchain
       read fToolchainWin32;
+    property Ruby: TDreamcastSoftwareDevelopmentFileSystemRuby
+      read fRuby;
+  end;
+
+  { TDreamcastSoftwareDevelopmentRepository }
+  TDreamcastSoftwareDevelopmentRepository = class(TObject)
+  private
+    fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+    fOfflineFileName: TFileName;
+    fRepositoryDirectory: TFileName;
+    function GetOffline: Boolean;
+    function GetReady: Boolean;
+    function GetURL: string;
+    function GetVersion: string;
+  protected
+    property Environment: TDreamcastSoftwareDevelopmentEnvironment
+      read fEnvironment;
+    property OfflineFileName: TFileName read fOfflineFileName;
+  public
+    constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+      ARepositoryDirectory: TFileName);
+    property Directory: TFileName read fRepositoryDirectory;
+    property Ready: Boolean read GetReady;
+    property Offline: Boolean read GetOffline;
+    property Version: string read GetVersion;
+    property URL: string read GetURL;
   end;
 
   { TDreamcastSoftwareDevelopmentEnvironment }
@@ -204,34 +251,17 @@ type
       write fShellCommandNewLine;
   end;
 
-  { TDreamcastSoftwareDevelopmentRepository }
-  TDreamcastSoftwareDevelopmentRepository = class(TObject)
-  private
-    fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
-    fOfflineFileName: TFileName;
-    fRepositoryDirectory: TFileName;
-    function GetOffline: Boolean;
-    function GetReady: Boolean;
-    function GetURL: string;
-    function GetVersion: string;
-  protected
-    property Environment: TDreamcastSoftwareDevelopmentEnvironment
-      read fEnvironment;
-    property OfflineFileName: TFileName read fOfflineFileName;
-  public
-    constructor Create(AEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
-      ARepositoryDirectory: TFileName);
-    property Directory: TFileName read fRepositoryDirectory;
-    property Ready: Boolean read GetReady;
-    property Offline: Boolean read GetOffline;
-    property Version: string read GetVersion;
-    property URL: string read GetURL;
-  end;
-
 implementation
 
 uses
   RefBase, SysTools, FSTools, RunTools;
+
+{ TDreamcastSoftwareDevelopmentFileSystemRuby }
+
+function TDreamcastSoftwareDevelopmentFileSystemRuby.ResetRepository: Boolean;
+begin
+  Result := KillDirectory(BaseDirectory);
+end;
 
 { TDreamcastSoftwareDevelopmentRepository }
 
@@ -409,6 +439,15 @@ begin
       raise EKallistiReferentialNotAvailable.CreateFmt(
         'The KallistiOS Ports library referential file was not found: %s', [fKallistiPortsLibraryInformationFile]);
   end;
+
+  // Ruby
+  with fRuby do
+  begin
+    fRubyDirectory := MSYSBase + UnixPathToSystem(DREAMSDK_MRUBY_INSTALL_DIRECTORY);
+    fRubyLibrary := fRubyDirectory + 'build\dreamcast\lib\libmruby.a';
+    fSamplesDirectory := ToolchainBase + 'ruby\';
+    fSamplesLibraryInformationFile := GetReferentialDirectory + 'mruby.conf';
+  end;
 end;
 
 constructor TDreamcastSoftwareDevelopmentFileSystem.Create;
@@ -419,10 +458,12 @@ begin
   fToolchainSuperH := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkSuperH);
   fToolchainWin32 := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkWin32);
   fShell := TDreamcastSoftwareDevelopmentFileSystemShell.Create;
+  fRuby := TDreamcastSoftwareDevelopmentFileSystemRuby.Create;
 end;
 
 destructor TDreamcastSoftwareDevelopmentFileSystem.Destroy;
 begin
+  fRuby.Free;
   fDreamcastTool.Free;
   fKallisti.Free;
   fToolchainWin32.Free;
@@ -447,6 +488,8 @@ begin
       Result := DreamcastTool.ResetRepositorySerial;
     rkDreamcastToolInternetProtocol:
       Result := DreamcastTool.ResetRepositoryInternetProtocol;
+    rkRuby:
+      Result := Ruby.ResetRepository;
   end;
 end;
 
@@ -579,6 +622,10 @@ var
 
 begin
   CurrentDir := GetCurrentDir;
+
+  if not DirectoryExists(WorkingDirectory) then
+    ForceDirectories(WorkingDirectory);
+
   SetCurrentDir(WorkingDirectory);
 
   Result := ExecuteShellCommandRunner(CommandLine);
@@ -618,7 +665,7 @@ begin
   begin
 {$IFDEF DEBUG}
     if IsEmpty(URL) then
-      WriteLn('CloneRepository: URL is empty!');
+      WriteLn('Warning: CloneRepository: URL is empty!');
 {$ENDIF}
     CommandLine := Format('git clone %s %s --progress', [URL, TargetDirectoryName]);
     BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);

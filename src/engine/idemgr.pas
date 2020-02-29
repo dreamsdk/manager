@@ -17,7 +17,7 @@ type
   { TCodeBlocksIntegratedDevelopmentEnvironment }
   TCodeBlocksIntegratedDevelopmentEnvironment = class(TObject)
   private
-    fSettings: TDreamcastSoftwareDevelopmentCodeBlocksSettings;
+    fSettings: TDreamcastSoftwareDevelopmentSettingsCodeBlocks;
     fIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment;
     fLastErrorMessage: string;
     fLastOperationSuccess: Boolean;
@@ -46,7 +46,7 @@ type
       write fLastOperationSuccess;
     property LastErrorMessage: string read fLastErrorMessage
       write fLastErrorMessage;
-    property Settings: TDreamcastSoftwareDevelopmentCodeBlocksSettings
+    property Settings: TDreamcastSoftwareDevelopmentSettingsCodeBlocks
       read fSettings;
   end;
 
@@ -148,7 +148,7 @@ begin
   fIntegratedDevelopmentEnvironment := AIntegratedDevelopmentEnvironment;
   fAvailableUsers := TStringList.Create;
   fInstalledUsers := TStringList.Create;
-  fSettings := TDreamcastSoftwareDevelopmentCodeBlocksSettings.Create;
+  fSettings := TDreamcastSoftwareDevelopmentSettingsCodeBlocks.Create;
 end;
 
 destructor TCodeBlocksIntegratedDevelopmentEnvironment.Destroy;

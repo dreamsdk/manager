@@ -349,6 +349,7 @@ var
   IsModifiedKallisti,
   IsModifiedKallistiPorts,
   IsModifiedDreamcastTool,
+  IsModifiedRuby,
   IsEnvironShellScriptUpdated: Boolean;
 
   procedure CombineOutputBuffer(const InputBuffer: string);
@@ -370,6 +371,8 @@ var
         Result := KallistiPortsText;
       rkDreamcastTool:
         Result := DreamcastToolText;
+      rkRuby:
+        Result := RubyText;
     end;
   end;
 
@@ -399,6 +402,8 @@ var
             IsSuccess := Manager.KallistiPorts.CloneRepository(TempBuffer);
           rkDreamcastTool:
             IsSuccess := Manager.DreamcastTool.CloneRepository(TempBuffer);
+          rkRuby:
+            IsSuccess := Manager.Ruby.CloneRepository(TempBuffer);
         end;
         SetOperationSuccess(IsSuccess);
       end
@@ -414,6 +419,8 @@ var
             UpdateState := Manager.KallistiPorts.UpdateRepository(TempBuffer);
           rkDreamcastTool:
             UpdateState := Manager.DreamcastTool.UpdateRepository(TempBuffer);
+          rkRuby:
+            UpdateState := Manager.Ruby.UpdateRepository(TempBuffer);
         end;
         SetOperationSuccess(UpdateState <> uosUpdateFailed);
       end;
@@ -569,6 +576,40 @@ var
     CombineOutputBuffer(TempBuffer);
   end;
 
+  function HandleRuby: Boolean;
+  var
+    RepositoryOperation: TRepositoryOperation;
+    UpdateState: TUpdateOperationState;
+    TempBuffer: string;
+
+  begin
+    // Handle Ruby (mruby) Repository
+    TempBuffer := EmptyStr;
+    UpdateState := uosUndefined;
+    RepositoryOperation := HandleRepository(Manager.Ruby.Installed,
+      rkRuby, UpdateState);
+    Result := HandleResponse(rkRuby, RepositoryOperation, UpdateState, True);
+
+    // Determine if we need to do something
+    if Result then
+    begin
+      // Copying build_config.rb file
+      if CanContinue then
+      begin
+        UpdateProgressText(RubyInitializeText);
+        SetOperationSuccess(Manager.Ruby.InitializeEnvironment);
+      end;
+
+      // Making Ruby library
+      if CanContinue then
+      begin
+        UpdateProgressText(RubyBuildText);
+        SetOperationSuccess(Manager.Ruby.Build(TempBuffer));
+      end;
+    end;
+    CombineOutputBuffer(TempBuffer);
+  end;
+
 begin
   Result := EmptyStr;
   OutputBuffer := EmptyStr;
@@ -580,8 +621,11 @@ begin
 
   IsModifiedDreamcastTool := HandleDreamcastTool;
 
+  IsModifiedRuby := (not Manager.Environment.Settings.Ruby.Enabled) or
+    (Manager.Environment.Settings.Ruby.Enabled and HandleRuby);
+
   if (CanContinue) and (not IsModifiedKallisti) and (not IsModifiedKallistiPorts)
-    and (not IsModifiedDreamcastTool) then
+    and (not IsModifiedDreamcastTool) and (not IsModifiedRuby) then
       UpdateProgressText(KallistiOperationNothingNeededText);
 
   Result := OutputBuffer;

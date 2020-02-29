@@ -15,7 +15,7 @@ uses
   Interfaces, // this includes the LCL widgetset
   Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress, KOSMgr, ShellThd,
   PostInst, StrRes, ToolMgr,
-  About, ModVer, IDEMgr, Splash;
+  About, ModVer, IDEMgr, Splash, rubymgr;
 
 {$R *.res}
 

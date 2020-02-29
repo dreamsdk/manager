@@ -12,12 +12,14 @@ uses
   KOSMgr,
   PortMgr,
   ToolMgr,
-  IDEMgr;
+  IDEMgr,
+  RubyMgr;
 
 type
   { TDreamcastSoftwareDevelopmentKitManager }
   TDreamcastSoftwareDevelopmentKitManager = class(TObject)
   private
+    fRubyManager: TRubyManager;
     fDreamcastTool: TDreamcastToolManager;
     fKallistiManager: TKallistiManager;
     fVersionRetriever: TComponentVersion;
@@ -37,6 +39,7 @@ type
       read fIntegratedDevelopmentEnvironment;
     property KallistiOS: TKallistiManager read fKallistiManager;
     property KallistiPorts: TKallistiPortManager read fKallistiPortsManager;
+    property Ruby: TRubyManager read fRubyManager;
     property Versions: TComponentVersion read fVersionRetriever;
   end;
 
@@ -66,6 +69,7 @@ begin
     fIntegratedDevelopmentEnvironment, fVersionRetriever, AutoLoad);
   fKallistiManager := TKallistiManager.Create(fEnvironment);
   fDreamcastTool := TDreamcastToolManager.Create(fEnvironment);
+  fRubyManager := TRubyManager.Create(fEnvironment);
   if AutoLoad then
     UpdateRepositoriesURL;
   fIntegratedDevelopmentEnvironment.CodeBlocks.Refresh;
@@ -90,6 +94,7 @@ begin
   fVersionRetriever.Free;
   fIntegratedDevelopmentEnvironment.Free;
   fEnvironment.Free;
+  fRubyManager.Free;
   inherited Destroy;
 end;
 
