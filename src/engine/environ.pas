@@ -221,6 +221,8 @@ type
     fFileSystem: TDreamcastSoftwareDevelopmentFileSystem;
     fSettings: TDreamcastSoftwareDevelopmentSettings;
     fShellCommandBufferOutput: string;
+    fMsysBaseDirectoryReverse: TFileName;
+    fMsysBaseDirectoryNormal: TFileName;
   protected
     procedure LoadConfig;
     procedure HandleShellCommandRunnerNewLine(Sender: TObject; NewLine: string);
@@ -506,11 +508,20 @@ procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerNewLi
 const
   ERROR_KEYWORD = 'error:';
 
+var
+  ProcessedNewLine: string;
+
 begin
+  ProcessedNewLine := StringReplace(NewLine, fMsysBaseDirectoryNormal,
+    EmptyStr, [rfReplaceAll]);
+  ProcessedNewLine := StringReplace(ProcessedNewLine,
+    fMsysBaseDirectoryReverse, EmptyStr, [rfReplaceAll]);
+
   if Assigned(fShellCommandNewLine) then
-    fShellCommandNewLine(Self, NewLine);
+    fShellCommandNewLine(Self, ProcessedNewLine);
+
   if not fShellCommandError then
-    fShellCommandError := IsInString(ERROR_KEYWORD, LowerCase(NewLine));
+    fShellCommandError := IsInString(ERROR_KEYWORD, LowerCase(ProcessedNewLine));
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerTerminate
@@ -589,6 +600,10 @@ end;
 
 constructor TDreamcastSoftwareDevelopmentEnvironment.Create;
 begin
+  fShellCommandError := False;
+  fMsysBaseDirectoryNormal := ExcludeTrailingPathDelimiter(GetMSysBaseDirectory);
+  fMsysBaseDirectoryReverse := StringReplace(fMsysBaseDirectoryNormal,
+    DirectorySeparator, '/', [rfReplaceAll]);
   fFileSystem := TDreamcastSoftwareDevelopmentFileSystem.Create;
   fSettings := TDreamcastSoftwareDevelopmentSettings.Create;
   LoadConfig;
@@ -604,13 +619,13 @@ begin
   fFileSystem.Free;
 
   FreeAndNil(fShellCommandRunner);
-  fShellCommandError := False;
 
   inherited Destroy;
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.AbortShellCommand;
 begin
+  fShellCommandError := False;
   if Assigned(fShellCommandRunner) then
     fShellCommandRunner.Abort;
 end;

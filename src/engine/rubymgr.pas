@@ -253,6 +253,7 @@ end;
 function TRubyManager.Uninstall: Boolean;
 begin
   Result := KillDirectory(Environment.FileSystem.Ruby.BaseDirectory);
+  Result := Result and KillDirectory(Environment.FileSystem.Ruby.SamplesDirectory);
 end;
 
 end.
