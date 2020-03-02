@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 407
+  Left = 661
   Height = 400
-  Top = 193
+  Top = 598
   Width = 670
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 656
-    ActivePage = tsHome
-    TabIndex = 0
+    ActivePage = tsRuby
+    TabIndex = 4
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -889,7 +889,7 @@ object frmMain: TfrmMain
           Height = 25
           Top = 16
           Width = 129
-          Caption = 'Open Ho&me...'
+          Caption = 'Open Sa&mples...'
           OnClick = btnRubyOpenHomeClick
           TabOrder = 0
         end
