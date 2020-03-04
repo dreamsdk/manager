@@ -1047,6 +1047,7 @@ var
   ConfigFileName,
   BuildFileName,
   DownloadFileName: TFileName;
+  PythonOld, PythonNew: string;
 
 begin
   ConfigFileName := Environment.FileSystem.Kallisti.KallistiPortsDirectory + CONFIG_MAKEFILE;
@@ -1081,13 +1082,20 @@ begin
       'cp -r'
     );
 
-    // Only if Python is not installed
-    if not Versions.PythonInstalled then
-      PatchTextFile(
-        ConfigFileName,
-        'VALIDATE_DISTFILES = true',
-        '#VALIDATE_DISTFILES = true'
-      );
+    // Handle Python
+    PythonOld := EmptyStr;
+    PythonNew := '#';
+    if Versions.PythonInstalled then
+    begin
+      PythonOld := '#';
+      PythonNew := EmptyStr;
+    end;
+
+    PatchTextFile(
+      ConfigFileName,
+      PythonOld + 'VALIDATE_DISTFILES',
+      PythonNew + 'VALIDATE_DISTFILES'
+    );
   end;
 end;
 

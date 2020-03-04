@@ -293,6 +293,8 @@ type
     function BooleanToCheckboxState(State: Boolean): TCheckBoxState;
     procedure ClearKallistiPortPanel;
     procedure UpdateKallistiPortControls;
+    function IsGitReady(
+      Repository: TDreamcastSoftwareDevelopmentRepository): Boolean;
     function IsVersionLabelValid(VersionLabel: TLabel): Boolean;
     procedure SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
     procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
@@ -989,6 +991,8 @@ begin
     btnInstallMRuby.Enabled := not Ruby.Enabled;
     btnUpdateMRuby.Enabled := Ruby.Enabled;
     btnUninstallMRuby.Enabled := Ruby.Enabled;
+    btnRubyOpenHome.Enabled := Ruby.Enabled;
+    btnRubyOpenMSYS.Enabled := Ruby.Enabled;
   end;
 end;
 
@@ -1186,6 +1190,13 @@ begin
     if IsEmpty(cbxUrlRuby.Text) and (not Environment.Settings.Ruby.Enabled) then
       cbxUrlRuby.Text := Environment.Settings.Repositories.RubyURL;
   end;
+end;
+
+function TfrmMain.IsGitReady(
+  Repository: TDreamcastSoftwareDevelopmentRepository): Boolean;
+begin
+  Result := Assigned(Repository) and (Repository.Offline or
+    (DreamcastSoftwareDevelopmentKitManager.Versions.GitInstalled and not Repository.Offline));
 end;
 
 procedure TfrmMain.HandleAero;
@@ -1610,8 +1621,8 @@ begin
       DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := False;
       if not DreamcastSoftwareDevelopmentKitManager.Ruby.Uninstall then
         MsgBox(DialogWarningTitle, UninstallRubyFailedText, mtWarning, [mbOK]);
-      UpdateRubyControls;
-      UpdateOptionsControls;
+      RefreshEverything(False);
+      RefreshViewEnvironment(True);
     end;
   end;
 end;
@@ -1692,14 +1703,26 @@ end;
 
 procedure TfrmMain.btnRubyOpenHomeClick(Sender: TObject);
 begin
-  RunShellExecute(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem
-    .Ruby.SamplesDirectory);
+  with DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Ruby do
+  begin
+    if DirectoryExists(SamplesDirectory) then
+      RunShellExecute(SamplesDirectory)
+    else
+      MsgBoxDlg(Handle, DialogWarningTitle, RubySamplesNotInstalled,
+        mtInformation, [mbOK]);
+  end;
 end;
 
 procedure TfrmMain.btnRubyOpenMSYSClick(Sender: TObject);
 begin
-  RunMSYS(DreamcastSoftwareDevelopmentKitManager.Environment
-    .FileSystem.Ruby.SamplesDirectory);
+  with DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Ruby do
+  begin
+    if DirectoryExists(SamplesDirectory) then
+      RunMSYS(SamplesDirectory)
+    else
+      MsgBoxDlg(Handle, DialogWarningTitle, RubySamplesNotInstalled,
+        mtInformation, [mbOK]);
+  end;
 end;
 
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
@@ -1830,46 +1853,66 @@ var
     end;
   end;
 
-begin
-  if not IsInternetConnectionAvailable then
-    MsgBox(DialogWarningTitle, InternetConnectionNeeded, mtWarning, [mbOK])
-  else
+  function TagToRepository: TDreamcastSoftwareDevelopmentRepository;
   begin
-    Index := (Sender as TButton).Tag;
+    Result := nil;
+    with DreamcastSoftwareDevelopmentKitManager do
+      case Index of
+        0: Result := KallistiOS.Repository;
+        1: Result := KallistiPorts.Repository;
+        2: Result := DreamcastTool.RepositorySerial;
+        3: Result := DreamcastTool.RepositoryInternetProtocol;
+        4: Result := Ruby.Repository;
+      end;
+  end;
 
-    Msg := Format(ResetRepositoryLine1, [TagToString]) + MsgBoxWrapStr
-      + ResetRepositoryLine2 + MsgBoxWrapStr
-      + ResetRepositoryLine3;
+begin
+  Index := (Sender as TButton).Tag;
 
-    if MsgBox(DialogWarningTitle, Msg, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
+  if not IsInternetConnectionAvailable then
+  begin
+    MsgBox(DialogWarningTitle, InternetConnectionNeeded, mtWarning, [mbOK]);
+    Exit;
+  end;
+
+  if not IsGitReady(TagToRepository) then
+  begin
+    MsgBox(DialogWarningTitle, GitNeeded, mtWarning, [mbOK]);
+    Exit;
+  end;
+
+  Msg := Format(ResetRepositoryLine1, [TagToString]) + MsgBoxWrapStr
+    + ResetRepositoryLine2 + MsgBoxWrapStr
+    + ResetRepositoryLine3;
+
+  if MsgBox(DialogWarningTitle, Msg, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
+  begin
+    if DreamcastSoftwareDevelopmentKitManager
+      .Environment.FileSystem.ResetRepository(TagToRepositoryKind) then
     begin
-      if DreamcastSoftwareDevelopmentKitManager
-        .Environment.FileSystem.ResetRepository(TagToRepositoryKind) then
+      if Assigned(TagToComboBox) and (TagToComboBox.Items.Count > 0) then
       begin
-        if Assigned(TagToComboBox) and (TagToComboBox.Items.Count > 0) then
-        begin
-          TagToComboBox.ItemIndex := 0;
-          UpdateRepositories;
-        end;
+        TagToComboBox.ItemIndex := 0;
+        UpdateRepositories;
+      end;
 
-        UpdateOptionsControls;
-        UpdateRubyControls;
+      UpdateOptionsControls;
+      UpdateRubyControls;
 
-        Msg := Format(ResetRepositoryConfirmUpdateLine1, [TagToString]) + MsgBoxWrapStr
-          + ResetRepositoryConfirmUpdateLine2;
+      Msg := Format(ResetRepositoryConfirmUpdateLine1, [TagToString]) + MsgBoxWrapStr
+        + ResetRepositoryConfirmUpdateLine2;
 
-        if TagToRepositoryKind <> rkRuby then
-          Msg := Msg + MsgBoxWrapStr +
-            Format(ResetRepositoryConfirmUpdateLine3, [KallistiText]);
+      if TagToRepositoryKind <> rkRuby then
+        Msg := Msg + MsgBoxWrapStr +
+          Format(ResetRepositoryConfirmUpdateLine3, [KallistiText]);
 
-        if MsgBox(DialogQuestionTitle, Msg,
-          mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
-            ExecuteThreadOperation(stiKallistiManage);
-      end
-      else
-        MsgBox(DialogWarningTitle, Format(FailedToResetRepository, [TagToString]),
-          mtWarning, [mbOk])
-    end;
+      if MsgBox(DialogQuestionTitle, Msg,
+        mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
+          ExecuteThreadOperation(stiKallistiManage);
+    end
+    else
+      MsgBox(DialogWarningTitle, Format(FailedToResetRepository, [TagToString]),
+        mtWarning, [mbOk])
   end;
 end;
 

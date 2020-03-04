@@ -258,6 +258,9 @@ implementation
 uses
   RefBase, SysTools, FSTools, RunTools;
 
+const
+  FAIL_TAG = 'fatal: ';
+
 { TDreamcastSoftwareDevelopmentFileSystemRuby }
 
 function TDreamcastSoftwareDevelopmentFileSystemRuby.ResetRepository: Boolean;
@@ -281,7 +284,11 @@ function TDreamcastSoftwareDevelopmentRepository.GetURL: string;
 begin
   Result := EmptyStr;
   if Ready then
-    Result := Trim(Run('git', 'config --get remote.origin.url', fRepositoryDirectory));
+	try
+		Result := Trim(Run('git', 'config --get remote.origin.url', fRepositoryDirectory));
+	except
+		// Silent exception (not needed in that case)
+	end;
 end;
 
 function TDreamcastSoftwareDevelopmentRepository.GetVersion: string;
@@ -663,9 +670,6 @@ end;
 function TDreamcastSoftwareDevelopmentEnvironment.CloneRepository(
   const URL: string; const TargetDirectoryName, WorkingDirectory: TFileName;
   var BufferOutput: string): Boolean;
-const
-  FAIL_TAG = 'fatal: ';
-
 var
   CommandLine,
   TargetDirectoryFileName: TFileName;
@@ -706,7 +710,15 @@ begin
     if IsOfflineRepository(WorkingDirectory) then
       Result := LoadFileToString(GetOfflineFileName(WorkingDirectory))
     else
-      Result := Run('git', 'describe --dirty --always', WorkingDirectory, False);
+	begin
+		try
+		  Result := Run('git', 'describe --dirty --always', WorkingDirectory, False);
+		  if IsInString(FAIL_TAG, Result) then
+			Result := EmptyStr;
+		except
+			// Not needed in that cases
+		end;
+	end;
 end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.IsOfflineRepository(

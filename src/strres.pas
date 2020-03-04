@@ -63,6 +63,8 @@ resourcestring
   InstallRubyText = 'Ruby for the Sega Dreamcast is experimental. Are you sure to enable it?';
   UninstallRubyText = 'Are you sure to disable the Ruby support?';
   UninstallRubyFailedText = 'Failed to uninstall the Ruby directory. You may delete it manually.';
+  RubySamplesNotInstalled = 'Ruby samples are not installed. Please install them by installing/reinstalling Ruby support.';
+  GitNeeded = 'Git is needed to use this feature.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';

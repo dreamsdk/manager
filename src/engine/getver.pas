@@ -56,6 +56,7 @@ type
     fBuildDateKallistiOS: TDateTime;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fPythonInstalled: Boolean;
+	fGitInstalled: Boolean;
     fMRubyBuildDate: TDateTime;
     fSubversionInstalled: Boolean;
     fToolchainVersionARM: TToolchainVersion;
@@ -88,6 +89,7 @@ type
     procedure RetrieveVersions;
 
     property Git: string read fVersionGit;
+	property GitInstalled: Boolean read fGitInstalled;
     property MinGW: string read fVersionMinGW;
     property Subversion: string read fVersionSVN;
     property SubversionInstalled: Boolean read fSubversionInstalled;
@@ -258,6 +260,7 @@ begin
   with Environment.FileSystem do
   begin
     fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak);
+	fGitInstalled := IsValidVersion(fVersionGit);
     fVersionSVN := RetrieveVersion('svn', '--version', 'svn, version', sLineBreak);
     fSubversionInstalled := IsValidVersion(fVersionSVN);
     fVersionPython := RetrieveVersion('python', '--version', 'Python', sLineBreak);
@@ -265,7 +268,8 @@ begin
     fVersionMinGW := RetrieveVersion(Shell.MinGWGetExecutable,
       '--version', 'mingw-get version', sLineBreak);
     fVersionRuby := RetrieveVersion('ruby', '--version', 'ruby ', WhiteSpaceStr);
-    fVersionRake := RetrieveVersion('rake.bat', '--version', 'version ', sLineBreak);
+    fVersionRake := RetrieveVersion(ParseInputFileSystemObject('%ComSpec%'),
+      '/C "rake --version"', 'version ', sLineBreak, False);
 
     RetrieveVersionToolchain(fToolchainVersionSuperH, ToolchainSuperH);
     RetrieveVersionToolchain(fToolchainVersionARM, ToolchainARM);
