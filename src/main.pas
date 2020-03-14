@@ -293,8 +293,6 @@ type
     function BooleanToCheckboxState(State: Boolean): TCheckBoxState;
     procedure ClearKallistiPortPanel;
     procedure UpdateKallistiPortControls;
-    function IsGitReady(
-      Repository: TDreamcastSoftwareDevelopmentRepository): Boolean;
     function IsVersionLabelValid(VersionLabel: TLabel): Boolean;
     procedure SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
     procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
@@ -1103,14 +1101,20 @@ var
 
   procedure DisplayHelpFileVersion;
   var
-    HelpFileVersion: string;
+    HelpFileVersion,
+    Temp: string;
 
   begin
     HelpFileVersion := GetRegisteredVersion(HelpFileName);
     if IsEmpty(HelpFileVersion) then
     begin
-      HelpFileVersion := RetrieveVersionWithFind(HelpFileName, 'DreamSDK Help', sLineBreak, False);
-      HelpFileVersion := ExtractStr('Ver. ', #0, HelpFileVersion);
+      HelpFileVersion := RetrieveVersionWithFind(HelpFileName, 'DreamSDK Help',
+        sLineBreak, False);
+      Temp := ExtractStr('Ver. ', #0, HelpFileVersion);
+      if IsEmpty(Temp) then
+        HelpFileVersion := Right('Ver. ', HelpFileVersion)
+      else
+        HelpFileVersion := Temp;
     end;
 
     if HelpFileVersion = EmptyStr then
@@ -1192,13 +1196,6 @@ begin
   end;
 end;
 
-function TfrmMain.IsGitReady(
-  Repository: TDreamcastSoftwareDevelopmentRepository): Boolean;
-begin
-  Result := Assigned(Repository) and (Repository.Offline or
-    (DreamcastSoftwareDevelopmentKitManager.Versions.GitInstalled and not Repository.Offline));
-end;
-
 procedure TfrmMain.HandleAero;
 const
   LITTLE_BUTTON_HEIGHT = 21;
@@ -1223,7 +1220,7 @@ begin
   if IsAeroEnabled or UseThemes then
   begin
 {$IFDEF DEBUG}
-    DebugLog('HandleAero');
+    DebugLog('HandleAero: Start');
 {$ENDIF}
 
     // Compute extra height for TLabels
@@ -1239,12 +1236,16 @@ begin
     // Applying these new values
     for i := 0 to frmMain.ComponentCount - 1 do
     begin
+{$IFDEF DEBUG}
+      DebugLog('  Processing: ' + frmMain.Components[i].Name);
+{$ENDIF}
+
       // TLabeledEdit
       if (frmMain.Components[i] is TLabeledEdit) then
       begin
         ItemEdit := (frmMain.Components[i] as TLabeledEdit);
 {$IFDEF DEBUG}
-        DebugLog('  ' + ItemEdit.Name);
+        DebugLog('    TLabeledEdit: ' + ItemEdit.Name);
 {$ENDIF}
         // Handle background color
         SetTransparent(ItemEdit);
@@ -1256,7 +1257,7 @@ begin
       begin
         ItemLabel := (frmMain.Components[i] as TLabel);
 {$IFDEF DEBUG}
-        DebugLog('  ' + ItemEdit.Name);
+        DebugLog('    TLabel: ' + ItemLabel.Name);
 {$ENDIF}
         if not ItemLabel.AutoSize then
           ItemLabel.Height := ItemLabel.Height + ItemLabelExtraHeight;
@@ -1269,7 +1270,7 @@ begin
         if (ItemButton.Height = LITTLE_BUTTON_HEIGHT) then
         begin
 {$IFDEF DEBUG}
-          DebugLog('  ' + ItemEdit.Name);
+          DebugLog('    TButton: ' + ItemButton.Name);
 {$ENDIF}
           ItemButton.Height := ItemButton.Height + ItemButtonExtraHeight;
           ItemButton.Top := ItemButton.Top + ItemButtonExtraTop;
@@ -1278,6 +1279,9 @@ begin
     end; // for
 
   end; // IsAeroEnabled / UseThemes
+{$IFDEF DEBUG}
+  DebugLog('HandleAero: End');
+{$ENDIF}
 end;
 
 function TfrmMain.GetMsgBoxWindowHandle: THandle;
@@ -1606,6 +1610,14 @@ begin
 
   if InstallRequest then
   begin
+    // Check if we can install Ruby
+    if not DreamcastSoftwareDevelopmentKitManager.Versions.GitInstalled and
+      not DreamcastSoftwareDevelopmentKitManager.Ruby.Repository.Offline then
+    begin
+      MsgBox(DialogWarningTitle, UnableToInstallRubyText, mtWarning, [mbOK]);
+      Exit;
+    end;
+
     // Install
     if MsgBox(DialogWarningTitle, InstallRubyText, mtWarning, [mbYes, mbNo]) = mrYes then
     begin
@@ -1869,15 +1881,15 @@ var
 begin
   Index := (Sender as TButton).Tag;
 
-  if not IsInternetConnectionAvailable then
+  if not DreamcastSoftwareDevelopmentKitManager.Versions.GitInstalled then
   begin
-    MsgBox(DialogWarningTitle, InternetConnectionNeeded, mtWarning, [mbOK]);
+    MsgBox(DialogWarningTitle, GitNeeded, mtWarning, [mbOK]);
     Exit;
   end;
 
-  if not IsGitReady(TagToRepository) then
+  if not IsInternetConnectionAvailable then
   begin
-    MsgBox(DialogWarningTitle, GitNeeded, mtWarning, [mbOK]);
+    MsgBox(DialogWarningTitle, InternetConnectionNeeded, mtWarning, [mbOK]);
     Exit;
   end;
 

@@ -143,6 +143,8 @@ type
   { TDreamcastSoftwareDevelopmentFileSystemRuby }
   TDreamcastSoftwareDevelopmentFileSystemRuby = class(TObject)
   private
+    fBinariesDirectory: TFileName;
+    fBuildDirectory: TFileName;
     fRubyDirectory: TFileName;
     fRubyLibrary: TFileName;
     fSamplesDirectory: TFileName;
@@ -151,6 +153,8 @@ type
     function ResetRepository: Boolean;
     property BaseDirectory: TFileName read fRubyDirectory;
     property RubyLibrary: TFileName read fRubyLibrary;
+    property BinariesDirectory: TFileName read fBinariesDirectory;
+    property BuildDirectory: TFileName read fBuildDirectory;
     property SamplesDirectory: TFileName read fSamplesDirectory;
     property SamplesLibraryInformationFile: TFileName
       read fSamplesLibraryInformationFile;
@@ -453,7 +457,9 @@ begin
   with fRuby do
   begin
     fRubyDirectory := MSYSBase + UnixPathToSystem(DREAMSDK_MRUBY_INSTALL_DIRECTORY);
-    fRubyLibrary := fRubyDirectory + 'build\dreamcast\lib\libmruby.a';
+    fBuildDirectory := fRubyDirectory + 'build\';
+    fBinariesDirectory := fRubyDirectory + 'bin\';
+    fRubyLibrary := fBuildDirectory + 'dreamcast\lib\libmruby.a';
     fSamplesDirectory := ToolchainBase + 'ruby\';
     fSamplesLibraryInformationFile := GetReferentialDirectory + 'mruby.conf';
   end;

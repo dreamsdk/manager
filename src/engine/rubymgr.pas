@@ -252,9 +252,8 @@ end;
 
 function TRubyManager.Uninstall: Boolean;
 begin
-  Result := KillDirectory(Environment.FileSystem.Ruby.BaseDirectory);
-//  Result := Result and KillDirectory(Environment.FileSystem.Ruby.SamplesDirectory);
-// No: This is dangerous (this may kill some user projects!)
+  Result := KillDirectory(Environment.FileSystem.Ruby.BinariesDirectory);
+  Result := Result and KillDirectory(Environment.FileSystem.Ruby.BuildDirectory);
 end;
 
 end.
