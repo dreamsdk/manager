@@ -587,17 +587,17 @@ begin
     case fShellThreadOutputResult of
       // No action was done
       stoNothing:
-        MsgBox(DialogInformationTitle, UpdateProcessEverythingUpdate, mtInformation, [mbOk]);
+        MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [EverythingText]), mtInformation, [mbOk]);
 
       // KallistiOS was installed
       stoKallistiInstall:
         MsgBox(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk]);
 
-      // KallistiOS, KallistiOS Ports or Dreamcast Tool were updated
+      // KallistiOS, KallistiOS Ports, Dreamcast Tool or Ruby were updated
       stoKallistiUpdate:
         case fShellThreadUpdateState of
           uosUpdateSuccess:
-            MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [KallistiText]), mtInformation, [mbOk]);
+            MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [EverythingText]), mtInformation, [mbOk]);
         end;
 
       // All KallistiOS Ports were installed
@@ -1610,15 +1610,23 @@ begin
 
   if InstallRequest then
   begin
-    // Check if we can install Ruby
-    if not DreamcastSoftwareDevelopmentKitManager.Versions.GitInstalled and
-      not DreamcastSoftwareDevelopmentKitManager.Ruby.Repository.Offline then
+    // Check Ruby runtime
+    if (not DreamcastSoftwareDevelopmentKitManager.Versions.RubyInstalled) or
+      (not DreamcastSoftwareDevelopmentKitManager.Versions.RakeInstalled) then
     begin
-      MsgBox(DialogWarningTitle, UnableToInstallRubyText, mtWarning, [mbOK]);
+      MsgBox(DialogWarningTitle, UnableToInstallRubyRuntimeText, mtWarning, [mbOK]);
       Exit;
     end;
 
-    // Install
+    // Check Git availability (if needed)
+    if not DreamcastSoftwareDevelopmentKitManager.Versions.GitInstalled and
+      not DreamcastSoftwareDevelopmentKitManager.Ruby.Repository.Offline then
+    begin
+      MsgBox(DialogWarningTitle, UnableToInstallRubyGitText, mtWarning, [mbOK]);
+      Exit;
+    end;
+
+    // Install can start!
     if MsgBox(DialogWarningTitle, InstallRubyText, mtWarning, [mbYes, mbNo]) = mrYes then
     begin
       DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := True;
@@ -1628,6 +1636,7 @@ begin
   else
   begin
     // Uninstall
+    // This is just basically removing compiled mruby binaries/libraries
     if MsgBox(DialogWarningTitle, UninstallRubyText, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
     begin
       DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := False;

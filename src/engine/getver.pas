@@ -58,6 +58,8 @@ type
     fPythonInstalled: Boolean;
 	fGitInstalled: Boolean;
     fMRubyBuildDate: TDateTime;
+    fRakeInstalled: Boolean;
+    fRubyInstalled: Boolean;
     fSubversionInstalled: Boolean;
     fToolchainVersionARM: TToolchainVersion;
     fToolchainVersionSuperH: TToolchainVersion;
@@ -89,7 +91,7 @@ type
     procedure RetrieveVersions;
 
     property Git: string read fVersionGit;
-	property GitInstalled: Boolean read fGitInstalled;
+	  property GitInstalled: Boolean read fGitInstalled;
     property MinGW: string read fVersionMinGW;
     property Subversion: string read fVersionSVN;
     property SubversionInstalled: Boolean read fSubversionInstalled;
@@ -104,7 +106,9 @@ type
     property ToolchainARM: TToolchainVersion read fToolchainVersionARM;
     property ToolchainWin32: TToolchainVersion read fToolchainVersionWin32;
     property Ruby: string read fVersionRuby;
+    property RubyInstalled: Boolean read fRubyInstalled;
     property Rake: string read fVersionRake;
+    property RakeInstalled: Boolean read fRakeInstalled;
     property MRubyBuildDate: TDateTime read fMRubyBuildDate;
   end;
 
@@ -260,7 +264,7 @@ begin
   with Environment.FileSystem do
   begin
     fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak);
-	fGitInstalled := IsValidVersion(fVersionGit);
+	  fGitInstalled := IsValidVersion(fVersionGit);
     fVersionSVN := RetrieveVersion('svn', '--version', 'svn, version', sLineBreak);
     fSubversionInstalled := IsValidVersion(fVersionSVN);
     fVersionPython := RetrieveVersion('python', '--version', 'Python', sLineBreak);
@@ -268,8 +272,10 @@ begin
     fVersionMinGW := RetrieveVersion(Shell.MinGWGetExecutable,
       '--version', 'mingw-get version', sLineBreak);
     fVersionRuby := RetrieveVersion('ruby', '--version', 'ruby ', WhiteSpaceStr);
+    fRubyInstalled := IsValidVersion(fVersionRuby);
     fVersionRake := RetrieveVersion(ParseInputFileSystemObject('%ComSpec%'),
       '/C "rake --version"', 'version ', sLineBreak, False);
+    fRakeInstalled := IsValidVersion(fVersionRake);
 
     RetrieveVersionToolchain(fToolchainVersionSuperH, ToolchainSuperH);
     RetrieveVersionToolchain(fToolchainVersionARM, ToolchainARM);
