@@ -966,9 +966,8 @@ begin
       and (not DreamcastTool.RepositoryInternetProtocol.Offline);
     btnUrlDreamcastToolIP.Enabled := not cbxUrlDreamcastToolIP.Enabled;
 
-    cbxUrlRuby.Enabled := (not Environment.Settings.Ruby.Enabled) or
-      (Environment.Settings.Ruby.Enabled and (not Ruby.Repository.Ready)
-      and (not Ruby.Repository.Offline));
+    cbxUrlRuby.Enabled := (not Ruby.Repository.Ready)
+      and (not Ruby.Repository.Offline);
     btnUrlRuby.Enabled := not cbxUrlRuby.Enabled;
   end;
 end;
@@ -1191,8 +1190,6 @@ begin
     cbxUrlDreamcastToolSerial.Text := DreamcastTool.RepositorySerial.URL;
     cbxUrlDreamcastToolIP.Text := DreamcastTool.RepositoryInternetProtocol.URL;
     cbxUrlRuby.Text := Ruby.Repository.URL;
-    if IsEmpty(cbxUrlRuby.Text) and (not Environment.Settings.Ruby.Enabled) then
-      cbxUrlRuby.Text := Environment.Settings.Repositories.RubyURL;
   end;
 end;
 
@@ -1642,8 +1639,7 @@ begin
       DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := False;
       if not DreamcastSoftwareDevelopmentKitManager.Ruby.Uninstall then
         MsgBox(DialogWarningTitle, UninstallRubyFailedText, mtWarning, [mbOK]);
-      RefreshEverything(False);
-      RefreshViewEnvironment(True);
+      RefreshEverything(True);
     end;
   end;
 end;
@@ -1917,8 +1913,7 @@ begin
         UpdateRepositories;
       end;
 
-      UpdateOptionsControls;
-      UpdateRubyControls;
+      RefreshEverything(True);
 
       Msg := Format(ResetRepositoryConfirmUpdateLine1, [TagToString]) + MsgBoxWrapStr
         + ResetRepositoryConfirmUpdateLine2;
