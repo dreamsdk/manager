@@ -41,12 +41,9 @@ resourcestring
   InstallOrUpdateRequiredDoItNow = 'A management operation of KallistiOS components is necessary. Do it now?';
   UseSubversionKallistiSinglePort = 'Unable to install %s, as it needs the Subversion Client (SVN) which wasn''t detected.';
   UseSubversionAllKallistiPorts = 'Note: The Subversion Client (SVN) wasn''t detected and this may causes issues.';
-  ResetRepositoryLine1 = 'This will delete the %s repository on the disk, losing all your changes if any.';
-  ResetRepositoryLine2 = 'Then perform an Update operation to apply the changes.';
-  ResetRepositoryLine3 = 'Are you sure to continue?';
-  ResetRepositoryConfirmUpdateLine1 = '%s repository deleted. Perform the Update operation now?';
-  ResetRepositoryConfirmUpdateLine2 = 'If you want to change the repository URL, answer No.';
-  ResetRepositoryConfirmUpdateLine3 = 'You may do the Update operation later in the %s tab.';
+  ResetRepositoryQuestion = 'This will delete the %s repository on the disk, losing all your changes if any.\nThen perform an Update operation to apply the changes.\nAre you sure to continue?';
+  ResetRepositoryDone = '%s repository deleted.';
+  ResetRepositoryConfirmUpdate = 'Perform the Update operation now?\nIf you want to change the repository URL, answer No.\nYou may do the Update operation later in the %s tab.';
   InternetConnectionNeeded = 'This feature requires Internet connection.';
   FailedToResetRepository = 'Failed to reset the %s repository. You have to delete it manually.';
   ConfirmCodeBlocksMessage = 'Are you sure to %s the Code::Blocks integration?';
@@ -55,8 +52,7 @@ resourcestring
   ConfirmCodeBlocksUninstallation = 'uninstall definitely';
   CodeBlocksInstallationDirectoryNotExists = 'The specified Code::Blocks installation directory does not exists.';
   CodeBlocksInstallationDirectoryInvalid = 'Code::Blocks is not installed in this directory.';
-  CodeBlocksIncorrectHash1 = 'The installed Code::Blocks version seems NOT to be the expected Code::Blocks 17.12.';
-  CodeBlocksIncorrectHash2 = 'There is no guarantee that it will work. Continue anyway?';
+  CodeBlocksIncorrectHash = 'The installed Code::Blocks version seems NOT to be the expected Code::Blocks 17.12.\nThere is no guarantee that it will work. Continue anyway?';
   UnknownElevatedTask = 'Unknown elevated task!';
   PleaseVerifyRepositories = 'Repositories settings are incorrect!';
   PleaseVerifyRubyRepository = 'Ruby repository setting is incorrect!';

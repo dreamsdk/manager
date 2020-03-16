@@ -1307,7 +1307,7 @@ function TfrmMain.GetAllKallistiPortsMessage(const Message: string): string;
 begin
   Result := Message;
   if (not DreamcastSoftwareDevelopmentKitManager.Versions.SubversionInstalled) then
-     Result := Message + MsgBoxWrapStr + UseSubversionAllKallistiPorts;
+     Result := Message + MsgBoxDlgWrapStr + UseSubversionAllKallistiPorts;
 end;
 
 function TfrmMain.CheckKallistiSinglePortPossibleInstallation: Boolean;
@@ -1591,8 +1591,12 @@ end;
 procedure TfrmMain.btnIdeCodeBlocksInstallDirClick(Sender: TObject);
 begin
   with sddIdeCodeBlocks do
+  begin
+    if DirectoryExists(edtIdeCodeBlocksInstallDir.Text) then
+      FileName := edtIdeCodeBlocksInstallDir.Text;
     if Execute then
       edtIdeCodeBlocksInstallDir.Text := FileName;
+  end;
 end;
 
 procedure TfrmMain.btnInstallMRubyClick(Sender: TObject);
@@ -1898,33 +1902,32 @@ begin
     Exit;
   end;
 
-  Msg := Format(ResetRepositoryLine1, [TagToString]) + MsgBoxWrapStr
-    + ResetRepositoryLine2 + MsgBoxWrapStr
-    + ResetRepositoryLine3;
+  Msg := Format(MsgBoxDlgTranslateString(ResetRepositoryQuestion), [TagToString]);
 
   if MsgBox(DialogWarningTitle, Msg, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
   begin
     if DreamcastSoftwareDevelopmentKitManager
       .Environment.FileSystem.ResetRepository(TagToRepositoryKind) then
     begin
+      // Setting up the default repo
       if Assigned(TagToComboBox) and (TagToComboBox.Items.Count > 0) then
       begin
-        TagToComboBox.ItemIndex := 0;
+        TagToComboBox.ItemIndex := 0; // The first item in list is the default
         UpdateRepositories;
       end;
 
+      // Refresh version numbers and build date
       RefreshEverything(True);
 
-      Msg := Format(ResetRepositoryConfirmUpdateLine1, [TagToString]) + MsgBoxWrapStr
-        + ResetRepositoryConfirmUpdateLine2;
-
       if TagToRepositoryKind <> rkRuby then
-        Msg := Msg + MsgBoxWrapStr +
-          Format(ResetRepositoryConfirmUpdateLine3, [KallistiText]);
+      begin
+        Msg := Format(MsgBoxDlgTranslateString(ResetRepositoryConfirmUpdate), [TagToString, KallistiText]);
 
-      if MsgBox(DialogQuestionTitle, Msg,
-        mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
-          ExecuteThreadOperation(stiKallistiManage);
+        if MsgBox(DialogQuestionTitle, Msg,
+          mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
+            ExecuteThreadOperation(stiKallistiManage);
+      end;
+
     end
     else
       MsgBox(DialogWarningTitle, Format(FailedToResetRepository, [TagToString]),
@@ -2001,7 +2004,7 @@ begin
           if not IsCorrectFileHash(CodeBlocksBinaryFileName, CODEBLOCKS_DLL_HASH) then
           begin
             InstallTitle := DialogWarningTitle;
-            InstallMessage := CodeBlocksIncorrectHash1 + MsgBoxWrapStr + CodeBlocksIncorrectHash2;
+            InstallMessage := MsgBoxDlgTranslateString(CodeBlocksIncorrectHash);
             InstallIcon := mtWarning;
           end;
 
