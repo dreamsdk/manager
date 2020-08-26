@@ -14,7 +14,7 @@ object frmMain: TfrmMain
   OnShow = FormShow
   Position = poScreenCenter
   ShowHint = True
-  LCLVersion = '2.0.6.0'
+  LCLVersion = '2.0.10.0'
   object btnClose: TButton
     Left = 266
     Height = 25
@@ -452,7 +452,7 @@ object frmMain: TfrmMain
         ItemIndex = 0
         Items.Strings = (
           '&None (Disable Dreamcast Tool)'
-          '&Serial (RS-232)'
+          '&Serial (RS-232 / USB)'
           '&Internet Protocol (IP)'
           '&Custom'
         )
@@ -464,7 +464,7 @@ object frmMain: TfrmMain
         Height = 134
         Top = 64
         Width = 321
-        Caption = 'Serial (RS-232) Settings:'
+        Caption = 'Serial (RS-232 / USB) Settings:'
         ClientHeight = 116
         ClientWidth = 317
         TabOrder = 1
@@ -485,6 +485,8 @@ object frmMain: TfrmMain
             '38400'
             '57600'
             '115200'
+            '500000'
+            '1500000'
           )
           OnSelect = cbxDreamcastToolSerialBaudrateSelect
           Style = csDropDownList
@@ -2180,29 +2182,29 @@ object frmMain: TfrmMain
     Enabled = False
     Interval = 50
     OnTimer = tmrShellThreadTerminateTimer
-    left = 444
-    top = 352
+    Left = 444
+    Top = 352
   end
   object tmDisplayKallistiPorts: TTimer
     Enabled = False
     Interval = 50
     OnTimer = tmDisplayKallistiPortsTimer
-    left = 52
-    top = 352
+    Left = 52
+    Top = 352
   end
   object apMain: TApplicationProperties
     OnException = apMainException
-    left = 164
-    top = 352
+    Left = 164
+    Top = 352
   end
   object opdDreamcastToolCustom: TOpenDialog
     Filter = 'Executables (*.exe;*.bat;*.cmd;*.com)|*.exe;*.bat;*.cmd;*.com|All Files (*.*)|*.*'
     Options = [ofFileMustExist, ofEnableSizing, ofViewDetail]
-    left = 588
-    top = 352
+    Left = 588
+    Top = 352
   end
   object sddIdeCodeBlocks: TSelectDirectoryDialog
-    left = 224
-    top = 352
+    Left = 224
+    Top = 352
   end
 end
