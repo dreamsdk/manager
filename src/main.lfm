@@ -913,7 +913,7 @@ object frmMain: TfrmMain
         Top = 48
         Width = 650
         BevelOuter = bvLowered
-        Caption = 'Ruby for Sega Dreamcast is experimental. A lot of features are missing, not working and/or not tested, like debugging or profiling. Also, Ruby projects are not supported in IDEs. Sample projects are provided.'
+        Caption = 'Ruby for Sega Dreamcast is experimental. A lot of features are missing, not working and/or not tested, like debugging. Also, Ruby projects are not supported in IDEs. Sample projects are provided.'
         Font.Color = clHighlight
         Font.Style = [fsBold]
         ParentFont = False
