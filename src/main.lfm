@@ -1230,7 +1230,7 @@ object frmMain: TfrmMain
         Height = 52
         Top = 116
         Width = 650
-        Caption = 'Dreamcast Tool Serial (RS-232) URL:'
+        Caption = 'Dreamcast Tool Serial (RS-232 / USB) URL:'
         ClientHeight = 34
         ClientWidth = 646
         TabOrder = 3
@@ -1343,7 +1343,7 @@ object frmMain: TfrmMain
         Height = 128
         Top = 60
         Width = 321
-        Caption = 'Dreamcast Tool Serial (RS-232) Information:'
+        Caption = 'Dreamcast Tool Serial (RS-232 / USB) Information:'
         ClientHeight = 110
         ClientWidth = 317
         TabOrder = 1

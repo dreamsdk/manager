@@ -78,10 +78,14 @@ resourcestring
   ComponentSetupIcon = 'Setup Icon made by Roundicons from FlatIcon\nLicensed by Creative Commons BY 3.0.';
   ComponentElevate = 'Elevate is an utility that executes a command with UAC privilege elevation. This is useful for working inside command prompts or with batch files.';
   ComponentDirHash = 'DirHash is a Windows console program that computes the hash of a given directory content or a single file. Recursive Lexicographical order is used for browsing the directory hierarchy so that the computed hash can be seen as unique fingerprint of the target directory. Supported hashing algorithms are MD5, SHA-1, SHA-256, SHA-384, SHA-512 and Streebog.';
+  ComponentRuby = 'RubyInstaller is the easiest and most used Ruby environment on Windows. And Ruby is a great language for beginners as well as professionals. It’s suitable for small scripts as well as large applications. RubyInstaller combines the possibilities of native Windows programs with the rich UNIX toolset of MSYS2 and the large repository of MINGW libraries. It is a great foundation to use Ruby for development and production, especially if you want to use Ruby for day-to-day scripting or require access to Windows resources like hardware devices, DLLs, OLE, graphical user interfaces or GPU.';
+  ComponentMRuby = 'mruby is the lightweight implementation of the Ruby language complying to (part of) the ISO standard. mruby can be linked and embedded within your application. We provide the interpreter program "mruby" and the interactive mruby shell "mirb" as examples. You can also compile Ruby programs into compiled byte code using the mruby compiler "mrbc". All those tools reside in the "bin" directory. "mrbc" is also able to generate compiled byte code in a C source file, see the "mrbtest" program under the "test" directory for an example.';
+  ComponentCodeBlocks = 'Code::Blocks is a free C, C++ and Fortran IDE built to meet the most demanding needs of its users. It is designed to be very extensible and fully configurable.\n\nFinally, an IDE with all the features you need, having a consistent look, feel and operation across platforms.\n\nBuilt around a plugin framework, Code::Blocks can be extended with plugins. Any kind of functionality can be added by installing/coding a plugin. For instance, compiling and debugging functionality is already provided by plugins!\n\nSpecial credits go to darmar for his great work on the FortranProject plugin, bundled since release 13.12.\n\nWe hope you enjoy using Code::Blocks!\n\nThe Code::Blocks Team';
+  ComponentMkIsoFs = 'mkisofs is effectively a pre-mastering program to generate the iso9660 filesystem - it takes a snapshot of a given directory tree, and generates a binary image which will correspond to an iso9660 filesystem when written to a block device.';
 
 const
-  COMPONENTS_INFORMATION: array[0..24] of TComponentItem = (
-    (Text: ComponentEnvironment;    Url: ''), // Environment
+  COMPONENTS_INFORMATION: array[0..28] of TComponentItem = (
+    (Text: ComponentEnvironment;    Url: ''), // Environment (0)
     (Text: ComponentMinGW;          Url: 'http://mingw.org/'), // MinGW
     (Text: ComponentMSYS;           Url: 'http://mingw.org/wiki/MSYS'), // MSYS
     (Text: ComponentToolchains;     Url: ''), // Toolchains
@@ -91,7 +95,7 @@ const
     (Text: ComponentGDB;            Url: 'https://www.gnu.org/software/gdb/'), // GDB
     (Text: ComponentLibraries;      Url: ''), // Libraries
     (Text: ComponentKallisti;       Url: 'http://cadcdev.sourceforge.net/softprj/kos/'), // KallistiOS
-    (Text: ComponentKallistiPorts;  Url: 'http://cadcdev.sourceforge.net/softprj/kos/'), // KallistiOS Ports
+    (Text: ComponentKallistiPorts;  Url: 'http://cadcdev.sourceforge.net/softprj/kos/'), // KallistiOS Ports (10)
     (Text: ComponentDreamcastTool;  Url: 'http://cadcdev.sourceforge.net/softprj/kos/'), // Dreamcast Tool
     (Text: ComponentDependencies;   Url: ''), // Dependencies
     (Text: ComponentGit;            Url: 'https://git-scm.com/'), // Git
@@ -101,11 +105,16 @@ const
     (Text: ComponentFreePascal;     Url: 'https://www.freepascal.org/'), // Free Pascal
     (Text: ComponentLazarus;        Url: 'https://www.lazarus-ide.org/'), // Lazarus
     (Text: ComponentInnoSetup;      Url: 'http://www.jrsoftware.org/'), // Inno Setup
-    (Text: ComponentResources;      Url: ''), // ComponentResources
+    (Text: ComponentResources;      Url: ''), // ComponentResources (20)
     (Text: ComponentMainIcon;       Url: 'https://www.deviantart.com/martz90'), // Main Icon
     (Text: ComponentSetupIcon;      Url: 'https://www.flaticon.com/authors/roundicons'), // Setup Icon
+    // Additional ressources
     (Text: ComponentElevate;        Url: 'http://code.kliu.org/misc/elevate/'), // Misc/Elevate
-    (Text: ComponentDirHash;        Url: 'https://idrassi.github.io/DirHash/') //Misc/DirHash
+    (Text: ComponentDirHash;        Url: 'https://idrassi.github.io/DirHash/'), // Misc/DirHash
+    (Text: ComponentRuby;           Url: 'https://rubyinstaller.org/'), // Dependencies/Ruby
+    (Text: ComponentCodeBlocks;     Url: 'http://www.codeblocks.org/'), // Misc/Code::Blocks
+    (Text: ComponentMRuby;          Url: 'https://mruby.org/'), // Libraries/mruby
+    (Text: ComponentMkIsoFs;        Url: 'http://cdrtools.sourceforge.net/private/cdrecord.html') // Misc/Make ISO File System
   );
 
 { TfrmAbout }
@@ -159,6 +168,9 @@ var
   SelectedItem: TComponentItem;
 
 begin
+{$IFDEF DEBUG}
+  DebugLog('About Component: ' + Node.Text + ' (' + IntToStr(Node.SelectedIndex) + ')');
+{$ENDIF}
   SelectedItem := COMPONENTS_INFORMATION[Node.SelectedIndex];
   memDescription.Lines.Text := StringReplace(SelectedItem.Text, '\n', sLineBreak, [rfReplaceAll]);
   edtComponentURL.Text := SelectedItem.Url;
