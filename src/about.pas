@@ -82,39 +82,41 @@ resourcestring
   ComponentMRuby = 'mruby is the lightweight implementation of the Ruby language complying to (part of) the ISO standard. mruby can be linked and embedded within your application. We provide the interpreter program "mruby" and the interactive mruby shell "mirb" as examples. You can also compile Ruby programs into compiled byte code using the mruby compiler "mrbc". All those tools reside in the "bin" directory. "mrbc" is also able to generate compiled byte code in a C source file, see the "mrbtest" program under the "test" directory for an example.';
   ComponentCodeBlocks = 'Code::Blocks is a free C, C++ and Fortran IDE built to meet the most demanding needs of its users. It is designed to be very extensible and fully configurable.\n\nFinally, an IDE with all the features you need, having a consistent look, feel and operation across platforms.\n\nBuilt around a plugin framework, Code::Blocks can be extended with plugins. Any kind of functionality can be added by installing/coding a plugin. For instance, compiling and debugging functionality is already provided by plugins!\n\nSpecial credits go to darmar for his great work on the FortranProject plugin, bundled since release 13.12.\n\nWe hope you enjoy using Code::Blocks!\n\nThe Code::Blocks Team';
   ComponentMkIsoFs = 'mkisofs is effectively a pre-mastering program to generate the iso9660 filesystem - it takes a snapshot of a given directory tree, and generates a binary image which will correspond to an iso9660 filesystem when written to a block device.';
+  ComponentCogsIcon = 'Cogs Icon used in the Setup made by paomedia\nIconset: Small & Flat Icons\nLicense: Public Domain';
 
 const
-  COMPONENTS_INFORMATION: array[0..28] of TComponentItem = (
+  COMPONENTS_INFORMATION: array[0..29] of TComponentItem = (
     (Text: ComponentEnvironment;    Url: ''), // Environment (0)
     (Text: ComponentMinGW;          Url: 'http://mingw.org/'), // MinGW
     (Text: ComponentMSYS;           Url: 'http://mingw.org/wiki/MSYS'), // MSYS
     (Text: ComponentToolchains;     Url: ''), // Toolchains
     (Text: ComponentBinutils;       Url: 'http://www.gnu.org/software/binutils/'), // Binutils
-    (Text: ComponentGCC;            Url: 'https://gcc.gnu.org/'), // GCC
+    (Text: ComponentGCC;            Url: 'http://gcc.gnu.org/'), // GCC
     (Text: ComponentNewlib;         Url: 'http://sourceware.org/newlib/'), // Newlib
-    (Text: ComponentGDB;            Url: 'https://www.gnu.org/software/gdb/'), // GDB
+    (Text: ComponentGDB;            Url: 'http://www.gnu.org/software/gdb/'), // GDB
     (Text: ComponentLibraries;      Url: ''), // Libraries
     (Text: ComponentKallisti;       Url: 'http://cadcdev.sourceforge.net/softprj/kos/'), // KallistiOS
     (Text: ComponentKallistiPorts;  Url: 'http://cadcdev.sourceforge.net/softprj/kos/'), // KallistiOS Ports (10)
     (Text: ComponentDreamcastTool;  Url: 'http://cadcdev.sourceforge.net/softprj/kos/'), // Dreamcast Tool
     (Text: ComponentDependencies;   Url: ''), // Dependencies
-    (Text: ComponentGit;            Url: 'https://git-scm.com/'), // Git
+    (Text: ComponentGit;            Url: 'http://git-scm.com/'), // Git
     (Text: ComponentSubversion;     Url: 'http://subversion.apache.org/'), // Subversion
-    (Text: ComponentPython;         Url: 'https://www.python.org/'),  // Python
+    (Text: ComponentPython;         Url: 'http://www.python.org/'),  // Python
     (Text: ComponentMisc;           Url: ''), // Misc
-    (Text: ComponentFreePascal;     Url: 'https://www.freepascal.org/'), // Free Pascal
-    (Text: ComponentLazarus;        Url: 'https://www.lazarus-ide.org/'), // Lazarus
+    (Text: ComponentFreePascal;     Url: 'http://www.freepascal.org/'), // Free Pascal
+    (Text: ComponentLazarus;        Url: 'http://www.lazarus-ide.org/'), // Lazarus
     (Text: ComponentInnoSetup;      Url: 'http://www.jrsoftware.org/'), // Inno Setup
     (Text: ComponentResources;      Url: ''), // ComponentResources (20)
-    (Text: ComponentMainIcon;       Url: 'https://www.deviantart.com/martz90'), // Main Icon
-    (Text: ComponentSetupIcon;      Url: 'https://www.flaticon.com/authors/roundicons'), // Setup Icon
-    // Additional ressources
+    (Text: ComponentMainIcon;       Url: 'http://www.deviantart.com/martz90'), // Main Icon
+    (Text: ComponentSetupIcon;      Url: 'http://www.flaticon.com/authors/roundicons'), // Setup Icon
+    // Additional ressources (not in the original order)
     (Text: ComponentElevate;        Url: 'http://code.kliu.org/misc/elevate/'), // Misc/Elevate
-    (Text: ComponentDirHash;        Url: 'https://idrassi.github.io/DirHash/'), // Misc/DirHash
-    (Text: ComponentRuby;           Url: 'https://rubyinstaller.org/'), // Dependencies/Ruby
+    (Text: ComponentDirHash;        Url: 'http://idrassi.github.io/DirHash/'), // Misc/DirHash
+    (Text: ComponentRuby;           Url: 'http://rubyinstaller.org/'), // Dependencies/Ruby
     (Text: ComponentCodeBlocks;     Url: 'http://www.codeblocks.org/'), // Misc/Code::Blocks
-    (Text: ComponentMRuby;          Url: 'https://mruby.org/'), // Libraries/mruby
-    (Text: ComponentMkIsoFs;        Url: 'http://cdrtools.sourceforge.net/private/cdrecord.html') // Misc/Make ISO File System
+    (Text: ComponentMRuby;          Url: 'http://mruby.org/'), // Libraries/mruby
+    (Text: ComponentMkIsoFs;        Url: 'http://cdrtools.sourceforge.net/private/cdrecord.html'), // Misc/Make ISO File System
+    (Text: ComponentCogsIcon;       Url: 'http://www.paomedia.com/')
   );
 
 { TfrmAbout }
