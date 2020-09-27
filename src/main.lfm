@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 656
+  Left = 569
   Height = 400
-  Top = 506
+  Top = 371
   Width = 680
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -1308,26 +1308,26 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblVersionRepoKallistiOS: TLabel
-          Left = 141
+          Left = 121
           Height = 13
           Top = 8
-          Width = 171
+          Width = 191
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(KallistiOS)'
           ParentColor = False
         end
         object lblVersionKallistiOS2: TLabel
-          Left = 73
+          Left = 56
           Height = 13
           Top = 36
-          Width = 239
+          Width = 256
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(KallistiOS)'
           ParentColor = False
         end
-        object lblTextVersionKallistiOS: TLabel
+        object lblTextVersionKallistiOS2: TLabel
           Left = 8
           Height = 13
           Top = 36
@@ -1348,10 +1348,10 @@ object frmMain: TfrmMain
         ClientWidth = 317
         TabOrder = 1
         object lblVersionRepoToolSerial: TLabel
-          Left = 145
+          Left = 124
           Height = 13
           Top = 8
-          Width = 167
+          Width = 188
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL Serial)'
@@ -1368,10 +1368,10 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblVersionToolSerial: TLabel
-          Left = 69
+          Left = 56
           Height = 13
           Top = 36
-          Width = 243
+          Width = 256
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL Serial)'
@@ -1426,10 +1426,10 @@ object frmMain: TfrmMain
         ClientWidth = 317
         TabOrder = 3
         object lblVersionRepoKallistiPorts: TLabel
-          Left = 141
+          Left = 121
           Height = 13
           Top = 8
-          Width = 171
+          Width = 191
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(KallistiOS Ports)'
@@ -1456,10 +1456,10 @@ object frmMain: TfrmMain
         ClientWidth = 317
         TabOrder = 4
         object lblVersionRepoToolIP: TLabel
-          Left = 145
+          Left = 121
           Height = 13
           Top = 8
-          Width = 167
+          Width = 191
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL IP)'
@@ -1476,10 +1476,10 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblVersionToolIP: TLabel
-          Left = 69
+          Left = 56
           Height = 13
           Top = 36
-          Width = 243
+          Width = 256
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL IP)'

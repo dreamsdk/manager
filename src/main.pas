@@ -74,9 +74,11 @@ type
     lblTextMRuby: TLabel;
     lblTextRuby: TLabel;
     lblTextRake: TLabel;
+    lblTextVersionKallistiOS2: TLabel;
     lblVersionMRuby: TLabel;
     lblVersionRuby: TLabel;
     lblVersionRake: TLabel;
+    lblVersionKallistiOS2: TLabel;
     memPortShortDescription: TEdit;
     edtIdeCodeBlocksInstallDir: TEdit;
     edtValueHomeBaseDir: TEdit;
@@ -167,7 +169,6 @@ type
     lblTextRepoKallistiOS: TLabel;
     lblTextVersionDreamcastToolSerial: TLabel;
     lblTextVersionDreamcastToolIP: TLabel;
-    lblTextVersionKallistiOS: TLabel;
     lblTextRepoKallistiPorts: TLabel;
     lblTextSVN: TLabel;
     lblTextRepoToolSerial: TLabel;
@@ -189,7 +190,6 @@ type
     lblVersionMinGW: TLabel;
     lblVersionPython: TLabel;
     lblVersionRepoKallistiOS: TLabel;
-    lblVersionKallistiOS2: TLabel;
     lblVersionRepoKallistiPorts: TLabel;
     lblVersionSVN: TLabel;
     lblVersionRepoToolSerial: TLabel;
@@ -716,6 +716,11 @@ begin
       lblVersionKallistiOS.Caption := Format(KALLISTI_VERSION_FORMAT,
         [lblVersionKallistiOS.Caption,
         Versions.KallistiChangeLog]);
+      lblVersionKallistiOS2.Caption := lblVersionKallistiOS.Caption;
+    end
+    else
+    begin
+      SetVersionLabel(lblVersionKallistiOS2, INVALID_VERSION);
     end;
 
     // KallistiOS build date
@@ -741,9 +746,6 @@ begin
 
     // Dreamcast Tool IP
     SetVersionLabel(lblVersionRepoToolIP, DreamcastTool.RepositoryInternetProtocol.Version);
-
-    // Update Components page
-    lblVersionKallistiOS2.Caption := lblVersionKallistiOS.Caption;
 
     // Ruby
     SetVersionLabel(lblVersionMRuby, Ruby.Repository.Version);

@@ -282,9 +282,9 @@ begin
     RetrieveVersionToolchain(fToolchainVersionWin32, ToolchainWin32);
 
     fVersionToolSerial := RetrieveVersion(DreamcastTool.SerialExecutable,
-      '-h', 'dc-tool', 'by <');
+      '-h', 'dc-tool', 'by ');
     fVersionToolIP := RetrieveVersion(DreamcastTool.InternetProtocolExecutable,
-      '-h', 'dc-tool-ip', 'by <');
+      '-h', 'dc-tool-ip', 'by ');
 
     RetrieveKallistiInformation;
 
