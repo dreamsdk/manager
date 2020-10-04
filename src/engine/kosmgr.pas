@@ -38,14 +38,14 @@ type
 implementation
 
 uses
-  FileUtil, SysTools, FSTools, PostInst;
+  FileUtil, SysTools, FSTools;
 
 { TKallistiManager }
 
 function TKallistiManager.GetInstalled: Boolean;
 begin
-  Result := (not IsPostInstallMode) and DirectoryExists(
-    Environment.FileSystem.Kallisti.KallistiDirectory);
+  Result := Environment.IsComponentInstalled(Environment.FileSystem.Kallisti
+    .KallistiDirectory);
 end;
 
 function TKallistiManager.GetBuilt: Boolean;

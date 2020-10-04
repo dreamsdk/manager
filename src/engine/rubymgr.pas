@@ -69,7 +69,7 @@ type
 implementation
 
 uses
-  FileUtil, PostInst, FSTools, SysTools;
+  FileUtil, FSTools, SysTools;
 
 { TRubySampleList }
 
@@ -154,8 +154,8 @@ end;
 
 function TRubyManager.GetInstalled: Boolean;
 begin
-  Result := (not IsPostInstallMode) and
-    DirectoryExists(Environment.FileSystem.Ruby.BaseDirectory);
+  Result := Environment.IsComponentInstalled(Environment.FileSystem.Ruby
+    .BaseDirectory);
 end;
 
 constructor TRubyManager.Create(

@@ -245,6 +245,7 @@ type
     function CloneRepository(const URL: string; const TargetDirectoryName,
       WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
     function GetRepositoryVersion(const WorkingDirectory: TFileName): string;
+    function IsComponentInstalled(const WorkingDirectory: TFileName): Boolean;
     function IsOfflineRepository(const RepositoryDirectory: TFileName): Boolean;
     function IsRepositoryReady(const WorkingDirectory: TFileName): Boolean;
     function UpdateRepository(const WorkingDirectory: TFileName;
@@ -260,7 +261,7 @@ type
 implementation
 
 uses
-  RefBase, SysTools, FSTools, RunTools;
+  RefBase, SysTools, FSTools, RunTools, PostInst;
 
 const
   FAIL_TAG = 'fatal: ';
@@ -727,6 +728,13 @@ begin
 	  end;
 end;
 
+function TDreamcastSoftwareDevelopmentEnvironment.IsComponentInstalled(
+  const WorkingDirectory: TFileName): Boolean;
+begin
+  Result := (not IsPostInstallMode) and DirectoryExists(WorkingDirectory)
+    and (IsRepositoryReady(WorkingDirectory) or IsOfflineRepository(WorkingDirectory));
+end;
+
 function TDreamcastSoftwareDevelopmentEnvironment.IsOfflineRepository(
   const RepositoryDirectory: TFileName): Boolean;
 begin
@@ -751,14 +759,17 @@ begin
 
   if not IsOfflineRepository(WorkingDirectory) then
   begin
-    // Online (normal path)
-    BufferOutput := ExecuteShellCommand('git pull', WorkingDirectory);
-    TempBuffer := StringReplace(BufferOutput, '-', ' ', [rfReplaceAll]);
+    if IsRepositoryReady(WorkingDirectory) then
+    begin
+      // Online (normal path)
+      BufferOutput := ExecuteShellCommand('git pull', WorkingDirectory);
+      TempBuffer := StringReplace(BufferOutput, '-', ' ', [rfReplaceAll]);
 
-    if IsInString(USELESS_TAG, TempBuffer) then
-      Result := uosUpdateUseless
-    else if IsInString(SUCCESS_TAG, TempBuffer) then
-      Result := uosUpdateSuccess;
+      if IsInString(USELESS_TAG, TempBuffer) then
+        Result := uosUpdateUseless
+      else if IsInString(SUCCESS_TAG, TempBuffer) then
+        Result := uosUpdateSuccess;
+    end;
   end
   else
   begin

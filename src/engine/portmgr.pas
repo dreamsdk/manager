@@ -150,7 +150,7 @@ type
 implementation
 
 uses
-  FileUtil, FSTools, PostInst;
+  FileUtil, FSTools;
 
 const
   KALLISTI_PORTS_PACKAGE_DESCRIPTION = 'pkg-descr';
@@ -332,8 +332,8 @@ end;
 
 function TKallistiPortManager.GetInstalled: Boolean;
 begin
-  Result := (not IsPostInstallMode) and
-    DirectoryExists(Environment.FileSystem.Kallisti.KallistiPortsDirectory);
+  Result := Environment.IsComponentInstalled(Environment.FileSystem.Kallisti
+    .KallistiPortsDirectory);
 end;
 
 function TKallistiPortManager.Add: TKallistiPortItem;
