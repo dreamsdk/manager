@@ -170,6 +170,7 @@ end;
 
 function TComponentVersion.RetrieveKallistiVersion: string;
 const
+  GIT_REVISION_TAG = 'Git revision ';
   START_TAG = 'KallistiOS ';
   END_TAG = ':';
 
@@ -186,6 +187,7 @@ begin
     if IsInString(START_TAG, Result) then
     begin
       Result := Right(START_TAG, Result);
+      Result := Right(GIT_REVISION_TAG, Result);
       SetRegisteredVersion(TargetFileName, Result);
     end;
   end;

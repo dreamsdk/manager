@@ -716,15 +716,15 @@ begin
     if IsOfflineRepository(WorkingDirectory) then
       Result := LoadFileToString(GetOfflineFileName(WorkingDirectory))
     else
-	begin
-		try
-		  Result := Run('git', 'describe --dirty --always', WorkingDirectory, False);
-		  if IsInString(FAIL_TAG, Result) then
-			Result := EmptyStr;
-		except
-			// Not needed in that cases
-		end;
-	end;
+	  begin
+		  try
+		    Result := Run('git', 'describe --dirty --always', WorkingDirectory, False);
+		    if IsInString(FAIL_TAG, Result) then
+			    Result := EmptyStr;
+		  except
+			  // Not needed in that cases
+		  end;
+	  end;
 end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.IsOfflineRepository(
