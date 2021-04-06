@@ -468,7 +468,7 @@ var
       end;
     end;
 
-    Result := RepositoryInstalled or RepositoryUpdated or BuildNecessary;
+    Result := RepositoryInstalled or BuildNecessary;
   end;
 
   function HandleKallisti: Boolean;
