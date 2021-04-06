@@ -46,6 +46,7 @@ type
     fRepository: TDreamcastSoftwareDevelopmentRepository;
     fSamples: TRubySampleList;
 
+    function GetBuilt: Boolean;
     function GetInstalled: Boolean;
   protected
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
@@ -60,6 +61,7 @@ type
     function Build(var BufferOutput: string): Boolean;
     function Uninstall: Boolean;
 
+    property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
     property Repository: TDreamcastSoftwareDevelopmentRepository
       read fRepository;
@@ -158,6 +160,11 @@ begin
     .BaseDirectory);
 end;
 
+function TRubyManager.GetBuilt: Boolean;
+begin
+  Result := FileExists(Environment.FileSystem.Ruby.RubyLibrary);
+end;
+
 constructor TRubyManager.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
 begin
@@ -217,32 +224,14 @@ begin
 end;
 
 function TRubyManager.InitializeEnvironment: Boolean;
-const
-  SOURCE_FILE = 'examples\targets\build_config_dreamcast_shelf.rb';
-  TARGET_FILE = 'build_config.rb';
-
-var
-  SourceFileName,
-  TargetFileName: TFileName;
-
 begin
-  with Environment.FileSystem.Ruby do
-  begin
-    SourceFileName := BaseDirectory + SOURCE_FILE;
-    TargetFileName := BaseDirectory + TARGET_FILE;
-  end;
-
-  // Remove the original file
-  KillFile(TargetFileName);
-
-  // Put the right sh-elf config file
-  Result := CopyFile(SourceFileName, TargetFileName);
+  Result := True; // Do nothing.
 end;
 
 function TRubyManager.Build(var BufferOutput: string): Boolean;
 begin
   // Build mruby
-  BufferOutput := Environment.ExecuteShellCommand('make',
+  BufferOutput := Environment.ExecuteShellCommand('make MRUBY_CONFIG=dreamcast_shelf',
     Environment.FileSystem.Ruby.BaseDirectory);
 
   // The result is OK if libkallisti is present, addons are optional...

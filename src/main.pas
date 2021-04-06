@@ -985,13 +985,13 @@ end;
 
 procedure TfrmMain.UpdateRubyControls;
 begin
-  with DreamcastSoftwareDevelopmentKitManager.Environment.Settings do
+  with DreamcastSoftwareDevelopmentKitManager do
   begin
-    btnInstallMRuby.Enabled := not Ruby.Enabled;
-    btnUpdateMRuby.Enabled := Ruby.Enabled;
-    btnUninstallMRuby.Enabled := Ruby.Enabled;
-    btnRubyOpenHome.Enabled := Ruby.Enabled;
-    btnRubyOpenMSYS.Enabled := Ruby.Enabled;
+    btnInstallMRuby.Enabled := not Ruby.Built;
+    btnUpdateMRuby.Enabled := Ruby.Built;
+    btnUninstallMRuby.Enabled := Ruby.Built;
+    btnRubyOpenHome.Enabled := Ruby.Built;
+    btnRubyOpenMSYS.Enabled := Ruby.Built;
   end;
 end;
 

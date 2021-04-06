@@ -588,7 +588,8 @@ var
     UpdateState := uosUndefined;
     RepositoryOperation := HandleRepository(Manager.Ruby.Installed,
       rkRuby, UpdateState);
-    Result := HandleResponse(rkRuby, RepositoryOperation, UpdateState, True);
+    Result := HandleResponse(rkRuby, RepositoryOperation, UpdateState,
+      Manager.Ruby.Built);
 
     // Determine if we need to do something
     if Result then
