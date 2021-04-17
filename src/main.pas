@@ -25,6 +25,12 @@ type
     btnIdeInstall: TButton;
     btnIdeReinstall: TButton;
     btnIdeUninstall: TButton;
+    btnOfflineDreamcastToolSerial1: TButton;
+    btnOfflineDreamcastToolSerial2: TButton;
+    btnOfflineKallisti1: TButton;
+    btnOfflineKallistiPorts: TButton;
+    btnOfflineDreamcastToolSerial: TButton;
+    btnOfflineDreamcastToolIP: TButton;
     btnOpenHelp: TButton;
     btnOpenHome: TButton;
     btnRubyOpenHome: TButton;
@@ -47,6 +53,7 @@ type
     btnUrlDreamcastToolSerial: TButton;
     btnUrlDreamcastToolIP: TButton;
     btnUpdateMRuby: TButton;
+    btnOfflineKallisti: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
     cbxUrlDreamcastToolIP: TComboBox;
@@ -62,9 +69,13 @@ type
     ckxDreamcastToolSerialExternalClock: TCheckBox;
     cbxModuleSelection: TComboBox;
     cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox;
+    cbxToolchain: TComboBox;
+    cbxDebugger: TComboBox;
     gbxRubyFolder: TGroupBox;
     gbxRubyRunShell: TGroupBox;
     gbxUrlRuby: TGroupBox;
+    gbxToolchain: TGroupBox;
+    gbxDebugger: TGroupBox;
     lblBuildDateMRuby: TLabel;
     lblHomeFolder1: TLabel;
     lblRubyShell: TLabel;

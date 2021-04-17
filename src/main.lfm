@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 428
+  Left = 464
   Height = 400
-  Top = 282
+  Top = 229
   Width = 680
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -14,7 +14,7 @@ object frmMain: TfrmMain
   OnShow = FormShow
   Position = poScreenCenter
   ShowHint = True
-  LCLVersion = '2.0.10.0'
+  LCLVersion = '2.0.12.0'
   object btnClose: TButton
     Left = 266
     Height = 25
@@ -831,7 +831,7 @@ object frmMain: TfrmMain
           Left = 4
           Height = 21
           Top = 4
-          Width = 566
+          Width = 496
           ItemHeight = 13
           OnChange = cbxUrlRubyChange
           TabOrder = 0
@@ -845,6 +845,15 @@ object frmMain: TfrmMain
           Caption = '&Reset...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
+        end
+        object btnOfflineKallisti1: TButton
+          Tag = 4
+          Left = 508
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Offline...'
+          TabOrder = 2
         end
       end
       object gbxRubyRunShell: TGroupBox
@@ -953,7 +962,7 @@ object frmMain: TfrmMain
           BorderSpacing.Around = 4
           ExtendedSelect = False
           Items.Strings = (
-            'Code::Blocks 17.12'
+            'Code::Blocks'
           )
           ItemHeight = 15
           OnClickCheck = lbxIdeListClickCheck
@@ -1129,7 +1138,7 @@ object frmMain: TfrmMain
           Left = 4
           Height = 21
           Top = 4
-          Width = 566
+          Width = 496
           ItemHeight = 13
           OnChange = cbxUrlKallistiChange
           TabOrder = 0
@@ -1142,6 +1151,14 @@ object frmMain: TfrmMain
           Caption = '&Reset...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
+        end
+        object btnOfflineKallisti: TButton
+          Left = 508
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Offline...'
+          TabOrder = 2
         end
       end
       object gbxUrlKallistiPorts: TGroupBox
@@ -1157,7 +1174,7 @@ object frmMain: TfrmMain
           Left = 4
           Height = 21
           Top = 4
-          Width = 566
+          Width = 496
           ItemHeight = 13
           OnChange = cbxUrlKallistiPortsChange
           TabOrder = 0
@@ -1171,6 +1188,15 @@ object frmMain: TfrmMain
           Caption = 'R&eset...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
+        end
+        object btnOfflineKallistiPorts: TButton
+          Tag = 1
+          Left = 508
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Offline...'
+          TabOrder = 2
         end
       end
       object rgxTerminalOption: TRadioGroup
@@ -1238,7 +1264,7 @@ object frmMain: TfrmMain
           Left = 4
           Height = 21
           Top = 4
-          Width = 566
+          Width = 496
           ItemHeight = 13
           OnChange = cbxUrlDreamcastToolSerialChange
           TabOrder = 0
@@ -1252,6 +1278,15 @@ object frmMain: TfrmMain
           Caption = 'Re&set...'
           OnClick = btnUrlKallistiClick
           TabOrder = 1
+        end
+        object btnOfflineDreamcastToolSerial: TButton
+          Tag = 2
+          Left = 508
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Offline...'
+          TabOrder = 2
         end
       end
       object gbxUrlDreamcastToolIP: TGroupBox
@@ -1267,7 +1302,7 @@ object frmMain: TfrmMain
           Left = 4
           Height = 21
           Top = 4
-          Width = 566
+          Width = 496
           ItemHeight = 13
           OnChange = cbxUrlDreamcastToolIPChange
           TabOrder = 0
@@ -1282,6 +1317,15 @@ object frmMain: TfrmMain
           OnClick = btnUrlKallistiClick
           TabOrder = 1
         end
+        object btnOfflineDreamcastToolIP: TButton
+          Tag = 3
+          Left = 508
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Offline...'
+          TabOrder = 2
+        end
       end
     end
     object tsComponents: TTabSheet
@@ -1290,11 +1334,11 @@ object frmMain: TfrmMain
       ClientWidth = 658
       object gbxVersionKallisti: TGroupBox
         Left = 4
-        Height = 128
-        Top = 60
+        Height = 96
+        Top = 116
         Width = 321
         Caption = 'KallistiOS Information:'
-        ClientHeight = 110
+        ClientHeight = 78
         ClientWidth = 317
         TabOrder = 0
         object lblTextRepoKallistiOS: TLabel
@@ -1340,11 +1384,11 @@ object frmMain: TfrmMain
       end
       object gbxVersionDreamcastToolSerial: TGroupBox
         Left = 333
-        Height = 128
-        Top = 60
+        Height = 96
+        Top = 116
         Width = 321
         Caption = 'Dreamcast Tool Serial (RS-232 / USB) Information:'
-        ClientHeight = 110
+        ClientHeight = 78
         ClientWidth = 317
         TabOrder = 1
         object lblVersionRepoToolSerial: TLabel
@@ -1418,11 +1462,11 @@ object frmMain: TfrmMain
       end
       object gbxVersionKallistiPorts: TGroupBox
         Left = 4
-        Height = 124
-        Top = 193
+        Height = 96
+        Top = 221
         Width = 321
         Caption = 'KallistiOS Ports Information:'
-        ClientHeight = 106
+        ClientHeight = 78
         ClientWidth = 317
         TabOrder = 3
         object lblVersionRepoKallistiPorts: TLabel
@@ -1448,11 +1492,11 @@ object frmMain: TfrmMain
       end
       object gbxVersionDreamcastToolIP: TGroupBox
         Left = 333
-        Height = 124
-        Top = 193
+        Height = 96
+        Top = 221
         Width = 321
         Caption = 'Dreamcast Tool Internet Protocol (IP) Information:'
-        ClientHeight = 106
+        ClientHeight = 78
         ClientWidth = 317
         TabOrder = 4
         object lblVersionRepoToolIP: TLabel
@@ -1494,6 +1538,80 @@ object frmMain: TfrmMain
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
+        end
+      end
+      object gbxToolchain: TGroupBox
+        Left = 4
+        Height = 52
+        Top = 60
+        Width = 321
+        Caption = 'Toolchains Configuration:'
+        ClientHeight = 34
+        ClientWidth = 317
+        TabOrder = 5
+        object cbxToolchain: TComboBox
+          Left = 4
+          Height = 21
+          Top = 4
+          Width = 235
+          ItemHeight = 13
+          ItemIndex = 0
+          Items.Strings = (
+            'Stable (recommanded)'
+            'Experimental'
+          )
+          Style = csDropDownList
+          TabOrder = 0
+          Text = 'Stable (recommanded)'
+        end
+        object btnOfflineDreamcastToolSerial2: TButton
+          Tag = 2
+          Left = 245
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = '&Apply...'
+          TabOrder = 1
+        end
+      end
+      object gbxDebugger: TGroupBox
+        Left = 333
+        Height = 52
+        Top = 60
+        Width = 321
+        Caption = 'GNU Debugger (GDB) for SuperH Configuration:'
+        ClientHeight = 34
+        ClientWidth = 317
+        TabOrder = 6
+        object cbxDebugger: TComboBox
+          Left = 4
+          Height = 21
+          Top = 4
+          Width = 235
+          ItemHeight = 13
+          ItemIndex = 0
+          Items.Strings = (
+            'Disable Python for GDB'
+            'Python 2.7'
+            'Python 3.4'
+            'Python 3.5'
+            'Python 3.6'
+            'Python 3.7'
+            'Python 3.8'
+            'Python 3.9'
+          )
+          Style = csDropDownList
+          TabOrder = 0
+          Text = 'Disable Python for GDB'
+        end
+        object btnOfflineDreamcastToolSerial1: TButton
+          Tag = 2
+          Left = 245
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = 'A&pply...'
+          TabOrder = 1
         end
       end
     end

@@ -171,7 +171,8 @@ end;
 function TComponentVersion.RetrieveKallistiVersion: string;
 const
   GIT_REVISION_TAG = 'Git revision ';
-  START_TAG = 'KallistiOS ';
+  START_TAG1 = 'KallistiOS ';
+  START_TAG2 = 'offline:';
   END_TAG = ':';
 
 var
@@ -183,11 +184,20 @@ begin
 
   if IsEmpty(Result) then
   begin
-    Result := RetrieveVersionWithFind(TargetFileName, START_TAG, END_TAG, False);
-    if IsInString(START_TAG, Result) then
+    Result := RetrieveVersionWithFind(TargetFileName, START_TAG1, END_TAG, False);
+    if IsInString(START_TAG1, Result) then
     begin
-      Result := Right(START_TAG, Result);
+      // Online, Git version
+      Result := Right(START_TAG1, Result);
       Result := Right(GIT_REVISION_TAG, Result);
+
+      // Offline version (failback)
+      if IsEmpty(Result) then
+      begin
+        Result := RetrieveVersionWithFind(TargetFileName, START_TAG2, False);
+        Result := ExtractStr(START_TAG1, END_TAG, Result);
+      end;
+
       SetRegisteredVersion(TargetFileName, Result);
     end;
   end;
