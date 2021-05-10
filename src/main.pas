@@ -10,7 +10,7 @@ uses
 {$ENDIF}
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
   StdCtrls, ExtCtrls, CheckLst, MaskEdit, PortMgr, ShellThd, DCSDKMgr, Environ,
-  StrRes;
+  StrRes, PkgMgr;
 
 type
   { TfrmMain }
@@ -25,9 +25,8 @@ type
     btnIdeInstall: TButton;
     btnIdeReinstall: TButton;
     btnIdeUninstall: TButton;
-    btnOfflineDreamcastToolSerial1: TButton;
-    btnOfflineDreamcastToolSerial2: TButton;
-    btnOfflineKallisti1: TButton;
+    btnComponentsApply: TButton;
+    btnOfflineRuby: TButton;
     btnOfflineKallistiPorts: TButton;
     btnOfflineDreamcastToolSerial: TButton;
     btnOfflineDreamcastToolIP: TButton;
@@ -56,6 +55,7 @@ type
     btnOfflineKallisti: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
+    cbxToolchain: TComboBox;
     cbxUrlDreamcastToolIP: TComboBox;
     cbxUrlDreamcastToolSerial: TComboBox;
     cbxUrlKallisti: TComboBox;
@@ -69,13 +69,13 @@ type
     ckxDreamcastToolSerialExternalClock: TCheckBox;
     cbxModuleSelection: TComboBox;
     cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox;
-    cbxToolchain: TComboBox;
     cbxDebugger: TComboBox;
     gbxRubyFolder: TGroupBox;
     gbxRubyRunShell: TGroupBox;
     gbxUrlRuby: TGroupBox;
-    gbxToolchain: TGroupBox;
     gbxDebugger: TGroupBox;
+    lblComponentsConfiguration: TLabel;
+    lblToolchain: TLabel;
     lblBuildDateMRuby: TLabel;
     lblHomeFolder1: TLabel;
     lblRubyShell: TLabel;
@@ -86,6 +86,7 @@ type
     lblTextRuby: TLabel;
     lblTextRake: TLabel;
     lblTextVersionKallistiOS2: TLabel;
+    lblDebugger: TLabel;
     lblVersionMRuby: TLabel;
     lblVersionRuby: TLabel;
     lblVersionRake: TLabel;
@@ -218,6 +219,9 @@ type
     pnlAbout: TPanel;
     pcMain: TPageControl;
     pnlActions: TPanel;
+    rbnComponentsNoChange: TRadioButton;
+    rbnComponentsChangeToolchain: TRadioButton;
+    rbnComponentsChangeDebugger: TRadioButton;
     rgbDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
     sddIdeCodeBlocks: TSelectDirectoryDialog;
@@ -240,8 +244,10 @@ type
     procedure btnCheckForUpdatesClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnCreditsClick(Sender: TObject);
+    procedure btnComponentsApplyClick(Sender: TObject);
     procedure btnIdeCodeBlocksInstallDirClick(Sender: TObject);
     procedure btnInstallMRubyClick(Sender: TObject);
+    procedure btnOfflineKallistiClick(Sender: TObject);
     procedure btnOpenHelpClick(Sender: TObject);
     procedure btnOpenHomeClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
@@ -280,11 +286,13 @@ type
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
     procedure pcMainChange(Sender: TObject);
+    procedure rbnComponentsNoChangeChange(Sender: TObject);
     procedure rgbDreamcastToolSelectionChanged(Sender: TObject);
     procedure rgxTerminalOptionClick(Sender: TObject);
     procedure tmDisplayKallistiPortsTimer(Sender: TObject);
     procedure tmrShellThreadTerminateTimer(Sender: TObject);
   private
+    fPackageManagerOperation: TPackageManagerRequest;
     fLoadingConfiguration: Boolean;
     fKallistiPortsClearList: Boolean;
     fShellThreadExecutedAtLeastOnce: Boolean;
@@ -296,9 +304,12 @@ type
     procedure DisplayEnvironmentComponentVersions;
     procedure DisplayKallistiPorts(ClearList: Boolean);
     procedure DoUpdateAll;
+    function GetComponentSelectedOperation: TPackageManagerRequest;
+    function GetSelectedDebugger: TPackageManagerRequestDebugger;
     function GetSelectedKallistiPort: TKallistiPortItem;
     function GetSelectedKallistiPortItemIndex: Integer;
     function GetSelectedMediaAccessControlHostAddress: string;
+    function GetSelectedToolchain: TPackageManagerRequestToolchain;
     procedure LoadConfiguration;
     function BooleanToCaption(Value: Boolean): string;
     function BooleanToCheckboxState(State: Boolean): TCheckBoxState;
@@ -307,6 +318,7 @@ type
     function IsVersionLabelValid(VersionLabel: TLabel): Boolean;
     procedure SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
     procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
+    procedure UpdateComponentControls;
     procedure UpdateDreamcastToolMediaAccessControlAddressControls;
     procedure UpdateDreamcastToolAlternateCheckbox;
     procedure UpdateOptionsControls;
@@ -345,6 +357,8 @@ type
     procedure OnCommandTerminateThread(Sender: TObject;
       Request: TShellThreadInputRequest; Response: TShellThreadOutputResponse;
       Success: Boolean; UpdateState: TUpdateOperationState);
+    procedure OnPackageManagerTerminate(Sender: TObject;
+      const Success: Boolean; const Aborted: Boolean);
     function MsgBox(const aCaption: string; const aMsg: string;
       DlgType: TMsgDlgType; Buttons: TMsgDlgButtons; DefaultButton: TMsgDlgBtn): TModalResult; overload;
     function MsgBox(const aCaption: string; const aMsg: string;
@@ -355,11 +369,18 @@ type
       read GetSelectedKallistiPort;
     property SelectedHostMediaAccessControlAddress: string
       read GetSelectedMediaAccessControlHostAddress;
+    property ComponentSelectedToolchain: TPackageManagerRequestToolchain read
+      GetSelectedToolchain;
+    property ComponentSelectedDebugger: TPackageManagerRequestDebugger read
+      GetSelectedDebugger;
+    property ComponentSelectedOperation: TPackageManagerRequest
+      read GetComponentSelectedOperation;
   end;
 
 var
   frmMain: TfrmMain;
   DreamcastSoftwareDevelopmentKitManager: TDreamcastSoftwareDevelopmentKitManager;
+  PackageManager: TPackageManager;
 
 implementation
 
@@ -368,7 +389,7 @@ implementation
 uses
   LCLIntf, IniFiles, StrUtils, UITools, GetVer, SysTools, PostInst, Settings,
   Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil,
-  RunTools, RefBase, Elevate, FSTools;
+  RunTools, RefBase, Elevate, FSTools, Unpack;
 
 const
   KALLISTI_VERSION_FORMAT = '%s (%s)';
@@ -424,6 +445,8 @@ begin
   begin
     fShellThreadExecutedAtLeastOnce := False;
     DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
+    PackageManager := TPackageManager.Create(DreamcastSoftwareDevelopmentKitManager);
+    PackageManager.OnTerminate := @OnPackageManagerTerminate;
     HelpFileName := DreamcastSoftwareDevelopmentKitManager.Environment
       .FileSystem.Shell.HelpFileName;
     ModuleVersionList := CreateModuleVersionList;
@@ -446,6 +469,7 @@ begin
         .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
     FreeNetworkAdapterList;
     ModuleVersionList.Free;
+    PackageManager.Free;
     DreamcastSoftwareDevelopmentKitManager.Free;
   end;
 end;
@@ -511,6 +535,25 @@ procedure TfrmMain.pcMainChange(Sender: TObject);
 begin
   if pcMain.ActivePage = tsOptions then
     UpdateOptionsControls;
+
+  if pcMain.ActivePage <> tsComponents then
+    UpdateComponentControls;
+end;
+
+procedure TfrmMain.rbnComponentsNoChangeChange(Sender: TObject);
+begin
+  fPackageManagerOperation := TPackageManagerRequest((Sender as TRadioButton).Tag);
+
+{$IFDEF DEBUG}
+  WriteLn('Package Manager Operation: ', fPackageManagerOperation);
+{$ENDIF}
+
+  // Update controls
+  btnComponentsApply.Enabled := fPackageManagerOperation <> pmrUndefined;
+  lblToolchain.Enabled := fPackageManagerOperation = pmrToolchain;
+  cbxToolchain.Enabled := lblToolchain.Enabled;
+  lblDebugger.Enabled := fPackageManagerOperation <> pmrUndefined;
+  cbxDebugger.Enabled := lblDebugger.Enabled;
 end;
 
 procedure TfrmMain.rgbDreamcastToolSelectionChanged(Sender: TObject);
@@ -781,6 +824,16 @@ begin
     ExecuteThreadOperation(stiKallistiManage);
 end;
 
+function TfrmMain.GetComponentSelectedOperation: TPackageManagerRequest;
+begin
+  Result := fPackageManagerOperation;
+end;
+
+function TfrmMain.GetSelectedDebugger: TPackageManagerRequestDebugger;
+begin
+  Result := TPackageManagerRequestDebugger(cbxDebugger.ItemIndex);
+end;
+
 function TfrmMain.GetSelectedKallistiPort: TKallistiPortItem;
 var
   Index: Integer;
@@ -812,6 +865,11 @@ begin
       if Assigned(SelectedItem) then
         Result := SelectedItem.MacAddress;
     end;
+end;
+
+function TfrmMain.GetSelectedToolchain: TPackageManagerRequestToolchain;
+begin
+  Result := TPackageManagerRequestToolchain(cbxToolchain.ItemIndex);
 end;
 
 procedure TfrmMain.LoadConfiguration;
@@ -922,6 +980,27 @@ begin
 {$ENDIF}
 end;
 
+procedure TfrmMain.UpdateComponentControls;
+var
+  DebuggerPackage: TDebuggerVersionKind;
+  ToolchainPackage: TToolchainVersionKind;
+
+begin
+  rbnComponentsNoChange.Checked := True;
+
+  // Debugger Package
+  DebuggerPackage := DreamcastSoftwareDevelopmentKitManager.Versions
+    .ToolchainSuperH.PackageGDB;
+  if DebuggerPackage <> dvkUndefined then
+    cbxDebugger.ItemIndex := Integer(DebuggerPackage) - 1; // -1 for Undefined
+
+  // Toolchain Package
+  ToolchainPackage := DreamcastSoftwareDevelopmentKitManager.Versions
+    .ToolchainSuperH.PackageToolchain;
+  if ToolchainPackage <> tvkUndefined then
+    cbxToolchain.ItemIndex := Integer(ToolchainPackage) - 1; // -1 for Undefined
+end;
+
 procedure TfrmMain.UpdateDreamcastToolMediaAccessControlAddressControls;
 var
   EnabledControls: Boolean;
@@ -959,29 +1038,34 @@ begin
     and (cbxDreamcastToolSerialBaudrate.ItemIndex = 8);
 end;
 
-procedure TfrmMain.UpdateOptionsControls;
+procedure TfrmMain.UpdateOptionsControls; { UPDATE ME }
 begin
   with DreamcastSoftwareDevelopmentKitManager do
   begin
     cbxUrlKallisti.Enabled := (not KallistiOS.Repository.Ready)
       and (not KallistiOS.Repository.Offline);
     btnUrlKallisti.Enabled := not cbxUrlKallisti.Enabled;
+//    btnOfflineKallisti.Enabled := not KallistiOS.Repository.Offline;
 
     cbxUrlKallistiPorts.Enabled := (not KallistiPorts.Repository.Ready)
       and (not KallistiPorts.Repository.Offline);
     btnUrlKallistiPorts.Enabled := not cbxUrlKallistiPorts.Enabled;
+//    btnOfflineKallistiPorts.Enabled := not KallistiPorts.Repository.Offline;
 
     cbxUrlDreamcastToolSerial.Enabled := (not DreamcastTool.RepositorySerial.Ready)
       and (not DreamcastTool.RepositorySerial.Offline);
     btnUrlDreamcastToolSerial.Enabled := not cbxUrlDreamcastToolSerial.Enabled;
+//    btnOfflineDreamcastToolSerial.Enabled := not DreamcastTool.RepositorySerial.Offline;
 
     cbxUrlDreamcastToolIP.Enabled := (not DreamcastTool.RepositoryInternetProtocol.Ready)
       and (not DreamcastTool.RepositoryInternetProtocol.Offline);
     btnUrlDreamcastToolIP.Enabled := not cbxUrlDreamcastToolIP.Enabled;
+//    btnOfflineDreamcastToolIP.Enabled := not DreamcastTool.RepositoryInternetProtocol.Offline;
 
     cbxUrlRuby.Enabled := (not Ruby.Repository.Ready)
       and (not Ruby.Repository.Offline);
     btnUrlRuby.Enabled := not cbxUrlRuby.Enabled;
+//    btnOfflineRuby.Enabled := not Ruby.Repository.Offline;
   end;
 end;
 
@@ -1174,6 +1258,7 @@ begin
   gbxEnvironmentContext.Caption := Format(gbxEnvironmentContext.Caption,
     [GetProductName]);
   edtValueHomeBaseDir.Caption := GetInstallationBaseDirectory;
+  UpdateComponentControls;
 end;
 
 procedure TfrmMain.InitializeIdeScreen;
@@ -1296,15 +1381,21 @@ end;
 
 function TfrmMain.GetMsgBoxWindowHandle: THandle;
 var
-  IsProgressHandlePreferred: Boolean;
+  IsProgressHandlePreferred,
+  IsUnpackHandlePreferred: Boolean;
 
 begin
   Result := Handle;
+
   IsProgressHandlePreferred := (not IsPostInstallMode and (not IsProgressAutoClose))
     and Assigned(frmProgress) and frmProgress.Visible;
+  IsUnpackHandlePreferred := (not IsProgressHandlePreferred)
+    and Assigned(frmUnpack) and frmUnpack.Visible;
 
   if IsPostInstallMode or IsProgressHandlePreferred then
-    Result := frmProgress.Handle;
+    Result := frmProgress.Handle
+  else if IsUnpackHandlePreferred then
+    Result := frmUnpack.Handle;
 end;
 
 function TfrmMain.GetAllKallistiPortsIcon(
@@ -1577,6 +1668,16 @@ begin
   tmrShellThreadTerminate.Enabled := True;
 end;
 
+procedure TfrmMain.OnPackageManagerTerminate(Sender: TObject;
+  const Success: Boolean; const Aborted: Boolean);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Versions.RetrieveVersions;
+  DisplayEnvironmentComponentVersions;
+  UpdateComponentControls;
+  if (not Success) and (not Aborted) then
+    MsgBox(DialogWarningTitle, UnableToInstallPackageText, mtWarning, [mbOK]);
+end;
+
 function TfrmMain.MsgBox(const aCaption: string; const aMsg: string;
   DlgType: TMsgDlgType; Buttons: TMsgDlgButtons; DefaultButton: TMsgDlgBtn
   ): TModalResult;
@@ -1599,6 +1700,22 @@ end;
 procedure TfrmMain.btnCreditsClick(Sender: TObject);
 begin
   frmAbout.ShowModal;
+end;
+
+procedure TfrmMain.btnComponentsApplyClick(Sender: TObject);
+begin
+{$IFDEF DEBUG}
+  WriteLn('Package Manager Operation: ', ComponentSelectedOperation);
+  WriteLn('  Selected Toolchain: ', ComponentSelectedToolchain);
+  WriteLn('  Selected Debugger: ', ComponentSelectedDebugger);
+{$ENDIF}
+  with PackageManager do
+  begin
+    Debugger := ComponentSelectedDebugger;
+    Toolchain := ComponentSelectedToolchain;
+    Operation := ComponentSelectedOperation;
+    Execute;
+  end;
 end;
 
 procedure TfrmMain.btnIdeCodeBlocksInstallDirClick(Sender: TObject);
@@ -1661,6 +1778,20 @@ begin
   end;
 end;
 
+procedure TfrmMain.btnOfflineKallistiClick(Sender: TObject);
+
+  function GetPackageManagerRequest: TPackageManagerRequest;
+  begin
+    Result := TPackageManagerRequest((Sender as TButton).Tag);
+  end;
+
+begin
+{$IFDEF DEBUG}
+  WriteLn('Install Offline Package: ', GetPackageManagerRequest);
+{$ENDIF}
+  // ExecutePackageInstallation(pmrInstallToolchain);
+end;
+
 procedure TfrmMain.btnOpenHelpClick(Sender: TObject);
 begin
   RunShellExecute(HelpFileName);
@@ -1668,7 +1799,8 @@ end;
 
 procedure TfrmMain.btnOpenHomeClick(Sender: TObject);
 begin
-  RunShellExecute(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.HomeDirectory);
+  RunShellExecute(DreamcastSoftwareDevelopmentKitManager.Environment
+    .FileSystem.Shell.HomeDirectory);
 end;
 
 procedure TfrmMain.btnAllPortInstallClick(Sender: TObject);

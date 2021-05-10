@@ -5,9 +5,13 @@ unit GetVer;
 interface
 
 uses
-  Classes, SysUtils, Environ;
+  Classes,
+  SysUtils,
+  Environ;
 
 type
+  TComponentVersion = class;
+
   { TComponentName }
   TComponentName = (
     cnGit,
@@ -35,19 +39,30 @@ type
   TToolchainVersion = class(TObject)
   private
     fKind: TToolchainKind;
+    fPackageGDB: TDebuggerVersionKind;
+    fPackageToolchain: TToolchainVersionKind;
     fVersionBinutils: string;
     fVersionGCC: string;
     fVersionGDB: string;
     fVersionNewlib: string;
     fVersionPythonGDB: string;
+    fOwner: TComponentVersion;
+  protected
+    function GetStringVersionToDebuggerVersionKind(
+      const Version: string): TDebuggerVersionKind;
+    function GetStringVersionToPackageToolchainKind(
+      const Version: string): TToolchainVersionKind;
   public
-    constructor Create(ToolchainKind: TToolchainKind);
+    constructor Create(AOwner: TComponentVersion; ToolchainKind: TToolchainKind);
     property Binutils: string read fVersionBinutils;
     property GCC: string read fVersionGCC;
     property GDB: string read fVersionGDB;
+    property PackageGDB: TDebuggerVersionKind read fPackageGDB;
+    property PackageToolchain: TToolchainVersionKind read fPackageToolchain;
     property PythonGDB: string read fVersionPythonGDB;
     property Newlib: string read fVersionNewlib;
     property Kind: TToolchainKind read fKind;
+    property Owner: TComponentVersion read fOwner;
   end;
 
   { TComponentVersion }
@@ -56,7 +71,7 @@ type
     fBuildDateKallistiOS: TDateTime;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fPythonInstalled: Boolean;
-	fGitInstalled: Boolean;
+	  fGitInstalled: Boolean;
     fMRubyBuildDate: TDateTime;
     fRakeInstalled: Boolean;
     fRubyInstalled: Boolean;
@@ -156,8 +171,54 @@ end;
 
 { TToolchainVersion }
 
-constructor TToolchainVersion.Create(ToolchainKind: TToolchainKind);
+function TToolchainVersion.GetStringVersionToDebuggerVersionKind(
+  const Version: string): TDebuggerVersionKind;
+var
+  i: Integer;
+
 begin
+  Result := dvkUndefined;
+  if fOwner.IsValidVersion(fVersionGDB) then
+  begin
+    Result := dvkPythonDisabled;
+    if fOwner.IsValidVersion(Version) then
+    begin
+      for i := Low(SUPPORTED_PYTHON_VERSIONS) to High(SUPPORTED_PYTHON_VERSIONS) do
+      begin
+        if SUPPORTED_PYTHON_VERSIONS[i] = Version then
+        begin
+          Result := TDebuggerVersionKind(i + 2); // 2 for Undefined+PythonDisabled
+          Break;
+        end;
+      end;
+    end;
+  end;
+end;
+
+function TToolchainVersion.GetStringVersionToPackageToolchainKind(
+  const Version: string): TToolchainVersionKind;
+var
+  i: Integer;
+
+begin
+  Result := tvkUndefined;
+  if fOwner.IsValidVersion(Version) then
+  begin
+    for i := Low(SUPPORTED_GCC_VERSIONS) to High(SUPPORTED_GCC_VERSIONS) do
+    begin
+      if StartsWith(SUPPORTED_GCC_VERSIONS[i], Version) then
+      begin
+        Result := TToolchainVersionKind(i + 1); // 1 for Undefined
+        Break;
+      end;
+    end;
+  end;
+end;
+
+constructor TToolchainVersion.Create(AOwner: TComponentVersion;
+  ToolchainKind: TToolchainKind);
+begin
+  fOwner := AOwner;
   fKind := ToolchainKind;
 end;
 
@@ -266,8 +327,17 @@ procedure TComponentVersion.RetrieveVersions;
       begin
         // Super-H only
         AVersion.fVersionPythonGDB := RetrievePythonGdb(AEnvironment.GDBExecutable);
+        AVersion.fPackageGDB := AVersion.GetStringVersionToDebuggerVersionKind(
+          AVersion.fVersionPythonGDB);
         AVersion.fVersionNewlib := RetrieveVersionWithFind(AEnvironment.NewlibBinary,
           '/dc-chain/newlib-', '/newlib/libc/');
+      end;
+
+      if AEnvironment.Kind <> tkWin32 then
+      begin
+        // Super-H and ARM
+        AVersion.fPackageToolchain := AVersion.GetStringVersionToPackageToolchainKind(
+          AVersion.fVersionGCC);
       end;
     end;
   end;
@@ -309,9 +379,9 @@ constructor TComponentVersion.Create(
   const AutoLoad: Boolean);
 begin
   fEnvironment := AEnvironment;
-  fToolchainVersionSuperH := TToolchainVersion.Create(tkSuperH);
-  fToolchainVersionARM := TToolchainVersion.Create(tkARM);
-  fToolchainVersionWin32 := TToolchainVersion.Create(tkWin32);
+  fToolchainVersionSuperH := TToolchainVersion.Create(Self, tkSuperH);
+  fToolchainVersionARM := TToolchainVersion.Create(Self, tkARM);
+  fToolchainVersionWin32 := TToolchainVersion.Create(Self, tkWin32);
   if AutoLoad then
     RetrieveVersions;
 end;

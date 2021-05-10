@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 464
+  Left = 385
   Height = 400
-  Top = 229
+  Top = 241
   Width = 680
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 666
-    ActivePage = tsHome
-    TabIndex = 0
+    ActivePage = tsComponents
+    TabIndex = 7
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -846,13 +846,14 @@ object frmMain: TfrmMain
           OnClick = btnUrlKallistiClick
           TabOrder = 1
         end
-        object btnOfflineKallisti1: TButton
+        object btnOfflineRuby: TButton
           Tag = 4
           Left = 508
           Height = 21
           Top = 4
           Width = 64
           Caption = '&Offline...'
+          OnClick = btnOfflineKallistiClick
           TabOrder = 2
         end
       end
@@ -1158,6 +1159,7 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = '&Offline...'
+          OnClick = btnOfflineKallistiClick
           TabOrder = 2
         end
       end
@@ -1196,6 +1198,7 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = '&Offline...'
+          OnClick = btnOfflineKallistiClick
           TabOrder = 2
         end
       end
@@ -1286,6 +1289,7 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = '&Offline...'
+          OnClick = btnOfflineKallistiClick
           TabOrder = 2
         end
       end
@@ -1324,6 +1328,7 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = '&Offline...'
+          OnClick = btnOfflineKallistiClick
           TabOrder = 2
         end
       end
@@ -1334,11 +1339,11 @@ object frmMain: TfrmMain
       ClientWidth = 658
       object gbxVersionKallisti: TGroupBox
         Left = 4
-        Height = 96
-        Top = 116
+        Height = 80
+        Top = 152
         Width = 321
         Caption = 'KallistiOS Information:'
-        ClientHeight = 78
+        ClientHeight = 62
         ClientWidth = 317
         TabOrder = 0
         object lblTextRepoKallistiOS: TLabel
@@ -1384,11 +1389,11 @@ object frmMain: TfrmMain
       end
       object gbxVersionDreamcastToolSerial: TGroupBox
         Left = 333
-        Height = 96
-        Top = 116
+        Height = 80
+        Top = 152
         Width = 321
         Caption = 'Dreamcast Tool Serial (RS-232 / USB) Information:'
-        ClientHeight = 78
+        ClientHeight = 62
         ClientWidth = 317
         TabOrder = 1
         object lblVersionRepoToolSerial: TLabel
@@ -1462,11 +1467,11 @@ object frmMain: TfrmMain
       end
       object gbxVersionKallistiPorts: TGroupBox
         Left = 4
-        Height = 96
-        Top = 221
+        Height = 80
+        Top = 237
         Width = 321
         Caption = 'KallistiOS Ports Information:'
-        ClientHeight = 78
+        ClientHeight = 62
         ClientWidth = 317
         TabOrder = 3
         object lblVersionRepoKallistiPorts: TLabel
@@ -1491,12 +1496,12 @@ object frmMain: TfrmMain
         end
       end
       object gbxVersionDreamcastToolIP: TGroupBox
-        Left = 333
-        Height = 96
-        Top = 221
+        Left = 332
+        Height = 80
+        Top = 237
         Width = 321
         Caption = 'Dreamcast Tool Internet Protocol (IP) Information:'
-        ClientHeight = 78
+        ClientHeight = 62
         ClientWidth = 317
         TabOrder = 4
         object lblVersionRepoToolIP: TLabel
@@ -1540,54 +1545,20 @@ object frmMain: TfrmMain
           ParentFont = False
         end
       end
-      object gbxToolchain: TGroupBox
-        Left = 4
-        Height = 52
-        Top = 60
-        Width = 321
-        Caption = 'Toolchains Configuration:'
-        ClientHeight = 34
-        ClientWidth = 317
-        TabOrder = 5
-        object cbxToolchain: TComboBox
-          Left = 4
-          Height = 21
-          Top = 4
-          Width = 235
-          ItemHeight = 13
-          ItemIndex = 0
-          Items.Strings = (
-            'Stable (recommanded)'
-            'Experimental'
-          )
-          Style = csDropDownList
-          TabOrder = 0
-          Text = 'Stable (recommanded)'
-        end
-        object btnOfflineDreamcastToolSerial2: TButton
-          Tag = 2
-          Left = 245
-          Height = 21
-          Top = 4
-          Width = 64
-          Caption = '&Apply...'
-          TabOrder = 1
-        end
-      end
       object gbxDebugger: TGroupBox
-        Left = 333
-        Height = 52
+        Left = 4
+        Height = 88
         Top = 60
-        Width = 321
-        Caption = 'GNU Debugger (GDB) for SuperH Configuration:'
-        ClientHeight = 34
-        ClientWidth = 317
-        TabOrder = 6
+        Width = 650
+        Caption = 'Components Configuration:'
+        ClientHeight = 70
+        ClientWidth = 646
+        TabOrder = 5
         object cbxDebugger: TComboBox
-          Left = 4
+          Left = 390
           Height = 21
-          Top = 4
-          Width = 235
+          Top = 36
+          Width = 180
           ItemHeight = 13
           ItemIndex = 0
           Items.Strings = (
@@ -1604,14 +1575,83 @@ object frmMain: TfrmMain
           TabOrder = 0
           Text = 'Disable Python for GDB'
         end
-        object btnOfflineDreamcastToolSerial1: TButton
+        object btnComponentsApply: TButton
           Tag = 2
-          Left = 245
+          Left = 576
           Height = 21
-          Top = 4
+          Top = 36
           Width = 64
           Caption = 'A&pply...'
+          OnClick = btnComponentsApplyClick
           TabOrder = 1
+        end
+        object cbxToolchain: TComboBox
+          Left = 64
+          Height = 21
+          Top = 36
+          Width = 180
+          ItemHeight = 13
+          ItemIndex = 0
+          Items.Strings = (
+            'Stable (recommanded)'
+            'Experimental'
+          )
+          Style = csDropDownList
+          TabOrder = 2
+          Text = 'Stable (recommanded)'
+        end
+        object lblToolchain: TLabel
+          Left = 8
+          Height = 13
+          Top = 40
+          Width = 49
+          Caption = 'Toolchain:'
+          ParentColor = False
+        end
+        object lblDebugger: TLabel
+          Left = 252
+          Height = 13
+          Top = 40
+          Width = 131
+          Caption = 'GNU Debugger (GDB) Build:'
+          ParentColor = False
+        end
+        object rbnComponentsNoChange: TRadioButton
+          Left = 132
+          Height = 17
+          Top = 8
+          Width = 71
+          Caption = 'No change'
+          OnChange = rbnComponentsNoChangeChange
+          TabOrder = 3
+        end
+        object rbnComponentsChangeToolchain: TRadioButton
+          Tag = 1
+          Left = 284
+          Height = 17
+          Top = 8
+          Width = 105
+          Caption = 'Change Toolchain'
+          OnChange = rbnComponentsNoChangeChange
+          TabOrder = 4
+        end
+        object rbnComponentsChangeDebugger: TRadioButton
+          Tag = 2
+          Left = 468
+          Height = 17
+          Top = 8
+          Width = 162
+          Caption = 'Change GNU Debugger (GDB)'
+          OnChange = rbnComponentsNoChangeChange
+          TabOrder = 5
+        end
+        object lblComponentsConfiguration: TLabel
+          Left = 8
+          Height = 13
+          Top = 9
+          Width = 109
+          Caption = 'Change Configuration:'
+          ParentColor = False
         end
       end
     end

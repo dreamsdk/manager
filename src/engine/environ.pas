@@ -5,7 +5,11 @@ unit Environ;
 interface
 
 uses
-  Classes, SysUtils, RunCmd, Settings;
+  Classes,
+  SysUtils,
+  RunCmd,
+  RunCmdEx,
+  Settings;
 
 const
   DCLOAD_IP_INSTALLATION_DIRECTORY = 'dcload-ip';
@@ -14,15 +18,52 @@ const
   DREAMSDK_RUNNER_EXECUTABLE = 'dreamsdk-runner.exe';
   DREAMSDK_LAUNCHER_EXECUTABLE = 'dreamsdk-shell.exe';
   DREAMSDK_HELP_FILE = 'dreamsdk.chm';
+
+  DREAMSDK_MSYS_MRUBY_INSTALL_DIRECTORY = '/opt/mruby/';
   DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dreamsdk/';
-  DREAMSDK_MRUBY_INSTALL_DIRECTORY = '/opt/mruby';
   DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'helpers/';
   DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
+  DREAMSDK_MSYS_TOOLCHAINS_INSTALL_DIRECTORY = '/opt/toolchains/dc/';
+
+  SUPPORTED_PYTHON_VERSIONS: array[0..6] of string = (
+    '2.7',
+    '3.4',
+    '3.5',
+    '3.6',
+    '3.7',
+    '3.8',
+    '3.9'
+  );
+
+  SUPPORTED_GCC_VERSIONS: array[0..1] of string = (
+    '4.',
+    '9.'
+  );
 
 type
   EEnvironment = class(Exception);
   EKallistiReferentialNotAvailable = class(EEnvironment);
   EEmptyRepositoryUrl = class(EEnvironment);
+
+  { TToolchainVersionKind }
+  TToolchainVersionKind = (
+    tvkUndefined,
+    tvkStable,
+    tvkExperimental
+  );
+
+  { TDebuggerVersionKind }
+  TDebuggerVersionKind = (
+    dvkUndefined,
+    dvkPythonDisabled,
+    dvkPython27,
+    dvkPython34,
+    dvkPython35,
+    dvkPython36,
+    dvkPython37,
+    dvkPython38,
+    dvkPython39
+  );
 
   TRepositoryKind = (
     rkUndefined,
@@ -49,6 +90,16 @@ type
 
   TDreamcastSoftwareDevelopmentEnvironment = class;
 
+  { TDreamcastSoftwareDevelopmentFileSystemDreamcastToolPackages }
+  TDreamcastSoftwareDevelopmentFileSystemDreamcastToolPackages = class(TObject)
+  private
+    fInternetProtocol: TFileName;
+    fSerial: TFileName;
+  public
+    property InternetProtocol: TFileName read fInternetProtocol;
+    property Serial: TFileName read fSerial;
+  end;
+
   { TDreamcastSoftwareDevelopmentFileSystemDreamcastTool }
   TDreamcastSoftwareDevelopmentFileSystemDreamcastTool = class(TObject)
   private
@@ -56,9 +107,12 @@ type
     fConfigurationFileName: TFileName;
     fInternetProtocolDirectory: TFileName;
     fInternetProtocolExecutable: TFileName;
+    fPackages: TDreamcastSoftwareDevelopmentFileSystemDreamcastToolPackages;
     fSerialDirectory: TFileName;
     fSerialExecutable: TFileName;
   public
+    constructor Create;
+    destructor Destroy; override;
     function ResetRepository: Boolean;
     function ResetRepositorySerial: Boolean;
     function ResetRepositoryInternetProtocol: Boolean;
@@ -68,6 +122,18 @@ type
     property InternetProtocolExecutable: TFileName read fInternetProtocolExecutable;
     property SerialDirectory: TFileName read fSerialDirectory;
     property SerialExecutable: TFileName read fSerialExecutable;
+    property Packages: TDreamcastSoftwareDevelopmentFileSystemDreamcastToolPackages
+      read fPackages;
+  end;
+
+  { TDreamcastSoftwareDevelopmentFileSystemKallistiPackages }
+  TDreamcastSoftwareDevelopmentFileSystemKallistiPackages = class(TObject)
+  private
+    fKallisti: TFileName;
+    fKallistiPorts: TFileName;
+  public
+    property KallistiPorts: TFileName read fKallistiPorts;
+    property Kallisti: TFileName read fKallisti;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystemKallisti }
@@ -80,7 +146,10 @@ type
     fKallistiPortsDirectory: TFileName;
     fKallistiPortsLibraryInformationFile: TFileName;
     fKallistiUtilitiesDirectory: TFileName;
+    fPackages: TDreamcastSoftwareDevelopmentFileSystemKallistiPackages;
   public
+    constructor Create;
+    destructor Destroy; override;
     function ResetRespository: Boolean;
     function ResetRepositoryKallisti: Boolean;
     function ResetRepositoryKallistiPorts: Boolean;
@@ -91,25 +160,71 @@ type
     property KallistiLibrary: TFileName read fKallistiLibrary;
     property KallistiChangeLogFile: TFileName read fKallistiChangeLogFile;
     property KallistiConfigurationFileName: TFileName read fKallistiConfigurationFileName;
+    property Packages: TDreamcastSoftwareDevelopmentFileSystemKallistiPackages
+      read fPackages;
+  end;
+
+  { TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger }
+  TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger = class(TObject)
+  private
+    fPythonDisabled: TFileName;
+    fPython27: TFileName;
+    fPython34: TFileName;
+    fPython35: TFileName;
+    fPython36: TFileName;
+    fPython37: TFileName;
+    fPython38: TFileName;
+    fPython39: TFileName;
+  public
+    property PythonDisabled: TFileName read fPythonDisabled;
+    property Python27: TFileName read fPython27;
+    property Python34: TFileName read fPython34;
+    property Python35: TFileName read fPython35;
+    property Python36: TFileName read fPython36;
+    property Python37: TFileName read fPython37;
+    property Python38: TFileName read fPython38;
+    property Python39: TFileName read fPython39;
+  end;
+
+  { TDreamcastSoftwareDevelopmentFileSystemToolchainPackages }
+  TDreamcastSoftwareDevelopmentFileSystemToolchainPackages = class(TObject)
+  private
+    fDebugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger;
+    fExperimental: TFileName;
+    fStable: TFileName;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    property Debugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger
+      read fDebugger;
+    property Experimental: TFileName read fExperimental;
+    property Stable: TFileName read fStable;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystemToolchain }
   TDreamcastSoftwareDevelopmentFileSystemToolchain = class(TObject)
   private
+    fBaseDirectory: TFileName;
     fBinutilsExecutable: TFileName;
     fGCCExecutable: TFileName;
     fGDBExecutable: TFileName;
     fKind: TToolchainKind;
     fNewlibBinary: TFileName;
+    fPackages: TDreamcastSoftwareDevelopmentFileSystemToolchainPackages;
     fToolchainInstalled: Boolean;
   public
     constructor Create(AToolchainKind: TToolchainKind);
+    destructor Destroy; override;
+    function Reset: Boolean;
+    property BaseDirectory: TFileName read fBaseDirectory;
     property BinutilsExecutable: TFileName read fBinutilsExecutable;
     property GCCExecutable: TFileName read fGCCExecutable;
     property GDBExecutable: TFileName read fGDBExecutable;
     property NewlibBinary: TFileName read fNewlibBinary;
     property Installed: Boolean read fToolchainInstalled;
     property Kind: TToolchainKind read fKind;
+    property Packages: TDreamcastSoftwareDevelopmentFileSystemToolchainPackages
+      read fPackages;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystemShell }
@@ -140,16 +255,29 @@ type
       read fCodeBlocksPatcherExecutable;
   end;
 
+  { TDreamcastSoftwareDevelopmentFileSystemRubyPackages }
+  TDreamcastSoftwareDevelopmentFileSystemRubyPackages = class(TObject)
+  private
+    fRubyLibrary: TFileName;
+    fSamples: TFileName;
+  public
+    property RubyLibrary: TFileName read fRubyLibrary;
+    property Samples: TFileName read fSamples;
+  end;
+
   { TDreamcastSoftwareDevelopmentFileSystemRuby }
   TDreamcastSoftwareDevelopmentFileSystemRuby = class(TObject)
   private
     fBinariesDirectory: TFileName;
     fBuildDirectory: TFileName;
+    fPackages: TDreamcastSoftwareDevelopmentFileSystemRubyPackages;
     fRubyDirectory: TFileName;
     fRubyLibrary: TFileName;
     fSamplesDirectory: TFileName;
     fSamplesLibraryInformationFile: TFileName;
   public
+    constructor Create;
+    destructor Destroy; override;
     function ResetRepository: Boolean;
     property BaseDirectory: TFileName read fRubyDirectory;
     property RubyLibrary: TFileName read fRubyLibrary;
@@ -158,6 +286,8 @@ type
     property SamplesDirectory: TFileName read fSamplesDirectory;
     property SamplesLibraryInformationFile: TFileName
       read fSamplesLibraryInformationFile;
+    property Packages: TDreamcastSoftwareDevelopmentFileSystemRubyPackages
+      read fPackages;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystem }
@@ -221,7 +351,7 @@ type
   private
     fShellCommandError: Boolean;
     fShellCommandNewLine: TNewLineEvent;
-    fShellCommandRunner: TRunCommand;
+    fShellCommandRunner: TRunCommandEx;
     fFileSystem: TDreamcastSoftwareDevelopmentFileSystem;
     fSettings: TDreamcastSoftwareDevelopmentSettings;
     fShellCommandBufferOutput: string;
@@ -266,7 +396,31 @@ uses
 const
   FAIL_TAG = 'fatal: ';
 
+{ TDreamcastSoftwareDevelopmentFileSystemToolchainPackages }
+
+constructor TDreamcastSoftwareDevelopmentFileSystemToolchainPackages.Create;
+begin
+  fDebugger := TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger.Create;
+end;
+
+destructor TDreamcastSoftwareDevelopmentFileSystemToolchainPackages.Destroy;
+begin
+  fDebugger.Free;
+  inherited Destroy;
+end;
+
 { TDreamcastSoftwareDevelopmentFileSystemRuby }
+
+constructor TDreamcastSoftwareDevelopmentFileSystemRuby.Create;
+begin
+  fPackages := TDreamcastSoftwareDevelopmentFileSystemRubyPackages.Create;
+end;
+
+destructor TDreamcastSoftwareDevelopmentFileSystemRuby.Destroy;
+begin
+  fPackages.Free;
+  inherited Destroy;
+end;
 
 function TDreamcastSoftwareDevelopmentFileSystemRuby.ResetRepository: Boolean;
 begin
@@ -312,6 +466,17 @@ end;
 
 { TDreamcastSoftwareDevelopmentFileSystemKallisti }
 
+constructor TDreamcastSoftwareDevelopmentFileSystemKallisti.Create;
+begin
+  fPackages :=  TDreamcastSoftwareDevelopmentFileSystemKallistiPackages.Create;
+end;
+
+destructor TDreamcastSoftwareDevelopmentFileSystemKallisti.Destroy;
+begin
+  fPackages.Free;
+  inherited Destroy;
+end;
+
 function TDreamcastSoftwareDevelopmentFileSystemKallisti.ResetRespository: Boolean;
 begin
   Result := ResetRepositoryKallisti and ResetRepositoryKallistiPorts;
@@ -328,6 +493,17 @@ begin
 end;
 
 { TDreamcastSoftwareDevelopmentFileSystemDreamcastTool }
+
+constructor TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.Create;
+begin
+  fPackages := TDreamcastSoftwareDevelopmentFileSystemDreamcastToolPackages.Create;
+end;
+
+destructor TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.Destroy;
+begin
+  fPackages.Free;
+  inherited Destroy;
+end;
 
 function TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.ResetRepository: Boolean;
 begin
@@ -349,7 +525,23 @@ end;
 constructor TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(
   AToolchainKind: TToolchainKind);
 begin
+  fPackages := TDreamcastSoftwareDevelopmentFileSystemToolchainPackages.Create;
   fKind := AToolchainKind;
+end;
+
+destructor TDreamcastSoftwareDevelopmentFileSystemToolchain.Destroy;
+begin
+  fPackages.Free;
+  inherited Destroy;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemToolchain.Reset: Boolean;
+begin
+  Result := False;
+  if fKind <> tkWin32 then
+  begin
+    Result := KillDirectory(fBaseDirectory);
+  end;
 end;
 
 { TDreamcastSoftwareDevelopmentFileSystem }
@@ -367,14 +559,17 @@ var
   ToolchainBase,
   ToolchainBaseSuperH,
   ToolchainBaseARM,
-  ToolchainBaseWin32: TFileName;
+  ToolchainBaseWin32,
+  PackagesBase: TFileName;
 
 begin
   MSYSBase := GetMSysBaseDirectory;
-  ToolchainBase := MSYSBase + 'opt\toolchains\dc\';
+  ToolchainBase := MSYSBase + UnixPathToSystem(DREAMSDK_MSYS_TOOLCHAINS_INSTALL_DIRECTORY);
+  PackagesBase := MSYSBase + UnixPathToSystem(DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY);
 
   // Translate DREAMSDK_MSYS_INSTALL_DIRECTORY to Windows location
-  DreamSDKBase := MSYSBase + UnixPathToSystem(DREAMSDK_MSYS_INSTALL_DIRECTORY);
+  DreamSDKBase := IncludeTrailingPathDelimiter(MSYSBase
+    + UnixPathToSystem(DREAMSDK_MSYS_INSTALL_DIRECTORY));
 
   with fShell do
   begin
@@ -399,33 +594,51 @@ begin
   ToolchainBaseSuperH := ToolchainBase + 'sh-elf\';
   with fToolchainSuperH do
   begin
+    fBaseDirectory := ToolchainBaseSuperH;
     fToolchainInstalled := DirectoryExists(ToolchainBaseSuperH);
     fBinutilsExecutable := ToolchainBaseSuperH + 'bin\sh-elf-ld.exe';
     fGCCExecutable := ToolchainBaseSuperH + 'bin\sh-elf-gcc.exe';
     fGDBExecutable := ToolchainBaseSuperH + 'bin\sh-elf-gdb.exe';
     fNewlibBinary := ToolchainBaseSuperH + 'sh-elf\lib\libnosys.a';
+    with fPackages.fDebugger do
+    begin
+      fPythonDisabled := PackagesBase +'gdb-sh-elf-bin.7z';
+      fPython27 := PackagesBase +'gdb-sh-elf-python-2.7-bin.7z';
+      fPython34 := PackagesBase +'gdb-sh-elf-python-3.4-bin.7z';
+      fPython35 := PackagesBase +'gdb-sh-elf-python-3.5-bin.7z';
+      fPython36 := PackagesBase +'gdb-sh-elf-python-3.6-bin.7z';
+      fPython37 := PackagesBase +'gdb-sh-elf-python-3.7-bin.7z';
+      fPython38 := PackagesBase +'gdb-sh-elf-python-3.8-bin.7z';
+      fPython39 := PackagesBase +'gdb-sh-elf-python-3.9-bin.7z';
+    end;
+    fPackages.fExperimental := PackagesBase + 'gcc-sh-elf-experimental-bin.7z';
+    fPackages.fStable := PackagesBase + 'gcc-sh-elf-stable-bin.7z';
   end;
 
   // Toolchain for ARM
   ToolchainBaseARM := ToolchainBase + 'arm-eabi\';
   with fToolchainARM do
   begin
+    fBaseDirectory := ToolchainBaseARM;
     fToolchainInstalled := DirectoryExists(ToolchainBaseARM);
     fBinutilsExecutable := ToolchainBaseARM + 'bin\arm-eabi-ld.exe';
     fGCCExecutable := ToolchainBaseARM + 'bin\arm-eabi-gcc.exe';
-    fGDBExecutable := ''; // Not Applicable
-    fNewlibBinary := ''; // Not Applicable
+    fGDBExecutable := EmptyStr; // Not Applicable
+    fNewlibBinary := EmptyStr; // Not Applicable
+    fPackages.fExperimental := PackagesBase + 'gcc-arm-eabi-experimental-bin.7z';
+    fPackages.fStable := PackagesBase + 'gcc-arm-eabi-stable-bin.7z';
   end;
 
   // Toolchain for Win32 (Windows)
   ToolchainBaseWin32 := GetInstallationBaseDirectory;
   with fToolchainWin32 do
   begin
+    fBaseDirectory := ToolchainBaseWin32;
     fToolchainInstalled := DirectoryExists(ToolchainBaseWin32);
     fBinutilsExecutable := ToolchainBaseWin32 + 'bin\ld.exe';
     fGCCExecutable := ToolchainBaseWin32 + 'bin\gcc.exe';
     fGDBExecutable := ToolchainBaseWin32 + 'bin\gdb.exe';
-    fNewlibBinary := ''; // Not Applicable
+    fNewlibBinary := EmptyStr; // Not Applicable
   end;
 
   // dcload/dc-tool
@@ -437,6 +650,8 @@ begin
     fSerialExecutable := ToolchainBase + 'bin\dc-tool-ser.exe';
     fInternetProtocolExecutable := ToolchainBase + 'bin\dc-tool-ip.exe';
     fConfigurationFileName := GetConfigurationDirectory + 'dc-tool.conf';
+    fPackages.fInternetProtocol := PackagesBase + 'dcload-ip-offline-src.7z';
+    fPackages.fSerial := PackagesBase + 'dcload-serial-offline-src.7z';
   end;
 
   // KallistiOS
@@ -448,6 +663,8 @@ begin
     fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
     fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
     fKallistiConfigurationFileName := KallistiDirectory + 'environ.sh';
+    fPackages.fKallisti := PackagesBase + 'kallisti-offline-src.7z';
+    fPackages.fKallistiPorts := PackagesBase + 'kallisti-ports-offline-src.7z';
     fKallistiPortsLibraryInformationFile := GetReferentialDirectory + 'koslib.conf';
     if not FileExists(fKallistiPortsLibraryInformationFile) then
       raise EKallistiReferentialNotAvailable.CreateFmt(
@@ -457,12 +674,14 @@ begin
   // Ruby
   with fRuby do
   begin
-    fRubyDirectory := MSYSBase + UnixPathToSystem(DREAMSDK_MRUBY_INSTALL_DIRECTORY);
+    fRubyDirectory := IncludeTrailingPathDelimiter(MSYSBase + UnixPathToSystem(DREAMSDK_MSYS_MRUBY_INSTALL_DIRECTORY));
     fBuildDirectory := fRubyDirectory + 'build\';
     fBinariesDirectory := fRubyDirectory + 'bin\';
     fRubyLibrary := fBuildDirectory + 'dreamcast\lib\libmruby.a';
     fSamplesDirectory := ToolchainBase + 'ruby\';
     fSamplesLibraryInformationFile := GetReferentialDirectory + 'mruby.conf';
+    fPackages.fRubyLibrary := PackagesBase + 'ruby-offline-src.7z';
+    fPackages.fSamples := PackagesBase + 'ruby-samples-offline-src.7z';
   end;
 end;
 
@@ -558,7 +777,7 @@ begin
 {$ENDIF}
 
   FreeAndNil(fShellCommandRunner);
-  fShellCommandRunner := TRunCommand.Create(True);
+  fShellCommandRunner := TRunCommandEx.Create(True);
   with fShellCommandRunner do
   begin
     Executable := fFileSystem.Shell.ShellExecutable;

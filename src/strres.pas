@@ -63,11 +63,12 @@ resourcestring
   GitNeeded = 'Git is needed to use this feature.';
   UnableToInstallRubyRuntimeText = 'Please install RubyInstaller for Windows before trying to enable Ruby.';
   UnableToInstallRubyGitText = 'Ruby online installation requires Git.';
+  UnableToInstallPackageText = 'An error occured when installing the requested packages.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';
   CancelDialogCaption = 'Warning';
-  CancelDialogText = 'Are you really sure to cancel? This may breaks things!';
+  CancelDialogText = 'Are you really sure to cancel? This may let your installation in an unpredictable state.';
   CloseButtonCaption = '&Close';
   CancelButtonCaption = '&Cancel';
   OperationSuccessfullyTerminated = 'Operation done.';
@@ -102,6 +103,9 @@ resourcestring
   KallistiPortsUninstallText = 'Uninstalling all KallistiOS Ports...';
   RubyInitializeText = 'Initialize Ruby configuration...';
   RubyBuildText = 'Building Ruby library...';
+
+  // PackageManager | Unpack
+  UnpackingText = 'Unpacking...';
 
 implementation
 

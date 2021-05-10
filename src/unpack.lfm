@@ -1,0 +1,72 @@
+object frmUnpack: TfrmUnpack
+  Left = 665
+  Height = 80
+  Top = 434
+  Width = 400
+  BorderStyle = bsDialog
+  Caption = 'Installing package...'
+  ClientHeight = 80
+  ClientWidth = 400
+  OnClose = FormClose
+  OnCreate = FormCreate
+  Position = poScreenCenter
+  LCLVersion = '2.0.12.0'
+  object pnlTop: TPanel
+    Left = 0
+    Height = 46
+    Top = 0
+    Width = 400
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 46
+    ClientWidth = 400
+    ParentColor = False
+    TabOrder = 0
+    object pgbUnpack: TProgressBar
+      Left = 4
+      Height = 20
+      Top = 22
+      Width = 392
+      Align = alBottom
+      BorderSpacing.Around = 4
+      TabOrder = 0
+    end
+    object lblUnpack: TLabel
+      Left = 4
+      Height = 13
+      Top = 4
+      Width = 392
+      Align = alTop
+      BorderSpacing.Around = 4
+      Caption = 'lblUnpack'
+      ParentColor = False
+      ParentFont = False
+    end
+  end
+  object pnlCenter: TPanel
+    Left = 0
+    Height = 34
+    Top = 46
+    Width = 400
+    Align = alClient
+    BevelOuter = bvNone
+    ClientHeight = 34
+    ClientWidth = 400
+    ParentColor = False
+    TabOrder = 1
+    object btnCancel: TButton
+      Left = 125
+      Height = 25
+      Top = 4
+      Width = 150
+      Align = alClient
+      BorderSpacing.Left = 125
+      BorderSpacing.Top = 4
+      BorderSpacing.Right = 125
+      BorderSpacing.Bottom = 5
+      Caption = '&Cancel...'
+      OnClick = btnCancelClick
+      TabOrder = 0
+    end
+  end
+end

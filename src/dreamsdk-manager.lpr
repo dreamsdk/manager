@@ -13,9 +13,25 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Main, GetVer, Environ, PortMgr, DCSDKMgr, Progress, KOSMgr, ShellThd,
-  PostInst, StrRes, ToolMgr,
-  About, ModVer, IDEMgr, Splash, rubymgr;
+  Forms,
+  Main,
+  GetVer,
+  Environ,
+  PortMgr,
+  DCSDKMgr,
+  Progress,
+  KOSMgr,
+  ShellThd,
+  PostInst,
+  StrRes,
+  ToolMgr,
+  About,
+  ModVer,
+  IDEMgr,
+  Splash,
+  RubyMgr,
+  Unpack,
+  PkgMgr;
 
 {$R *.res}
 
