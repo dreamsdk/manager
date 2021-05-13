@@ -1038,34 +1038,44 @@ begin
     and (cbxDreamcastToolSerialBaudrate.ItemIndex = 8);
 end;
 
-procedure TfrmMain.UpdateOptionsControls; { UPDATE ME }
+procedure TfrmMain.UpdateOptionsControls;
 begin
   with DreamcastSoftwareDevelopmentKitManager do
   begin
     cbxUrlKallisti.Enabled := (not KallistiOS.Repository.Ready)
       and (not KallistiOS.Repository.Offline);
     btnUrlKallisti.Enabled := not cbxUrlKallisti.Enabled;
-//    btnOfflineKallisti.Enabled := not KallistiOS.Repository.Offline;
+    btnOfflineKallisti.Enabled := cbxUrlKallisti.Enabled;
+    if KallistiOS.Repository.Offline then
+      cbxUrlKallisti.Text := EmptyStr;
 
     cbxUrlKallistiPorts.Enabled := (not KallistiPorts.Repository.Ready)
       and (not KallistiPorts.Repository.Offline);
     btnUrlKallistiPorts.Enabled := not cbxUrlKallistiPorts.Enabled;
-//    btnOfflineKallistiPorts.Enabled := not KallistiPorts.Repository.Offline;
+    btnOfflineKallistiPorts.Enabled := cbxUrlKallistiPorts.Enabled;
+    if KallistiPorts.Repository.Offline then
+      cbxUrlKallistiPorts.Text := EmptyStr;
 
     cbxUrlDreamcastToolSerial.Enabled := (not DreamcastTool.RepositorySerial.Ready)
       and (not DreamcastTool.RepositorySerial.Offline);
     btnUrlDreamcastToolSerial.Enabled := not cbxUrlDreamcastToolSerial.Enabled;
-//    btnOfflineDreamcastToolSerial.Enabled := not DreamcastTool.RepositorySerial.Offline;
+    btnOfflineDreamcastToolSerial.Enabled := cbxUrlDreamcastToolSerial.Enabled;
+    if DreamcastTool.RepositorySerial.Offline then
+      cbxUrlDreamcastToolSerial.Text := EmptyStr;
 
     cbxUrlDreamcastToolIP.Enabled := (not DreamcastTool.RepositoryInternetProtocol.Ready)
       and (not DreamcastTool.RepositoryInternetProtocol.Offline);
     btnUrlDreamcastToolIP.Enabled := not cbxUrlDreamcastToolIP.Enabled;
-//    btnOfflineDreamcastToolIP.Enabled := not DreamcastTool.RepositoryInternetProtocol.Offline;
+    btnOfflineDreamcastToolIP.Enabled := cbxUrlDreamcastToolIP.Enabled;
+    if DreamcastTool.RepositoryInternetProtocol.Offline then
+      cbxUrlDreamcastToolIP.Text := EmptyStr;
 
     cbxUrlRuby.Enabled := (not Ruby.Repository.Ready)
       and (not Ruby.Repository.Offline);
     btnUrlRuby.Enabled := not cbxUrlRuby.Enabled;
-//    btnOfflineRuby.Enabled := not Ruby.Repository.Offline;
+    btnOfflineRuby.Enabled := cbxUrlRuby.Enabled;
+    if Ruby.Repository.Offline then
+      cbxUrlRuby.Text := EmptyStr;
   end;
 end;
 
@@ -1674,6 +1684,7 @@ begin
   DreamcastSoftwareDevelopmentKitManager.Versions.RetrieveVersions;
   DisplayEnvironmentComponentVersions;
   UpdateComponentControls;
+  UpdateOptionsControls;
   if (not Success) and (not Aborted) then
     MsgBox(DialogWarningTitle, UnableToInstallPackageText, mtWarning, [mbOK]);
 end;
@@ -1703,19 +1714,34 @@ begin
 end;
 
 procedure TfrmMain.btnComponentsApplyClick(Sender: TObject);
+var
+  IsValidPythonVersionSelected: Boolean;
+  SelectedPythonVersion,
+  MessageText: string;
+
 begin
+  SelectedPythonVersion := EmptyStr;
+  IsValidPythonVersionSelected := IsDebuggerPythonVersionInstalled(
+    ComponentSelectedDebugger, SelectedPythonVersion);
+
 {$IFDEF DEBUG}
   WriteLn('Package Manager Operation: ', ComponentSelectedOperation);
   WriteLn('  Selected Toolchain: ', ComponentSelectedToolchain);
-  WriteLn('  Selected Debugger: ', ComponentSelectedDebugger);
+  WriteLn('  Selected Debugger: ', ComponentSelectedDebugger, ' [', IsValidPythonVersionSelected, ']');
 {$ENDIF}
-  with PackageManager do
-  begin
-    Debugger := ComponentSelectedDebugger;
-    Toolchain := ComponentSelectedToolchain;
-    Operation := ComponentSelectedOperation;
-    Execute;
-  end;
+
+  MessageText := UnpackConfirmationText;
+  if not IsValidPythonVersionSelected then
+    MessageText := Format(UnpackInvalidPythonConfirmationText, [SelectedPythonVersion]);
+
+  if (MsgBox(DialogWarningTitle, MessageText, mtWarning, [mbYes, mbNo], mbNo) = mrYes) then
+    with PackageManager do
+    begin
+      Debugger := ComponentSelectedDebugger;
+      Toolchain := ComponentSelectedToolchain;
+      Operation := ComponentSelectedOperation;
+      Execute;
+    end;
 end;
 
 procedure TfrmMain.btnIdeCodeBlocksInstallDirClick(Sender: TObject);
@@ -1779,17 +1805,23 @@ begin
 end;
 
 procedure TfrmMain.btnOfflineKallistiClick(Sender: TObject);
-
-  function GetPackageManagerRequest: TPackageManagerRequest;
-  begin
-    Result := TPackageManagerRequest((Sender as TButton).Tag);
-  end;
+var
+  SelectedOfflinePackage: TPackageManagerRequestOffline;
 
 begin
+  SelectedOfflinePackage := TPackageManagerRequestOffline((Sender as TButton).Tag);
+
 {$IFDEF DEBUG}
-  WriteLn('Install Offline Package: ', GetPackageManagerRequest);
+  WriteLn('Install Offline Package: ', SelectedOfflinePackage);
 {$ENDIF}
-  // ExecutePackageInstallation(pmrInstallToolchain);
+
+  if (MsgBox(DialogWarningTitle, 'HAHA', mtWarning, [mbYes, mbNo], mbNo) = mrYes) then
+    with PackageManager do
+    begin
+      Operation := pmrOffline;
+      OfflinePackage := SelectedOfflinePackage;
+      Execute;
+    end;
 end;
 
 procedure TfrmMain.btnOpenHelpClick(Sender: TObject);

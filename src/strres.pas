@@ -106,6 +106,8 @@ resourcestring
 
   // PackageManager | Unpack
   UnpackingText = 'Unpacking...';
+  UnpackConfirmationText = 'Are you really sure to apply these changes?';
+  UnpackInvalidPythonConfirmationText = 'The Python %s 32-bits runtime was not detected. Continue anyway?';
 
 implementation
 
