@@ -1,7 +1,7 @@
 object frmUnpack: TfrmUnpack
-  Left = 666
+  Left = 888
   Height = 80
-  Top = 435
+  Top = 580
   Width = 400
   BorderStyle = bsDialog
   Caption = 'Installing package...'

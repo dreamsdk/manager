@@ -425,6 +425,7 @@ end;
 function TDreamcastSoftwareDevelopmentFileSystemRuby.ResetRepository: Boolean;
 begin
   Result := KillDirectory(BaseDirectory);
+  KillDirectory(SamplesDirectory); // not so critical, don't need to fail if this wasn't possible
 end;
 
 { TDreamcastSoftwareDevelopmentRepository }

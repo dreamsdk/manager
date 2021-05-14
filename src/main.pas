@@ -292,6 +292,7 @@ type
     procedure tmDisplayKallistiPortsTimer(Sender: TObject);
     procedure tmrShellThreadTerminateTimer(Sender: TObject);
   private
+    fPackageManagerSelectedOfflinePackage: TPackageManagerRequestOffline;
     fPackageManagerOperation: TPackageManagerRequest;
     fLoadingConfiguration: Boolean;
     fKallistiPortsClearList: Boolean;
@@ -345,6 +346,7 @@ type
     procedure RefreshIdeScreen;
     procedure RunMSYS; overload;
     procedure RunMSYS(const WorkingDirectory: TFileName); overload;
+    procedure AskForUpdate;
   protected
     function RunElevatedTask(const ATaskName: string): Boolean; overload;
     function RunElevatedTask(const ATaskName: string;
@@ -767,10 +769,11 @@ begin
     // KallistiOS ChangeLog version
     if KallistiOS.Built then
     begin
-      lblVersionKallistiOS.Caption := Format(KALLISTI_VERSION_FORMAT,
-        [lblVersionKallistiOS.Caption,
-        Versions.KallistiChangeLog]);
-      lblVersionKallistiOS2.Caption := lblVersionKallistiOS.Caption;
+      SetVersionLabel(lblVersionKallistiOS, Format(KALLISTI_VERSION_FORMAT, [
+        lblVersionKallistiOS.Caption,
+        Versions.KallistiChangeLog
+      ]));
+      SetVersionLabel(lblVersionKallistiOS2, lblVersionKallistiOS.Caption);
     end
     else
     begin
@@ -1045,35 +1048,35 @@ begin
     cbxUrlKallisti.Enabled := (not KallistiOS.Repository.Ready)
       and (not KallistiOS.Repository.Offline);
     btnUrlKallisti.Enabled := not cbxUrlKallisti.Enabled;
-    btnOfflineKallisti.Enabled := cbxUrlKallisti.Enabled;
+    btnOfflineKallisti.Enabled := not KallistiOS.Repository.Offline;
     if KallistiOS.Repository.Offline then
       cbxUrlKallisti.Text := EmptyStr;
 
     cbxUrlKallistiPorts.Enabled := (not KallistiPorts.Repository.Ready)
       and (not KallistiPorts.Repository.Offline);
     btnUrlKallistiPorts.Enabled := not cbxUrlKallistiPorts.Enabled;
-    btnOfflineKallistiPorts.Enabled := cbxUrlKallistiPorts.Enabled;
+    btnOfflineKallistiPorts.Enabled := not KallistiPorts.Repository.Offline;
     if KallistiPorts.Repository.Offline then
       cbxUrlKallistiPorts.Text := EmptyStr;
 
     cbxUrlDreamcastToolSerial.Enabled := (not DreamcastTool.RepositorySerial.Ready)
       and (not DreamcastTool.RepositorySerial.Offline);
     btnUrlDreamcastToolSerial.Enabled := not cbxUrlDreamcastToolSerial.Enabled;
-    btnOfflineDreamcastToolSerial.Enabled := cbxUrlDreamcastToolSerial.Enabled;
+    btnOfflineDreamcastToolSerial.Enabled := not DreamcastTool.RepositorySerial.Offline;
     if DreamcastTool.RepositorySerial.Offline then
       cbxUrlDreamcastToolSerial.Text := EmptyStr;
 
     cbxUrlDreamcastToolIP.Enabled := (not DreamcastTool.RepositoryInternetProtocol.Ready)
       and (not DreamcastTool.RepositoryInternetProtocol.Offline);
     btnUrlDreamcastToolIP.Enabled := not cbxUrlDreamcastToolIP.Enabled;
-    btnOfflineDreamcastToolIP.Enabled := cbxUrlDreamcastToolIP.Enabled;
+    btnOfflineDreamcastToolIP.Enabled := not DreamcastTool.RepositoryInternetProtocol.Offline;
     if DreamcastTool.RepositoryInternetProtocol.Offline then
       cbxUrlDreamcastToolIP.Text := EmptyStr;
 
     cbxUrlRuby.Enabled := (not Ruby.Repository.Ready)
       and (not Ruby.Repository.Offline);
     btnUrlRuby.Enabled := not cbxUrlRuby.Enabled;
-    btnOfflineRuby.Enabled := cbxUrlRuby.Enabled;
+    btnOfflineRuby.Enabled := not Ruby.Repository.Offline;
     if Ruby.Repository.Offline then
       cbxUrlRuby.Text := EmptyStr;
   end;
@@ -1540,6 +1543,16 @@ begin
   RunNoWait(ShellExecutable, WorkingDirectory);
 end;
 
+procedure TfrmMain.AskForUpdate;
+var
+  Msg: string;
+
+begin
+  Msg := Format(MsgBoxDlgTranslateString(ResetRepositoryConfirmUpdate), [KallistiText]);
+  if MsgBox(DialogQuestionTitle, Msg, mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
+    ExecuteThreadOperation(stiKallistiManage);
+end;
+
 function TfrmMain.RunElevatedTask(const ATaskName: string): Boolean;
 var
   WorkingParameters: TStringList;
@@ -1685,8 +1698,16 @@ begin
   DisplayEnvironmentComponentVersions;
   UpdateComponentControls;
   UpdateOptionsControls;
+
   if (not Success) and (not Aborted) then
+  begin
     MsgBox(DialogWarningTitle, UnableToInstallPackageText, mtWarning, [mbOK]);
+    Exit;
+  end;
+
+  if Success and (ComponentSelectedOperation = pmrOffline)
+    and (fPackageManagerSelectedOfflinePackage <> pmroRuby) then
+      AskForUpdate;
 end;
 
 function TfrmMain.MsgBox(const aCaption: string; const aMsg: string;
@@ -1806,20 +1827,38 @@ end;
 
 procedure TfrmMain.btnOfflineKallistiClick(Sender: TObject);
 var
-  SelectedOfflinePackage: TPackageManagerRequestOffline;
+  Msg: string;
+
+  function OfflinePackageToString: string;
+  begin
+    case fPackageManagerSelectedOfflinePackage of
+      pmroKallisti:
+        Result := KallistiText;
+      pmroKallistiPorts:
+        Result := KallistiPortsText;
+      pmroDreamcastToolSerial:
+        Result := DreamcastToolSerialText;
+      pmroDreamcastToolInternetProtocol:
+        Result := DreamcastToolInternetProtocolText;
+      pmroRuby:
+        Result := RubyText;
+    end;
+  end;
 
 begin
-  SelectedOfflinePackage := TPackageManagerRequestOffline((Sender as TButton).Tag);
+  fPackageManagerOperation := pmrOffline;
+  fPackageManagerSelectedOfflinePackage := TPackageManagerRequestOffline((Sender as TButton).Tag);
 
 {$IFDEF DEBUG}
-  WriteLn('Install Offline Package: ', SelectedOfflinePackage);
+  WriteLn('Install Offline Package: ', fPackageManagerSelectedOfflinePackage);
 {$ENDIF}
 
-  if (MsgBox(DialogWarningTitle, 'HAHA', mtWarning, [mbYes, mbNo], mbNo) = mrYes) then
+  Msg := MsgBoxDlgTranslateString(Format(UnpackOfflineQuestion, [OfflinePackageToString]));
+  if (MsgBox(DialogWarningTitle, Msg, mtWarning, [mbYes, mbNo], mbNo) = mrYes) then
     with PackageManager do
     begin
-      Operation := pmrOffline;
-      OfflinePackage := SelectedOfflinePackage;
+      Operation := fPackageManagerOperation;
+      OfflinePackage := fPackageManagerSelectedOfflinePackage;
       Execute;
     end;
 end;
@@ -1906,8 +1945,8 @@ begin
     if DirectoryExists(SamplesDirectory) then
       RunShellExecute(SamplesDirectory)
     else
-      MsgBoxDlg(Handle, DialogWarningTitle, RubySamplesNotInstalled,
-        mtInformation, [mbOK]);
+      MsgBoxDlg(Handle, DialogWarningTitle,
+        MsgBoxDlgTranslateString(RubySamplesNotInstalled), mtInformation, [mbOK]);
   end;
 end;
 
@@ -2096,15 +2135,9 @@ begin
       // Refresh version numbers and build date
       RefreshEverything(True);
 
+      // Ask if the user wants to update now
       if TagToRepositoryKind <> rkRuby then
-      begin
-        Msg := Format(MsgBoxDlgTranslateString(ResetRepositoryConfirmUpdate), [TagToString, KallistiText]);
-
-        if MsgBox(DialogQuestionTitle, Msg,
-          mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
-            ExecuteThreadOperation(stiKallistiManage);
-      end;
-
+        AskForUpdate;
     end
     else
       MsgBox(DialogWarningTitle, Format(FailedToResetRepository, [TagToString]),

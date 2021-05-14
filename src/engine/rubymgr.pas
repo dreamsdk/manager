@@ -188,7 +188,7 @@ const
 var
   i: Integer;
   Dummy: string;
-  Item: TRubySampleItem;
+  Sample: TRubySampleItem;
 
 begin
   // mruby library
@@ -199,28 +199,41 @@ begin
     BufferOutput
   );
 
-  // samples: this is not critical
+  // Samples: this is not critical
   Dummy := EmptyStr;
   for i := 0 to Samples.Count - 1 do
   begin
-    Item := Samples[i];
-    if not DirectoryExists(Item.FullPath) then
-    begin
+    Sample := Samples[i];
+    if not DirectoryExists(Sample.FullPath) then
       Environment.CloneRepository(
-        Item.RepositoryURL,
-        Item.DirectoryName,
+        Sample.RepositoryURL,
+        Sample.DirectoryName,
         Environment.FileSystem.Ruby.SamplesDirectory,
         Dummy
       );
-    end;
   end;
 end;
 
 function TRubyManager.UpdateRepository(
   var BufferOutput: string): TUpdateOperationState;
+var
+  i: Integer;
+  Dummy: string;
+  Sample: TRubySampleItem;
+
 begin
+  // mruby library
   Result := Environment.UpdateRepository(
     Environment.FileSystem.Ruby.BaseDirectory, BufferOutput);
+
+  // Samples (try to update them if available)
+  Dummy := EmptyStr;
+  for i := 0 to Samples.Count - 1 do
+  begin
+    Sample := Samples[i];
+    if DirectoryExists(Sample.FullPath) then
+      Environment.UpdateRepository(Sample.FullPath, Dummy);
+  end;
 end;
 
 function TRubyManager.InitializeEnvironment: Boolean;

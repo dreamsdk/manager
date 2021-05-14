@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 385
+  Left = 513
   Height = 400
-  Top = 242
+  Top = 323
   Width = 680
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 666
-    ActivePage = tsRuby
-    TabIndex = 4
+    ActivePage = tsHome
+    TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -838,7 +838,7 @@ object frmMain: TfrmMain
         end
         object btnUrlRuby: TButton
           Tag = 4
-          Left = 578
+          Left = 508
           Height = 21
           Top = 4
           Width = 64
@@ -848,7 +848,7 @@ object frmMain: TfrmMain
         end
         object btnOfflineRuby: TButton
           Tag = 4
-          Left = 508
+          Left = 578
           Height = 21
           Top = 4
           Width = 64
@@ -1145,7 +1145,7 @@ object frmMain: TfrmMain
           TabOrder = 0
         end
         object btnUrlKallisti: TButton
-          Left = 578
+          Left = 508
           Height = 21
           Top = 4
           Width = 64
@@ -1154,7 +1154,7 @@ object frmMain: TfrmMain
           TabOrder = 1
         end
         object btnOfflineKallisti: TButton
-          Left = 508
+          Left = 578
           Height = 21
           Top = 4
           Width = 64
@@ -1183,7 +1183,7 @@ object frmMain: TfrmMain
         end
         object btnUrlKallistiPorts: TButton
           Tag = 1
-          Left = 578
+          Left = 508
           Height = 21
           Top = 4
           Width = 64
@@ -1193,7 +1193,7 @@ object frmMain: TfrmMain
         end
         object btnOfflineKallistiPorts: TButton
           Tag = 1
-          Left = 508
+          Left = 578
           Height = 21
           Top = 4
           Width = 64
@@ -1274,7 +1274,7 @@ object frmMain: TfrmMain
         end
         object btnUrlDreamcastToolSerial: TButton
           Tag = 2
-          Left = 578
+          Left = 508
           Height = 21
           Top = 4
           Width = 64
@@ -1284,7 +1284,7 @@ object frmMain: TfrmMain
         end
         object btnOfflineDreamcastToolSerial: TButton
           Tag = 2
-          Left = 508
+          Left = 578
           Height = 21
           Top = 4
           Width = 64
@@ -1313,7 +1313,7 @@ object frmMain: TfrmMain
         end
         object btnUrlDreamcastToolIP: TButton
           Tag = 3
-          Left = 578
+          Left = 508
           Height = 21
           Top = 4
           Width = 64
@@ -1323,7 +1323,7 @@ object frmMain: TfrmMain
         end
         object btnOfflineDreamcastToolIP: TButton
           Tag = 3
-          Left = 508
+          Left = 578
           Height = 21
           Top = 4
           Width = 64

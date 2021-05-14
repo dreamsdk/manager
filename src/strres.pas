@@ -41,9 +41,9 @@ resourcestring
   InstallOrUpdateRequiredDoItNow = 'A management operation of KallistiOS components is necessary. Do it now?';
   UseSubversionKallistiSinglePort = 'Unable to install %s, as it needs the Subversion Client (SVN) which wasn''t detected.';
   UseSubversionAllKallistiPorts = 'Note: The Subversion Client (SVN) wasn''t detected and this may causes issues.';
-  ResetRepositoryQuestion = 'This will delete the %s repository on the disk, losing all your changes if any.\nThen perform an Update operation to apply the changes.\nAre you sure to continue?';
+  ResetRepositoryQuestion = 'This will delete the %s repository on the disk, losing all your changes if any.\nYou will need to select an online repository URL then perform an Update operation.\nAre you sure to continue?';
   ResetRepositoryDone = '%s repository deleted.';
-  ResetRepositoryConfirmUpdate = 'Perform the Update operation now?\nIf you want to change the repository URL, answer No.\nYou may do the Update operation later in the %s tab.';
+  ResetRepositoryConfirmUpdate = 'Perform the Update operation now?\nYou may do the Update operation later in the %s tab.';
   InternetConnectionNeeded = 'This feature requires Internet connection.';
   FailedToResetRepository = 'Failed to reset the %s repository. You have to delete it manually.';
   ConfirmCodeBlocksMessage = 'Are you sure to %s the Code::Blocks integration?';
@@ -59,7 +59,7 @@ resourcestring
   InstallRubyText = 'Ruby for the Sega Dreamcast is experimental. Are you sure to enable it?';
   UninstallRubyText = 'Are you sure to disable the Ruby support?';
   UninstallRubyFailedText = 'Failed to uninstall the Ruby directory. You may delete it manually.';
-  RubySamplesNotInstalled = 'Ruby samples are not installed. Please install them by installing/reinstalling Ruby support.';
+  RubySamplesNotInstalled = 'Ruby samples are currently not installed or were deleted since Ruby installation.\nPlease install them by resetting repository URL or installing offline packages.';
   GitNeeded = 'Git is needed to use this feature.';
   UnableToInstallRubyRuntimeText = 'Please install RubyInstaller for Windows before trying to enable Ruby.';
   UnableToInstallRubyGitText = 'Ruby online installation requires Git.';
@@ -108,6 +108,7 @@ resourcestring
   UnpackingText = 'Unpacking...';
   UnpackConfirmationText = 'Are you really sure to apply these changes?';
   UnpackInvalidPythonConfirmationText = 'The Python %s 32-bits runtime was not detected. Continue anyway?';
+  UnpackOfflineQuestion = 'This will delete the %s directory on the disk, losing all your changes if any.\nThen the corresponding offline package will be installed.\nPerform an Update operation to apply the changes.\nAre you sure to continue?';
 
 implementation
 
