@@ -96,6 +96,14 @@ function TKallistiManager.UpdateRepository(var BufferOutput: string): TUpdateOpe
 begin
   Result := Environment.UpdateRepository(
     Environment.FileSystem.Kallisti.KallistiDirectory, BufferOutput);
+
+  // This is needed for KOS after a successful update
+  if (Result = uosUpdateSuccess) then
+  begin
+    KillFile(Environment.FileSystem.Kallisti.KallistiLibrary);
+    Environment.ExecuteShellCommand('make clean',
+      Environment.FileSystem.Kallisti.KallistiDirectory);
+  end;
 end;
 
 function TKallistiManager.InitializeEnvironment: Boolean;

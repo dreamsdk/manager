@@ -226,6 +226,14 @@ begin
   Result := Environment.UpdateRepository(
     Environment.FileSystem.Ruby.BaseDirectory, BufferOutput);
 
+  // This is needed after a successful update
+  if (Result = uosUpdateSuccess) then
+  begin
+    KillFile(Environment.FileSystem.Ruby.RubyLibrary);
+    Environment.ExecuteShellCommand('make clean',
+      Environment.FileSystem.Ruby.BaseDirectory);
+  end;
+
   // Samples (try to update them if available)
   Dummy := EmptyStr;
   for i := 0 to Samples.Count - 1 do

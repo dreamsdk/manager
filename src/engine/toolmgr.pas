@@ -85,7 +85,8 @@ function TDreamcastToolManager.DoRepositoryOperation(Kind: TDreamcastToolKind;
 var
   Url: string;
   InstallationDirectoryName,
-  InstallationDirectoryPath: TFileName;
+  InstallationDirectoryPath,
+  InstallationBinaryFileName: TFileName;
   IsRepositoryReady: Boolean;
 
 begin
@@ -98,6 +99,7 @@ begin
   Url := EmptyStr;
   InstallationDirectoryName := EmptyStr;
   InstallationDirectoryPath := EmptyStr;
+  InstallationBinaryFileName := EmptyStr;
 
   case Kind of
     dtkSerial:
@@ -105,6 +107,7 @@ begin
         Url := Environment.Settings.Repositories.DreamcastToolSerialURL;
         InstallationDirectoryName := DCLOAD_SERIAL_INSTALLATION_DIRECTORY;
         InstallationDirectoryPath := Environment.FileSystem.DreamcastTool.SerialDirectory;
+        InstallationBinaryFileName := Environment.FileSystem.DreamcastTool.SerialExecutable;
         IsRepositoryReady := RepositorySerial.Ready;
       end;
     dtkInternetProtocol:
@@ -112,6 +115,7 @@ begin
         Url := Environment.Settings.Repositories.DreamcastToolInternetProtocolURL;
         InstallationDirectoryName := DCLOAD_IP_INSTALLATION_DIRECTORY;
         InstallationDirectoryPath := Environment.FileSystem.DreamcastTool.InternetProtocolDirectory;
+        InstallationBinaryFileName := Environment.FileSystem.DreamcastTool.InternetProtocolExecutable;
         IsRepositoryReady := RepositoryInternetProtocol.Ready;
       end;
     dtkUndefined:
@@ -127,6 +131,14 @@ begin
       // Update the repository if it already exists
       UpdateOperationState := Environment.UpdateRepository(
         InstallationDirectoryPath, BufferOutput);
+
+      // This is needed after a successful update
+      if (UpdateOperationState = uosUpdateSuccess) then
+      begin
+        KillFile(InstallationBinaryFileName);
+        Environment.ExecuteShellCommand('make clean', InstallationDirectoryPath);
+      end;
+
       Result := (UpdateOperationState <> uosUpdateFailed);
     end
     else
