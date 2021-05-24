@@ -1694,16 +1694,19 @@ end;
 procedure TfrmMain.OnPackageManagerTerminate(Sender: TObject;
   const Success: Boolean; const Aborted: Boolean);
 begin
-  DreamcastSoftwareDevelopmentKitManager.Versions.RetrieveVersions;
-  DisplayEnvironmentComponentVersions;
-  UpdateComponentControls;
-  UpdateOptionsControls;
-
   if (not Success) and (not Aborted) then
   begin
     MsgBox(DialogWarningTitle, UnableToInstallPackageText, mtWarning, [mbOK]);
     Exit;
   end;
+
+  if Success and (ComponentSelectedOperation = pmrToolchain) then
+    DreamcastSoftwareDevelopmentKitManager.KallistiOS.FixupHitachiNewlib;
+
+  DreamcastSoftwareDevelopmentKitManager.Versions.RetrieveVersions;
+  DisplayEnvironmentComponentVersions;
+  UpdateComponentControls;
+  UpdateOptionsControls;
 
   if Success and (ComponentSelectedOperation = pmrOffline)
     and (fPackageManagerSelectedOfflinePackage <> pmroRuby) then

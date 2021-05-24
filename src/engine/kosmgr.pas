@@ -28,7 +28,8 @@ type
     function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
     function InitializeEnvironment: Boolean;
     function Build(var BufferOutput: string): Boolean;
-    function FixupHitachiNewlib(var BufferOutput: string): Boolean;
+    function FixupHitachiNewlib: Boolean; overload;
+    function FixupHitachiNewlib(var BufferOutput: string): Boolean; overload;
     property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
     property Repository: TDreamcastSoftwareDevelopmentRepository
@@ -148,7 +149,15 @@ begin
     and (not Environment.ShellCommandError);
 end;
 
-function TKallistiManager.FixupHitachiNewlib(var BufferOutput: string): Boolean;
+function TKallistiManager.FixupHitachiNewlib: Boolean; overload;
+var
+  Dummy: string;
+
+begin
+  Result := FixupHitachiNewlib(Dummy);
+end;
+
+function TKallistiManager.FixupHitachiNewlib(var BufferOutput: string): Boolean; overload;
 const
   FIXUP_SUPERH_NEWLIB = DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY + 'fixup-sh4-newlib';
   SUCCESS_TAG = 'Done!';
