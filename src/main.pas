@@ -391,7 +391,7 @@ implementation
 uses
   LCLIntf, IniFiles, StrUtils, UITools, GetVer, SysTools, PostInst, Settings,
   Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil,
-  RunTools, RefBase, Elevate, FSTools, Unpack;
+  RunTools, RefBase, Elevate, FSTools, Unpack, CBTools;
 
 const
   KALLISTI_VERSION_FORMAT = '%s (%s)';
@@ -2149,17 +2149,15 @@ begin
 end;
 
 procedure TfrmMain.btnIdeInstallClick(Sender: TObject);
-const
-  CODEBLOCKS_DLL_FILE = 'codeblocks.dll';
-  CODEBLOCKS_DLL_HASH = '1575beba73a3ea34465fad9f55fd098a';
-
 var
-  CodeBlocksInstallationDirectory,
-  CodeBlocksBinaryFileName: TFileName;
+  CodeBlocksInstallationDirectory: TFileName;
   InstallTitle,
   InstallMessage: string;
   InstallIcon: TMsgDlgType;
   EncodedParameters: TStringList;
+  i: Integer;
+  IsCodeBlocksRecognized: Boolean;
+  CodeBlocksVersion: TCodeBlocksVersion;
 
   procedure SetCodeBlocksState(const State: Boolean);
   begin
@@ -2180,13 +2178,10 @@ var
 
 begin
   CodeBlocksInstallationDirectory := EmptyStr;
-  CodeBlocksBinaryFileName := EmptyStr;
   if not IsEmpty(edtIdeCodeBlocksInstallDir.Text) then
   begin
     CodeBlocksInstallationDirectory := IncludeTrailingPathDelimiter(
       edtIdeCodeBlocksInstallDir.Text);
-    CodeBlocksBinaryFileName := CodeBlocksInstallationDirectory
-      + CODEBLOCKS_DLL_FILE;
   end;
 
   with DreamcastSoftwareDevelopmentKitManager.IntegratedDevelopmentEnvironment.CodeBlocks do
@@ -2201,8 +2196,11 @@ begin
             Exit;
           end;
 
+          // Checking installed C::B
+          CodeBlocksVersion := GetCodeBlocksVersion(CodeBlocksInstallationDirectory);
+
           // Check if C::B is installed in this directory
-          if not FileExists(CodeBlocksBinaryFileName) then
+          if CodeBlocksVersion = cbvUndefined then
           begin
             MsgBox(DialogWarningTitle, CodeBlocksInstallationDirectoryInvalid,
               mtWarning, [mbOK]);
@@ -2214,7 +2212,7 @@ begin
           InstallIcon := mtConfirmation;
 
           // Check if the hash is correct
-          if not IsCorrectFileHash(CodeBlocksBinaryFileName, CODEBLOCKS_DLL_HASH) then
+          if CodeBlocksVersion = cbvUnknown then
           begin
             InstallTitle := DialogWarningTitle;
             InstallMessage := MsgBoxDlgTranslateString(CodeBlocksIncorrectHash);

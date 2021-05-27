@@ -52,7 +52,7 @@ resourcestring
   ConfirmCodeBlocksUninstallation = 'uninstall definitely';
   CodeBlocksInstallationDirectoryNotExists = 'The specified Code::Blocks installation directory does not exists.';
   CodeBlocksInstallationDirectoryInvalid = 'Code::Blocks is not installed in this directory.';
-  CodeBlocksIncorrectHash = 'The installed Code::Blocks version seems NOT to be the expected Code::Blocks 17.12.\nThere is no guarantee that it will work. Continue anyway?';
+  CodeBlocksIncorrectHash = 'The installed Code::Blocks version was NOT recognized.\nThere is no guarantee that it will work. Continue anyway?';
   UnknownElevatedTask = 'Unknown elevated task!';
   PleaseVerifyRepositories = 'Repositories settings are incorrect!';
   PleaseVerifyRubyRepository = 'Ruby repository setting is incorrect!';
