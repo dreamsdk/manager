@@ -1605,12 +1605,8 @@ begin
       with DreamcastSoftwareDevelopmentKitManager
         .IntegratedDevelopmentEnvironment.CodeBlocks do
       begin
-        LastOperationSuccess := not FileExists(SwapExchangeFileName);
-        if not LastOperationSuccess then
-        begin
-          LastErrorMessage := LoadFileToString(SwapExchangeFileName);
-          KillFile(SwapExchangeFileName);
-        end;
+        UpdateStateFromElevatedTask(SwapExchangeFileName);
+        KillFile(SwapExchangeFileName);
       end;
     end;
   finally
@@ -1834,6 +1830,7 @@ var
 
   function OfflinePackageToString: string;
   begin
+    Result := EmptyStr;
     case fPackageManagerSelectedOfflinePackage of
       pmroKallisti:
         Result := KallistiText;
@@ -2155,8 +2152,6 @@ var
   InstallMessage: string;
   InstallIcon: TMsgDlgType;
   EncodedParameters: TStringList;
-  i: Integer;
-  IsCodeBlocksRecognized: Boolean;
   CodeBlocksVersion: TCodeBlocksVersion;
 
   procedure SetCodeBlocksState(const State: Boolean);
@@ -2174,6 +2169,12 @@ var
       RefreshIdeScreen;
       Cursor := crDefault;
     end;
+  end;
+
+  function GetLastErrorMessage(LastErrorMessage: string): string;
+  begin
+    LastErrorMessage := StringReplace(LastErrorMessage, sLineBreak, '\n', [rfReplaceAll]);
+    Result := MsgBoxDlgTranslateString(LastErrorMessage);
   end;
 
 begin
@@ -2228,7 +2229,7 @@ begin
               EncodedParameters.Add(CodeBlocksInstallationDirectory);
               if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_INSTALL, EncodedParameters) then
                 if not LastOperationSuccess then
-                  MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+                  MsgBox(DialogWarningTitle, GetLastErrorMessage(LastErrorMessage), mtWarning, [mbOK]);
             finally
               EncodedParameters.Free;
             end;
@@ -2242,7 +2243,7 @@ begin
           SetCodeBlocksState(False);
           if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_REINSTALL) then
             if not LastOperationSuccess then
-              MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+              MsgBox(DialogWarningTitle, GetLastErrorMessage(LastErrorMessage), mtWarning, [mbOK]);
         end;
 
       2: // Uninstall
@@ -2252,7 +2253,7 @@ begin
           SetCodeBlocksState(False);
           if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_UNINSTALL) then
             if not LastOperationSuccess then
-              MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+              MsgBox(DialogWarningTitle, GetLastErrorMessage(LastErrorMessage), mtWarning, [mbOK]);
         end;
 
       3: // Refresh
@@ -2260,7 +2261,7 @@ begin
           SetCodeBlocksState(False);
           if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_REFRESH) then
             if not LastOperationSuccess then
-              MsgBox(DialogErrorTitle, LastErrorMessage, mtError, [mbOK]);
+              MsgBox(DialogErrorTitle, GetLastErrorMessage(LastErrorMessage), mtError, [mbOK]);
         end;
     end;
 

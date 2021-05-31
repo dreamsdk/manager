@@ -33,19 +33,20 @@ type
   public
     constructor Create(AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment);
     destructor Destroy; override;
+
     function Install(const CodeBlocksInstallationDirectory: TFileName): Boolean;
     function Uninstall: Boolean;
     function Reinstall: Boolean;
     procedure Refresh; overload;
     procedure Refresh(const Force: Boolean);
+    procedure UpdateStateFromElevatedTask(const SwapExchangeFileName: TFileName);
+
     property AvailableUsers: TStringList read GetAvailableUsers;
     property Installed: Boolean read GetInstalled;
     property InstallationDirectory: TFileName read GetInstallationDirectory;
     property InstalledUsers: TStringList read GetInstalledUsers;
-    property LastOperationSuccess: Boolean read fLastOperationSuccess
-      write fLastOperationSuccess;
-    property LastErrorMessage: string read fLastErrorMessage
-      write fLastErrorMessage;
+    property LastOperationSuccess: Boolean read fLastOperationSuccess;
+    property LastErrorMessage: string read fLastErrorMessage;
     property Settings: TDreamcastSoftwareDevelopmentSettingsCodeBlocks
       read fSettings;
   end;
@@ -70,7 +71,8 @@ implementation
 uses
   SysTools,
   RunTools,
-  RefBase;
+  RefBase,
+  CBTools;
 
 const
   CODEBLOCKS_SUCCESSFUL_STATE = 'Code::Blocks is now';
@@ -108,13 +110,17 @@ var
   CmdLine: string;
 
 begin
-  CmdLine := Format('--operation=%s --home-dir="%s" --no-logo --show-splash', [
+  CmdLine := Format('--operation=%s --home-dir="%s" --internal-integration', [
     Operation, GetInstallationBaseDirectory]);
-//  ShowMessage(CmdLine);
+{$IFDEF DEBUG}
+  DebugLog('RunCodeBlocksPatcher: ' + CmdLine);
+{$ENDIF}
   Result := Run(fIntegratedDevelopmentEnvironment.Environment.FileSystem.Shell
     .CodeBlocksPatcherExecutable, CmdLine);
 
-  fLastErrorMessage := Trim(Right('Error: ', Result));
+  fLastErrorMessage := Right(CODEBLOCKS_PATCHER_ERROR_TAG, Result);
+  fLastErrorMessage := Trim(StringReplace(fLastErrorMessage,
+    CODEBLOCKS_PATCHER_ERROR_SEPARATOR, sLineBreak, [rfReplaceAll]));
   fLastOperationSuccess := IsEmpty(fLastErrorMessage);
 end;
 
@@ -140,6 +146,14 @@ begin
     if Settings.Installed then
       fInstalledUsers.Assign(Settings.InstalledUsers);
   end;
+end;
+
+procedure TCodeBlocksIntegratedDevelopmentEnvironment.UpdateStateFromElevatedTask(
+  const SwapExchangeFileName: TFileName);
+begin
+  fLastOperationSuccess := not FileExists(SwapExchangeFileName);
+  if not LastOperationSuccess then
+    fLastErrorMessage := LoadFileToString(SwapExchangeFileName);
 end;
 
 constructor TCodeBlocksIntegratedDevelopmentEnvironment.Create(

@@ -285,6 +285,7 @@ begin
   // Toolchain and/or Debugger
   if fOperation <> pmrOffline then
   begin
+    DebuggerPackage := EmptyStr;
     case Debugger of
       pmrdPythonDisabled:
         DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.PythonDisabled;
