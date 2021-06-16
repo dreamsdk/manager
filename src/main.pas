@@ -215,13 +215,14 @@ type
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
     opdDreamcastToolCustom: TOpenDialog;
+    pnlComponentsChange: TPanel;
     pnlRuby: TPanel;
     pnlAbout: TPanel;
     pcMain: TPageControl;
     pnlActions: TPanel;
-    rbnComponentsNoChange: TRadioButton;
-    rbnComponentsChangeToolchain: TRadioButton;
     rbnComponentsChangeDebugger: TRadioButton;
+    rbnComponentsChangeToolchain: TRadioButton;
+    rbnComponentsNoChange: TRadioButton;
     rgbDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
     sddIdeCodeBlocks: TSelectDirectoryDialog;
@@ -527,7 +528,8 @@ begin
       '  Use SVN: ' + BoolToStr(SelectedKallistiPort.UseSubversion, 'Yes', 'No') + sLineBreak +
       '  Includes: ' + SelectedKallistiPort.Includes + sLineBreak +
       '  Libraries: ' + SelectedKallistiPort.Libraries + sLineBreak +
-      '    Weights: ' + SelectedKallistiPort.LibraryWeights + sLineBreak
+      '    Weights: ' + SelectedKallistiPort.LibraryWeights + sLineBreak +
+      '  Usable in IDE: ' + BoolToStr(SelectedKallistiPort.UsableWithinIDE, 'Yes', 'No') + sLineBreak
     );
 {$ENDIF}
   end;
@@ -633,9 +635,14 @@ end;
 
 procedure TfrmMain.tmrShellThreadTerminateTimer(Sender: TObject);
 var
-  IsGlobalRefreshViewNeeded: Boolean;
+  IsSinglePortRefreshOnly: Boolean;
 
 begin
+{$IFDEF DEBUG}
+  WriteLn('[ShellThreadTerminateTimer::START] ShellThreadSuccess: ', fShellThreadSuccess,
+    ', ShellThreadOutputResult: ', fShellThreadOutputResult);
+{$ENDIF}
+
   tmrShellThreadTerminate.Enabled := False;
 
   if fShellThreadSuccess then
@@ -691,20 +698,23 @@ begin
 
   if not IsPostInstallMode then
   begin
-    IsGlobalRefreshViewNeeded := (fShellThreadOutputResult = stoKallistiInstall)
-      or (fShellThreadOutputResult = stoKallistiUpdate)
-      or (fShellThreadOutputResult = stoKallistiPortsInstall)
-      or (fShellThreadOutputResult = stoKallistiPortsUninstall);
+    IsSinglePortRefreshOnly := (fShellThreadOutputResult = stoKallistiSinglePortInstall)
+      or (fShellThreadOutputResult = stoKallistiSinglePortUpdate)
+      or (fShellThreadOutputResult = stoKallistiSinglePortUninstall);
 
-    if IsGlobalRefreshViewNeeded then
-      RefreshEverything(True)
+    if IsSinglePortRefreshOnly then
+      RefreshViewKallistiPorts(False) // Single KallistiPorts change
     else
-      RefreshViewKallistiPorts(False); // Single KallistiPorts change
+      RefreshEverything(True);
   end;
 
-  Application.ProcessMessages;
+  Delay(250);
   Screen.Cursor := crDefault;
   fShellThreadExecutedAtLeastOnce := True;
+
+{$IFDEF DEBUG}
+  DebugLog('[ShellThreadTerminateTimer::END]');
+{$ENDIF}
 end;
 
 function TfrmMain.CheckRepositoriesUrl: Boolean;
@@ -1679,11 +1689,11 @@ procedure TfrmMain.OnCommandTerminateThread(Sender: TObject;
   Success: Boolean; UpdateState: TUpdateOperationState);
 begin
   Screen.Cursor := crHourGlass;
-  Delay(200);
   fShellThreadSuccess := Success;
   fShellThreadInputRequest := Request;
   fShellThreadOutputResult := Response;
   fShellThreadUpdateState := UpdateState;
+  Delay(450);
   tmrShellThreadTerminate.Enabled := True;
 end;
 

@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 651
+  Left = 707
   Height = 400
-  Top = 338
+  Top = 282
   Width = 680
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -570,7 +570,7 @@ object frmMain: TfrmMain
         ClientWidth = 317
         TabOrder = 2
         object edtDreamcastToolInternetProtocolAddress: TMaskEdit
-          Left = 80
+          Left = 88
           Height = 22
           Top = 5
           Width = 132
@@ -595,10 +595,10 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblDreamcastToolInternetProtocolInvalidAddress: TLabel
-          Left = 216
+          Left = 224
           Height = 18
           Top = 9
-          Width = 96
+          Width = 88
           Alignment = taCenter
           AutoSize = False
           Caption = '(Dynamic)'
@@ -621,7 +621,7 @@ object frmMain: TfrmMain
           TabOrder = 2
         end
         object edtDreamcastToolInternetProtocolMAC: TMaskEdit
-          Left = 80
+          Left = 88
           Height = 22
           Top = 88
           Width = 132
@@ -638,10 +638,10 @@ object frmMain: TfrmMain
           SpaceChar = ' '
         end
         object lblDreamcastToolInternetProtocolInvalidMAC: TLabel
-          Left = 216
+          Left = 224
           Height = 18
           Top = 92
-          Width = 96
+          Width = 88
           Alignment = taCenter
           AutoSize = False
           Caption = '(Dynamic)'
@@ -660,10 +660,10 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox
-          Left = 80
+          Left = 88
           Height = 21
           Top = 120
-          Width = 230
+          Width = 222
           ItemHeight = 13
           OnSelect = cbxDreamcastToolSerialPortSelect
           Sorted = True
@@ -1609,49 +1609,60 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblDebugger: TLabel
-          Left = 252
+          Left = 260
           Height = 13
           Top = 40
-          Width = 131
-          Caption = 'GNU Debugger (GDB) Build:'
+          Width = 106
+          Caption = 'GNU Debugger (GDB):'
           ParentColor = False
         end
-        object rbnComponentsNoChange: TRadioButton
-          Left = 132
-          Height = 17
-          Top = 8
-          Width = 71
-          Caption = 'No change'
-          OnChange = rbnComponentsNoChangeChange
+        object pnlComponentsChange: TPanel
+          Left = 0
+          Height = 34
+          Top = 0
+          Width = 646
+          Align = alTop
+          BevelOuter = bvNone
+          ClientHeight = 34
+          ClientWidth = 646
           TabOrder = 3
-        end
-        object rbnComponentsChangeToolchain: TRadioButton
-          Tag = 1
-          Left = 284
-          Height = 17
-          Top = 8
-          Width = 105
-          Caption = 'Change Toolchain'
-          OnChange = rbnComponentsNoChangeChange
-          TabOrder = 4
-        end
-        object rbnComponentsChangeDebugger: TRadioButton
-          Tag = 2
-          Left = 468
-          Height = 17
-          Top = 8
-          Width = 162
-          Caption = 'Change GNU Debugger (GDB)'
-          OnChange = rbnComponentsNoChangeChange
-          TabOrder = 5
-        end
-        object lblComponentsConfiguration: TLabel
-          Left = 8
-          Height = 13
-          Top = 9
-          Width = 109
-          Caption = 'Change Configuration:'
-          ParentColor = False
+          object rbnComponentsChangeDebugger: TRadioButton
+            Tag = 2
+            Left = 448
+            Height = 17
+            Top = 12
+            Width = 162
+            Caption = 'Change GNU Debugger (GDB)'
+            OnChange = rbnComponentsNoChangeChange
+            TabOrder = 0
+          end
+          object rbnComponentsChangeToolchain: TRadioButton
+            Tag = 1
+            Left = 269
+            Height = 17
+            Top = 12
+            Width = 105
+            Caption = 'Change Toolchain'
+            OnChange = rbnComponentsNoChangeChange
+            TabOrder = 1
+          end
+          object rbnComponentsNoChange: TRadioButton
+            Left = 139
+            Height = 17
+            Top = 12
+            Width = 71
+            Caption = 'No change'
+            OnChange = rbnComponentsNoChangeChange
+            TabOrder = 2
+          end
+          object lblComponentsConfiguration: TLabel
+            Left = 8
+            Height = 13
+            Top = 13
+            Width = 109
+            Caption = 'Change Configuration:'
+            ParentColor = False
+          end
         end
       end
     end

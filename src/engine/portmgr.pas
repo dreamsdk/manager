@@ -17,6 +17,7 @@ type
   TKallistiPortItem = class(TObject)
   private
     fOwner: TKallistiPortManager;
+    fUsableWithinIDE: Boolean;
     fUseSubversion: Boolean;
     fVirtualAddon: Boolean;
     fListIndex: Integer;
@@ -41,6 +42,7 @@ type
     function IsPortInstalled: Boolean;
     function DeleteInstallPortDirectoryIfNeeded: Boolean;
   protected
+    procedure DetectUsability;
     function DoInstallOrUpdate: string;
     function ExecuteShellCommand(const CommandLine: string): string;
     function IsShellCommandOK(const SuccessTag, BufferOutput: string): Boolean;
@@ -49,9 +51,11 @@ type
   public
     constructor Create(AOwner: TKallistiPortManager);
     destructor Destroy; override;
+
     function Install(var BufferOutput: string): Boolean;
     function Uninstall(var BufferOutput: string): Boolean;
     function Update(var BufferOutput: string): TUpdateOperationState;
+
     property Name: string read fName;
     property Description: string read fDescription;
     property SourceDirectory: TFileName read fSourceDirectory;
@@ -67,6 +71,7 @@ type
     property Hidden: Boolean read fVirtualAddon;
     property LibraryWeights: string read fFullComputedDependenciesLibraryWeights;
     property UseSubversion: Boolean read fUseSubversion;
+    property UsableWithinIDE: Boolean read fUsableWithinIDE;
   end;
 
   { TKallistiPortManager }
@@ -175,6 +180,13 @@ end;
 function TKallistiPortItem.DeleteInstallPortDirectoryIfNeeded: Boolean;
 begin
   Result := KillDirectory(InstallDirectory);
+end;
+
+procedure TKallistiPortItem.DetectUsability;
+begin
+  // For getting a port to work: Name, Includes, Libraries and LibraryWeights should be set
+  fUsableWithinIDE := (not IsEmpty(Name)) and (not IsEmpty(Includes))
+    and (not IsEmpty(Libraries)) and (not IsEmpty(LibraryWeights));
 end;
 
 function TKallistiPortItem.DoInstallOrUpdate: string;
@@ -315,6 +327,10 @@ begin
     ProcessPortsDependencies;
 
     ProcessPortsWithoutDependencies;
+
+    // Check if ports are usable
+    for i := 0 to Count - 1 do
+      Items[i].DetectUsability;
   finally
     PortsAvailable.Free;
   end;
@@ -530,6 +546,22 @@ var
         sLineBreak, [rfReplaceAll]);
   end;
 
+  function SanitizeMakefileContent(const RawMakefileContentText: string): string;
+  const
+    DUMMY_TAG = '_USELESS_';
+    CLEANUP_TAGS: array[0..0] of string = (
+      'NOCOPY_TARGET'
+    );
+
+  var
+    i: Integer;
+
+  begin
+    Result := SanitizeText(RawMakefileContentText);
+    for i := Low(CLEANUP_TAGS) to High(CLEANUP_TAGS) do
+      Result := StringReplace(Result, CLEANUP_TAGS[i], DUMMY_TAG, [rfReplaceAll]);
+  end;
+
 begin
   PortDirectory := IncludeTrailingPathDelimiter(
     Environment.FileSystem.Kallisti.KallistiPortsDirectory + PortDirectoryBaseName);
@@ -540,10 +572,11 @@ begin
     MakefileContent := TStringList.Create;
     try
       MakefileContent.LoadFromFile(Makefile);
-      MakefileContentText := SanitizeText(MakefileContent.Text);
+      MakefileContentText := SanitizeMakefileContent(MakefileContent.Text);
 
       ExtractedURL := EmptyStr;
       PortName := GetPackageString('PORTNAME');
+
       with Add do
       begin
         fSourceDirectory := PortDirectory;
@@ -610,6 +643,7 @@ begin
     if not IsInString(PROCESS_DEPENDENCIES_CIRCULAR_REFERENCE_ERROR, PortDependenciesStr) then
     begin
       PortInfo.fFullComputedDependenciesNameList.Text := PortDependenciesStr;
+      StringListRemoveDuplicates(PortInfo.fFullComputedDependenciesNameList);
       SetPortAdditionalInformation(PortInfo, True);
     end;
   end;
@@ -903,6 +937,7 @@ var
   BufferSort: TStringList;
   i: Integer;
   PortInfo: TKallistiPortItem;
+  PortName: string;
 
   function LibraryLanguageKindToDirectory: TFileName;
   begin
@@ -915,6 +950,13 @@ var
   begin
     Result := (PortInfo.fLibraryLanguageKind = llkAll)
       or (PortInfo.fLibraryLanguageKind = LibraryLanguageKind);
+  end;
+
+  function SanitizeInfo(const Value: string): string;
+  begin
+    Result := Value;
+    if IsEmpty(Value) then
+      Result := '#UNKNOWN#';
   end;
 
 begin
@@ -933,10 +975,14 @@ begin
       PortInfo := Items[i];
       if PortInfo.Installed and IsValidPort then
       begin
-        BufferId.Add(PortInfo.Name);
-        BufferIncludes.Add(PortInfo.Includes);
-        BufferLibraries.Add(PortInfo.Libraries);
-        BufferSort.Add(PortInfo.LibraryWeights);
+        PortName := PortInfo.Name;
+        BufferIncludes.Add(SanitizeInfo(PortInfo.Includes));
+        BufferLibraries.Add(SanitizeInfo(PortInfo.Libraries));
+        BufferSort.Add(SanitizeInfo(PortInfo.LibraryWeights));
+        if PortInfo.UsableWithinIDE then
+          BufferId.Add(PortName)
+        else
+          BufferId.Add(PortName + ' (!)');
       end;
     end;
 
