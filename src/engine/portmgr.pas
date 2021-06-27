@@ -16,6 +16,7 @@ type
   { TKallistiPortItem }
   TKallistiPortItem = class(TObject)
   private
+    fIncludeDirectory: TFileName;
     fOwner: TKallistiPortManager;
     fUsableWithinIDE: Boolean;
     fUseSubversion: Boolean;
@@ -60,6 +61,7 @@ type
     property Description: string read fDescription;
     property SourceDirectory: TFileName read fSourceDirectory;
     property Includes: string read fSelfIncludes;
+    property IncludeDirectory: TFileName read fIncludeDirectory;
     property InstallDirectory: TFileName read fInstallDirectory;
     property Installed: Boolean read IsPortInstalled;
     property Maintainer: string read fMaintainer;
@@ -485,7 +487,7 @@ var
   function GetInstallDirectory: TFileName;
   begin
     Result := GetPackageString('HDR_INSTDIR');
-    if Result <> '' then
+    if Result <> EmptyStr then
       Result := PortDirectory + '..\include\' + Result;
   end;
 
@@ -524,6 +526,11 @@ var
 
     // Combine everything
     Result := GenerateIncludeHeader(IncludeFiles, IncludeDirectory);
+  end;
+
+  function GetPackageIncludeDirectory: TFileName;
+  begin
+    Result := GetPackageString('HDR_FULLDIR');
   end;
 
   function GetPackageLibraries: string;
@@ -587,6 +594,7 @@ begin
         fShortDescription := GetPackageString('SHORT_DESC');
         fDescription := GetPackageDescription(ExtractedURL);
         fURL := ExtractedURL;
+        fIncludeDirectory := GetPackageIncludeDirectory;
         fInstallDirectory := GetInstallDirectory;
         fSelfIncludes := GetPackageIncludes;
         fSelfLibraries := GetPackageLibraries;
@@ -924,8 +932,10 @@ procedure TKallistiPortManager.GenerateIntegratedDevelopmentEnvironmentLibraryIn
 const
   LIBINFO_PATH_C = 'c';
   LIBINFO_PATH_CPP = 'cpp';
+
   LIBINFO_ID = 'id.dat';
   LIBINFO_INC = 'inc.dat';
+  LIBINFO_INCDIR = 'incdir.dat';
   LIBINFO_LIB = 'lib.dat';
   LIBINFO_SORT = 'sort.dat';
 
@@ -933,6 +943,7 @@ var
   OutputDirectory: TFileName;
   BufferId,
   BufferIncludes,
+  BufferIncludeDirectories,
   BufferLibraries,
   BufferSort: TStringList;
   i: Integer;
@@ -967,6 +978,7 @@ begin
 
   BufferId := TStringList.Create;
   BufferIncludes := TStringList.Create;
+  BufferIncludeDirectories := TStringList.Create;
   BufferLibraries := TStringList.Create;
   BufferSort := TStringList.Create;
   try
@@ -977,6 +989,7 @@ begin
       begin
         PortName := PortInfo.Name;
         BufferIncludes.Add(SanitizeInfo(PortInfo.Includes));
+        BufferIncludeDirectories.Add(PortInfo.IncludeDirectory); // SanitizeInfo not needed
         BufferLibraries.Add(SanitizeInfo(PortInfo.Libraries));
         BufferSort.Add(SanitizeInfo(PortInfo.LibraryWeights));
         if PortInfo.UsableWithinIDE then
@@ -986,13 +999,15 @@ begin
       end;
     end;
 
-    SaveStringToFile(StringListToString(BufferId, ';'), OutputDirectory + LIBINFO_ID);
-    SaveStringToFile(StringListToString(BufferIncludes, ';'), OutputDirectory + LIBINFO_INC);
-    SaveStringToFile(StringListToString(BufferLibraries, ';'), OutputDirectory + LIBINFO_LIB);
-    SaveStringToFile(StringListToString(BufferSort, ';'), OutputDirectory + LIBINFO_SORT);
+    SaveStringToFile(StringListToString(BufferId, ';', False), OutputDirectory + LIBINFO_ID);
+    SaveStringToFile(StringListToString(BufferIncludes, ';', False), OutputDirectory + LIBINFO_INC);
+    SaveStringToFile(StringListToString(BufferIncludeDirectories, ';', False), OutputDirectory + LIBINFO_INCDIR);
+    SaveStringToFile(StringListToString(BufferLibraries, ';', False), OutputDirectory + LIBINFO_LIB);
+    SaveStringToFile(StringListToString(BufferSort, ';', False), OutputDirectory + LIBINFO_SORT);
   finally
     BufferId.Free;
     BufferIncludes.Free;
+    BufferIncludeDirectories.Free;
     BufferLibraries.Free;
     BufferSort.Free;
   end;
