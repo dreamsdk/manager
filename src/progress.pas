@@ -108,7 +108,9 @@ begin
   SetCloseButtonState(True);
   Finished := False;
   if IsPostInstallMode then
+{$IFDEF RELEASE}
     FormStyle := fsSystemStayOnTop
+{$ENDIF}
   else
   begin
     // Check the box to reflect the config
