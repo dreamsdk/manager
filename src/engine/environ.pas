@@ -603,17 +603,17 @@ begin
     fNewlibBinary := ToolchainBaseSuperH + 'sh-elf\lib\libnosys.a';
     with fPackages.fDebugger do
     begin
-      fPythonDisabled := PackagesBase +'gdb-sh-elf-bin.7z';
-      fPython27 := PackagesBase +'gdb-sh-elf-python-2.7-bin.7z';
-      fPython34 := PackagesBase +'gdb-sh-elf-python-3.4-bin.7z';
-      fPython35 := PackagesBase +'gdb-sh-elf-python-3.5-bin.7z';
-      fPython36 := PackagesBase +'gdb-sh-elf-python-3.6-bin.7z';
-      fPython37 := PackagesBase +'gdb-sh-elf-python-3.7-bin.7z';
-      fPython38 := PackagesBase +'gdb-sh-elf-python-3.8-bin.7z';
-      fPython39 := PackagesBase +'gdb-sh-elf-python-3.9-bin.7z';
+      fPythonDisabled := PackagesBase +'sh-elf-gdb-no-python-bin.7z';
+      fPython27 := PackagesBase + 'sh-elf-gdb-python-2.7-bin.7z';
+      fPython34 := PackagesBase + 'sh-elf-gdb-python-3.4-bin.7z';
+      fPython35 := PackagesBase + 'sh-elf-gdb-python-3.5-bin.7z';
+      fPython36 := PackagesBase + 'sh-elf-gdb-python-3.6-bin.7z';
+      fPython37 := PackagesBase + 'sh-elf-gdb-python-3.7-bin.7z';
+      fPython38 := PackagesBase + 'sh-elf-gdb-python-3.8-bin.7z';
+      fPython39 := PackagesBase + 'sh-elf-gdb-python-3.9-bin.7z';
     end;
-    fPackages.fExperimental := PackagesBase + 'gcc-sh-elf-experimental-bin.7z';
-    fPackages.fStable := PackagesBase + 'gcc-sh-elf-stable-bin.7z';
+    fPackages.fExperimental := PackagesBase + 'toolchain-experimental-sh-elf-bin.7z';
+    fPackages.fStable := PackagesBase + 'toolchain-stable-sh-elf-bin.7z';
   end;
 
   // Toolchain for ARM
@@ -626,8 +626,8 @@ begin
     fGCCExecutable := ToolchainBaseARM + 'bin\arm-eabi-gcc.exe';
     fGDBExecutable := EmptyStr; // Not Applicable
     fNewlibBinary := EmptyStr; // Not Applicable
-    fPackages.fExperimental := PackagesBase + 'gcc-arm-eabi-experimental-bin.7z';
-    fPackages.fStable := PackagesBase + 'gcc-arm-eabi-stable-bin.7z';
+    fPackages.fExperimental := PackagesBase + 'toolchain-experimental-arm-eabi-bin.7z';
+    fPackages.fStable := PackagesBase + 'toolchain-stable-arm-eabi-bin.7z';
   end;
 
   // Toolchain for Win32 (Windows)
