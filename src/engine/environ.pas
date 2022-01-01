@@ -740,10 +740,11 @@ end;
 procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerNewLine(
   Sender: TObject; NewLine: string);
 const
-  ERROR_KEYWORD = 'error:';
+  ERROR_KEYWORDS: array[0..1] of string = ('error:', 'fatal:');
 
 var
   ProcessedNewLine: string;
+  i: Integer;
 
 begin
   ProcessedNewLine := StringReplace(NewLine, fMsysBaseDirectoryNormal,
@@ -761,7 +762,8 @@ begin
   if not fShellCommandError then
   begin
     ProcessedNewLine := LowerCase(ProcessedNewLine); // only used for detecting errors
-    fShellCommandError := IsInString(ERROR_KEYWORD, ProcessedNewLine);
+    for i := Low(ERROR_KEYWORDS) to High(ERROR_KEYWORDS) do
+      fShellCommandError := IsInString(ERROR_KEYWORDS[i], ProcessedNewLine);
   end;
 end;
 
