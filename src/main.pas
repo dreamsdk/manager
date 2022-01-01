@@ -447,13 +447,19 @@ begin
   if not IsElevatedTaskRequested then
   begin
     fShellThreadExecutedAtLeastOnce := False;
-    DreamcastSoftwareDevelopmentKitManager := TDreamcastSoftwareDevelopmentKitManager.Create;
+    DreamcastSoftwareDevelopmentKitManager :=
+      TDreamcastSoftwareDevelopmentKitManager.Create(not IsPostInstallMode);
     PackageManager := TPackageManager.Create(DreamcastSoftwareDevelopmentKitManager);
     PackageManager.OnTerminate := @OnPackageManagerTerminate;
     HelpFileName := DreamcastSoftwareDevelopmentKitManager.Environment
       .FileSystem.Shell.HelpFileName;
-    ModuleVersionList := CreateModuleVersionList;
-    CreateNetworkAdapterList;
+
+    if (not IsPostInstallMode) then
+    begin
+      ModuleVersionList := CreateModuleVersionList;
+      CreateNetworkAdapterList;
+    end;
+
     DoubleBuffered := True;
     pcMain.TabIndex := 0;
     if IsWindowsVistaOrGreater and IsElevated then
@@ -470,8 +476,13 @@ begin
     if not fShellThreadExecutedAtLeastOnce then
       DreamcastSoftwareDevelopmentKitManager.KallistiPorts
         .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
-    FreeNetworkAdapterList;
-    ModuleVersionList.Free;
+
+    if (not IsPostInstallMode) then
+    begin
+      FreeNetworkAdapterList;
+      ModuleVersionList.Free;
+    end;
+
     PackageManager.Free;
     DreamcastSoftwareDevelopmentKitManager.Free;
   end;

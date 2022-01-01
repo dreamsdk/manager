@@ -22,7 +22,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="3"/>
       <RevisionNr Value="5"/>
-      <BuildNr Value="843"/>
+      <BuildNr Value="845"/>
       <StringTable Comments="http://dreamsdk.org/" CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" LegalCopyright="© Copyleft 2018-2021" LegalTrademarks="Sega and Dreamcast are registered trademark of Sega Games Co., Ltd." OriginalFilename="dreamsdk-manager.exe" ProductName="DreamSDK" ProductVersion="3.0.4.2108"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -78,9 +78,16 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
+      <local>
+        <CommandLineParams Value="--post-install --home-dir=&quot;C:\DreamSDK&quot;"/>
+      </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
-        <Mode0 Name="default"/>
+        <Mode0 Name="default">
+          <local>
+            <CommandLineParams Value="--post-install --home-dir=&quot;C:\DreamSDK&quot;"/>
+          </local>
+        </Mode0>
       </Modes>
     </RunParams>
     <RequiredPackages Count="3">
