@@ -748,14 +748,21 @@ var
 begin
   ProcessedNewLine := StringReplace(NewLine, fMsysBaseDirectoryNormal,
     EmptyStr, [rfReplaceAll]);
+
+  // Remove absolute DreamSDK installation path from lines
   ProcessedNewLine := StringReplace(ProcessedNewLine,
     fMsysBaseDirectoryReverse, EmptyStr, [rfReplaceAll]);
 
-  if Assigned(fShellCommandNewLine) then
+  // Send message event
+  if Assigned(fShellCommandNewLine) and (not IsEmpty(ProcessedNewLine)) then
     fShellCommandNewLine(Self, ProcessedNewLine);
 
+  // Detect if the line contains an error... not very smart but it works
   if not fShellCommandError then
-    fShellCommandError := IsInString(ERROR_KEYWORD, LowerCase(ProcessedNewLine));
+  begin
+    ProcessedNewLine := LowerCase(ProcessedNewLine); // only used for detecting errors
+    fShellCommandError := IsInString(ERROR_KEYWORD, ProcessedNewLine);
+  end;
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerTerminate

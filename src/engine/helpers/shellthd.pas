@@ -62,6 +62,7 @@ type
     procedure SyncUpdateProgressText;
     procedure SyncTriggerCommandTerminate;
   protected
+    function TaskSuccess: Boolean;
     function CanContinue: Boolean;
     procedure SetProgressTerminateState;
     procedure Execute; override;
@@ -95,7 +96,7 @@ procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
 implementation
 
 uses
-  Forms, Main, Progress, StrRes;
+  Forms, Main, Progress, StrRes, PostInst;
 
 type
   { TShellThreadHelper }
@@ -285,9 +286,14 @@ begin
     fCommandTerminate(Self, fRequest, fResponse, fOperationSuccess, fOperationUpdateState);
 end;
 
-function TShellThread.CanContinue: Boolean;
+function TShellThread.TaskSuccess: Boolean;
 begin
   Result := fOperationSuccess and (not Terminated) and (not Aborted);
+end;
+
+function TShellThread.CanContinue: Boolean;
+begin
+  Result := (TaskSuccess and (not IsPostInstallMode)) or IsPostInstallMode;
 end;
 
 procedure TShellThread.SetProgressTerminateState;
@@ -699,7 +705,7 @@ end;
 
 procedure TShellThread.SetOperationSuccess(const Success: Boolean);
 begin
-  fOperationSuccess := CanContinue and Success;
+  fOperationSuccess := TaskSuccess and Success;
 end;
 
 initialization
