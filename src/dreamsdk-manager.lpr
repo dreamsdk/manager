@@ -14,6 +14,9 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms,
+{$IFDEF DEBUG}
+  Windows,
+{$ENDIF}
   Main,
   GetVer,
   Environ,
@@ -36,6 +39,11 @@ uses
 {$R *.res}
 
 begin
+{$IFDEF DEBUG}
+{$IFDEF CONSOLE}
+  SetConsoleCtrlHandler(nil, True);
+{$ENDIF}
+{$ENDIF}
   Application.Scaled:=True;
   Application.Title:='DreamSDK Manager';
   RequireDerivedFormResource:=True;

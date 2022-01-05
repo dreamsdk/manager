@@ -96,7 +96,7 @@ procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
 implementation
 
 uses
-  Forms, Main, Progress, StrRes, PostInst;
+  Forms, Main, Progress, StrRes, PostInst, SysTools;
 
 type
   { TShellThreadHelper }
@@ -106,9 +106,44 @@ type
     procedure HandleNewLine(Sender: TObject; NewLine: string);
   end;
 
+  { TAbortShellThread }
+  TAbortShellThread = class(TThread)
+  private
+    procedure SyncAbort;
+  protected
+    procedure Abort;
+    procedure Execute; override;
+  public
+    constructor Create(CreateSuspended: Boolean);
+  end;
+
 var
   ShellThread: TShellThread;
   ShellThreadHelper: TShellThreadHelper;
+
+procedure AbortThreadOperation;
+begin
+  TAbortShellThread.Create(False);
+end;
+
+procedure DoAbortThreadOperation;
+begin
+  ResumeThreadOperation;
+
+  Sleep(500);
+
+  if Assigned(ShellThread) then
+  begin
+    ShellThread.Manager.Environment.AbortShellCommand;
+    if (not ShellThread.Aborted) then
+    begin
+      ShellThread.Aborted := True;
+      Application.ProcessMessages;
+      if Assigned(ShellThread) then
+        ShellThread.Terminate;
+    end;
+  end;
+end;
 
 procedure PauseThreadOperation;
 begin
@@ -222,7 +257,7 @@ var
   end;
 
 begin
-  AbortThreadOperation;
+  DoAbortThreadOperation;
 
   ShellThreadContext := GetThreadContext(AOperation);
   if ShellThreadContext <> stcUndefined then
@@ -233,16 +268,31 @@ begin
   end;
 end;
 
-procedure AbortThreadOperation;
+{ TAbortShellThread }
+
+procedure TAbortShellThread.SyncAbort;
 begin
-  ResumeThreadOperation;
-  if Assigned(ShellThread) then
+  DoAbortThreadOperation;
+  Delay(1000);
+end;
+
+procedure TAbortShellThread.Abort;
+begin
+  Synchronize(@SyncAbort);
+end;
+
+procedure TAbortShellThread.Execute;
+begin
+  while Assigned(ShellThread) and (not ShellThread.CheckTerminated) do
   begin
-    ShellThread.Aborted := True;
-    ShellThread.Manager.Environment.AbortShellCommand;
-    Application.ProcessMessages;
-    ShellThread.Terminate;
+    Abort;
   end;
+end;
+
+constructor TAbortShellThread.Create(CreateSuspended: Boolean);
+begin
+  inherited Create(CreateSuspended);
+  FreeOnTerminate := True;
 end;
 
 { TShellThreadHelper }
@@ -293,7 +343,8 @@ end;
 
 function TShellThread.CanContinue: Boolean;
 begin
-  Result := (TaskSuccess and (not IsPostInstallMode)) or IsPostInstallMode;
+  Result := (not IsPostInstallMode and TaskSuccess) or
+    (IsPostInstallMode and (not Terminated) and (not Aborted));
 end;
 
 procedure TShellThread.SetProgressTerminateState;

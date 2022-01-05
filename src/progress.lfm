@@ -1,7 +1,7 @@
 object frmProgress: TfrmProgress
-  Left = 676
+  Left = 459
   Height = 450
-  Top = 436
+  Top = 358
   Width = 750
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
@@ -12,7 +12,7 @@ object frmProgress: TfrmProgress
   OnCreate = FormCreate
   OnShow = FormShow
   Position = poScreenCenter
-  LCLVersion = '2.0.2.0'
+  LCLVersion = '2.0.12.0'
   object memBufferOutput: TMemo
     Left = 2
     Height = 335
