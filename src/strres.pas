@@ -66,7 +66,7 @@ resourcestring
   UnableToInstallPackageText = 'An error occured when installing the requested packages.';
 
   // Progress
-  SendingCancelSignal = 'Sending abort signal, this can take up to one minute, please be patient...';
+  SendingCancelSignal = 'Sending abort signal, please wait...';
   CancelDialogCaption = 'Warning';
   CancelDialogText = 'Are you really sure to cancel? This may let your installation in an unpredictable state.';
   CloseButtonCaption = '&Close';
