@@ -206,7 +206,7 @@ begin
   begin
     for i := Low(SUPPORTED_GCC_VERSIONS) to High(SUPPORTED_GCC_VERSIONS) do
     begin
-      if StartsWith(SUPPORTED_GCC_VERSIONS[i], Version) then
+      if StartsWith(SUPPORTED_GCC_VERSIONS[i] + '.', Version) then
       begin
         Result := TToolchainVersionKind(i + 1); // 1 for Undefined
         Break;

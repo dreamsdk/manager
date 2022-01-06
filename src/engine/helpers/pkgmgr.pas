@@ -43,12 +43,15 @@ type
   TPackageManagerRequestDebugger = (
     pmrdPythonDisabled,
     pmrdPython27,
+    pmrdPython33,
     pmrdPython34,
     pmrdPython35,
     pmrdPython36,
     pmrdPython37,
     pmrdPython38,
-    pmrdPython39
+    pmrdPython39,
+    pmrdPython310,
+    pmrdPython311
   );
 
   { TPackageManager }
@@ -271,13 +274,13 @@ begin
     case Toolchain of
       pmrtStable:
         begin
-          Add(FileSystem.ToolchainARM.Packages.Stable, FileSystem.ToolchainARM.BaseDirectory);
-          Add(FileSystem.ToolchainSuperH.Packages.Stable, FileSystem.ToolchainSuperH.BaseDirectory);
+          Add(FileSystem.ToolchainARM.Packages.Stable, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainSuperH.Packages.Stable, FileSystem.ToolchainBase);
         end;
       pmrtExperimental:
         begin
-          Add(FileSystem.ToolchainARM.Packages.Experimental, FileSystem.ToolchainARM.BaseDirectory);
-          Add(FileSystem.ToolchainSuperH.Packages.Experimental, FileSystem.ToolchainSuperH.BaseDirectory);
+          Add(FileSystem.ToolchainARM.Packages.Experimental, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainSuperH.Packages.Experimental, FileSystem.ToolchainBase);
         end;
     end;
   end;
@@ -291,6 +294,8 @@ begin
         DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.PythonDisabled;
       pmrdPython27:
         DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python27;
+      pmrdPython33:
+        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python33;
       pmrdPython34:
         DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python34;
       pmrdPython35:
@@ -303,8 +308,12 @@ begin
         DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python38;
       pmrdPython39:
         DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python39;
+      pmrdPython310:
+        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python310;
+      pmrdPython311:
+        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python311;
     end;
-    Add(DebuggerPackage, FileSystem.ToolchainSuperH.BaseDirectory);
+    Add(DebuggerPackage, FileSystem.ToolchainBase);
   end;
 
   // Offline only
