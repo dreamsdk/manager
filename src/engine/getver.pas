@@ -136,7 +136,8 @@ uses
   StrUtils,
   SysTools,
   VerIntf,
-  FSTools;
+  FSTools,
+  PEUtils;
 
 const
   DEVELOPMENT_VERSION_SUFFIX = '-dev';
@@ -297,13 +298,30 @@ end;
 procedure TComponentVersion.RetrieveVersions;
 
   function RetrievePythonGdb(const GdbExecutable: TFileName): string;
+  var
+    Buffer: TStringList;
+    i: Integer;
+
   begin
-    Result := RetrieveVersion(GdbExecutable, '--configuration',
-      '--with-python=c:/python/', '/x86', False); // Major.Minor.Build
-    Result := Right('.', ReverseString(Result)); // Minor.Major
-    Result := ReverseString(Result); // Major.Minor
-    if SameText(Result, EmptyStr) then
-      Result := INVALID_VERSION;
+    Result := EmptyStr;
+    Buffer := TStringList.Create;
+    try
+      GetPortableExecutableModules(GdbExecutable, Buffer);
+{$IFDEF DEBUG}
+      DebugLog('* GDB Imports: ' + sLineBreak + Buffer.Text);
+{$ENDIF}
+      i := StringListSubstringIndexOf(Buffer, 'python', False);
+      if i <> -1 then
+      begin
+        Result := ExtractStr('python', '.dll', LowerCase(Buffer[i]));
+        if Length(Result) > 1 then
+          Result := Copy(Result, 1, 1) + '.' + Copy(Result, 2, Length(Result) - 1);
+      end;
+      if SameText(Result, EmptyStr) then
+        Result := INVALID_VERSION;
+    finally
+      Buffer.Free;
+    end;
   end;
 
   procedure RetrieveVersionToolchain(var AVersion: TToolchainVersion;

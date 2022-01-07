@@ -103,6 +103,9 @@ function IsDebuggerPythonVersionInstalled(const Version: TPackageManagerRequestD
 
 implementation
 
+uses
+  PEUtils;
+
 function IsDebuggerPythonVersionInstalled(const Version: TPackageManagerRequestDebugger;
   var VersionWithDot: string): Boolean;
 var
