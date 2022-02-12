@@ -474,8 +474,10 @@ begin
   if not IsElevatedTaskRequested then
   begin
     if not fShellThreadExecutedAtLeastOnce then
+    begin
       DreamcastSoftwareDevelopmentKitManager.KallistiPorts
         .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
+    end;
 
     if (not IsPostInstallMode) then
     begin
@@ -538,6 +540,7 @@ begin
       SelectedKallistiPort.Name + ': ' + sLineBreak +
       '  Use SVN: ' + BoolToStr(SelectedKallistiPort.UseSubversion, 'Yes', 'No') + sLineBreak +
       '  Includes: ' + SelectedKallistiPort.Includes + sLineBreak +
+      '  Include Directories: ' + SelectedKallistiPort.IncludeDirectory + sLineBreak +
       '  Libraries: ' + SelectedKallistiPort.Libraries + sLineBreak +
       '    Weights: ' + SelectedKallistiPort.LibraryWeights + sLineBreak +
       '  Usable in IDE: ' + BoolToStr(SelectedKallistiPort.UsableWithinIDE, 'Yes', 'No') + sLineBreak
@@ -2489,6 +2492,10 @@ begin
     with ElevatedDreamcastSoftwareDevelopmentKitManager
       .IntegratedDevelopmentEnvironment.CodeBlocks do
     begin
+      // Load the KallistiOS Ports only as we need that for C::B DreaSDK Project Wizard...
+      ElevatedDreamcastSoftwareDevelopmentKitManager.KallistiPorts
+        .RetrieveAvailablePorts;
+
       // Execute the C::B Patcher
       case TaskNameToElavatedTask of
         etCodeBlocksPatchInstall:
@@ -2505,7 +2512,10 @@ begin
             WriteLibraryInformation;
           end;
         etCodeBlocksPatchRefresh:
-          Refresh(True);
+          begin
+            Refresh(True);
+            WriteLibraryInformation;
+          end;
         etUnknown:
           begin
             MsgBoxDlg(ASourceWindowHandle, sError, UnknownElevatedTask, mtError, [mbOK]);
