@@ -782,17 +782,23 @@ end;
 
 function TKallistiPortManager.GenerateIncludeHeader(const IncludeFiles: string;
   const IncludeDirectory: TFileName; const IsOverriden: Boolean): string;
+const
+  INCLUDE_SEPARATORS: array[0..1] of Char = ('|', ' ');
+
 var
   InputBuffer,
   OutputBuffer: TStringList;
   i: Integer;
-  IncludeFile: string;
+  Buffer, IncludeFile: string;
 
 begin
   InputBuffer := TStringList.Create;
   OutputBuffer := TStringList.Create;
   try
-    InputBuffer.Text := StringReplace(IncludeFiles, ' ', sLineBreak, [rfReplaceAll]);
+    Buffer := IncludeFiles;
+    for i := Low(INCLUDE_SEPARATORS) to High(INCLUDE_SEPARATORS) do
+      Buffer := StringReplace(Buffer, INCLUDE_SEPARATORS[i], sLineBreak, [rfReplaceAll]);
+    InputBuffer.Text := Buffer;
     for i := 0 to InputBuffer.Count - 1 do
     begin
       IncludeFile := Trim(InputBuffer[i]);
@@ -1009,7 +1015,7 @@ begin
           begin
 {$IFDEF DEBUG}
             DebugLog('      > Installed and Valid (Usable Within IDE: '
-              + BoolToStr(PortInfo.UsableWithinIDE) + ')');
+              + BoolToStr(PortInfo.UsableWithinIDE, 'Yes', 'No') + ')');
 {$ENDIF}
             PortName := PortInfo.Name;
             BufferIncludes.Add(SanitizeInfo(PortInfo.Includes));
