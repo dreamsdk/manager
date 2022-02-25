@@ -408,7 +408,7 @@ type
 implementation
 
 uses
-  RefBase, SysTools, FSTools, RunTools, PostInst;
+  RefBase, SysTools, FSTools, RunTools{$IFDEF GUI}, PostInst{$ENDIF};
 
 const
   FAIL_TAG = 'fatal: ';
@@ -980,7 +980,7 @@ end;
 function TDreamcastSoftwareDevelopmentEnvironment.IsComponentInstalled(
   const WorkingDirectory: TFileName): Boolean;
 begin
-  Result := (not IsPostInstallMode) and DirectoryExists(WorkingDirectory)
+  Result := {$IFDEF GUI}(not IsPostInstallMode) and {$ENDIF} DirectoryExists(WorkingDirectory)
     and (IsRepositoryReady(WorkingDirectory) or IsOfflineRepository(WorkingDirectory));
 end;
 

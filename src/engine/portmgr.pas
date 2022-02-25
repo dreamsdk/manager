@@ -97,10 +97,13 @@ type
     fRepositoryOffline: Boolean;
     fRepositoryOfflineVersion: string;
     function GetCount: Integer;
+    function GetCountInstalled: Integer;
+    function GetCountVisibleInstalled: Integer;
     function GetInstalled: Boolean;
     function GetItem(Index: Integer): TKallistiPortItem;
     function Add: TKallistiPortItem;
     procedure Clear;
+    function GetInstalledPorts(const VisibleOnly: Boolean): Integer;
     function GetRepositoryReady: Boolean;
     function GetRepositoryVersion: string;
     function GetUtilityDirectory: TFileName;
@@ -147,7 +150,9 @@ type
     procedure RetrieveAvailablePorts;
 
     property Count: Integer read GetCount;
+    property CountInstalled: Integer read GetCountInstalled;
     property CountVisible: Integer read fOnlyVisibleListCount;
+    property CountVisibleInstalled: Integer read GetCountVisibleInstalled;
     property Installed: Boolean read GetInstalled;
     property Items[Index: Integer]: TKallistiPortItem read GetItem; default;
     property Repository: TDreamcastSoftwareDevelopmentRepository
@@ -348,6 +353,16 @@ begin
   Result := fList.Count;
 end;
 
+function TKallistiPortManager.GetCountInstalled: Integer;
+begin
+  Result := GetInstalledPorts(False);
+end;
+
+function TKallistiPortManager.GetCountVisibleInstalled: Integer;
+begin
+  Result := GetInstalledPorts(True);
+end;
+
 function TKallistiPortManager.GetInstalled: Boolean;
 begin
   Result := Environment.IsComponentInstalled(Environment.FileSystem.Kallisti
@@ -372,6 +387,17 @@ begin
   fPortsWithoutDependencies.Clear;
   fPortsMap.Clear;
   fOnlyVisibleListCount := 0;
+end;
+
+function TKallistiPortManager.GetInstalledPorts(const VisibleOnly: Boolean): Integer;
+var
+  i: Integer;
+
+begin
+  Result := 0;
+  for i := 0 to Count - 1 do
+    if Items[i].Installed and (not VisibleOnly or (VisibleOnly and not Items[i].Hidden)) then
+      Inc(Result);
 end;
 
 function TKallistiPortManager.GetRepositoryReady: Boolean;

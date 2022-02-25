@@ -132,7 +132,9 @@ function ComponentNameToString(const ComponentName: TComponentName): string;
 implementation
 
 uses
+{$IFDEF GUI}
   Forms,
+{$ENDIF}
   StrUtils,
   SysTools,
   VerIntf,
