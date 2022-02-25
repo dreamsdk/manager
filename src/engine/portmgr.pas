@@ -118,7 +118,7 @@ type
     procedure ProcessDependenciesInitialize(PortInfo: TKallistiPortItem);
     function ProcessPortDependencies(PortInfo: TKallistiPortItem): string;
     function GenerateIncludeHeader(const IncludeFiles: string;
-      const IncludeDirectory: TFileName): string;
+      const IncludeDirectory: TFileName; const IsOverriden: Boolean): string;
     function GetPortIndex(const PortName: string): Integer;
     procedure HandleLibrary(OutputBuffer: TStringList; PortName: string);
     procedure SetPortAdditionalInformation(PortInfo: TKallistiPortItem;
@@ -551,7 +551,8 @@ var
     end;
 
     // Combine everything
-    Result := GenerateIncludeHeader(IncludeFiles, IncludeDirectory);
+    Result := GenerateIncludeHeader(IncludeFiles, IncludeDirectory,
+      IsOverriden);
   end;
 
   function GetPackageIncludeDirectory: TFileName;
@@ -806,24 +807,32 @@ begin
 end;
 
 function TKallistiPortManager.GenerateIncludeHeader(const IncludeFiles: string;
-  const IncludeDirectory: TFileName): string;
+  const IncludeDirectory: TFileName; const IsOverriden: Boolean): string;
+const
+  INCLUDE_SEPARATORS: array[0..1] of Char = ('|', ' ');
+
 var
   InputBuffer,
   OutputBuffer: TStringList;
   i: Integer;
-  IncludeFile: string;
+  Buffer, IncludeFile: string;
 
 begin
   InputBuffer := TStringList.Create;
   OutputBuffer := TStringList.Create;
   try
-    InputBuffer.Text := StringReplace(IncludeFiles, ' ', sLineBreak, [rfReplaceAll]);
+    Buffer := IncludeFiles;
+    for i := Low(INCLUDE_SEPARATORS) to High(INCLUDE_SEPARATORS) do
+      Buffer := StringReplace(Buffer, INCLUDE_SEPARATORS[i], sLineBreak, [rfReplaceAll]);
+    InputBuffer.Text := Buffer;
     for i := 0 to InputBuffer.Count - 1 do
     begin
       IncludeFile := Trim(InputBuffer[i]);
       if not SameText(IncludeFile, EmptyStr) then
       begin
         IncludeFile := IncludeDirectory + IncludeFile;
+        if not IsOverriden then
+          IncludeFile := '<' + IncludeFile + '>';
         if not SameText(IncludeFile, EmptyStr) then
           OutputBuffer.Add(IncludeFile);
       end;
@@ -993,49 +1002,72 @@ var
   begin
     Result := Value;
     if IsEmpty(Value) then
-      Result := '#UNKNOWN#';
+      Result := Chr($0C);
   end;
 
 begin
-  OutputDirectory := IntegratedDevelopmentEnvironment.CodeBlocks.Settings.ExportLibraryInformationPath
-    + LibraryLanguageKindToDirectory
-    + DirectorySeparator;
-  ForceDirectories(OutputDirectory);
-
-  BufferId := TStringList.Create;
-  BufferIncludes := TStringList.Create;
-  BufferIncludeDirectories := TStringList.Create;
-  BufferLibraries := TStringList.Create;
-  BufferSort := TStringList.Create;
-  try
-    for i := 0 to Count - 1 do
+{$IFDEF DEBUG}
+  DebugLog('> GenerateIntegratedDevelopmentEnvironmentLibraryInformation: '
+    + LibraryLanguageKindToDirectory);
+{$ENDIF}
+  with IntegratedDevelopmentEnvironment.CodeBlocks do
+  begin
+    if Settings.ExportLibraryInformation then
     begin
-      PortInfo := Items[i];
-      if PortInfo.Installed and IsValidPort then
-      begin
-        PortName := PortInfo.Name;
-        BufferIncludes.Add(SanitizeInfo(PortInfo.Includes));
-        BufferIncludeDirectories.Add(PortInfo.IncludeDirectory); // SanitizeInfo not needed
-        BufferLibraries.Add(SanitizeInfo(PortInfo.Libraries));
-        BufferSort.Add(SanitizeInfo(PortInfo.LibraryWeights));
-        if PortInfo.UsableWithinIDE then
-          BufferId.Add(PortName)
-        else
-          BufferId.Add(PortName + ' (!)');
+      OutputDirectory := Settings.ExportLibraryInformationPath
+        + LibraryLanguageKindToDirectory + DirectorySeparator;
+      ForceDirectories(OutputDirectory);
+
+{$IFDEF DEBUG}
+      DebugLog('  OutputDirectory: "' + OutputDirectory + '"');
+{$ENDIF}
+
+      BufferId := TStringList.Create;
+      BufferIncludes := TStringList.Create;
+      BufferIncludeDirectories := TStringList.Create;
+      BufferLibraries := TStringList.Create;
+      BufferSort := TStringList.Create;
+      try
+{$IFDEF DEBUG}
+        DebugLog('  Ports Count: ' + IntToStr(Count));
+{$ENDIF}
+        for i := 0 to Count - 1 do
+        begin
+          PortInfo := Items[i];
+{$IFDEF DEBUG}
+          DebugLog('    * Handling "' + PortInfo.Name + '"');
+{$ENDIF}
+          if PortInfo.Installed and IsValidPort then
+          begin
+{$IFDEF DEBUG}
+            DebugLog('      > Installed and Valid (Usable Within IDE: '
+              + BoolToStr(PortInfo.UsableWithinIDE, 'Yes', 'No') + ')');
+{$ENDIF}
+            PortName := PortInfo.Name;
+            BufferIncludes.Add(SanitizeInfo(PortInfo.Includes));
+            BufferIncludeDirectories.Add(SanitizeInfo(PortInfo.IncludeDirectory));
+            BufferLibraries.Add(SanitizeInfo(PortInfo.Libraries));
+            BufferSort.Add(SanitizeInfo(PortInfo.LibraryWeights));
+            if PortInfo.UsableWithinIDE then
+              BufferId.Add(PortName)
+            else
+              BufferId.Add(PortName + ' (!)');
+          end;
+        end;
+
+        SaveStringToFile(StringListToString(BufferId, ';', False), OutputDirectory + LIBINFO_ID);
+        SaveStringToFile(StringListToString(BufferIncludes, ';', False), OutputDirectory + LIBINFO_INC);
+        SaveStringToFile(StringListToString(BufferIncludeDirectories, ';', False), OutputDirectory + LIBINFO_INCDIR);
+        SaveStringToFile(StringListToString(BufferLibraries, ';', False), OutputDirectory + LIBINFO_LIB);
+        SaveStringToFile(StringListToString(BufferSort, ';', False), OutputDirectory + LIBINFO_SORT);
+      finally
+        BufferId.Free;
+        BufferIncludes.Free;
+        BufferIncludeDirectories.Free;
+        BufferLibraries.Free;
+        BufferSort.Free;
       end;
     end;
-
-    SaveStringToFile(StringListToString(BufferId, ';', False), OutputDirectory + LIBINFO_ID);
-    SaveStringToFile(StringListToString(BufferIncludes, ';', False), OutputDirectory + LIBINFO_INC);
-    SaveStringToFile(StringListToString(BufferIncludeDirectories, ';', False), OutputDirectory + LIBINFO_INCDIR);
-    SaveStringToFile(StringListToString(BufferLibraries, ';', False), OutputDirectory + LIBINFO_LIB);
-    SaveStringToFile(StringListToString(BufferSort, ';', False), OutputDirectory + LIBINFO_SORT);
-  finally
-    BufferId.Free;
-    BufferIncludes.Free;
-    BufferIncludeDirectories.Free;
-    BufferLibraries.Free;
-    BufferSort.Free;
   end;
 end;
 
@@ -1046,7 +1078,7 @@ var
 begin
   IncludeFiles := StringReplace(fAddonsIncludes[AddonIndex],
     ArraySeparator, WhiteSpaceStr, [rfReplaceAll]);
-  Result := GenerateIncludeHeader(IncludeFiles , EmptyStr);
+  Result := GenerateIncludeHeader(IncludeFiles , EmptyStr, True);
 end;
 
 function TKallistiPortManager.GetAddonIndex(const AddonName: string): Integer;
