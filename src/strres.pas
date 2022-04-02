@@ -44,6 +44,7 @@ resourcestring
   ResetRepositoryQuestion = 'This will delete the %s repository on the disk, losing all your changes if any.\nYou will need to select an online repository URL then perform an Update operation.\nAre you sure to continue?';
   ResetRepositoryDone = '%s repository deleted.';
   ResetRepositoryConfirmUpdate = 'Perform the Update operation now?\nYou may do the Update operation later in the %s tab.';
+  ResetRepositoryWarningUpdate = 'An Update operation is required to ensure the installation''s integrity. Do it now?\nYou may do the Update operation later in the %s tab.';
   InternetConnectionNeeded = 'This feature requires Internet connection.';
   FailedToResetRepository = 'Failed to reset the %s repository. You have to delete it manually.';
   ConfirmCodeBlocksMessage = 'Are you sure to %s the Code::Blocks integration?';

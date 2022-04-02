@@ -347,7 +347,7 @@ type
     procedure RefreshIdeScreen;
     procedure RunMSYS; overload;
     procedure RunMSYS(const WorkingDirectory: TFileName); overload;
-    procedure AskForUpdate;
+    procedure AskForUpdate(const MandatoryAction: Boolean = False);
   protected
     function RunElevatedTask(const ATaskName: string): Boolean; overload;
     function RunElevatedTask(const ATaskName: string;
@@ -1567,13 +1567,24 @@ begin
   RunNoWait(ShellExecutable, WorkingDirectory);
 end;
 
-procedure TfrmMain.AskForUpdate;
+procedure TfrmMain.AskForUpdate(const MandatoryAction: Boolean = False);
 var
-  Msg: string;
+  Msg, Title: string;
+  DlgIcon: TMsgDlgType;
 
 begin
   Msg := Format(MsgBoxDlgTranslateString(ResetRepositoryConfirmUpdate), [KallistiText]);
-  if MsgBox(DialogQuestionTitle, Msg, mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
+  Title := DialogQuestionTitle;
+  DlgIcon := mtConfirmation;
+
+  if MandatoryAction then
+  begin
+    Msg := Format(MsgBoxDlgTranslateString(ResetRepositoryWarningUpdate), [KallistiText]);
+    Title := DialogWarningTitle;
+    DlgIcon := mtWarning;
+  end;
+
+  if (MsgBox(Title, Msg, DlgIcon, [mbYes, mbNo], mbNo) = mrYes) then
     ExecuteThreadOperation(stiKallistiManage);
 end;
 
@@ -1713,24 +1724,53 @@ end;
 
 procedure TfrmMain.OnPackageManagerTerminate(Sender: TObject;
   const Success: Boolean; const Aborted: Boolean);
+type
+  TPackageManagerUpdateNeededType = (pmuntUseless, pmuntToolchain, pmuntOffline);
+
+var
+  PackageManagerUpdateNeededType: TPackageManagerUpdateNeededType;
+
 begin
+  // If Error/Aborted then warn the user and exit
   if (not Success) and (not Aborted) then
   begin
     MsgBox(DialogWarningTitle, UnableToInstallPackageText, mtWarning, [mbOK]);
     Exit;
   end;
 
-  if Success and (ComponentSelectedOperation = pmrToolchain) then
-    DreamcastSoftwareDevelopmentKitManager.KallistiOS.FixupHitachiNewlib;
+  // Determine now (before UI changes) what kind of update we need (and if we need!)
+  PackageManagerUpdateNeededType := pmuntUseless;
+  if (ComponentSelectedOperation = pmrToolchain) then
+    PackageManagerUpdateNeededType := pmuntToolchain
+  else if (ComponentSelectedOperation = pmrOffline) and (fPackageManagerSelectedOfflinePackage <> pmroRuby) then
+    PackageManagerUpdateNeededType := pmuntOffline;
 
+  // Update UI (ComponentSelectedOperation will be reset!)
   DreamcastSoftwareDevelopmentKitManager.Versions.RetrieveVersions;
   DisplayEnvironmentComponentVersions;
   UpdateComponentControls;
   UpdateOptionsControls;
 
-  if Success and (ComponentSelectedOperation = pmrOffline)
-    and (fPackageManagerSelectedOfflinePackage <> pmroRuby) then
-      AskForUpdate;
+  // Ask for update if needed
+  if Success then
+  begin
+    case PackageManagerUpdateNeededType of
+      pmuntOffline:
+        begin
+          // If an Offline button (but not for Ruby) was hit and everything is OK
+          AskForUpdate;
+        end;
+
+      pmuntToolchain:
+        begin
+          // If toolchain was changed, libraries should be rebuilt!
+          DreamcastSoftwareDevelopmentKitManager.KallistiOS.ForceNextRebuild;
+
+          // Then ask for update with different message
+          AskForUpdate(True);
+        end;
+    end;
+  end;
 end;
 
 function TfrmMain.MsgBox(const aCaption: string; const aMsg: string;

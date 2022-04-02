@@ -11,6 +11,7 @@ type
   { TKallistiManager }
   TKallistiManager = class(TObject)
   private
+    fForceNextRebuild: Boolean;
     fGenerateRomFileSystemBinaryFileName: TFileName;
     fGenerateRomFileSystemMakefileFileName: TFileName;
     fEnvironSampleShellScriptFileName: TFileName;
@@ -30,6 +31,7 @@ type
     function Build(var BufferOutput: string): Boolean;
     function FixupHitachiNewlib: Boolean; overload;
     function FixupHitachiNewlib(var BufferOutput: string): Boolean; overload;
+    procedure ForceNextRebuild;
     property Built: Boolean read GetBuilt;
     property Installed: Boolean read GetInstalled;
     property Repository: TDreamcastSoftwareDevelopmentRepository
@@ -52,7 +54,7 @@ end;
 function TKallistiManager.GetBuilt: Boolean;
 begin
   Result := FileExists(Environment.FileSystem.Kallisti.KallistiLibrary) and
-    FileExists(Environment.FileSystem.Kallisti.KallistiConfigurationFileName);
+    FileExists(Environment.FileSystem.Kallisti.KallistiConfigurationFileName) and (not fForceNextRebuild);
 end;
 
 constructor TKallistiManager.Create(
@@ -63,6 +65,7 @@ const
   GENROMFS_MAKEFILE_LOCATION_FILE = 'utils\genromfs\Makefile';
 
 begin
+  fForceNextRebuild := False;
   fEnvironment := AEnvironment;
   with Environment.FileSystem.Kallisti do
   begin
@@ -140,6 +143,15 @@ end;
 
 function TKallistiManager.Build(var BufferOutput: string): Boolean;
 begin
+  // Handle force next rebuild if necessary
+  // This is typically used when the toolchain has been changed (from GCC 4 to 9) in Manager
+  if fForceNextRebuild then
+  begin
+    fForceNextRebuild := False;
+    Environment.ExecuteShellCommand('make distclean',
+      Environment.FileSystem.Kallisti.KallistiDirectory);
+  end;
+
   // Build libkallisti
   BufferOutput := Environment.ExecuteShellCommand('make',
     Environment.FileSystem.Kallisti.KallistiDirectory);
@@ -171,6 +183,11 @@ begin
   CommandLine := Format('%s --verbose', [FIXUP_SUPERH_NEWLIB]);
   BufferOutput := Environment.ExecuteShellCommand(CommandLine, WorkingDirectory);
   Result := IsInString(SUCCESS_TAG, BufferOutput);
+end;
+
+procedure TKallistiManager.ForceNextRebuild;
+begin
+  fForceNextRebuild := True;
 end;
 
 end.
