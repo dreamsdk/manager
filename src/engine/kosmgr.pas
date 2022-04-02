@@ -12,8 +12,6 @@ type
   TKallistiManager = class(TObject)
   private
     fForceNextRebuild: Boolean;
-    fGenerateRomFileSystemBinaryFileName: TFileName;
-    fGenerateRomFileSystemMakefileFileName: TFileName;
     fEnvironSampleShellScriptFileName: TFileName;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fRepository: TDreamcastSoftwareDevelopmentRepository;
@@ -61,8 +59,6 @@ constructor TKallistiManager.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
 const
   ENVIRON_SHELL_SCRIPT_SAMPLE_LOCATION_FILE = 'doc\environ.sh.sample';
-  GENROMFS_BINARY_LOCATION_FILE = 'utils\genromfs\genromfs.exe';
-  GENROMFS_MAKEFILE_LOCATION_FILE = 'utils\genromfs\Makefile';
 
 begin
   fForceNextRebuild := False;
@@ -71,10 +67,6 @@ begin
   begin
     fEnvironSampleShellScriptFileName := KallistiDirectory
       + ENVIRON_SHELL_SCRIPT_SAMPLE_LOCATION_FILE;
-    fGenerateRomFileSystemBinaryFileName := KallistiDirectory
-      + GENROMFS_BINARY_LOCATION_FILE;
-    fGenerateRomFileSystemMakefileFileName := KallistiDirectory
-      + GENROMFS_MAKEFILE_LOCATION_FILE;
     fRepository := TDreamcastSoftwareDevelopmentRepository.Create(fEnvironment,
       KallistiDirectory);
   end;
@@ -111,14 +103,6 @@ begin
 end;
 
 function TKallistiManager.InitializeEnvironment: Boolean;
-const
-  GENROMFS_PACKAGE_FILENAME = DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY
-    + 'genromfs-0.5.1-cygwin-bin.tar.xz';
-
-var
-  CommandLine: string;
-  WorkingDirectory: TFileName;
-
 begin
   Result := True;
 
@@ -126,19 +110,6 @@ begin
   if not FileExists(Environment.FileSystem.Kallisti.KallistiConfigurationFileName) then
     Result := CopyFile(fEnvironSampleShellScriptFileName, Environment.FileSystem
       .Kallisti.KallistiConfigurationFileName);
-
-  // genromfs
-  if not FileExists(fGenerateRomFileSystemBinaryFileName) then
-  begin
-    CommandLine := Format('tar xf %s', [GENROMFS_PACKAGE_FILENAME]);
-    WorkingDirectory := Environment.FileSystem.Kallisti.KallistiDirectory;
-    Environment.ExecuteShellCommand(CommandLine, WorkingDirectory);
-    PatchTextFile(
-      fGenerateRomFileSystemMakefileFileName,
-      'all: genromfs',
-      'all:' + sLineBreak + TabStr + '@echo "(genromfs building is disabled)"'
-    );
-  end;
 end;
 
 function TKallistiManager.Build(var BufferOutput: string): Boolean;
@@ -166,6 +137,7 @@ var
   Dummy: string;
 
 begin
+  Dummy := EmptyStr;
   Result := FixupHitachiNewlib(Dummy);
 end;
 
