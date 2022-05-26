@@ -53,6 +53,8 @@ type
     btnUrlDreamcastToolIP: TButton;
     btnUpdateMRuby: TButton;
     btnOfflineKallisti: TButton;
+    btnIdeCodeBlocksUsersAvailableInitialize: TButton;
+    btnIdeCodeBlocksUsersAvailableRefresh: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
     cbxToolchain: TComboBox;
@@ -75,12 +77,12 @@ type
     gbxUrlRuby: TGroupBox;
     gbxDebugger: TGroupBox;
     lblComponentsConfiguration: TLabel;
+    lblIdeCodeBlocksUsersAvailable: TLabel;
     lblToolchain: TLabel;
     lblBuildDateMRuby: TLabel;
     lblHomeFolder1: TLabel;
     lblRubyShell: TLabel;
     lblIdeCodeBlocksUsersInstalled: TLabel;
-    lblIdeCodeBlocksUsersAvailable: TLabel;
     lblTextBuildDateMRuby: TLabel;
     lblTextMRuby: TLabel;
     lblTextRuby: TLabel;
@@ -91,6 +93,7 @@ type
     lblVersionRuby: TLabel;
     lblVersionRake: TLabel;
     lblVersionKallistiOS2: TLabel;
+    lbxIdeCodeBlocksUsersAvailable: TListBox;
     memPortShortDescription: TEdit;
     edtIdeCodeBlocksInstallDir: TEdit;
     edtValueHomeBaseDir: TEdit;
@@ -115,7 +118,7 @@ type
     edtProductBuildDate: TLabeledEdit;
     gbxIdeCodeBlocksInstallDir: TGroupBox;
     gbxIdeList: TGroupBox;
-    gbxPortAll1: TGroupBox;
+    gbxIdeAll: TGroupBox;
     gbxVersionDreamcastToolSerial: TGroupBox;
     gbxEnvironmentContext: TGroupBox;
     gbxVersionDreamcastToolIP: TGroupBox;
@@ -211,10 +214,10 @@ type
     lbxPorts: TCheckListBox;
     lbxIdeList: TCheckListBox;
     lbxIdeCodeBlocksUsersInstalled: TListBox;
-    lbxIdeCodeBlocksUsersAvailable: TListBox;
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
     opdDreamcastToolCustom: TOpenDialog;
+    gbxIdeCodeBlocksUsersAvailableButtons: TPanel;
     pnlComponentsChange: TPanel;
     pnlRuby: TPanel;
     pnlAbout: TPanel;
@@ -275,6 +278,7 @@ type
     procedure ckxDreamcastToolInternetProtocolUseARPChange(Sender: TObject);
     procedure edtDreamcastToolInternetProtocolAddressChange(Sender: TObject);
     procedure edtDreamcastToolInternetProtocolMACChange(Sender: TObject);
+    procedure edtIdeCodeBlocksInstallDirChange(Sender: TObject);
     procedure edtPortMaintainerClick(Sender: TObject);
     procedure edtPortURLClick(Sender: TObject);
     procedure edtPortURLMouseEnter(Sender: TObject);
@@ -283,6 +287,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure gbxIdeAllClick(Sender: TObject);
     procedure lbxIdeListClickCheck(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
@@ -402,6 +407,7 @@ const
   ELEVATED_TASK_CODEBLOCKS_IDE_REINSTALL = 'elevated_task_cb_ide_reinstall';
   ELEVATED_TASK_CODEBLOCKS_IDE_UNINSTALL = 'elevated_task_cb_ide_uninstall';
   ELEVATED_TASK_CODEBLOCKS_IDE_REFRESH = 'elevated_task_cb_ide_refresh';
+  ELEVATED_TASK_CODEBLOCKS_IDE_INITIALIZE_PROFILES = 'elevated_task_cb_ide_initialize';
 
 type
   { TNetworkAdapterListUserInterfaceItem }
@@ -508,6 +514,11 @@ begin
     fLoadingConfiguration := False;
     Screen.Cursor := crDefault;
   end;
+end;
+
+procedure TfrmMain.gbxIdeAllClick(Sender: TObject);
+begin
+
 end;
 
 procedure TfrmMain.lbxIdeListClickCheck(Sender: TObject);
@@ -1311,6 +1322,8 @@ begin
   SetButtonElevated(btnIdeInstall.Handle);
   SetButtonElevated(btnIdeReinstall.Handle);
   SetButtonElevated(btnIdeUninstall.Handle);
+  SetButtonElevated(btnIdeCodeBlocksUsersAvailableInitialize.Handle);
+  SetButtonElevated(btnIdeCodeBlocksUsersAvailableRefresh.Handle);
 
   lbxIdeList.ItemIndex := 0;
   lbxIdeListClickCheck(Self);
@@ -1545,6 +1558,7 @@ begin
     lbxIdeCodeBlocksUsersAvailable.Items.Assign(AvailableUsers);
     lbxIdeCodeBlocksUsersInstalled.Items.Assign(InstalledUsers);
     btnIdeInstall.Enabled := not Installed;
+    btnIdeCodeBlocksUsersAvailableInitialize.Enabled := not Installed;
     btnIdeReinstall.Enabled := Installed;
     btnIdeUninstall.Enabled := Installed;
     lbxIdeList.State[lbxIdeList.ItemIndex] := BooleanToCheckboxState(Installed);
@@ -2021,8 +2035,8 @@ begin
     if DirectoryExists(SamplesDirectory) then
       RunMSYS(SamplesDirectory)
     else
-      MsgBoxDlg(Handle, DialogWarningTitle, RubySamplesNotInstalled,
-        mtInformation, [mbOK]);
+      MsgBoxDlg(Handle, DialogWarningTitle,
+        MsgBoxDlgTranslateString(RubySamplesNotInstalled), mtInformation, [mbOK]);
   end;
 end;
 
@@ -2301,8 +2315,8 @@ begin
         end;
 
       1: // Reinstall
-        if MsgBox(DialogWarningTitle, Format(ConfirmCodeBlocksMessage,
-          [ConfirmCodeBlocksReinstallation]), mtWarning, [mbYes, mbNo]) = mrYes then
+        if MsgBox(DialogWarningTitle,
+          MsgBoxDlgTranslateString(ConfirmCodeBlocksReinstall), mtWarning, [mbYes, mbNo]) = mrYes then
         begin
           SetCodeBlocksState(False);
           if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_REINSTALL) then
@@ -2324,6 +2338,16 @@ begin
         begin
           SetCodeBlocksState(False);
           if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_REFRESH) then
+            if not LastOperationSuccess then
+              MsgBox(DialogErrorTitle, GetLastErrorMessage(LastErrorMessage), mtError, [mbOK]);
+        end;
+
+      4: // Initialize Profiles
+        if MsgBox(DialogQuestionTitle,
+          MsgBoxDlgTranslateString(CodeBlocksConfirmInitializeProfile), mtConfirmation, [mbYes, mbNo]) = mrYes then
+        begin
+          SetCodeBlocksState(False);
+          if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_INITIALIZE_PROFILES) then
             if not LastOperationSuccess then
               MsgBox(DialogErrorTitle, GetLastErrorMessage(LastErrorMessage), mtError, [mbOK]);
         end;
@@ -2418,6 +2442,19 @@ begin
   InstallDreamcastTool;
 end;
 
+procedure TfrmMain.edtIdeCodeBlocksInstallDirChange(Sender: TObject);
+{$IFDEF DEBUG}
+var
+  CodeBlocksVersion: string;
+
+begin
+  CodeBlocksVersion := CodeBlocksVersionToString(GetCodeBlocksVersion(edtIdeCodeBlocksInstallDir.Text));
+  DebugLog('CodeBlocks version: ' + CodeBlocksVersion);
+{$ELSE}
+begin
+{$ENDIF}
+end;
+
 procedure TfrmMain.edtPortMaintainerClick(Sender: TObject);
 const
   MAIL_TO_URL = 'mailto:%s?subject=%s';
@@ -2495,7 +2532,8 @@ type
     etCodeBlocksPatchInstall,
     etCodeBlocksPatchUninstall,
     etCodeBlocksPatchReinstall,
-    etCodeBlocksPatchRefresh
+    etCodeBlocksPatchRefresh,
+    etCodeBlocksPatchInitializeProfiles
   );
 
 var
@@ -2513,7 +2551,9 @@ var
     else if (ATaskName = ELEVATED_TASK_CODEBLOCKS_IDE_REINSTALL) then
       Result := etCodeBlocksPatchReinstall
     else if (ATaskName = ELEVATED_TASK_CODEBLOCKS_IDE_REFRESH) then
-      Result := etCodeBlocksPatchRefresh;
+      Result := etCodeBlocksPatchRefresh
+    else if (ATaskName = ELEVATED_TASK_CODEBLOCKS_IDE_INITIALIZE_PROFILES) then
+      Result := etCodeBlocksPatchInitializeProfiles;
   end;
 
   procedure WriteLibraryInformation;
@@ -2554,6 +2594,11 @@ begin
         etCodeBlocksPatchRefresh:
           begin
             Refresh(True);
+            WriteLibraryInformation;
+          end;
+        etCodeBlocksPatchInitializeProfiles:
+          begin
+            InitializeProfiles;
             WriteLibraryInformation;
           end;
         etUnknown:

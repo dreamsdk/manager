@@ -49,11 +49,12 @@ resourcestring
   FailedToResetRepository = 'Failed to reset the %s repository. You have to delete it manually.';
   ConfirmCodeBlocksMessage = 'Are you sure to %s the Code::Blocks integration?';
   ConfirmCodeBlocksInstallation = 'install';
-  ConfirmCodeBlocksReinstallation = 'reinstall';
   ConfirmCodeBlocksUninstallation = 'uninstall definitely';
+  ConfirmCodeBlocksReinstall = 'Are you sure to reinstall the Code::Blocks integration?\nThis will reinstall only for the already installed users.\nYou need to uninstall and install again the patch to enable for new users.';
   CodeBlocksInstallationDirectoryNotExists = 'The specified Code::Blocks installation directory does not exists.';
   CodeBlocksInstallationDirectoryInvalid = 'Code::Blocks is not installed in this directory.';
   CodeBlocksIncorrectHash = 'The installed Code::Blocks version was NOT recognized.\nThere is no guarantee that it will work. Continue anyway?';
+  CodeBlocksConfirmInitializeProfile = 'This will create the required files to enable Code::Blocks integration for all the users on this computer.\nAlternatively, you may start Code::Blocks once on the user session where you want to enable the integration.\nContinue?';
   UnknownElevatedTask = 'Unknown elevated task!';
   PleaseVerifyRepositories = 'Repositories settings are incorrect!';
   PleaseVerifyRubyRepository = 'Ruby repository setting is incorrect!';

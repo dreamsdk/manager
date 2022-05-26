@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 535
+  Left = 698
   Height = 400
-  Top = 244
+  Top = 258
   Width = 680
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -991,15 +991,42 @@ object frmMain: TfrmMain
         ClientHeight = 79
         ClientWidth = 398
         TabOrder = 2
-        object lbxIdeCodeBlocksUsersAvailable: TListBox
-          Left = 4
-          Height = 54
+        object gbxIdeCodeBlocksUsersAvailableButtons: TPanel
+          Left = 308
+          Height = 58
           Top = 21
-          Width = 390
-          Align = alClient
-          BorderSpacing.Around = 4
-          ItemHeight = 0
+          Width = 86
+          Align = alRight
+          BorderSpacing.Left = 4
+          BorderSpacing.Right = 4
+          BevelOuter = bvNone
+          ClientHeight = 58
+          ClientWidth = 86
+          ParentColor = False
           TabOrder = 0
+          object btnIdeCodeBlocksUsersAvailableInitialize: TButton
+            Tag = 4
+            Left = 0
+            Height = 25
+            Top = 0
+            Width = 86
+            Align = alTop
+            Caption = 'Initialize...'
+            OnClick = btnIdeInstallClick
+            TabOrder = 0
+          end
+          object btnIdeCodeBlocksUsersAvailableRefresh: TButton
+            Tag = 3
+            Left = 0
+            Height = 25
+            Top = 29
+            Width = 86
+            Align = alTop
+            BorderSpacing.Top = 4
+            Caption = 'Refresh'
+            OnClick = btnIdeInstallClick
+            TabOrder = 1
+          end
         end
         object lblIdeCodeBlocksUsersAvailable: TLabel
           Left = 4
@@ -1008,8 +1035,18 @@ object frmMain: TfrmMain
           Width = 390
           Align = alTop
           BorderSpacing.Around = 4
-          Caption = 'Users below are eligible to %s in Code::Blocks.'
+          Caption = 'Users below may use %s in Code::Blocks by installing the patch.'
           WordWrap = True
+        end
+        object lbxIdeCodeBlocksUsersAvailable: TListBox
+          Left = 4
+          Height = 54
+          Top = 21
+          Width = 300
+          Align = alClient
+          BorderSpacing.Around = 4
+          ItemHeight = 0
+          TabOrder = 1
         end
       end
       object gbxIdeCodeBlocksUsersInstalled: TGroupBox
@@ -1038,7 +1075,7 @@ object frmMain: TfrmMain
           Width = 390
           Align = alTop
           BorderSpacing.Around = 4
-          Caption = 'Users below may use %s in Code::Blocks.'
+          Caption = 'Users below may use %s in Code::Blocks now.'
           WordWrap = True
         end
       end
@@ -1065,10 +1102,11 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 310
+          OnChange = edtIdeCodeBlocksInstallDirChange
           TabOrder = 1
         end
       end
-      object gbxPortAll1: TGroupBox
+      object gbxIdeAll: TGroupBox
         Left = 4
         Height = 53
         Top = 264
@@ -1077,6 +1115,7 @@ object frmMain: TfrmMain
         ClientHeight = 35
         ClientWidth = 236
         TabOrder = 5
+        OnClick = gbxIdeAllClick
         object btnIdeRefresh: TButton
           Tag = 3
           Left = 4

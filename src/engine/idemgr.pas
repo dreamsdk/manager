@@ -34,6 +34,7 @@ type
     constructor Create(AIntegratedDevelopmentEnvironment: TIntegratedDevelopmentEnvironment);
     destructor Destroy; override;
 
+    function InitializeProfiles: Boolean;
     function Install(const CodeBlocksInstallationDirectory: TFileName): Boolean;
     function Uninstall: Boolean;
     function Reinstall: Boolean;
@@ -171,6 +172,19 @@ begin
   fInstalledUsers.Free;
   fAvailableUsers.Free;
   inherited Destroy;
+end;
+
+function TCodeBlocksIntegratedDevelopmentEnvironment.InitializeProfiles: Boolean;
+const
+  SUCCESS = 'Profiles initialization finished!';
+
+var
+  ProfilesInitializationState: string;
+
+begin
+  ProfilesInitializationState := RunCodeBlocksPatcher('internal-initialize-profiles');
+  Result := IsInString(SUCCESS, ProfilesInitializationState);
+  Refresh(True);
 end;
 
 function TCodeBlocksIntegratedDevelopmentEnvironment.Install(
