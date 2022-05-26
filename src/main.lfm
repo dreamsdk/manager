@@ -34,7 +34,7 @@ object frmMain: TfrmMain
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
-      Caption = 'Home'
+      Caption = 'H&ome'
       ClientHeight = 322
       ClientWidth = 658
       object lblTitleHome: TLabel
@@ -145,7 +145,7 @@ object frmMain: TfrmMain
       end
     end
     object tsKallistiOS: TTabSheet
-      Caption = 'KallistiOS'
+      Caption = '&KallistiOS'
       ClientHeight = 322
       ClientWidth = 658
       object lblVersionKallistiOS: TLabel
@@ -216,7 +216,7 @@ object frmMain: TfrmMain
       end
     end
     object tsKallistiPorts: TTabSheet
-      Caption = 'KallistiOS Ports'
+      Caption = 'Kalli&stiOS Ports'
       ClientHeight = 322
       ClientWidth = 658
       object gbxAvailablePorts: TGroupBox
@@ -258,7 +258,7 @@ object frmMain: TfrmMain
           Height = 25
           Top = 4
           Width = 112
-          Caption = 'Uninstall...'
+          Caption = 'U&ninstall...'
           OnClick = btnAllPortUninstallClick
           TabOrder = 1
         end
@@ -267,7 +267,7 @@ object frmMain: TfrmMain
           Height = 25
           Top = 4
           Width = 112
-          Caption = 'Install...'
+          Caption = 'Insta&ll...'
           OnClick = btnAllPortInstallClick
           TabOrder = 0
         end
@@ -415,7 +415,7 @@ object frmMain: TfrmMain
       end
     end
     object tsDreamcastTool: TTabSheet
-      Caption = 'Dreamcast Tool'
+      Caption = 'Dreamcast Too&l'
       ClientHeight = 322
       ClientWidth = 658
       object rgbDreamcastTool: TRadioGroup
@@ -735,7 +735,7 @@ object frmMain: TfrmMain
       end
     end
     object tsRuby: TTabSheet
-      Caption = 'Ruby'
+      Caption = 'Rub&y'
       ClientHeight = 322
       ClientWidth = 658
       object lblTextMRuby: TLabel
@@ -910,7 +910,7 @@ object frmMain: TfrmMain
       end
     end
     object tsIDE: TTabSheet
-      Caption = 'IDE'
+      Caption = 'I&DE'
       ClientHeight = 322
       ClientWidth = 658
       object gbxIdeList: TGroupBox
@@ -1011,7 +1011,7 @@ object frmMain: TfrmMain
             Top = 0
             Width = 86
             Align = alTop
-            Caption = 'Initialize...'
+            Caption = 'Initiali&ze...'
             OnClick = btnIdeInstallClick
             TabOrder = 0
           end
@@ -1023,7 +1023,7 @@ object frmMain: TfrmMain
             Width = 86
             Align = alTop
             BorderSpacing.Top = 4
-            Caption = 'Refresh'
+            Caption = 'Refr&esh'
             OnClick = btnIdeInstallClick
             TabOrder = 1
           end
@@ -1129,7 +1129,7 @@ object frmMain: TfrmMain
       end
     end
     object tsOptions: TTabSheet
-      Caption = 'Options'
+      Caption = '&Options'
       ClientHeight = 322
       ClientWidth = 658
       object gbxUrlKallistiOS: TGroupBox
@@ -1203,7 +1203,7 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 64
-          Caption = '&Offline...'
+          Caption = 'O&ffline...'
           OnClick = btnOfflineKallistiClick
           TabOrder = 2
         end
@@ -1255,7 +1255,7 @@ object frmMain: TfrmMain
           Height = 25
           Top = 48
           Width = 249
-          Caption = 'Reset De&faults...'
+          Caption = 'Reset Defa&ults...'
           OnClick = btnRestoreDefaultsClick
           TabOrder = 1
         end
@@ -1294,7 +1294,7 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 64
-          Caption = '&Offline...'
+          Caption = 'Off&line...'
           OnClick = btnOfflineKallistiClick
           TabOrder = 2
         end
@@ -1333,14 +1333,14 @@ object frmMain: TfrmMain
           Height = 21
           Top = 4
           Width = 64
-          Caption = '&Offline...'
+          Caption = 'Offl&ine...'
           OnClick = btnOfflineKallistiClick
           TabOrder = 2
         end
       end
     end
     object tsComponents: TTabSheet
-      Caption = 'Components'
+      Caption = 'Com&ponents'
       ClientHeight = 322
       ClientWidth = 658
       object gbxVersionKallisti: TGroupBox
@@ -1623,7 +1623,7 @@ object frmMain: TfrmMain
             Height = 17
             Top = 12
             Width = 162
-            Caption = 'Change GNU Debugger (GDB)'
+            Caption = 'Change GNU Debugger (GD&B)'
             OnChange = rbnComponentsNoChangeChange
             TabOrder = 0
           end
@@ -1633,7 +1633,7 @@ object frmMain: TfrmMain
             Height = 17
             Top = 12
             Width = 105
-            Caption = 'Change Toolchain'
+            Caption = 'Change Toolc&hain'
             OnChange = rbnComponentsNoChangeChange
             TabOrder = 1
           end
@@ -1642,7 +1642,7 @@ object frmMain: TfrmMain
             Height = 17
             Top = 12
             Width = 71
-            Caption = 'No change'
+            Caption = 'No &change'
             OnChange = rbnComponentsNoChangeChange
             TabOrder = 2
           end
@@ -1657,7 +1657,7 @@ object frmMain: TfrmMain
       end
     end
     object tsEnvironment: TTabSheet
-      Caption = 'Environment'
+      Caption = 'En&vironment'
       ClientHeight = 322
       ClientWidth = 658
       object gbxToolchainSuperH: TGroupBox
@@ -1990,7 +1990,7 @@ object frmMain: TfrmMain
       end
     end
     object tsAbout: TTabSheet
-      Caption = 'About'
+      Caption = '&About'
       ClientHeight = 322
       ClientWidth = 658
       object lblTitleAbout: TLabel
@@ -2285,7 +2285,7 @@ object frmMain: TfrmMain
           Height = 25
           Top = 48
           Width = 249
-          Caption = '%s &Website...'
+          Caption = 'Check for &Updates...'
           OnClick = btnCheckForUpdatesClick
           TabOrder = 1
         end
