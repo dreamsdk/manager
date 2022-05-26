@@ -66,6 +66,9 @@ resourcestring
   UnableToInstallRubyRuntimeText = 'Please install RubyInstaller for Windows before trying to enable Ruby.';
   UnableToInstallRubyGitText = 'Ruby online installation requires Git.';
   UnableToInstallPackageText = 'An error occured when installing the requested packages.';
+  ApplicationNotCorrectlyConfigured = 'Sorry, this binary program was not compiled correctly... do you downloaded it from the official website?';
+  PackageUpdateAvailable = 'A new version of %s is available. Download it now?';
+  PackageUpToDate = '%s is up-to-date.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, please wait...';

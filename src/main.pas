@@ -395,7 +395,8 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, IniFiles, StrUtils, UITools, GetVer, SysTools, PostInst, Settings,
+  LCLIntf, IniFiles, StrUtils, FPHttpClient, OpenSSLSockets,
+  UITools, GetVer, SysTools, PostInst, Settings,
   Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil,
   RunTools, RefBase, Elevate, FSTools, Unpack, CBTools;
 
@@ -1993,15 +1994,53 @@ const
   VALID_PREFIX = 'http';
 
 var
+  CurrentVersion,
+  RemoteVersion,
   Url: string;
+
+  function GetRemoteVersion: string;
+  const
+    UPDATE_FILE_CHECK = '.update/version.txt';
+
+  var
+    HTTPClient: TFPHTTPClient;
+    UpdateUrl: string;
+
+  begin
+    UpdateUrl := Concat(Url, UPDATE_FILE_CHECK);
+    try
+      HTTPClient := TFPHTTPClient.Create(nil);
+      try
+        HTTPClient.AllowRedirect := True;
+        Result := HTTPClient.Get(UpdateUrl);
+      finally
+        HTTPClient.Free;
+      end;
+    except
+      Result := EmptyStr;
+    end;
+  end;
 
 begin
   Url := GetComments;
+  CurrentVersion := GetProductVersion;
+  RemoteVersion := GetRemoteVersion;
+
   if AnsiStartsStr(VALID_PREFIX, LowerCase(Url)) then
-    OpenURL(GetComments)
-{$IFDEF DEBUG}
+  begin
+    if CompareVersion(CurrentVersion, RemoteVersion) > 0 then
+    begin
+      if MsgBox(DialogQuestionTitle, Format(PackageUpdateAvailable, [GetProductName]), mtConfirmation, [mbYes, mbNo]) = mrYes then
+        OpenURL(Url);
+    end
+    else
+      MsgBox(DialogInformationTitle, Format(PackageUpToDate, [GetProductName]), mtInformation, [mbOk]);
+  end
   else
+{$IFDEF DEBUG}
     raise Exception.Create('Invalid website in the File Comments!')
+{$ELSE}
+    MsgBox(DialogErrorTitle, ApplicationNotCorrectlyConfigured, mtError, [mrOk]);
 {$ENDIF}
   ;
 end;
