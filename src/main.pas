@@ -2040,7 +2040,7 @@ begin
 {$IFDEF DEBUG}
     raise Exception.Create('Invalid website in the File Comments!')
 {$ELSE}
-    MsgBox(DialogErrorTitle, ApplicationNotCorrectlyConfigured, mtError, [mrOk]);
+    MsgBox(DialogErrorTitle, ApplicationNotCorrectlyConfigured, mtError, [mbOk])
 {$ENDIF}
   ;
 end;
