@@ -32,6 +32,7 @@ type
     constructor Create; overload;
     constructor Create(const AutoLoad: Boolean); overload;
     destructor Destroy; override;
+    procedure ForceNextRebuild;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
     property DreamcastTool: TDreamcastToolManager read fDreamcastTool;
@@ -96,6 +97,12 @@ begin
   fEnvironment.Free;
   fRubyManager.Free;
   inherited Destroy;
+end;
+
+procedure TDreamcastSoftwareDevelopmentKitManager.ForceNextRebuild;
+begin
+  KallistiOS.ForceNextRebuild;
+  Ruby.ForceNextRebuild;
 end;
 
 end.

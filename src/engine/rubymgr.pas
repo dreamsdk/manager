@@ -42,6 +42,7 @@ type
   { TRubyManager }
   TRubyManager = class(TObject)
   private
+    fForceNextRebuild: Boolean;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fRepository: TDreamcastSoftwareDevelopmentRepository;
     fSamples: TRubySampleList;
@@ -56,6 +57,7 @@ type
     destructor Destroy; override;
 
     function CloneRepository(var BufferOutput: string): Boolean;
+    procedure ForceNextRebuild;
     function UpdateRepository(var BufferOutput: string): TUpdateOperationState;
     function InitializeEnvironment: Boolean;
     function Build(var BufferOutput: string): Boolean;
@@ -162,12 +164,13 @@ end;
 
 function TRubyManager.GetBuilt: Boolean;
 begin
-  Result := FileExists(Environment.FileSystem.Ruby.RubyLibrary);
+  Result := FileExists(Environment.FileSystem.Ruby.RubyLibrary) and (not fForceNextRebuild);
 end;
 
 constructor TRubyManager.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
 begin
+  fForceNextRebuild := False;
   fEnvironment := AEnvironment;
   fRepository := TDreamcastSoftwareDevelopmentRepository.Create(fEnvironment,
     fEnvironment.FileSystem.Ruby.BaseDirectory);
@@ -214,6 +217,11 @@ begin
   end;
 end;
 
+procedure TRubyManager.ForceNextRebuild;
+begin
+  fForceNextRebuild := True;
+end;
+
 function TRubyManager.UpdateRepository(
   var BufferOutput: string): TUpdateOperationState;
 var
@@ -251,11 +259,22 @@ end;
 
 function TRubyManager.Build(var BufferOutput: string): Boolean;
 begin
+  // Handle force next rebuild if necessary
+  // This is typically used when the toolchain has been changed (from GCC 4 to 9) in Manager
+  if fForceNextRebuild then
+  begin
+    fForceNextRebuild := False;
+    Environment.ExecuteShellCommand('make clean',
+      Environment.FileSystem.Ruby.BaseDirectory);
+    Environment.ExecuteShellCommand('make clean MRUBY_CONFIG=dreamcast_shelf',
+      Environment.FileSystem.Ruby.BaseDirectory);
+  end;
+
   // Build mruby
   BufferOutput := Environment.ExecuteShellCommand('make MRUBY_CONFIG=dreamcast_shelf',
     Environment.FileSystem.Ruby.BaseDirectory);
 
-  // The result is OK if libkallisti is present, addons are optional...
+  // The result is OK if libmruby is present
   Result := FileExists(Environment.FileSystem.Ruby.RubyLibrary)
     and (not Environment.ShellCommandError);
 end;

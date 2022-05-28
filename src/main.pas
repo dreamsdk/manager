@@ -1779,7 +1779,7 @@ begin
       pmuntToolchain:
         begin
           // If toolchain was changed, libraries should be rebuilt!
-          DreamcastSoftwareDevelopmentKitManager.KallistiOS.ForceNextRebuild;
+          DreamcastSoftwareDevelopmentKitManager.ForceNextRebuild;
 
           // Then ask for update with different message
           AskForUpdate(True);
