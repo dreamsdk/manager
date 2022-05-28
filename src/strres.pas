@@ -81,7 +81,9 @@ resourcestring
   OperationDoneWithErrors = 'Operation done with errors.';
   OperationDoneWithErrorsPostInstall = 'Sorry, everything was successfully installed...'
     + sLineBreak + '...but some errors happened while doing the initial libraries/utilities compilation and build.'
-    + sLineBreak + 'Please read the documentation to learn how to fix these kind of errors. Start with the FAQ.';
+    + sLineBreak + 'You may save the log in that window and search for the ''error:'' and ''fatal:'' keywords.'
+    + sLineBreak + 'To solve the issue, you may read the documentation, especially the the FAQ.'
+    + sLineBreak + 'After saving the log, you may click on the ''Close'' button to continue the Setup process.';
   OperationErrorMemoText = '*** %s';
 
   // ShellThd

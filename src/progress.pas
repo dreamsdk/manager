@@ -170,24 +170,29 @@ end;
 
 procedure TfrmProgress.SetTerminateState(Success: Boolean; Aborted: Boolean);
 var
-  Message: string;
+  Message,
+  LongMessage: string;
 
 begin
   SetIdleState(True);
 
   if not Success then
   begin
+    LongMessage := EmptyStr;
+
     if Aborted then
       Message := OperationAborted
     else
     begin
+      Message := OperationDoneWithErrors;
       if IsPostInstallMode then
-        Message := OperationDoneWithErrorsPostInstall
-      else
-        Message := OperationDoneWithErrors;
+        LongMessage := Concat(Message, sLineBreak, OperationDoneWithErrorsPostInstall);
     end;
 
-    memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [Message]));
+    if IsEmpty(LongMessage) then
+      LongMessage := Message;
+
+    memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [LongMessage]));
     lblProgressStep.Caption := Message;
   end
   else
