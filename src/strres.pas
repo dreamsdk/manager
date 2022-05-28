@@ -79,6 +79,9 @@ resourcestring
   OperationSuccessfullyTerminated = 'Operation done.';
   OperationAborted = 'Operation aborted.';
   OperationDoneWithErrors = 'Operation done with errors.';
+  OperationDoneWithErrorsPostInstall = 'Sorry, everything was successfully installed...'
+    + sLineBreak + '...but some errors happened while doing the initial libraries/utilities compilation and build.'
+    + sLineBreak + 'Please read the documentation to learn how to fix these kind of errors. Start with the FAQ.';
   OperationErrorMemoText = '*** %s';
 
   // ShellThd
@@ -93,7 +96,7 @@ resourcestring
   KallistiOperationText = 'KallistiOS Management';
   KallistiPortsOperationText = 'KallistiOS Ports Management';
   KallistiOperationNothingNeededText = 'KallistiOS is already installed and up-to-date.';
-  CloningOperation = 'Cloning %s repository...';
+  CloningOperation = 'Creating %s repository...';
   UpdatingOperation = 'Updating %s repository...';
   KallistiInitializeText = 'Initialize KallistiOS environment...';
   KallistiBuildText = 'Building KallistiOS library...';

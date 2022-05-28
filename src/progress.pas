@@ -180,7 +180,12 @@ begin
     if Aborted then
       Message := OperationAborted
     else
-      Message := OperationDoneWithErrors;
+    begin
+      if IsPostInstallMode then
+        Message := OperationDoneWithErrorsPostInstall
+      else
+        Message := OperationDoneWithErrors;
+    end;
 
     memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [Message]));
     lblProgressStep.Caption := Message;
