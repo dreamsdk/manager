@@ -1579,7 +1579,7 @@ begin
   DreamcastSoftwareDevelopmentKitManager.Environment.Settings.SaveConfiguration;
   ShellExecutable := DreamcastSoftwareDevelopmentKitManager.Environment
     .FileSystem.Shell.LauncherExecutable;
-  RunNoWait(ShellExecutable, WorkingDirectory);
+  RunShellExecute(ShellExecutable, WorkingDirectory);
 end;
 
 procedure TfrmMain.AskForUpdate(const MandatoryAction: Boolean = False);
