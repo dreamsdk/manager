@@ -423,6 +423,7 @@ type
 var
   HelpFileName: TFileName;
   ModuleVersionList: TModuleVersionList;
+  FullVersionNumber: string;
 
 function CreateModuleVersionList: TModuleVersionList;
 var
@@ -1237,7 +1238,11 @@ var
     IniFile := TIniFile.Create(DreamcastSoftwareDevelopmentKitManager.Environment
       .FileSystem.Shell.DreamSDKDirectory + VERSION_FILE_NAME);
     try
-      edtProductVersion.Text := IniFile.ReadString(VERSION_SECTION_NAME, 'Release', UNKNOWN_VALUE);
+      FullVersionNumber := IniFile.ReadString(VERSION_SECTION_NAME, 'BuildNumber', UNKNOWN_VALUE);
+      edtProductVersion.Text := Format('%s (%s)', [
+        IniFile.ReadString(VERSION_SECTION_NAME, 'Release', UNKNOWN_VALUE),
+        FullVersionNumber
+      ]);
       edtProductBuildDate.Text := IniFile.ReadString(VERSION_SECTION_NAME, 'Date', UNKNOWN_VALUE);
     finally
       IniFile.Free;
@@ -1994,7 +1999,6 @@ const
   VALID_PREFIX = 'http';
 
 var
-  CurrentVersion,
   RemoteVersion,
   Url: string;
 
@@ -2012,7 +2016,7 @@ var
       HTTPClient := TFPHTTPClient.Create(nil);
       try
         HTTPClient.AllowRedirect := True;
-        Result := HTTPClient.Get(UpdateUrl);
+        Result := Trim(HTTPClient.Get(UpdateUrl));
       finally
         HTTPClient.Free;
       end;
@@ -2023,18 +2027,22 @@ var
 
 begin
   Url := GetComments;
-  CurrentVersion := GetProductVersion;
-  RemoteVersion := GetRemoteVersion;
-
   if AnsiStartsStr(VALID_PREFIX, LowerCase(Url)) then
   begin
-    if CompareVersion(CurrentVersion, RemoteVersion) > 0 then
-    begin
-      if MsgBox(DialogQuestionTitle, Format(PackageUpdateAvailable, [GetProductName]), mtConfirmation, [mbYes, mbNo]) = mrYes then
-        OpenURL(Url);
-    end
+    RemoteVersion := GetRemoteVersion;
+
+    if IsEmpty(RemoteVersion) then
+      MsgBox(DialogWarningTitle, MsgBoxDlgTranslateString(Format(UnableToRetrieveRemotePackageVersion, [GetProductName])), mtWarning, [mbOk])
     else
-      MsgBox(DialogInformationTitle, Format(PackageUpToDate, [GetProductName]), mtInformation, [mbOk]);
+    begin
+      if CompareVersion(FullVersionNumber, RemoteVersion) > 0 then
+      begin
+        if MsgBox(DialogQuestionTitle, Format(PackageUpdateAvailable, [GetProductName, RemoteVersion]), mtConfirmation, [mbYes, mbNo]) = mrYes then
+          OpenURL(Url);
+      end
+      else
+        MsgBox(DialogInformationTitle, Format(PackageUpToDate, [GetProductName]), mtInformation, [mbOk]);
+    end;
   end
   else
 {$IFDEF DEBUG}

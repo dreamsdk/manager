@@ -14,7 +14,7 @@ object frmMain: TfrmMain
   OnShow = FormShow
   Position = poScreenCenter
   ShowHint = True
-  LCLVersion = '2.2.0.4'
+  LCLVersion = '2.2.2.0'
   object btnClose: TButton
     Left = 266
     Height = 25
@@ -47,6 +47,7 @@ object frmMain: TfrmMain
         Caption = 'Welcome to %s!'
         Font.Height = -16
         Font.Style = [fsBold]
+        ParentColor = False
         ParentFont = False
       end
       object gbxHomeRunShell: TGroupBox
@@ -74,6 +75,7 @@ object frmMain: TfrmMain
           Width = 482
           AutoSize = False
           Caption = 'Select this task if you want to use the %s environment and want to start to develop homebrew programs for your Sega Dreamcast.'
+          ParentColor = False
           ParentFont = False
           WordWrap = True
         end
@@ -103,6 +105,7 @@ object frmMain: TfrmMain
           Width = 482
           AutoSize = False
           Caption = 'Select this task to browse your Home directory of your %s environment directly in the Windows Explorer.'
+          ParentColor = False
           ParentFont = False
           WordWrap = True
         end
@@ -132,6 +135,7 @@ object frmMain: TfrmMain
           Width = 482
           AutoSize = False
           Caption = 'Select this task if you want to get some help to use the %s environment.'
+          ParentColor = False
           ParentFont = False
           WordWrap = True
         end
@@ -142,6 +146,7 @@ object frmMain: TfrmMain
         Top = 44
         Width = 414
         Caption = 'Please choose a task below or manage your %s installation by clicking the above tabs.'
+        ParentColor = False
       end
     end
     object tsKallistiOS: TTabSheet
@@ -154,6 +159,7 @@ object frmMain: TfrmMain
         Top = 8
         Width = 185
         Caption = '(KallistiOS Version/ChangeLog Version)'
+        ParentColor = False
       end
       object btnUpdateKallistiOS: TButton
         Left = 504
@@ -170,6 +176,7 @@ object frmMain: TfrmMain
         Top = 28
         Width = 56
         Caption = '(Build Date)'
+        ParentColor = False
       end
       object gbxKallistiChangeLog: TGroupBox
         Left = 4
@@ -203,6 +210,7 @@ object frmMain: TfrmMain
         Width = 42
         Caption = 'Version'
         Font.Style = [fsBold]
+        ParentColor = False
         ParentFont = False
       end
       object lblTextBuildDateKallistiOS: TLabel
@@ -212,6 +220,7 @@ object frmMain: TfrmMain
         Width = 56
         Caption = 'Build date'
         Font.Style = [fsBold]
+        ParentColor = False
         ParentFont = False
       end
     end
@@ -318,6 +327,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 22
           EditLabel.Caption = 'URL'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -338,6 +348,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 42
           EditLabel.Caption = 'License'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -355,6 +366,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 61
           EditLabel.Caption = 'Maintainer'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -375,6 +387,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 42
           EditLabel.Caption = 'Version'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -402,6 +415,7 @@ object frmMain: TfrmMain
           Caption = 'lblPortName'
           Font.Height = -16
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object memPortShortDescription: TEdit
@@ -535,6 +549,7 @@ object frmMain: TfrmMain
           Top = 8
           Width = 24
           Caption = 'Port:'
+          ParentColor = False
         end
         object lblDreamcastToolSerialBaudrate: TLabel
           Left = 29
@@ -542,6 +557,7 @@ object frmMain: TfrmMain
           Top = 36
           Width = 48
           Caption = 'Baudrate:'
+          ParentColor = False
         end
       end
       object gbxDreamcastToolInternetProtocol: TGroupBox
@@ -575,6 +591,7 @@ object frmMain: TfrmMain
           Top = 9
           Width = 56
           Caption = 'IP Address:'
+          ParentColor = False
         end
         object lblDreamcastToolInternetProtocolInvalidAddress: TLabel
           Left = 224
@@ -586,6 +603,7 @@ object frmMain: TfrmMain
           Caption = '(Dynamic)'
           Font.Color = clRed
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
           Visible = False
         end
@@ -627,6 +645,7 @@ object frmMain: TfrmMain
           Caption = '(Dynamic)'
           Font.Color = clRed
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
           Visible = False
         end
@@ -636,6 +655,7 @@ object frmMain: TfrmMain
           Top = 92
           Width = 68
           Caption = 'MAC Address:'
+          ParentColor = False
         end
         object cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox
           Left = 88
@@ -654,6 +674,7 @@ object frmMain: TfrmMain
           Top = 124
           Width = 70
           Caption = 'Network Card:'
+          ParentColor = False
         end
       end
       object gbxDreamcastToolCommon: TGroupBox
@@ -716,6 +737,7 @@ object frmMain: TfrmMain
           Top = 4
           Width = 57
           Caption = 'Executable:'
+          ParentColor = False
         end
         object lblDreamcastToolCustomArguments: TLabel
           Left = 4
@@ -723,6 +745,7 @@ object frmMain: TfrmMain
           Top = 44
           Width = 56
           Caption = 'Arguments:'
+          ParentColor = False
         end
         object edtDreamcastToolCustomArguments: TEdit
           Left = 4
@@ -745,6 +768,7 @@ object frmMain: TfrmMain
         Width = 42
         Caption = 'Version'
         Font.Style = [fsBold]
+        ParentColor = False
         ParentFont = False
       end
       object lblVersionMRuby: TLabel
@@ -753,6 +777,7 @@ object frmMain: TfrmMain
         Top = 8
         Width = 76
         Caption = '(mruby version)'
+        ParentColor = False
       end
       object lblTextBuildDateMRuby: TLabel
         Left = 8
@@ -761,6 +786,7 @@ object frmMain: TfrmMain
         Width = 56
         Caption = 'Build date'
         Font.Style = [fsBold]
+        ParentColor = False
         ParentFont = False
       end
       object lblBuildDateMRuby: TLabel
@@ -769,6 +795,7 @@ object frmMain: TfrmMain
         Top = 28
         Width = 88
         Caption = '(mruby build date)'
+        ParentColor = False
       end
       object btnUninstallMRuby: TButton
         Tag = 1
@@ -853,6 +880,7 @@ object frmMain: TfrmMain
           Width = 482
           AutoSize = False
           Caption = 'This task will start the Shell in the Ruby sample projects directory.'
+          ParentColor = False
           ParentFont = False
           WordWrap = True
         end
@@ -882,6 +910,7 @@ object frmMain: TfrmMain
           Width = 482
           AutoSize = False
           Caption = 'This task will open the sample projects for Ruby directly in Windows Explorer.'
+          ParentColor = False
           ParentFont = False
           WordWrap = True
         end
@@ -1036,6 +1065,7 @@ object frmMain: TfrmMain
           Align = alTop
           BorderSpacing.Around = 4
           Caption = 'Users below may use %s in Code::Blocks by installing the patch.'
+          ParentColor = False
           WordWrap = True
         end
         object lbxIdeCodeBlocksUsersAvailable: TListBox
@@ -1076,6 +1106,7 @@ object frmMain: TfrmMain
           Align = alTop
           BorderSpacing.Around = 4
           Caption = 'Users below may use %s in Code::Blocks now.'
+          ParentColor = False
           WordWrap = True
         end
       end
@@ -1359,6 +1390,7 @@ object frmMain: TfrmMain
           Width = 107
           Caption = 'Repository Version'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblVersionRepoKallistiOS: TLabel
@@ -1369,6 +1401,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(KallistiOS)'
+          ParentColor = False
         end
         object lblVersionKallistiOS2: TLabel
           Left = 56
@@ -1378,6 +1411,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(KallistiOS)'
+          ParentColor = False
         end
         object lblTextVersionKallistiOS2: TLabel
           Left = 8
@@ -1386,6 +1420,7 @@ object frmMain: TfrmMain
           Width = 42
           Caption = 'Version'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
       end
@@ -1406,6 +1441,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL Serial)'
+          ParentColor = False
         end
         object lblTextRepoToolSerial: TLabel
           Left = 8
@@ -1414,6 +1450,7 @@ object frmMain: TfrmMain
           Width = 107
           Caption = 'Repository Version'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblVersionToolSerial: TLabel
@@ -1424,6 +1461,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL Serial)'
+          ParentColor = False
         end
         object lblTextVersionDreamcastToolSerial: TLabel
           Left = 8
@@ -1432,6 +1470,7 @@ object frmMain: TfrmMain
           Width = 42
           Caption = 'Version'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
       end
@@ -1480,6 +1519,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(KallistiOS Ports)'
+          ParentColor = False
         end
         object lblTextRepoKallistiPorts: TLabel
           Left = 8
@@ -1488,6 +1528,7 @@ object frmMain: TfrmMain
           Width = 107
           Caption = 'Repository Version'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
       end
@@ -1508,6 +1549,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL IP)'
+          ParentColor = False
         end
         object lblTextRepoToolIP: TLabel
           Left = 8
@@ -1516,6 +1558,7 @@ object frmMain: TfrmMain
           Width = 107
           Caption = 'Repository Version'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblVersionToolIP: TLabel
@@ -1526,6 +1569,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(DC-TOOL IP)'
+          ParentColor = False
         end
         object lblTextVersionDreamcastToolIP: TLabel
           Left = 8
@@ -1534,6 +1578,7 @@ object frmMain: TfrmMain
           Width = 42
           Caption = 'Version'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
       end
@@ -1599,6 +1644,7 @@ object frmMain: TfrmMain
           Top = 40
           Width = 49
           Caption = 'Toolchain:'
+          ParentColor = False
         end
         object lblDebugger: TLabel
           Left = 260
@@ -1606,6 +1652,7 @@ object frmMain: TfrmMain
           Top = 40
           Width = 106
           Caption = 'GNU Debugger (GDB):'
+          ParentColor = False
         end
         object pnlComponentsChange: TPanel
           Left = 0
@@ -1652,6 +1699,7 @@ object frmMain: TfrmMain
             Top = 13
             Width = 109
             Caption = 'Change Configuration:'
+            ParentColor = False
           end
         end
       end
@@ -1677,6 +1725,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Binutils)'
+          ParentColor = False
         end
         object lblVersionGCC: TLabel
           Left = 202
@@ -1686,6 +1735,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(GCC)'
+          ParentColor = False
         end
         object lblVersionGDB: TLabel
           Left = 202
@@ -1695,6 +1745,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(GDB)'
+          ParentColor = False
         end
         object lblTextBinutils: TLabel
           Left = 8
@@ -1703,6 +1754,7 @@ object frmMain: TfrmMain
           Width = 67
           Caption = 'GNU Binutils'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblTextGCC: TLabel
@@ -1712,6 +1764,7 @@ object frmMain: TfrmMain
           Width = 169
           Caption = 'GNU Compiler Collection (GCC)'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblTextGDB: TLabel
@@ -1721,6 +1774,7 @@ object frmMain: TfrmMain
           Width = 117
           Caption = 'GNU Debugger (GDB)'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblTextPythonGDB: TLabel
@@ -1730,6 +1784,7 @@ object frmMain: TfrmMain
           Width = 179
           Caption = 'Python for GNU Debugger (GDB)'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblVersionPythonGDB: TLabel
@@ -1740,6 +1795,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Python for GDB)'
+          ParentColor = False
         end
         object lblVersionNewlib: TLabel
           Left = 202
@@ -1749,6 +1805,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Newlib)'
+          ParentColor = False
         end
         object lblTextNewlib: TLabel
           Left = 8
@@ -1757,6 +1814,7 @@ object frmMain: TfrmMain
           Width = 36
           Caption = 'Newlib'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
       end
@@ -1777,6 +1835,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(SVN)'
+          ParentColor = False
         end
         object lblVersionGit: TLabel
           Left = 156
@@ -1786,6 +1845,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Git)'
+          ParentColor = False
         end
         object lblVersionPython: TLabel
           Left = 156
@@ -1795,6 +1855,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Python)'
+          ParentColor = False
         end
         object lblVersionMinGW: TLabel
           Left = 156
@@ -1804,6 +1865,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(MinGW Get)'
+          ParentColor = False
         end
         object lblTextGit: TLabel
           Left = 8
@@ -1812,6 +1874,7 @@ object frmMain: TfrmMain
           Width = 16
           Caption = 'Git'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblTextPython: TLabel
@@ -1821,6 +1884,7 @@ object frmMain: TfrmMain
           Width = 40
           Caption = 'Python'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblTextSVN: TLabel
@@ -1830,6 +1894,7 @@ object frmMain: TfrmMain
           Width = 97
           Caption = 'Subversion (SVN)'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblTextMinGW: TLabel
@@ -1839,6 +1904,7 @@ object frmMain: TfrmMain
           Width = 62
           Caption = 'MinGW Get'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblTextRuby: TLabel
@@ -1848,6 +1914,7 @@ object frmMain: TfrmMain
           Width = 29
           Caption = 'Ruby'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblVersionRuby: TLabel
@@ -1858,6 +1925,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Ruby)'
+          ParentColor = False
         end
         object lblVersionRake: TLabel
           Left = 156
@@ -1867,6 +1935,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Rake)'
+          ParentColor = False
         end
         object lblTextRake: TLabel
           Left = 8
@@ -1875,6 +1944,7 @@ object frmMain: TfrmMain
           Width = 29
           Caption = 'Rake'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
       end
@@ -1895,6 +1965,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Binutils)'
+          ParentColor = False
         end
         object lblVersionGCCARM: TLabel
           Left = 195
@@ -1904,6 +1975,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(GCC)'
+          ParentColor = False
         end
         object lblTextBinutilsARM: TLabel
           Left = 12
@@ -1912,6 +1984,7 @@ object frmMain: TfrmMain
           Width = 67
           Caption = 'GNU Binutils'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblTextGCCARM: TLabel
@@ -1921,6 +1994,7 @@ object frmMain: TfrmMain
           Width = 169
           Caption = 'GNU Compiler Collection (GCC)'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
       end
@@ -1940,6 +2014,7 @@ object frmMain: TfrmMain
           Width = 67
           Caption = 'GNU Binutils'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblVersionBinutilsWin32: TLabel
@@ -1950,6 +2025,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Binutils)'
+          ParentColor = False
         end
         object lblVersionGCCWin32: TLabel
           Left = 202
@@ -1959,6 +2035,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(GCC)'
+          ParentColor = False
         end
         object lblTextGCCWin32: TLabel
           Left = 8
@@ -1967,6 +2044,7 @@ object frmMain: TfrmMain
           Width = 169
           Caption = 'GNU Compiler Collection (GCC)'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
         object lblVersionGDBWin32: TLabel
@@ -1977,6 +2055,7 @@ object frmMain: TfrmMain
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(GDB)'
+          ParentColor = False
         end
         object lblTextGDBWin32: TLabel
           Left = 8
@@ -1985,6 +2064,7 @@ object frmMain: TfrmMain
           Width = 117
           Caption = 'GNU Debugger (GDB)'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
       end
@@ -2003,6 +2083,7 @@ object frmMain: TfrmMain
         Caption = 'About %s'
         Font.Height = -16
         Font.Style = [fsBold]
+        ParentColor = False
         ParentFont = False
       end
       object gbxModuleInfo: TGroupBox
@@ -2025,6 +2106,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 64
           EditLabel.Caption = 'File Version'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -2043,6 +2125,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 57
           EditLabel.Caption = 'Build Date'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -2061,6 +2144,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 89
           EditLabel.Caption = 'Product Version'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -2085,6 +2169,7 @@ object frmMain: TfrmMain
           Width = 68
           Caption = 'Component:'
           Font.Style = [fsBold]
+          ParentColor = False
           ParentFont = False
         end
       end
@@ -2108,6 +2193,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 65
           EditLabel.Caption = 'FPC Version'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -2126,6 +2212,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 64
           EditLabel.Caption = 'LCL Version'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -2154,6 +2241,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 102
           EditLabel.Caption = 'Operating System'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -2172,6 +2260,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 62
           EditLabel.Caption = 'Widget Set'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -2190,6 +2279,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 64
           EditLabel.Caption = 'Target Info'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -2218,6 +2308,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 89
           EditLabel.Caption = 'Product Version'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -2236,6 +2327,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 57
           EditLabel.Caption = 'Build Date'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft
@@ -2254,6 +2346,7 @@ object frmMain: TfrmMain
           EditLabel.Height = 13
           EditLabel.Width = 70
           EditLabel.Caption = 'Help Version'
+          EditLabel.ParentColor = False
           EditLabel.ParentFont = False
           EditLabel.Font.Style = [fsBold]
           LabelPosition = lpLeft

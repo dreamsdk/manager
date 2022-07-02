@@ -67,8 +67,9 @@ resourcestring
   UnableToInstallRubyGitText = 'Ruby online installation requires Git.';
   UnableToInstallPackageText = 'An error occured when installing the requested packages.';
   ApplicationNotCorrectlyConfigured = 'Sorry, this binary program was not compiled correctly... do you downloaded it from the official website?';
-  PackageUpdateAvailable = 'A new version of %s is available. Download it now?';
+  PackageUpdateAvailable = 'A new version of %s is available (%s). Download it now?';
   PackageUpToDate = '%s is up-to-date.';
+  UnableToRetrieveRemotePackageVersion = 'Unable to check if %s is up-to-date.\nPlease check your Internet connection.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, please wait...';
