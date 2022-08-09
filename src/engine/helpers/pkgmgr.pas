@@ -109,7 +109,8 @@ uses
 function IsDebuggerPythonVersionInstalled(const Version: TPackageManagerRequestDebugger;
   var VersionWithDot: string): Boolean;
 var
-  i: Integer;
+  i, j: Integer;
+  PythonFilePaths: TStringList;
   PythonFileName,
   PythonFilePath: TFileName;
   PythonBitness: TPortableExecutableBitness;
@@ -127,27 +128,34 @@ begin
     VersionWithDot := SUPPORTED_PYTHON_VERSIONS[i];
     VersionWithoutDot := StringReplace(VersionWithDot, '.', EmptyStr, []);
     PythonFileName := Format('python%s.dll', [VersionWithoutDot]);
-    PythonFilePath := GetFileLocationInSystemPath(PythonFileName);
 
 {$IFDEF DEBUG}
-    WriteLn('PythonFilePath: ', PythonFilePath);
+    WriteLn('Checking Python ', VersionWithDot, ' ...');
 {$ENDIF}
 
-    if FileExists(PythonFilePath) then
-    begin
+    PythonFilePaths := TStringList.Create;
+    try
+      if GetFileLocationsInSystemPath(PythonFileName, PythonFilePaths) then
+        for i := 0 to PythonFilePaths.Count - 1 do
+        begin
+          PythonFilePath := PythonFilePaths[i];
 {$IFDEF DEBUG}
-      WriteLn('Python ', VersionWithDot, ' is installed: ', PythonFilePath);
+          WriteLn('  Python ', VersionWithDot, ' is installed: ', PythonFilePath);
 {$ENDIF}
-      PythonBitness := GetPortableExecutableBitness(PythonFilePath);
-      Result := (PythonBitness = peb32); // 32-bits only
+          PythonBitness := GetPortableExecutableBitness(PythonFilePath);
+          Result := Result or (PythonBitness = peb32); // 32-bits only
 {$IFDEF DEBUG}
-      WriteLn('Python ', VersionWithDot, ' bitness: ', PythonBitness);
+          WriteLn('  Python ', VersionWithDot, ' bitness: ', PythonBitness);
 {$ENDIF}
-    end
+        end
 {$IFDEF DEBUG}
-    else
-      WriteLn(Format('Python %s is not installed', [VersionWithDot]))
-{$ENDIF};
+        else
+          WriteLn(Format('  Python %s is not installed', [VersionWithDot]))
+{$ENDIF}
+        ;
+    finally
+      PythonFilePaths.Free;
+    end;
   end;
 end;
 
