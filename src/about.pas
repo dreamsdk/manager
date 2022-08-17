@@ -87,8 +87,8 @@ resourcestring
 const
   COMPONENTS_INFORMATION: array[0..29] of TComponentItem = (
     (Text: ComponentEnvironment;    Url: ''), // Environment (0)
-    (Text: ComponentMinGW;          Url: 'http://mingw.org/'), // MinGW
-    (Text: ComponentMSYS;           Url: 'http://mingw.org/wiki/MSYS'), // MSYS
+    (Text: ComponentMinGW;          Url: 'https://mingw.osdn.io/'), // MinGW
+    (Text: ComponentMSYS;           Url: 'https://mingw.osdn.io/'), // MSYS
     (Text: ComponentToolchains;     Url: ''), // Toolchains
     (Text: ComponentBinutils;       Url: 'http://www.gnu.org/software/binutils/'), // Binutils
     (Text: ComponentGCC;            Url: 'http://gcc.gnu.org/'), // GCC
