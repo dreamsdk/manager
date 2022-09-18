@@ -1337,13 +1337,26 @@ end;
 
 procedure TfrmMain.InitializeOptionsScreen;
 begin
-  with DreamcastSoftwareDevelopmentKitManager do
+{$IFDEF DEBUG}
+  DebugLog('InitializeOptionsScreen');
+{$ENDIF}
+  with DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories do
   begin
-    cbxUrlKallisti.Text := KallistiOS.Repository.URL;
-    cbxUrlKallistiPorts.Text := KallistiPorts.Repository.URL;
-    cbxUrlDreamcastToolSerial.Text := DreamcastTool.RepositorySerial.URL;
-    cbxUrlDreamcastToolIP.Text := DreamcastTool.RepositoryInternetProtocol.URL;
-    cbxUrlRuby.Text := Ruby.Repository.URL;
+    cbxUrlKallisti.Text := KallistiURL;
+    cbxUrlKallistiPorts.Text := KallistiPortsURL;
+    cbxUrlDreamcastToolSerial.Text := DreamcastToolSerialURL;
+    cbxUrlDreamcastToolIP.Text := DreamcastToolInternetProtocolURL;
+    cbxUrlRuby.Text := RubyURL;
+{$IFDEF DEBUG}
+    DebugLog(
+      '  InitializeOptionsScreen, Loaded URLs:' + sLineBreak +
+      '    * Kallisti: ' + cbxUrlKallisti.Text + sLineBreak +
+      '    * Kallisti Ports: ' + cbxUrlKallistiPorts.Text + sLineBreak +
+      '    * Dreamcast-Tool Serial: ' + cbxUrlDreamcastToolSerial.Text + sLineBreak +
+      '    * Dreamcast-Tool IP: ' + cbxUrlDreamcastToolIP.Text + sLineBreak +
+      '    * Ruby: ' + cbxUrlRuby.Text
+    );
+{$ENDIF}
   end;
 end;
 
