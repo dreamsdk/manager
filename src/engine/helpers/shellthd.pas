@@ -96,7 +96,7 @@ procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
 implementation
 
 uses
-  Forms, Main, Progress, StrRes, PostInst, SysTools;
+  Forms, Main, Progress, StrRes, PostInst, SysTools, Version;
 
 type
   { TShellThreadHelper }
@@ -239,7 +239,11 @@ var
         end;
 
       stcKallisti:
-        OperationTitle := KallistiOperationText;
+        begin
+          OperationTitle := KallistiOperationText;
+          if IsPostInstallMode then
+            OperationTitle := Format(PostInstallOperationText, [GetProductName])
+        end;
 
       stcKallistiPorts:
         OperationTitle := KallistiPortsOperationText;

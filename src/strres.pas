@@ -114,6 +114,7 @@ resourcestring
   KallistiPortsUninstallText = 'Uninstalling all KallistiOS Ports...';
   RubyInitializeText = 'Initialize Ruby configuration...';
   RubyBuildText = 'Building Ruby library...';
+  PostInstallOperationText = '%s Setup';
 
   // PackageManager | Unpack
   UnpackingText = 'Unpacking...';
