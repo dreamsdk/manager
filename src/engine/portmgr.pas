@@ -186,7 +186,9 @@ end;
 
 function TKallistiPortItem.DeleteInstallPortDirectoryIfNeeded: Boolean;
 begin
-  Result := KillDirectory(InstallDirectory);
+  Result := True; // By default, everything is OK
+  if not IsEmpty(InstallDirectory) and DirectoryExists(InstallDirectory) then
+    Result := KillDirectory(InstallDirectory);
 end;
 
 procedure TKallistiPortItem.DetectUsability;
@@ -513,8 +515,9 @@ var
   function GetInstallDirectory: TFileName;
   begin
     Result := GetPackageString('HDR_INSTDIR');
-    if Result <> EmptyStr then
-      Result := PortDirectory + '..\include\' + Result;
+    if IsEmpty(Result) then
+      Result := PortName; // by default, the directory is the same as the PortName
+    Result := PortDirectory + '..\include\' + Result;
   end;
 
   function GetPackageIncludes: string;

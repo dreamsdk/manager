@@ -551,6 +551,8 @@ begin
     DebugLog(
       sLineBreak +
       SelectedKallistiPort.Name + ': ' + sLineBreak +
+      '  Installation Directory (Exists: ' + BoolToStr(DirectoryExists(SelectedKallistiPort.InstallDirectory), 'Yes', 'No') + '): '
+        + SelectedKallistiPort.InstallDirectory + sLineBreak +
       '  Use SVN: ' + BoolToStr(SelectedKallistiPort.UseSubversion, 'Yes', 'No') + sLineBreak +
       '  Includes: ' + SelectedKallistiPort.Includes + sLineBreak +
       '  Include Directories: ' + SelectedKallistiPort.IncludeDirectory + sLineBreak +
