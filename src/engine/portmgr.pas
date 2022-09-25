@@ -516,6 +516,10 @@ var
   begin
     Result := GetPackageString('HDR_INSTDIR');
     if IsEmpty(Result) then
+      Result := GetPackageString('HDR_COMDIR');
+    if IsEmpty(Result) then
+      Result := GetPackageString('HDR_FULLDIR');
+    if IsEmpty(Result) then
       Result := PortName; // by default, the directory is the same as the PortName
     Result := PortDirectory + '..\include\' + Result;
   end;
