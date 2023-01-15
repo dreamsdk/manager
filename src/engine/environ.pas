@@ -408,7 +408,14 @@ type
 implementation
 
 uses
-  RefBase, SysTools, FSTools, RunTools{$IFDEF GUI}, PostInst{$ENDIF};
+  RefBase,
+  SysTools,
+  FSTools,
+  RunTools
+{$IFDEF GUI}
+  , PostInst
+{$ENDIF}
+  ;
 
 const
   FAIL_TAG = 'fatal: ';
@@ -945,6 +952,12 @@ begin
     CommandLine := Format('git clone %s %s --progress', [URL, TargetDirectoryName]);
     BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
     Result := not IsInString(FAIL_TAG, BufferOutput);
+
+    // Adding safe directory if possible
+    CommandLine := Format('git config --global --add safe.directory %s', [
+      SystemToDreamSdkPath(TargetDirectoryFileName)
+    ]);
+    ExecuteShellCommand(CommandLine, WorkingDirectory);
   end
   else
   begin
