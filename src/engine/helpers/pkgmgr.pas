@@ -35,9 +35,11 @@ type
     pmroRuby
   );
 
+  // Linked to TToolchainVersionKind from "environ"
+  // Please keep the same order please!
   TPackageManagerRequestToolchain = (
-    pmrtStable,
-    pmrtExperimental
+    pmrtLegacy,
+    pmrtStable
   );
 
   TPackageManagerRequestDebugger = (
@@ -283,15 +285,15 @@ begin
     FileSystem.ToolchainARM.Reset;
     FileSystem.ToolchainSuperH.Reset;
     case Toolchain of
+      pmrtLegacy:
+        begin
+          Add(FileSystem.ToolchainARM.Packages.Legacy, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainSuperH.Packages.Legacy, FileSystem.ToolchainBase);
+        end;	
       pmrtStable:
         begin
           Add(FileSystem.ToolchainARM.Packages.Stable, FileSystem.ToolchainBase);
           Add(FileSystem.ToolchainSuperH.Packages.Stable, FileSystem.ToolchainBase);
-        end;
-      pmrtExperimental:
-        begin
-          Add(FileSystem.ToolchainARM.Packages.Experimental, FileSystem.ToolchainBase);
-          Add(FileSystem.ToolchainSuperH.Packages.Experimental, FileSystem.ToolchainBase);
         end;
     end;
   end;

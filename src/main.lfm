@@ -14,7 +14,7 @@ object frmMain: TfrmMain
   OnShow = FormShow
   Position = poScreenCenter
   ShowHint = True
-  LCLVersion = '2.2.2.0'
+  LCLVersion = '2.2.4.0'
   object btnClose: TButton
     Left = 266
     Height = 25
@@ -1629,14 +1629,14 @@ object frmMain: TfrmMain
           Top = 36
           Width = 180
           ItemHeight = 13
-          ItemIndex = 0
+          ItemIndex = 1
           Items.Strings = (
-            'Stable (recommanded)'
-            'Experimental'
+            'Legacy'
+            'Stable'
           )
           Style = csDropDownList
           TabOrder = 2
-          Text = 'Stable (recommanded)'
+          Text = 'Stable'
         end
         object lblToolchain: TLabel
           Left = 8

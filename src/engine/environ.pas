@@ -40,9 +40,10 @@ const
   );
 
   // Linked to TToolchainVersionKind
+  // This should be in the same order!
   SUPPORTED_GCC_VERSIONS: array[0..1] of string = (
-    '4',
-    '9'
+    '4',  // tvkLegacy
+    '9'   // tvkStable
   );
 
 type
@@ -53,8 +54,8 @@ type
   { TToolchainVersionKind }
   TToolchainVersionKind = (
     tvkUndefined,
-    tvkStable,
-    tvkExperimental
+    tvkLegacy,
+    tvkStable
   );
 
   { TDebuggerVersionKind }
@@ -204,14 +205,14 @@ type
   TDreamcastSoftwareDevelopmentFileSystemToolchainPackages = class(TObject)
   private
     fDebugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger;
-    fExperimental: TFileName;
+    fLegacy: TFileName;
     fStable: TFileName;
   public
     constructor Create;
     destructor Destroy; override;
     property Debugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger
       read fDebugger;
-    property Experimental: TFileName read fExperimental;
+    property Legacy: TFileName read fLegacy;
     property Stable: TFileName read fStable;
   end;
 
@@ -639,7 +640,7 @@ begin
       fPython310 := PackagesBase + 'sh-elf-gdb-python-3.10-bin.7z';
       fPython311 := PackagesBase + 'sh-elf-gdb-python-3.11-bin.7z';
     end;
-    fPackages.fExperimental := PackagesBase + 'toolchain-experimental-sh-elf-bin.7z';
+    fPackages.fLegacy := PackagesBase + 'toolchain-legacy-sh-elf-bin.7z';
     fPackages.fStable := PackagesBase + 'toolchain-stable-sh-elf-bin.7z';
   end;
 
@@ -653,7 +654,7 @@ begin
     fGCCExecutable := ToolchainBaseARM + 'bin\arm-eabi-gcc.exe';
     fGDBExecutable := EmptyStr; // Not Applicable
     fNewlibBinary := EmptyStr; // Not Applicable
-    fPackages.fExperimental := PackagesBase + 'toolchain-experimental-arm-eabi-bin.7z';
+    fPackages.fLegacy := PackagesBase + 'toolchain-legacy-arm-eabi-bin.7z';
     fPackages.fStable := PackagesBase + 'toolchain-stable-arm-eabi-bin.7z';
   end;
 
