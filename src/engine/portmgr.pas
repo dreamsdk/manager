@@ -1222,6 +1222,12 @@ begin
       PythonOld + 'VALIDATE_DISTFILES',
       PythonNew + 'VALIDATE_DISTFILES'
     );
+
+    PatchTextFile(
+      ConfigFileName,
+      'PYTHON_CMD = python3',
+      'PYTHON_CMD = python'
+    );
   end;
 end;
 
