@@ -2145,11 +2145,11 @@ begin
     rgxTerminalOptionClick(Self);
 
     // Repositories
-    ResetText(cbxUrlKallisti, DEFAULT_KALLISTI_URL);
-    ResetText(cbxUrlKallistiPorts, DEFAULT_KALLISTI_PORTS_URL);
-    ResetText(cbxUrlDreamcastToolSerial, DEFAULT_DREAMCAST_TOOL_SERIAL_URL);
-    ResetText(cbxUrlDreamcastToolIP, DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL);
-    ResetText(cbxUrlRuby, DEFAULT_RUBY_URL);
+    ResetText(cbxUrlKallisti, GetDefaultUrlKallisti);
+    ResetText(cbxUrlKallistiPorts, GetDefaultUrlKallistiPorts);
+    ResetText(cbxUrlDreamcastToolSerial, GetDefaultUrlDreamcastToolSerial);
+    ResetText(cbxUrlDreamcastToolIP, GetDefaultUrlDreamcastToolInternetProtocol);
+    ResetText(cbxUrlRuby, GetDefaultUrlRuby);
 
     // Dreamcast Tool (only Options...)
     rgbDreamcastTool.ItemIndex := DREAMCAST_TOOL_DEFAULT_KIND;

@@ -63,11 +63,11 @@ begin
       with DreamcastSoftwareDevelopmentKitManager.Environment.Settings
         .Repositories do
       begin
-        KallistiURL := DEFAULT_KALLISTI_URL;
-        KallistiPortsURL := DEFAULT_KALLISTI_PORTS_URL;
-        DreamcastToolSerialURL := DEFAULT_DREAMCAST_TOOL_SERIAL_URL;
-        DreamcastToolInternetProtocolURL := DEFAULT_DREAMCAST_TOOL_INTERNET_PROTOCOL_URL;
-        RubyURL := DEFAULT_RUBY_URL;
+        KallistiURL := GetDefaultUrlKallisti;
+        KallistiPortsURL := GetDefaultUrlKallistiPorts;
+        DreamcastToolSerialURL := GetDefaultUrlDreamcastToolSerial;
+        DreamcastToolInternetProtocolURL := GetDefaultUrlDreamcastToolInternetProtocol;
+        RubyURL := GetDefaultUrlRuby;
       end;
       DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := RubyEnabled;
       ExecuteThreadOperation(stiKallistiManage);
