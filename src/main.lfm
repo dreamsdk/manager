@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 666
-    ActivePage = tsHome
-    TabIndex = 0
+    ActivePage = tsComponents
+    TabIndex = 7
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -1609,6 +1609,7 @@ object frmMain: TfrmMain
             'Python 3.9'
             'Python 3.10'
             'Python 3.11'
+            'Python 3.12'
           )
           Style = csDropDownList
           TabOrder = 0

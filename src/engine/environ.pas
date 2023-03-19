@@ -26,7 +26,7 @@ const
   DREAMSDK_MSYS_TOOLCHAINS_INSTALL_DIRECTORY = '/opt/toolchains/dc/';
 
   // Linked to TDebuggerVersionKind
-  SUPPORTED_PYTHON_VERSIONS: array[0..9] of string = (
+  SUPPORTED_PYTHON_VERSIONS: array[0..10] of string = (
     '2.7',
     '3.3',
     '3.4',
@@ -36,7 +36,8 @@ const
     '3.8',
     '3.9',
     '3.10',
-    '3.11'
+    '3.11',
+    '3.12'
   );
 
   // Linked to TToolchainVersionKind
@@ -71,7 +72,8 @@ type
     dvkPython38,
     dvkPython39,
     dvkPython310,
-    dvkPython311
+    dvkPython311,
+    dvkPython312
   );
 
   TRepositoryKind = (
@@ -187,6 +189,7 @@ type
     fPython39: TFileName;
     fPython310: TFileName;
     fPython311: TFileName;
+    fPython312: TFileName;
   public
     property PythonDisabled: TFileName read fPythonDisabled;
     property Python27: TFileName read fPython27;
@@ -199,6 +202,7 @@ type
     property Python39: TFileName read fPython39;
     property Python310: TFileName read fPython310;
     property Python311: TFileName read fPython311;
+    property Python312: TFileName read fPython312;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystemToolchainPackages }
@@ -639,6 +643,7 @@ begin
       fPython39 := PackagesBase + 'sh-elf-gdb-python-3.9-bin.7z';
       fPython310 := PackagesBase + 'sh-elf-gdb-python-3.10-bin.7z';
       fPython311 := PackagesBase + 'sh-elf-gdb-python-3.11-bin.7z';
+      fPython312 := PackagesBase + 'sh-elf-gdb-python-3.12-bin.7z';
     end;
     fPackages.fLegacy := PackagesBase + 'toolchain-legacy-sh-elf-bin.7z';
     fPackages.fStable := PackagesBase + 'toolchain-stable-sh-elf-bin.7z';

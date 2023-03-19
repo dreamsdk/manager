@@ -53,7 +53,8 @@ type
     pmrdPython38,
     pmrdPython39,
     pmrdPython310,
-    pmrdPython311
+    pmrdPython311,
+	pmrdPython312
   );
 
   { TPackageManager }
@@ -325,6 +326,8 @@ begin
         DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python310;
       pmrdPython311:
         DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python311;
+      pmrdPython312:
+        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python312;	
     end;
     Add(DebuggerPackage, FileSystem.ToolchainBase);
   end;
