@@ -1634,6 +1634,7 @@ object frmMain: TfrmMain
           Items.Strings = (
             'Legacy'
             'Stable'
+            'Testing'
           )
           Style = csDropDownList
           TabOrder = 2

@@ -39,7 +39,8 @@ type
   // Please keep the same order please!
   TPackageManagerRequestToolchain = (
     pmrtLegacy,
-    pmrtStable
+    pmrtStable,
+	pmrtTesting
   );
 
   TPackageManagerRequestDebugger = (
@@ -295,6 +296,11 @@ begin
         begin
           Add(FileSystem.ToolchainARM.Packages.Stable, FileSystem.ToolchainBase);
           Add(FileSystem.ToolchainSuperH.Packages.Stable, FileSystem.ToolchainBase);
+        end;	
+      pmrtTesting:
+        begin
+          Add(FileSystem.ToolchainARM.Packages.Testing, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainSuperH.Packages.Testing, FileSystem.ToolchainBase);
         end;
     end;
   end;

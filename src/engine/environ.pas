@@ -42,9 +42,10 @@ const
 
   // Linked to TToolchainVersionKind
   // This should be in the same order!
-  SUPPORTED_GCC_VERSIONS: array[0..1] of string = (
+  SUPPORTED_GCC_VERSIONS: array[0..2] of string = (
     '4',  // tvkLegacy
-    '9'   // tvkStable
+    '9',  // tvkStable
+	'12'  // tvkTesting
   );
 
 type
@@ -56,7 +57,8 @@ type
   TToolchainVersionKind = (
     tvkUndefined,
     tvkLegacy,
-    tvkStable
+    tvkStable,
+	tvkTesting
   );
 
   { TDebuggerVersionKind }
@@ -211,6 +213,7 @@ type
     fDebugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger;
     fLegacy: TFileName;
     fStable: TFileName;
+	fTesting: TFileName;
   public
     constructor Create;
     destructor Destroy; override;
@@ -218,6 +221,7 @@ type
       read fDebugger;
     property Legacy: TFileName read fLegacy;
     property Stable: TFileName read fStable;
+	property Testing: TFileName read fTesting;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystemToolchain }
@@ -647,6 +651,7 @@ begin
     end;
     fPackages.fLegacy := PackagesBase + 'toolchain-legacy-sh-elf-bin.7z';
     fPackages.fStable := PackagesBase + 'toolchain-stable-sh-elf-bin.7z';
+	fPackages.fTesting := PackagesBase + 'toolchain-testing-sh-elf-bin.7z';
   end;
 
   // Toolchain for ARM
@@ -661,6 +666,7 @@ begin
     fNewlibBinary := EmptyStr; // Not Applicable
     fPackages.fLegacy := PackagesBase + 'toolchain-legacy-arm-eabi-bin.7z';
     fPackages.fStable := PackagesBase + 'toolchain-stable-arm-eabi-bin.7z';
+	fPackages.fTesting := PackagesBase + 'toolchain-testing-arm-eabi-bin.7z';
   end;
 
   // Toolchain for Win32 (Windows)
