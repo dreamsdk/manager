@@ -45,7 +45,7 @@ const
   SUPPORTED_GCC_VERSIONS: array[0..2] of string = (
     '4',  // tvkLegacy
     '9',  // tvkStable
-	'12'  // tvkTesting
+    '12'  // tvkTesting
   );
 
 type
