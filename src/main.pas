@@ -1834,33 +1834,71 @@ end;
 
 procedure TfrmMain.btnComponentsApplyClick(Sender: TObject);
 var
-  IsValidPythonVersionSelected: Boolean;
-  SelectedPythonVersion,
-  MessageText: string;
+  IsValidPythonVersionSelected,
+  IsValidToolchainsVersionSelected: Boolean;
+  AnywayText,
+  PayAttentionText,
+  MessageText,
+  SelectedPythonVersion: string;
+  ErrorMessages: TStringList;
 
 begin
-  SelectedPythonVersion := EmptyStr;
-  IsValidPythonVersionSelected := IsDebuggerPythonVersionInstalled(
-    ComponentSelectedDebugger, SelectedPythonVersion);
+  ErrorMessages := TStringList.Create;
+  try
+    // Check if requested Toolchains version are compatible with current OS
+    IsValidToolchainsVersionSelected :=
+      ((ComponentSelectedToolchain = pmrtTesting) and IsWindowsVistaOrGreater)
+        or (ComponentSelectedToolchain <> pmrtTesting);
 
-{$IFDEF DEBUG}
-  WriteLn('Package Manager Operation: ', ComponentSelectedOperation);
-  WriteLn('  Selected Toolchain: ', ComponentSelectedToolchain);
-  WriteLn('  Selected Debugger: ', ComponentSelectedDebugger, ' [', IsValidPythonVersionSelected, ']');
-{$ENDIF}
+    // Check if requested Python version is available
+    SelectedPythonVersion := EmptyStr;
+    IsValidPythonVersionSelected := IsDebuggerPythonVersionInstalled(
+      ComponentSelectedDebugger, SelectedPythonVersion);
 
-  MessageText := UnpackConfirmationText;
-  if not IsValidPythonVersionSelected then
-    MessageText := Format(UnpackInvalidPythonConfirmationText, [SelectedPythonVersion]);
+  {$IFDEF DEBUG}
+    WriteLn('Package Manager Operation: ', ComponentSelectedOperation);
+    WriteLn('  Selected Toolchain: ', ComponentSelectedToolchain, ' [', IsValidToolchainsVersionSelected, ']');
+    WriteLn('  Selected Debugger: ', ComponentSelectedDebugger, ' [', IsValidPythonVersionSelected, ']');
+  {$ENDIF}
 
-  if (MsgBox(DialogWarningTitle, MessageText, mtWarning, [mbYes, mbNo], mbNo) = mrYes) then
-    with PackageManager do
+    // Added if the Testing toolchain is selected on Windows XP
+    if not IsValidToolchainsVersionSelected then
+      ErrorMessages.Add(UnpackConfirmationInvalidToolchainsText);
+
+    // Added if Python 32-bit runtime was not found
+    if not IsValidPythonVersionSelected then
     begin
-      Debugger := ComponentSelectedDebugger;
-      Toolchain := ComponentSelectedToolchain;
-      Operation := ComponentSelectedOperation;
-      Execute;
+      if (ErrorMessages.Count > 0) then
+        ErrorMessages.Add(UnpackConfirmationAndKeywordText);
+      ErrorMessages.Add(Format(UnpackConfirmationInvalidPythonText, [SelectedPythonVersion]));
     end;
+
+    // Final message
+    PayAttentionText := EmptyStr;
+    AnywayText := EmptyStr;
+    if ErrorMessages.Count > 0 then
+    begin
+      PayAttentionText := UnpackConfirmationPayAttentionText;
+      AnywayText := UnpackConfirmationQuestionAnywayText;
+    end;
+    MessageText := MsgBoxDlgTranslateString(Format(UnpackConfirmationText, [
+      PayAttentionText,
+      StringListToString(ErrorMessages, ' '),
+      AnywayText
+    ]));
+
+    // If user agrees, then we continue
+    if (MsgBox(DialogWarningTitle, MessageText, mtWarning, [mbYes, mbNo], mbNo) = mrYes) then
+      with PackageManager do
+      begin
+        Debugger := ComponentSelectedDebugger;
+        Toolchain := ComponentSelectedToolchain;
+        Operation := ComponentSelectedOperation;
+        Execute;
+      end;
+  finally
+    ErrorMessages.Free;
+  end;
 end;
 
 procedure TfrmMain.btnIdeCodeBlocksInstallDirClick(Sender: TObject);

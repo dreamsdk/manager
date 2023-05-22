@@ -40,7 +40,7 @@ type
   TPackageManagerRequestToolchain = (
     pmrtLegacy,
     pmrtStable,
-	pmrtTesting
+    pmrtTesting
   );
 
   TPackageManagerRequestDebugger = (
