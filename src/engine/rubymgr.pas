@@ -42,6 +42,7 @@ type
   { TRubyManager }
   TRubyManager = class(TObject)
   private
+    fRubyCompilerShellScriptFileName: TFileName;
     fForceNextRebuild: Boolean;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fRepository: TDreamcastSoftwareDevelopmentRepository;
@@ -169,9 +170,14 @@ end;
 
 constructor TRubyManager.Create(
   AEnvironment: TDreamcastSoftwareDevelopmentEnvironment);
+const
+  MRBC_SHELL_SCRIPT_LOCATION_FILE = 'bin\mrbc';
+
 begin
   fForceNextRebuild := False;
   fEnvironment := AEnvironment;
+  with Environment.FileSystem.Ruby do
+    fRubyCompilerShellScriptFileName := BaseDirectory + MRBC_SHELL_SCRIPT_LOCATION_FILE;
   fRepository := TDreamcastSoftwareDevelopmentRepository.Create(fEnvironment,
     fEnvironment.FileSystem.Ruby.BaseDirectory);
   fSamples := TRubySampleList.Create(fEnvironment);
@@ -253,8 +259,20 @@ begin
 end;
 
 function TRubyManager.InitializeEnvironment: Boolean;
+const
+  MRBC_CONTENT = '#!/usr/bin/env bash' + sLineBreak
+    + '/opt/mruby/build/host/bin/mrbc "$@"';
+
 begin
-  Result := True; // Do nothing.
+  Result := True;
+
+  // Create "/opt/mruby/bin/mrbc"
+  // As by default on Windows, mruby will create "mrbc.bat" which is useless for us.
+  if not FileExists(fRubyCompilerShellScriptFileName) then
+  begin
+    ForceDirectories(ExtractFilePath(fRubyCompilerShellScriptFileName));
+    SaveStringToFile(MRBC_CONTENT, fRubyCompilerShellScriptFileName);
+  end;
 end;
 
 function TRubyManager.Build(var BufferOutput: string): Boolean;
