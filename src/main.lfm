@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 699
+  Left = 910
   Height = 400
-  Top = 260
+  Top = 537
   Width = 680
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 666
-    ActivePage = tsComponents
-    TabIndex = 7
+    ActivePage = tsHome
+    TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -1712,17 +1712,17 @@ object frmMain: TfrmMain
       ClientWidth = 658
       object gbxToolchainSuperH: TGroupBox
         Left = 4
-        Height = 172
+        Height = 204
         Top = 4
         Width = 321
         Caption = 'SuperH Toolchain Versions:'
-        ClientHeight = 154
+        ClientHeight = 186
         ClientWidth = 317
         TabOrder = 0
         object lblVersionBinutils: TLabel
           Left = 202
           Height = 13
-          Top = 8
+          Top = 36
           Width = 109
           Alignment = taRightJustify
           AutoSize = False
@@ -1732,7 +1732,7 @@ object frmMain: TfrmMain
         object lblVersionGCC: TLabel
           Left = 202
           Height = 13
-          Top = 36
+          Top = 64
           Width = 109
           Alignment = taRightJustify
           AutoSize = False
@@ -1742,7 +1742,7 @@ object frmMain: TfrmMain
         object lblVersionGDB: TLabel
           Left = 202
           Height = 13
-          Top = 64
+          Top = 92
           Width = 109
           Alignment = taRightJustify
           AutoSize = False
@@ -1752,7 +1752,7 @@ object frmMain: TfrmMain
         object lblTextBinutils: TLabel
           Left = 8
           Height = 13
-          Top = 8
+          Top = 36
           Width = 67
           Caption = 'GNU Binutils'
           Font.Style = [fsBold]
@@ -1762,7 +1762,7 @@ object frmMain: TfrmMain
         object lblTextGCC: TLabel
           Left = 8
           Height = 13
-          Top = 36
+          Top = 64
           Width = 169
           Caption = 'GNU Compiler Collection (GCC)'
           Font.Style = [fsBold]
@@ -1772,7 +1772,7 @@ object frmMain: TfrmMain
         object lblTextGDB: TLabel
           Left = 8
           Height = 13
-          Top = 64
+          Top = 92
           Width = 117
           Caption = 'GNU Debugger (GDB)'
           Font.Style = [fsBold]
@@ -1782,7 +1782,7 @@ object frmMain: TfrmMain
         object lblTextPythonGDB: TLabel
           Left = 8
           Height = 13
-          Top = 92
+          Top = 120
           Width = 179
           Caption = 'Python for GNU Debugger (GDB)'
           Font.Style = [fsBold]
@@ -1792,7 +1792,7 @@ object frmMain: TfrmMain
         object lblVersionPythonGDB: TLabel
           Left = 202
           Height = 13
-          Top = 92
+          Top = 120
           Width = 109
           Alignment = taRightJustify
           AutoSize = False
@@ -1802,7 +1802,7 @@ object frmMain: TfrmMain
         object lblVersionNewlib: TLabel
           Left = 202
           Height = 13
-          Top = 120
+          Top = 148
           Width = 109
           Alignment = taRightJustify
           AutoSize = False
@@ -1812,9 +1812,29 @@ object frmMain: TfrmMain
         object lblTextNewlib: TLabel
           Left = 8
           Height = 13
-          Top = 120
+          Top = 148
           Width = 36
           Caption = 'Newlib'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object lblBuildDateToolchain: TLabel
+          Left = 178
+          Height = 13
+          Top = 8
+          Width = 133
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(Build Date)'
+          ParentColor = False
+        end
+        object lblTextToolchainBuildDate: TLabel
+          Left = 8
+          Height = 13
+          Top = 8
+          Width = 158
+          Caption = 'SuperH Toolchain Build Date'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -1952,17 +1972,17 @@ object frmMain: TfrmMain
       end
       object gbxToolchainARM: TGroupBox
         Left = 4
-        Height = 133
-        Top = 184
+        Height = 105
+        Top = 212
         Width = 321
         Caption = 'ARM Toolchain Versions:'
-        ClientHeight = 115
+        ClientHeight = 87
         ClientWidth = 317
         TabOrder = 2
         object lblVersionBinutilsARM: TLabel
           Left = 193
           Height = 13
-          Top = 8
+          Top = 36
           Width = 118
           Alignment = taRightJustify
           AutoSize = False
@@ -1972,7 +1992,7 @@ object frmMain: TfrmMain
         object lblVersionGCCARM: TLabel
           Left = 195
           Height = 13
-          Top = 36
+          Top = 64
           Width = 116
           Alignment = taRightJustify
           AutoSize = False
@@ -1980,9 +2000,9 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblTextBinutilsARM: TLabel
-          Left = 12
+          Left = 8
           Height = 13
-          Top = 8
+          Top = 36
           Width = 67
           Caption = 'GNU Binutils'
           Font.Style = [fsBold]
@@ -1990,14 +2010,34 @@ object frmMain: TfrmMain
           ParentFont = False
         end
         object lblTextGCCARM: TLabel
-          Left = 12
+          Left = 8
           Height = 13
-          Top = 36
+          Top = 64
           Width = 169
           Caption = 'GNU Compiler Collection (GCC)'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
+        end
+        object lblTextToolchainBuildDateARM: TLabel
+          Left = 8
+          Height = 13
+          Top = 8
+          Width = 143
+          Caption = 'ARM Toolchain Build Date'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object lblBuildDateToolchainARM: TLabel
+          Left = 178
+          Height = 13
+          Top = 8
+          Width = 133
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '(Build Date)'
+          ParentColor = False
         end
       end
       object gbxToolchainWin32: TGroupBox

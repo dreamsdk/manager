@@ -78,6 +78,8 @@ type
     gbxDebugger: TGroupBox;
     lblComponentsConfiguration: TLabel;
     lblIdeCodeBlocksUsersAvailable: TLabel;
+    lblTextToolchainBuildDate: TLabel;
+    lblTextToolchainBuildDateARM: TLabel;
     lblToolchain: TLabel;
     lblBuildDateMRuby: TLabel;
     lblHomeFolder1: TLabel;
@@ -89,6 +91,8 @@ type
     lblTextRake: TLabel;
     lblTextVersionKallistiOS2: TLabel;
     lblDebugger: TLabel;
+    lblBuildDateToolchain: TLabel;
+    lblBuildDateToolchainARM: TLabel;
     lblVersionMRuby: TLabel;
     lblVersionRuby: TLabel;
     lblVersionRake: TLabel;
@@ -787,10 +791,17 @@ var
   ComponentVersion, ComponentNameString: string;
 
   procedure SetLabelDate(LabelCtrl: TLabel; const FileName: TFileName;
-    const FileDate: TDateTime);
+    const FileDate: TDateTime; const DisplayTime: Boolean = True);
+  var
+    RequestedDateFormat: string;
+
   begin
+    RequestedDateFormat := STRING_DATE_FORMAT;
+    if not DisplayTime then
+      RequestedDateFormat := STRING_DATE_FORMAT_SHORT;
+    LabelCtrl.Caption := EmptyStr;
     if FileExists(FileName) then
-      LabelCtrl.Caption := FormatDateTime(STRING_DATE_FORMAT, FileDate);
+      LabelCtrl.Caption := FormatDateTime(RequestedDateFormat, FileDate);
   end;
 
 begin
@@ -820,7 +831,6 @@ begin
     end;
 
     // KallistiOS build date
-    lblBuildDateKallistiOS.Caption := EmptyStr;
     SetLabelDate(lblBuildDateKallistiOS,
       Environment.FileSystem.Kallisti.KallistiLibrary,
       Versions.KallistiBuildDate);
@@ -847,10 +857,19 @@ begin
     SetVersionLabel(lblVersionMRuby, Ruby.Repository.Version);
 
     // Ruby build date
-    lblBuildDateMRuby.Caption := EmptyStr;
     SetLabelDate(lblBuildDateMRuby,
       Environment.FileSystem.Ruby.RubyLibrary,
       Versions.MRubyBuildDate);
+
+    // SuperH toolchains build date
+    SetLabelDate(lblBuildDateToolchain,
+      Environment.FileSystem.ToolchainSuperH.GCCExecutable,
+      Versions.ToolchainSuperH.BuildDate, False);
+
+    // ARM toolchains build date
+    SetLabelDate(lblBuildDateToolchainARM,
+      Environment.FileSystem.ToolchainARM.GCCExecutable,
+      Versions.ToolchainARM.BuildDate, False);
   end;
 end;
 

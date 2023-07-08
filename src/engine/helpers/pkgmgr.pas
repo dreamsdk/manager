@@ -55,7 +55,7 @@ type
     pmrdPython39,
     pmrdPython310,
     pmrdPython311,
-	pmrdPython312
+    pmrdPython312
   );
 
   { TPackageManager }
@@ -113,7 +113,7 @@ uses
 function IsDebuggerPythonVersionInstalled(const Version: TPackageManagerRequestDebugger;
   var VersionWithDot: string): Boolean;
 var
-  i, j: Integer;
+  i: Integer;
   PythonFilePaths: TStringList;
   PythonFileName,
   PythonFilePath: TFileName;

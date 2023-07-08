@@ -38,6 +38,7 @@ type
   { TToolchainVersion }
   TToolchainVersion = class(TObject)
   private
+    fBuildDate: TDateTime;
     fKind: TToolchainKind;
     fPackageGDB: TDebuggerVersionKind;
     fPackageToolchain: TToolchainVersionKind;
@@ -54,6 +55,7 @@ type
       const Version: string): TToolchainVersionKind;
   public
     constructor Create(AOwner: TComponentVersion; ToolchainKind: TToolchainKind);
+    property BuildDate: TDateTime read fBuildDate;
     property Binutils: string read fVersionBinutils;
     property GCC: string read fVersionGCC;
     property GDB: string read fVersionGDB;
@@ -135,7 +137,6 @@ uses
 {$IFDEF GUI}
   Forms,
 {$ENDIF}
-  StrUtils,
   SysTools,
   VerIntf,
   FSTools,
@@ -331,6 +332,8 @@ procedure TComponentVersion.RetrieveVersions;
   begin
     if Assigned(AVersion) then
     begin
+      AVersion.fBuildDate := GetFileDate(AEnvironment.GCCExecutable);
+
       AVersion.fVersionBinutils := RetrieveVersion(AEnvironment.BinutilsExecutable,
         '--version', ' (GNU Binutils)', sLineBreak);
       AVersion.fVersionGCC := RetrieveVersion(AEnvironment.GCCExecutable,
