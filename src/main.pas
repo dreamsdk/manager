@@ -1096,7 +1096,7 @@ end;
 procedure TfrmMain.UpdateDreamcastToolAlternateCheckbox;
 begin
   ckxDreamcastToolSerialAlternateBaudrate.Enabled := (gbxDreamcastToolSerial.Enabled)
-    and (cbxDreamcastToolSerialBaudrate.ItemIndex = 8);
+    and (cbxDreamcastToolSerialBaudrate.ItemIndex >= 8);
 end;
 
 procedure TfrmMain.UpdateOptionsControls;

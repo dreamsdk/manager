@@ -14,6 +14,7 @@ type
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fRepositoryInternetProtocol: TDreamcastSoftwareDevelopmentRepository;
     fRepositorySerial: TDreamcastSoftwareDevelopmentRepository;
+    function IsAlternateBaudrateEnabled: Boolean;
     function GetBuilt: Boolean;
     function GetInstalled: Boolean;
     function GetRepositoryReady: Boolean;
@@ -53,9 +54,17 @@ type
 implementation
 
 uses
-  FSTools, FileUtil, IniFiles;
+  FSTools,
+  FileUtil,
+  IniFiles;
 
 { TDreamcastToolManager }
+
+function TDreamcastToolManager.IsAlternateBaudrateEnabled: Boolean;
+begin
+  with Settings do
+    Result := (SerialBaudrate >= dtb115200) and SerialBaudrateAlternate;
+end;
 
 function TDreamcastToolManager.GetBuilt: Boolean;
 begin
@@ -192,7 +201,7 @@ begin
           begin
             Concat(Format('-t %s', [SerialPortToString(SerialPort)]));
             Concat(Format('-b %s', [SerialBaudrateToString(SerialBaudrate)]));
-            if (SerialBaudrate = dtb115200) and SerialBaudrateAlternate then
+            if IsAlternateBaudrateEnabled then
               Concat('-e');
             if SerialDumbTerminal then
               Concat('-p');
