@@ -37,6 +37,7 @@ resourcestring
   InvalidMediaAccessControlAddressFormat = 'Use 2 digits!';
   InvalidMediaAccessControlAddressValue = 'Invalid MAC';
   NoNetworkAdapterAvailable = 'No connected Network Adapter was found on your system. Please verify the connection state.';
+  NoSerialPortAvailable = 'No Serial Port was found on your system.';
   UninstallKallistiSinglePort = 'Are you sure to uninstall %s?';
   InstallOrUpdateRequiredDoItNow = 'A management operation of KallistiOS components is necessary. Do it now?';
   UseSubversionKallistiSinglePort = 'Unable to install %s, as it needs the Subversion Client (SVN) which wasn''t detected.';

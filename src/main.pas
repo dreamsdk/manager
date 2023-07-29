@@ -320,6 +320,7 @@ type
     function GetSelectedKallistiPort: TKallistiPortItem;
     function GetSelectedKallistiPortItemIndex: Integer;
     function GetSelectedMediaAccessControlHostAddress: string;
+    function GetSelectedSerialPort: Integer;
     function GetSelectedToolchain: TPackageManagerRequestToolchain;
     procedure LoadConfiguration;
     function BooleanToCaption(Value: Boolean): string;
@@ -350,9 +351,13 @@ type
     function GetAllKallistiPortsMessage(const Message: string): string;
     function CheckKallistiSinglePortPossibleInstallation: Boolean;
     procedure CreateNetworkAdapterList;
+    procedure CreateSerialPortList;
     procedure FreeNetworkAdapterList;
+    procedure FreeSerialPortList;
     function HostMacToItemIndex(const HostMediaAccessControlAddress: string): Integer;
+    function SerialPortToItemIndex(const SerialPortIndex: Integer): Integer;
     function HasNetworkAdapters: Boolean;
+    function HasSerialPorts: Boolean;
     procedure RefreshIdeScreen;
     procedure RunMSYS; overload;
     procedure RunMSYS(const WorkingDirectory: TFileName); overload;
@@ -379,6 +384,8 @@ type
       read GetSelectedKallistiPortItemIndex;
     property SelectedKallistiPort: TKallistiPortItem
       read GetSelectedKallistiPort;
+    property SelectedSerialPort: Integer
+      read GetSelectedSerialPort;
     property SelectedHostMediaAccessControlAddress: string
       read GetSelectedMediaAccessControlHostAddress;
     property ComponentSelectedToolchain: TPackageManagerRequestToolchain read
@@ -402,7 +409,7 @@ uses
   LCLIntf, IniFiles, StrUtils, FPHttpClient, OpenSSLSockets,
   UITools, GetVer, SysTools, PostInst, Settings,
   Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil,
-  RunTools, RefBase, Elevate, FSTools, Unpack, CBTools;
+  RunTools, RefBase, Elevate, FSTools, Unpack, CBTools, EnumCom;
 
 const
   KALLISTI_VERSION_FORMAT = '%s (%s)';
@@ -424,6 +431,15 @@ type
     property MacAddress: string read fMacAddress;
   end;
 
+  { TSerialPortListUserInterfaceItem }
+  TSerialPortListUserInterfaceItem = class(TObject)
+  private
+    fSerialPortIndex: Integer;
+  public
+    constructor Create(ASerialPortIndex: Integer);
+    property SerialPortIndex: Integer read fSerialPortIndex;
+  end;
+
 var
   HelpFileName: TFileName;
   ModuleVersionList: TModuleVersionList;
@@ -443,6 +459,11 @@ begin
   finally
     ModulesList.Free;
   end;
+end;
+
+constructor TSerialPortListUserInterfaceItem.Create(ASerialPortIndex: Integer);
+begin
+  fSerialPortIndex := ASerialPortIndex;
 end;
 
 { TNetworkAdapterListUserInterfaceItem }
@@ -470,6 +491,7 @@ begin
     begin
       ModuleVersionList := CreateModuleVersionList;
       CreateNetworkAdapterList;
+      CreateSerialPortList;
     end;
 
     DoubleBuffered := True;
@@ -493,6 +515,7 @@ begin
 
     if (not IsPostInstallMode) then
     begin
+      FreeSerialPortList;
       FreeNetworkAdapterList;
       ModuleVersionList.Free;
     end;
@@ -928,6 +951,21 @@ begin
     end;
 end;
 
+function TfrmMain.GetSelectedSerialPort: Integer;
+var
+  SelectedItem: TSerialPortListUserInterfaceItem;
+
+begin
+  Result := -1;
+  with cbxDreamcastToolSerialPort do
+    if ItemIndex <> -1 then
+    begin
+      SelectedItem := TSerialPortListUserInterfaceItem(Items.Objects[ItemIndex]);
+      if Assigned(SelectedItem) then
+        Result := SelectedItem.SerialPortIndex;
+    end;
+end;
+
 function TfrmMain.GetSelectedToolchain: TPackageManagerRequestToolchain;
 begin
   Result := TPackageManagerRequestToolchain(cbxToolchain.ItemIndex);
@@ -942,7 +980,7 @@ begin
       rgxTerminalOption.ItemIndex := 1;
 
     // Dreamcast Tool
-    cbxDreamcastToolSerialPort.ItemIndex := Integer(DreamcastTool.SerialPort);
+    cbxDreamcastToolSerialPort.ItemIndex := SerialPortToItemIndex(DreamcastTool.SerialPort);
     cbxDreamcastToolSerialBaudrate.ItemIndex := Integer(DreamcastTool.SerialBaudrate);
     ckxDreamcastToolSerialAlternateBaudrate.Checked := DreamcastTool.SerialBaudrateAlternate;
     ckxDreamcastToolSerialExternalClock.Checked := DreamcastTool.SerialExternalClock;
@@ -1173,7 +1211,7 @@ begin
       SerialBaudrate := TDreamcastToolSerialBaudrate(cbxDreamcastToolSerialBaudrate.ItemIndex);
       SerialBaudrateAlternate := ckxDreamcastToolSerialAlternateBaudrate.Checked;
       SerialDumbTerminal := ckxDreamcastToolSerialDumbTerminal.Checked;
-      SerialPort := TDreamcastToolSerialPort(cbxDreamcastToolSerialPort.ItemIndex);
+      SerialPort := SelectedSerialPort;
       SerialExternalClock := ckxDreamcastToolSerialExternalClock.Checked;
       InternetProtocolAddress := edtDreamcastToolInternetProtocolAddress.Text;
       MediaAccessControlEnabled := ckxDreamcastToolInternetProtocolUseARP.Checked;
@@ -1532,7 +1570,8 @@ begin
     if Length(NetworkCardAdapters[i].IPv4Addresses) > 0 then
       with NetworkCardAdapters[i] do
         cbxDreamcastToolInternetProtocolNetworkAdapter.Items.AddObject(
-          NetworkCardName, TNetworkAdapterListUserInterfaceItem.Create(MacAddress));
+          NetworkCardName, TNetworkAdapterListUserInterfaceItem.Create(MacAddress)
+        );
   end;
 
   cbxDreamcastToolInternetProtocolNetworkAdapter.ItemIndex := -1;
@@ -1547,12 +1586,56 @@ begin
   end;
 end;
 
+procedure TfrmMain.CreateSerialPortList;
+var
+  SerialPorts: TSerialPortList;
+  i: Integer;
+  ListEnabled: Boolean;
+
+begin
+  SerialPorts := Default(TSerialPortList);
+  GetSerialPortList(SerialPorts);
+
+  cbxDreamcastToolSerialPort.Clear;
+  for i := Low(SerialPorts) to High(SerialPorts) do
+  begin
+      with SerialPorts[i] do
+        cbxDreamcastToolSerialPort.Items.AddObject(
+          FriendlyName, TSerialPortListUserInterfaceItem.Create(PortIndex)
+        );
+  end;
+
+  cbxDreamcastToolSerialPort.ItemIndex := -1;
+
+  ListEnabled := HasSerialPorts;
+  cbxDreamcastToolSerialPort.Enabled := ListEnabled;
+  lblDreamcastToolSerialPort.Enabled := ListEnabled;
+  if not ListEnabled then
+  begin
+    cbxDreamcastToolSerialPort.Hint := NoSerialPortAvailable;
+    lblDreamcastToolSerialPort.Hint := NoSerialPortAvailable;
+  end;
+end;
+
 procedure TfrmMain.FreeNetworkAdapterList;
 var
   i: Integer;
 
 begin
   with cbxDreamcastToolInternetProtocolNetworkAdapter.Items do
+  begin
+    for i := Count - 1 downto 0 do
+      Objects[i].Free;
+    Clear;
+  end;
+end;
+
+procedure TfrmMain.FreeSerialPortList;
+var
+  i: Integer;
+
+begin
+  with cbxDreamcastToolSerialPort.Items do
   begin
     for i := Count - 1 downto 0 do
       Objects[i].Free;
@@ -1581,9 +1664,35 @@ begin
     end;
 end;
 
+function TfrmMain.SerialPortToItemIndex(
+  const SerialPortIndex: Integer): Integer;
+var
+  i: Integer;
+  CurrentItem: TSerialPortListUserInterfaceItem;
+
+begin
+  Result := -1;
+  with cbxDreamcastToolSerialPort.Items do
+    for i := 0 to Count - 1 do
+    begin
+      CurrentItem := TSerialPortListUserInterfaceItem(Objects[i]);
+      if Assigned(CurrentItem) and
+        (CurrentItem.SerialPortIndex = SerialPortIndex) then
+      begin
+        Result := i;
+        Break;
+      end;
+    end;
+end;
+
 function TfrmMain.HasNetworkAdapters: Boolean;
 begin
   Result := cbxDreamcastToolInternetProtocolNetworkAdapter.Items.Count > 0;
+end;
+
+function TfrmMain.HasSerialPorts: Boolean;
+begin
+  Result := cbxDreamcastToolSerialPort.Items.Count > 0;
 end;
 
 procedure TfrmMain.RefreshIdeScreen;
@@ -2208,21 +2317,16 @@ begin
     ResetText(cbxUrlDreamcastToolIP, GetDefaultUrlDreamcastToolInternetProtocol);
     ResetText(cbxUrlRuby, GetDefaultUrlRuby);
 
-    // Dreamcast Tool (only Options...)
+    // Dreamcast Tool (only options, not RS232 cable/IP settings...)
     rgbDreamcastTool.ItemIndex := DREAMCAST_TOOL_DEFAULT_KIND;
     rgbDreamcastToolSelectionChanged(Self);
     ckxDreamcastToolAttachConsoleFileServer.Checked := DREAMCAST_TOOL_DEFAULT_ATTACH_CONSOLE_FILESERVER;
     ckxDreamcastToolClearScreenBeforeDownload.Checked := DREAMCAST_TOOL_DEFAULT_CLEAR_SCREEN_BEFORE_DOWNLOAD;
-//    edtDreamcastToolInternetProtocolAddress.Text := DREAMCAST_TOOL_DEFAULT_INTERNET_PROTOCOL_ADDRESS;
     ckxDreamcastToolInternetProtocolUseARP.Checked := DREAMCAST_TOOL_DEFAULT_MEDIA_ACCESS_CONTROL_ENABLED;
-//    edtDreamcastToolInternetProtocolMAC.Text := DREAMCAST_TOOL_DEFAULT_MEDIA_ACCESS_CONTROL_ADDRESS;
     ckxDreamcastToolSerialDumbTerminal.Checked := DREAMCAST_TOOL_DEFAULT_SERIAL_DUMB_TERMINAL;
     ckxDreamcastToolSerialExternalClock.Checked := DREAMCAST_TOOL_DEFAULT_SERIAL_EXTERNAL_CLOCK;
     cbxDreamcastToolSerialBaudrate.ItemIndex := DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE;
     ckxDreamcastToolSerialAlternateBaudrate.Checked := DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_ALTERNATE;
-//    cbxDreamcastToolSerialPort.ItemIndex := DREAMCAST_TOOL_DEFAULT_SERIAL_PORT;
-//    edtDreamcastToolCustomExecutable.Text := DREAMCAST_TOOL_DEFAULT_CUSTOM_EXECUTABLE;
-//    edtDreamcastToolCustomArguments.Text := DREAMCAST_TOOL_DEFAULT_CUSTOM_ARGUMENTS;
 
     // Save changes
     DreamcastSoftwareDevelopmentKitManager.Environment.Settings.SaveConfiguration;

@@ -14,7 +14,7 @@ object frmMain: TfrmMain
   OnShow = FormShow
   Position = poScreenCenter
   ShowHint = True
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '2.2.2.0'
   object btnClose: TButton
     Left = 266
     Height = 25
@@ -469,10 +469,10 @@ object frmMain: TfrmMain
         ClientWidth = 317
         TabOrder = 1
         object cbxDreamcastToolSerialBaudrate: TComboBox
-          Left = 84
+          Left = 65
           Height = 21
           Top = 32
-          Width = 84
+          Width = 163
           ItemHeight = 13
           ItemIndex = 0
           Items.Strings = (
@@ -503,9 +503,9 @@ object frmMain: TfrmMain
           Text = '300'
         end
         object ckxDreamcastToolSerialAlternateBaudrate: TCheckBox
-          Left = 180
+          Left = 237
           Height = 17
-          Top = 34
+          Top = 32
           Width = 65
           Caption = 'Al&ternate'
           OnChange = cbxDreamcastToolSerialPortSelect
@@ -530,30 +530,17 @@ object frmMain: TfrmMain
           TabOrder = 4
         end
         object cbxDreamcastToolSerialPort: TComboBox
-          Left = 84
+          Left = 65
           Height = 21
           Top = 4
-          Width = 84
+          Width = 237
           ItemHeight = 13
-          ItemIndex = 0
-          Items.Strings = (
-            'COM1'
-            'COM2'
-            'COM3'
-            'COM4'
-            'COM5'
-            'COM6'
-            'COM7'
-            'COM8'
-            'COM9'
-          )
           OnSelect = cbxDreamcastToolSerialPortSelect
           Style = csDropDownList
           TabOrder = 0
-          Text = 'COM1'
         end
         object lblDreamcastToolSerialPort: TLabel
-          Left = 53
+          Left = 36
           Height = 13
           Top = 8
           Width = 24
@@ -561,7 +548,7 @@ object frmMain: TfrmMain
           ParentColor = False
         end
         object lblDreamcastToolSerialBaudrate: TLabel
-          Left = 29
+          Left = 12
           Height = 13
           Top = 36
           Width = 48
