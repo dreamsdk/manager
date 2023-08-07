@@ -14,7 +14,7 @@ object frmMain: TfrmMain
   OnShow = FormShow
   Position = poScreenCenter
   ShowHint = True
-  LCLVersion = '2.2.2.0'
+  LCLVersion = '2.2.6.0'
   object btnClose: TButton
     Left = 266
     Height = 25
@@ -472,10 +472,11 @@ object frmMain: TfrmMain
           Left = 65
           Height = 21
           Top = 32
-          Width = 163
+          Width = 80
           ItemHeight = 13
-          ItemIndex = 0
+          ItemIndex = 20
           Items.Strings = (
+            'Custom'
             '300'
             '1200'
             '2400'
@@ -500,12 +501,12 @@ object frmMain: TfrmMain
           OnSelect = cbxDreamcastToolSerialBaudrateSelect
           Style = csDropDownList
           TabOrder = 1
-          Text = '300'
+          Text = '1562500'
         end
         object ckxDreamcastToolSerialAlternateBaudrate: TCheckBox
-          Left = 237
+          Left = 241
           Height = 17
-          Top = 32
+          Top = 34
           Width = 65
           Caption = 'Al&ternate'
           OnChange = cbxDreamcastToolSerialPortSelect
@@ -533,7 +534,7 @@ object frmMain: TfrmMain
           Left = 65
           Height = 21
           Top = 4
-          Width = 237
+          Width = 245
           ItemHeight = 13
           OnSelect = cbxDreamcastToolSerialPortSelect
           Style = csDropDownList
@@ -554,6 +555,15 @@ object frmMain: TfrmMain
           Width = 48
           Caption = 'Baudrate:'
           ParentColor = False
+        end
+        object edtDreamcastToolSerialBaudrateCustom: TEdit
+          Left = 152
+          Height = 21
+          Top = 32
+          Width = 80
+          NumbersOnly = True
+          OnChange = cbxDreamcastToolSerialBaudrateSelect
+          TabOrder = 5
         end
       end
       object gbxDreamcastToolInternetProtocol: TGroupBox
@@ -1239,7 +1249,7 @@ object frmMain: TfrmMain
         Left = 4
         Height = 85
         Top = 232
-        Width = 321
+        Width = 160
         AutoFill = True
         Caption = 'Terminal:'
         ChildSizing.LeftRightSpacing = 6
@@ -1250,10 +1260,10 @@ object frmMain: TfrmMain
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
         ClientHeight = 67
-        ClientWidth = 317
+        ClientWidth = 156
         ItemIndex = 0
         Items.Strings = (
-          '&Windows Prompt'
+          '&Windows Prompt/Terminal'
           'MinTT&Y'
         )
         OnClick = rgxTerminalOptionClick
@@ -1363,6 +1373,34 @@ object frmMain: TfrmMain
           Caption = 'Offl&ine...'
           OnClick = btnOfflineKallistiClick
           TabOrder = 2
+        end
+      end
+      object gbxWindowsTerminal: TGroupBox
+        Left = 168
+        Height = 85
+        Top = 232
+        Width = 160
+        Caption = 'Windows Terminal:'
+        ClientHeight = 67
+        ClientWidth = 156
+        TabOrder = 6
+        object btnWindowsTerminalInstall: TButton
+          Left = 12
+          Height = 25
+          Top = 0
+          Width = 135
+          Caption = 'Insta&ll Integration'
+          OnClick = btnWindowsTerminalInstallClick
+          TabOrder = 0
+        end
+        object btnWindowsTerminalUninstall: TButton
+          Left = 12
+          Height = 25
+          Top = 32
+          Width = 135
+          Caption = '&Uninstall Integration'
+          OnClick = btnWindowsTerminalUninstallClick
+          TabOrder = 1
         end
       end
     end

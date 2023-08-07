@@ -55,6 +55,8 @@ type
     btnOfflineKallisti: TButton;
     btnIdeCodeBlocksUsersAvailableInitialize: TButton;
     btnIdeCodeBlocksUsersAvailableRefresh: TButton;
+    btnWindowsTerminalInstall: TButton;
+    btnWindowsTerminalUninstall: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
     cbxToolchain: TComboBox;
@@ -72,10 +74,12 @@ type
     cbxModuleSelection: TComboBox;
     cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox;
     cbxDebugger: TComboBox;
+    edtDreamcastToolSerialBaudrateCustom: TEdit;
     gbxRubyFolder: TGroupBox;
     gbxRubyRunShell: TGroupBox;
     gbxUrlRuby: TGroupBox;
     gbxDebugger: TGroupBox;
+    gbxWindowsTerminal: TGroupBox;
     lblComponentsConfiguration: TLabel;
     lblIdeCodeBlocksUsersAvailable: TLabel;
     lblTextToolchainBuildDate: TLabel;
@@ -271,6 +275,8 @@ type
     procedure btnUpdateMRubyClick(Sender: TObject);
     procedure btnUrlKallistiClick(Sender: TObject);
     procedure btnIdeInstallClick(Sender: TObject);
+    procedure btnWindowsTerminalInstallClick(Sender: TObject);
+    procedure btnWindowsTerminalUninstallClick(Sender: TObject);
     procedure cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
     procedure cbxDreamcastToolSerialPortSelect(Sender: TObject);
     procedure cbxModuleSelectionChange(Sender: TObject);
@@ -320,22 +326,25 @@ type
     function GetSelectedKallistiPort: TKallistiPortItem;
     function GetSelectedKallistiPortItemIndex: Integer;
     function GetSelectedMediaAccessControlHostAddress: string;
+    function GetSelectedSerialBaudrate: Integer;
     function GetSelectedSerialPort: Integer;
     function GetSelectedToolchain: TPackageManagerRequestToolchain;
     procedure LoadConfiguration;
     function BooleanToCaption(Value: Boolean): string;
     function BooleanToCheckboxState(State: Boolean): TCheckBoxState;
     procedure ClearKallistiPortPanel;
+    procedure SetSelectedSerialBaudrate(AValue: Integer);
     procedure UpdateKallistiPortControls;
     function IsVersionLabelValid(VersionLabel: TLabel): Boolean;
     procedure SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
     procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
     procedure UpdateComponentControls;
     procedure UpdateDreamcastToolMediaAccessControlAddressControls;
-    procedure UpdateDreamcastToolAlternateCheckbox;
+    procedure UpdateDreamcastToolSerialOptionControls;
     procedure UpdateOptionsControls;
     procedure UpdateRepositories;
     procedure UpdateRubyControls;
+    procedure UpdateWindowsTerminalControls;
     procedure InstallDreamcastTool;
     procedure HandleInvalidInternetProtocolAddress(const InvalidMaskFormat: Boolean);
     procedure HandleInvalidMediaAccessControlAddress(const InvalidMaskFormat: Boolean);
@@ -386,6 +395,8 @@ type
       read GetSelectedKallistiPort;
     property SelectedSerialPort: Integer
       read GetSelectedSerialPort;
+    property SelectedSerialBaudrate: Integer
+      read GetSelectedSerialBaudrate write SetSelectedSerialBaudrate;
     property SelectedHostMediaAccessControlAddress: string
       read GetSelectedMediaAccessControlHostAddress;
     property ComponentSelectedToolchain: TPackageManagerRequestToolchain read
@@ -409,7 +420,7 @@ uses
   LCLIntf, IniFiles, StrUtils, FPHttpClient, OpenSSLSockets,
   UITools, GetVer, SysTools, PostInst, Settings,
   Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil,
-  RunTools, RefBase, Elevate, FSTools, Unpack, CBTools, EnumCom;
+  RunTools, RefBase, Elevate, FSTools, Unpack, CBTools, EnumCom, WtTools;
 
 const
   KALLISTI_VERSION_FORMAT = '%s (%s)';
@@ -626,6 +637,7 @@ procedure TfrmMain.rgxTerminalOptionClick(Sender: TObject);
 begin
   DreamcastSoftwareDevelopmentKitManager.Environment
     .Settings.UseMinTTY := (rgxTerminalOption.ItemIndex = 1);
+  UpdateWindowsTerminalControls;
 end;
 
 procedure TfrmMain.tmDisplayKallistiPortsTimer(Sender: TObject);
@@ -951,6 +963,14 @@ begin
     end;
 end;
 
+function TfrmMain.GetSelectedSerialBaudrate: Integer;
+begin
+  if cbxDreamcastToolSerialBaudrate.ItemIndex = 0 then
+    Result := StrToIntDef(edtDreamcastToolSerialBaudrateCustom.Text, 0)
+  else
+    Result := StrToIntDef(cbxDreamcastToolSerialBaudrate.Text, 0);
+end;
+
 function TfrmMain.GetSelectedSerialPort: Integer;
 var
   SelectedItem: TSerialPortListUserInterfaceItem;
@@ -981,7 +1001,7 @@ begin
 
     // Dreamcast Tool
     cbxDreamcastToolSerialPort.ItemIndex := SerialPortToItemIndex(DreamcastTool.SerialPort);
-    cbxDreamcastToolSerialBaudrate.ItemIndex := Integer(DreamcastTool.SerialBaudrate);
+    SelectedSerialBaudrate := DreamcastTool.SerialBaudrate;
     ckxDreamcastToolSerialAlternateBaudrate.Checked := DreamcastTool.SerialBaudrateAlternate;
     ckxDreamcastToolSerialExternalClock.Checked := DreamcastTool.SerialExternalClock;
     ckxDreamcastToolSerialDumbTerminal.Checked := DreamcastTool.SerialDumbTerminal;
@@ -1024,6 +1044,23 @@ begin
   btnPortInstall.Enabled := False;
   btnPortUninstall.Enabled := False;
   btnPortUpdate.Enabled := False;
+end;
+
+procedure TfrmMain.SetSelectedSerialBaudrate(AValue: Integer);
+var
+  ItemIndex: Integer;
+  Baudrate: string;
+
+begin
+  Baudrate := IntToStr(AValue);
+  ItemIndex := cbxDreamcastToolSerialBaudrate.Items.IndexOf(Baudrate);
+  if ItemIndex <> -1 then
+    cbxDreamcastToolSerialBaudrate.ItemIndex := ItemIndex
+  else
+  begin
+    cbxDreamcastToolSerialBaudrate.ItemIndex := 0;
+    edtDreamcastToolSerialBaudrateCustom.Text := Baudrate;
+  end;
 end;
 
 procedure TfrmMain.UpdateKallistiPortControls;
@@ -1127,14 +1164,18 @@ begin
   gbxDreamcastToolInternetProtocol.Enabled := (Kind = 2);
   gbxDreamcastToolCommon.Enabled := (Kind = 1) or (Kind = 2);
   gbxDreamcastToolCustomCommand.Enabled := (Kind = 3);
-  UpdateDreamcastToolAlternateCheckbox;
+  UpdateDreamcastToolSerialOptionControls;
   UpdateDreamcastToolMediaAccessControlAddressControls;
 end;
 
-procedure TfrmMain.UpdateDreamcastToolAlternateCheckbox;
+procedure TfrmMain.UpdateDreamcastToolSerialOptionControls;
 begin
+  edtDreamcastToolSerialBaudrateCustom.Enabled := (cbxDreamcastToolSerialBaudrate.ItemIndex = 0);
   ckxDreamcastToolSerialAlternateBaudrate.Enabled := (gbxDreamcastToolSerial.Enabled)
-    and (cbxDreamcastToolSerialBaudrate.ItemIndex >= 8);
+    and (
+        (SelectedSerialBaudrate >= DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_ALTERNATE_ALLOWED)
+      or edtDreamcastToolSerialBaudrateCustom.Enabled
+    );
 end;
 
 procedure TfrmMain.UpdateOptionsControls;
@@ -1176,6 +1217,7 @@ begin
     if Ruby.Repository.Offline then
       cbxUrlRuby.Text := EmptyStr;
   end;
+  UpdateWindowsTerminalControls;
 end;
 
 procedure TfrmMain.UpdateRepositories;
@@ -1199,6 +1241,19 @@ begin
   end;
 end;
 
+procedure TfrmMain.UpdateWindowsTerminalControls;
+var
+  IsWindowsShell: Boolean;
+
+begin
+  IsWindowsShell := (not DreamcastSoftwareDevelopmentKitManager
+    .Environment.Settings.UseMinTTY);
+  btnWindowsTerminalInstall.Enabled := IsWindowsShell and
+    IsWindowsTerminalInstalled and (not IsWindowsTerminalIntegrationInstalled);
+  btnWindowsTerminalUninstall.Enabled := IsWindowsShell
+    and IsWindowsTerminalInstalled and IsWindowsTerminalIntegrationInstalled;
+end;
+
 procedure TfrmMain.InstallDreamcastTool;
 begin
   if not fLoadingConfiguration then
@@ -1208,7 +1263,7 @@ begin
       AttachConsoleFileserver := ckxDreamcastToolAttachConsoleFileServer.Checked;
       ClearScreenBeforeDownload := ckxDreamcastToolClearScreenBeforeDownload.Checked;
       Kind := TDreamcastToolKind(rgbDreamcastTool.ItemIndex);
-      SerialBaudrate := TDreamcastToolSerialBaudrate(cbxDreamcastToolSerialBaudrate.ItemIndex);
+      SerialBaudrate := SelectedSerialBaudrate;
       SerialBaudrateAlternate := ckxDreamcastToolSerialAlternateBaudrate.Checked;
       SerialDumbTerminal := ckxDreamcastToolSerialDumbTerminal.Checked;
       SerialPort := SelectedSerialPort;
@@ -2325,7 +2380,7 @@ begin
     ckxDreamcastToolInternetProtocolUseARP.Checked := DREAMCAST_TOOL_DEFAULT_MEDIA_ACCESS_CONTROL_ENABLED;
     ckxDreamcastToolSerialDumbTerminal.Checked := DREAMCAST_TOOL_DEFAULT_SERIAL_DUMB_TERMINAL;
     ckxDreamcastToolSerialExternalClock.Checked := DREAMCAST_TOOL_DEFAULT_SERIAL_EXTERNAL_CLOCK;
-    cbxDreamcastToolSerialBaudrate.ItemIndex := DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE;
+    SelectedSerialBaudrate := DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE;
     ckxDreamcastToolSerialAlternateBaudrate.Checked := DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_ALTERNATE;
 
     // Save changes
@@ -2579,9 +2634,25 @@ begin
   SetCodeBlocksState(True);
 end;
 
+procedure TfrmMain.btnWindowsTerminalInstallClick(Sender: TObject);
+begin
+  if MsgBox(DialogQuestionTitle, WindowsTerminalInstallText, mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
+    if not InstallWindowsTerminalIntegration then
+      MsgBox(DialogWarningTitle, WindowsTerminalInstallFailedText, mtWarning, [mbOk]);
+  UpdateWindowsTerminalControls;
+end;
+
+procedure TfrmMain.btnWindowsTerminalUninstallClick(Sender: TObject);
+begin
+  if MsgBox(DialogQuestionTitle, WindowsTerminalUninstallText, mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
+    if not UninstallWindowsTerminalIntegration then
+      MsgBox(DialogWarningTitle, WindowsTerminalUninstallFailedText, mtWarning, [mbOk]);
+  UpdateWindowsTerminalControls;
+end;
+
 procedure TfrmMain.cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
 begin
-  UpdateDreamcastToolAlternateCheckbox;
+  UpdateDreamcastToolSerialOptionControls;
   InstallDreamcastTool;
 end;
 

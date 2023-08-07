@@ -71,6 +71,10 @@ resourcestring
   PackageUpdateAvailable = 'A new version of %s is available (%s). Download it now?';
   PackageUpToDate = '%s is up-to-date.';
   UnableToRetrieveRemotePackageVersion = 'Unable to check if %s is up-to-date.\nPlease check your Internet connection.';
+  WindowsTerminalInstallText = 'Are you sure to install the Windows Terminal integration?';
+  WindowsTerminalInstallFailedText = 'An error occured while installing the Windows Terminal integration... Try to reinstall Windows Terminal.';
+  WindowsTerminalUninstallText = 'Are you sure to uninstall the Windows Terminal integration?';
+  WindowsTerminalUninstallFailedText = 'An error occured while uninstalling the Windows Terminal integration... You may remove the profile manually directly in Windows Terminal.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, please wait...';

@@ -54,6 +54,7 @@ type
 implementation
 
 uses
+  SysTools,
   FSTools,
   FileUtil,
   IniFiles;
@@ -63,7 +64,7 @@ uses
 function TDreamcastToolManager.IsAlternateBaudrateEnabled: Boolean;
 begin
   with Settings do
-    Result := (SerialBaudrate >= dtb115200) and SerialBaudrateAlternate;
+    Result := SerialBaudrateAlternateAllowed and SerialBaudrateAlternate;
 end;
 
 function TDreamcastToolManager.GetBuilt: Boolean;
@@ -200,7 +201,7 @@ begin
         dtkSerial:
           begin
             Concat(Format('-t %s', [SerialPortToString(SerialPort)]));
-            Concat(Format('-b %s', [SerialBaudrateToString(SerialBaudrate)]));
+            Concat(Format('-b %d', [SerialBaudrate]));
             if IsAlternateBaudrateEnabled then
               Concat('-e');
             if SerialDumbTerminal then
@@ -223,6 +224,9 @@ begin
     CommandLine := Settings.CustomArguments;
 
   Result := Trim(CommandLine);
+{$IFDEF DEBUG}
+  DebugLog('GenerateDreamcastToolCommandLine: "' + Result + '"');
+{$ENDIF}
 end;
 
 constructor TDreamcastToolManager.Create(
