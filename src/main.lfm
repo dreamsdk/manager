@@ -474,7 +474,7 @@ object frmMain: TfrmMain
           Top = 32
           Width = 80
           ItemHeight = 13
-          ItemIndex = 20
+          ItemIndex = 9
           Items.Strings = (
             'Custom'
             '300'
@@ -501,7 +501,7 @@ object frmMain: TfrmMain
           OnSelect = cbxDreamcastToolSerialBaudrateSelect
           Style = csDropDownList
           TabOrder = 1
-          Text = '1562500'
+          Text = '115200'
         end
         object ckxDreamcastToolSerialAlternateBaudrate: TCheckBox
           Left = 241
@@ -564,6 +564,7 @@ object frmMain: TfrmMain
           NumbersOnly = True
           OnChange = cbxDreamcastToolSerialBaudrateSelect
           TabOrder = 5
+          TextHint = 'Baudrate'
         end
       end
       object gbxDreamcastToolInternetProtocol: TGroupBox

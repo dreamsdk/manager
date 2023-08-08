@@ -1052,6 +1052,11 @@ var
   Baudrate: string;
 
 begin
+  // Set by default to 115200 if an invalid value has been passed...
+  if (AValue <= DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_MINIMAL_ALLOWED) then
+    AValue := DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_ALTERNATE_ALLOWED;
+
+  // Select a value in the list if possible, if not, switch to Custom
   Baudrate := IntToStr(AValue);
   ItemIndex := cbxDreamcastToolSerialBaudrate.Items.IndexOf(Baudrate);
   if ItemIndex <> -1 then
@@ -1173,9 +1178,15 @@ begin
   edtDreamcastToolSerialBaudrateCustom.Enabled := (cbxDreamcastToolSerialBaudrate.ItemIndex = 0);
   ckxDreamcastToolSerialAlternateBaudrate.Enabled := (gbxDreamcastToolSerial.Enabled)
     and (
-        (SelectedSerialBaudrate >= DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_ALTERNATE_ALLOWED)
+         (SelectedSerialBaudrate >= DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_ALTERNATE_ALLOWED)
       or edtDreamcastToolSerialBaudrateCustom.Enabled
     );
+  with edtDreamcastToolSerialBaudrateCustom do
+    if not Focused and CanSetFocus then
+    begin
+      SetFocus;
+      SelectAll;
+    end;
 end;
 
 procedure TfrmMain.UpdateOptionsControls;
