@@ -43,9 +43,9 @@ const
   // Linked to TToolchainVersionKind
   // This should be in the same order!
   SUPPORTED_GCC_VERSIONS: array[0..2] of string = (
-    '4',  // tvkLegacy
-    '9',  // tvkStable
-    '12'  // tvkTesting
+     '4',   // tvkLegacy
+     '9',   // tvkOldStable
+    '12'    // tvkStable
   );
 
 type
@@ -54,11 +54,12 @@ type
   EEmptyRepositoryUrl = class(EEnvironment);
 
   { TToolchainVersionKind }
+  // Linked to "TPackageManagerRequestToolchain" in "pkgmgr"
   TToolchainVersionKind = (
     tvkUndefined,
-    tvkLegacy,
-    tvkStable,
-	tvkTesting
+    tvkLegacy,      //  4
+    tvkOldStable,   //  9
+	  tvkStable       // 12
   );
 
   { TDebuggerVersionKind }
@@ -212,16 +213,16 @@ type
   private
     fDebugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger;
     fLegacy: TFileName;
-    fStable: TFileName;
-	fTesting: TFileName;
+    fOldStable: TFileName;
+	  fStable: TFileName;
   public
     constructor Create;
     destructor Destroy; override;
     property Debugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger
       read fDebugger;
     property Legacy: TFileName read fLegacy;
-    property Stable: TFileName read fStable;
-	property Testing: TFileName read fTesting;
+    property OldStable: TFileName read fOldStable;
+	  property Stable: TFileName read fStable;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystemToolchain }
@@ -650,8 +651,8 @@ begin
       fPython312 := PackagesBase + 'sh-elf-gdb-python-3.12-bin.7z';
     end;
     fPackages.fLegacy := PackagesBase + 'toolchain-legacy-sh-elf-bin.7z';
-    fPackages.fStable := PackagesBase + 'toolchain-stable-sh-elf-bin.7z';
-	fPackages.fTesting := PackagesBase + 'toolchain-testing-sh-elf-bin.7z';
+    fPackages.fOldStable := PackagesBase + 'toolchain-oldstable-sh-elf-bin.7z';
+	  fPackages.fStable := PackagesBase + 'toolchain-stable-sh-elf-bin.7z';
   end;
 
   // Toolchain for ARM
@@ -665,8 +666,8 @@ begin
     fGDBExecutable := EmptyStr; // Not Applicable
     fNewlibBinary := EmptyStr; // Not Applicable
     fPackages.fLegacy := PackagesBase + 'toolchain-legacy-arm-eabi-bin.7z';
-    fPackages.fStable := PackagesBase + 'toolchain-stable-arm-eabi-bin.7z';
-	fPackages.fTesting := PackagesBase + 'toolchain-testing-arm-eabi-bin.7z';
+    fPackages.fOldStable := PackagesBase + 'toolchain-oldstable-arm-eabi-bin.7z';
+	  fPackages.fStable := PackagesBase + 'toolchain-stable-arm-eabi-bin.7z';
   end;
 
   // Toolchain for Win32 (Windows)

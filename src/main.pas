@@ -988,7 +988,7 @@ end;
 
 function TfrmMain.GetSelectedToolchain: TPackageManagerRequestToolchain;
 begin
-  Result := TPackageManagerRequestToolchain(cbxToolchain.ItemIndex);
+  Result := StringToPackageManagerRequestToolchain(cbxToolchain.Text);
 end;
 
 procedure TfrmMain.LoadConfiguration;
@@ -2044,8 +2044,8 @@ begin
   try
     // Check if requested Toolchains version are compatible with current OS
     IsValidToolchainsVersionSelected :=
-      ((ComponentSelectedToolchain = pmrtTesting) and IsWindowsVistaOrGreater)
-        or (ComponentSelectedToolchain <> pmrtTesting);
+      ((ComponentSelectedToolchain = pmrtStable) and IsWindowsVistaOrGreater)
+        or (ComponentSelectedToolchain <> pmrtStable);
 
     // Check if requested Python version is available
     SelectedPythonVersion := EmptyStr;
@@ -2058,7 +2058,7 @@ begin
     WriteLn('  Selected Debugger: ', ComponentSelectedDebugger, ' [', IsValidPythonVersionSelected, ']');
   {$ENDIF}
 
-    // Added if the Testing toolchain is selected on Windows XP
+    // Added if the Stable toolchain is selected on Windows XP
     if not IsValidToolchainsVersionSelected then
       ErrorMessages.Add(UnpackConfirmationInvalidToolchainsText);
 

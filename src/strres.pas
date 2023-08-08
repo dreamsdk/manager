@@ -129,7 +129,7 @@ resourcestring
   UnpackConfirmationText = 'This will update the components%s%s. Continue%s?';
   UnpackConfirmationPayAttentionText = ', but pay attention: ';
   UnpackConfirmationAndKeywordText = 'and';
-  UnpackConfirmationInvalidToolchainsText = 'Testing toolchain is incompatible with your current OS';
+  UnpackConfirmationInvalidToolchainsText = 'Stable toolchain is incompatible with your current OS';
   UnpackConfirmationInvalidPythonText = 'Python %s 32-bits runtime was not detected';
   UnpackConfirmationQuestionAnywayText = ' anyway';
 

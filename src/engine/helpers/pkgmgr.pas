@@ -35,12 +35,12 @@ type
     pmroRuby
   );
 
-  // Linked to TToolchainVersionKind from "environ"
+  // Linked to TToolchainVersionKind from "Environ"
   // Please keep the same order please!
   TPackageManagerRequestToolchain = (
-    pmrtLegacy,
-    pmrtStable,
-    pmrtTesting
+    pmrtLegacy,       //  4
+    pmrtOldStable,    //  9
+    pmrtStable        // 12
   );
 
   TPackageManagerRequestDebugger = (
@@ -104,11 +104,27 @@ type
 
 function IsDebuggerPythonVersionInstalled(const Version: TPackageManagerRequestDebugger;
   var VersionWithDot: string): Boolean;
+function StringToPackageManagerRequestToolchain(
+  const S: string): TPackageManagerRequestToolchain;
 
 implementation
 
 uses
   PEUtils;
+
+function StringToPackageManagerRequestToolchain(
+  const S: string): TPackageManagerRequestToolchain;
+begin
+  Result := Default(TPackageManagerRequestToolchain);
+  case UpperCase(S) of
+    'LEGACY':
+      Result := pmrtLegacy;
+    'OLD STABLE':
+      Result := pmrtOldStable;
+    'STABLE':
+      Result := pmrtStable;
+  end;
+end;
 
 function IsDebuggerPythonVersionInstalled(const Version: TPackageManagerRequestDebugger;
   var VersionWithDot: string): Boolean;
@@ -292,15 +308,15 @@ begin
           Add(FileSystem.ToolchainARM.Packages.Legacy, FileSystem.ToolchainBase);
           Add(FileSystem.ToolchainSuperH.Packages.Legacy, FileSystem.ToolchainBase);
         end;	
+      pmrtOldStable:
+        begin
+          Add(FileSystem.ToolchainARM.Packages.OldStable, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainSuperH.Packages.OldStable, FileSystem.ToolchainBase);
+        end;	
       pmrtStable:
         begin
           Add(FileSystem.ToolchainARM.Packages.Stable, FileSystem.ToolchainBase);
           Add(FileSystem.ToolchainSuperH.Packages.Stable, FileSystem.ToolchainBase);
-        end;	
-      pmrtTesting:
-        begin
-          Add(FileSystem.ToolchainARM.Packages.Testing, FileSystem.ToolchainBase);
-          Add(FileSystem.ToolchainSuperH.Packages.Testing, FileSystem.ToolchainBase);
         end;
     end;
   end;

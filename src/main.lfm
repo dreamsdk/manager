@@ -29,8 +29,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 666
-    ActivePage = tsOptions
-    TabIndex = 6
+    ActivePage = tsComponents
+    TabIndex = 7
     TabOrder = 1
     OnChange = pcMainChange
     object tsHome: TTabSheet
@@ -1632,6 +1632,7 @@ object frmMain: TfrmMain
           Top = 36
           Width = 180
           ItemHeight = 13
+          ItemIndex = 0
           Items.Strings = (
             'Disable Python for GDB'
             'Python 2.7'
@@ -1648,6 +1649,7 @@ object frmMain: TfrmMain
           )
           Style = csDropDownList
           TabOrder = 0
+          Text = 'Disable Python for GDB'
         end
         object btnComponentsApply: TButton
           Tag = 2
@@ -1665,11 +1667,11 @@ object frmMain: TfrmMain
           Top = 36
           Width = 180
           ItemHeight = 13
-          ItemIndex = 1
+          ItemIndex = 0
           Items.Strings = (
-            'Legacy'
             'Stable'
-            'Testing'
+            'Old Stable'
+            'Legacy'
           )
           Style = csDropDownList
           TabOrder = 2
