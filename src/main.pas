@@ -234,7 +234,7 @@ type
     rbnComponentsChangeDebugger: TRadioButton;
     rbnComponentsChangeToolchain: TRadioButton;
     rbnComponentsNoChange: TRadioButton;
-    rgbDreamcastTool: TRadioGroup;
+    rgxDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
     sddIdeCodeBlocks: TSelectDirectoryDialog;
     tsRuby: TTabSheet;
@@ -303,7 +303,7 @@ type
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
     procedure pcMainChange(Sender: TObject);
     procedure rbnComponentsNoChangeChange(Sender: TObject);
-    procedure rgbDreamcastToolSelectionChanged(Sender: TObject);
+    procedure rgxDreamcastToolSelectionChanged(Sender: TObject);
     procedure rgxTerminalOptionClick(Sender: TObject);
     procedure tmDisplayKallistiPortsTimer(Sender: TObject);
     procedure tmrShellThreadTerminateTimer(Sender: TObject);
@@ -627,7 +627,7 @@ begin
   cbxDebugger.Enabled := lblDebugger.Enabled;
 end;
 
-procedure TfrmMain.rgbDreamcastToolSelectionChanged(Sender: TObject);
+procedure TfrmMain.rgxDreamcastToolSelectionChanged(Sender: TObject);
 begin
   InstallDreamcastTool;
   RefreshViewDreamcastTool;
@@ -1014,7 +1014,7 @@ begin
       HostMacToItemIndex(DreamcastTool.HostMediaAccessControlAddress);
     edtDreamcastToolCustomExecutable.Text := DreamcastTool.CustomExecutable;
     edtDreamcastToolCustomArguments.Text := DreamcastTool.CustomArguments;
-    rgbDreamcastTool.ItemIndex := Integer(DreamcastTool.Kind);
+    rgxDreamcastTool.ItemIndex := Integer(DreamcastTool.Kind);
   end;
 end;
 
@@ -1164,7 +1164,7 @@ var
   Kind: Integer;
 
 begin
-  Kind := rgbDreamcastTool.ItemIndex;
+  Kind := rgxDreamcastTool.ItemIndex;
   gbxDreamcastToolSerial.Enabled := (Kind = 1);
   gbxDreamcastToolInternetProtocol.Enabled := (Kind = 2);
   gbxDreamcastToolCommon.Enabled := (Kind = 1) or (Kind = 2);
@@ -1254,15 +1254,18 @@ end;
 
 procedure TfrmMain.UpdateWindowsTerminalControls;
 var
-  IsWindowsShell: Boolean;
+  TerminalVersion: string;
 
 begin
-  IsWindowsShell := (not DreamcastSoftwareDevelopmentKitManager
-    .Environment.Settings.UseMinTTY);
-  btnWindowsTerminalInstall.Enabled := IsWindowsShell and
-    IsWindowsTerminalInstalled and (not IsWindowsTerminalIntegrationInstalled);
-  btnWindowsTerminalUninstall.Enabled := IsWindowsShell
-    and IsWindowsTerminalInstalled and IsWindowsTerminalIntegrationInstalled;
+  TerminalVersion := TerminalOptionsWindowsPrompt;
+  if IsWindowsTerminalInstalled then
+    TerminalVersion := TerminalOptionsWindowsTerminal;
+  rgxTerminalOption.Items[0] := Format(rgxTerminalOption.Items[0], [TerminalVersion]);
+
+  btnWindowsTerminalInstall.Enabled := IsWindowsTerminalInstalled
+    and (not IsWindowsTerminalIntegrationInstalled);
+  btnWindowsTerminalUninstall.Enabled := IsWindowsTerminalInstalled
+    and IsWindowsTerminalIntegrationInstalled;
 end;
 
 procedure TfrmMain.InstallDreamcastTool;
@@ -1273,7 +1276,7 @@ begin
     begin
       AttachConsoleFileserver := ckxDreamcastToolAttachConsoleFileServer.Checked;
       ClearScreenBeforeDownload := ckxDreamcastToolClearScreenBeforeDownload.Checked;
-      Kind := TDreamcastToolKind(rgbDreamcastTool.ItemIndex);
+      Kind := TDreamcastToolKind(rgxDreamcastTool.ItemIndex);
       SerialBaudrate := SelectedSerialBaudrate;
       SerialBaudrateAlternate := ckxDreamcastToolSerialAlternateBaudrate.Checked;
       SerialDumbTerminal := ckxDreamcastToolSerialDumbTerminal.Checked;
@@ -2384,8 +2387,8 @@ begin
     ResetText(cbxUrlRuby, GetDefaultUrlRuby);
 
     // Dreamcast Tool (only options, not RS232 cable/IP settings...)
-    rgbDreamcastTool.ItemIndex := DREAMCAST_TOOL_DEFAULT_KIND;
-    rgbDreamcastToolSelectionChanged(Self);
+    rgxDreamcastTool.ItemIndex := DREAMCAST_TOOL_DEFAULT_KIND;
+    rgxDreamcastToolSelectionChanged(Self);
     ckxDreamcastToolAttachConsoleFileServer.Checked := DREAMCAST_TOOL_DEFAULT_ATTACH_CONSOLE_FILESERVER;
     ckxDreamcastToolClearScreenBeforeDownload.Checked := DREAMCAST_TOOL_DEFAULT_CLEAR_SCREEN_BEFORE_DOWNLOAD;
     ckxDreamcastToolInternetProtocolUseARP.Checked := DREAMCAST_TOOL_DEFAULT_MEDIA_ACCESS_CONTROL_ENABLED;
