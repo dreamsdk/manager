@@ -122,6 +122,9 @@ resourcestring
   RubyInitializeText = 'Initialize Ruby configuration...';
   RubyBuildText = 'Building Ruby library...';
   PostInstallOperationText = '%s Setup';
+  ToolchainsUnpackingText = 'Unpacking toolchains packages...';
+  ToolchainsUnpackingPickupText = 'Processing: %s';
+  ToolchainsUnpackingProgressText = 'Package Manager: %d%% / Progress Event';
 
   // PackageManager | Unpack
   UnpackingText = 'Unpacking...';

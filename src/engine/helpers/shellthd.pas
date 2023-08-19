@@ -5,7 +5,12 @@ unit ShellThd;
 interface
 
 uses
-  Classes, SysUtils, DCSDKMgr, PortMgr, Environ;
+  Classes,
+  SysUtils,
+  DCSDKMgr,
+  PortMgr,
+  Environ,
+  PkgMgr;
 
 type
   TShellThreadInputRequest = (
@@ -71,6 +76,7 @@ type
     function ProcessKallistiOS: string;
     function ProcessKallistiPortSingle: string;
     function ProcessKallistiPorts: string;
+    procedure ProcessUnpackToolchains;
     procedure SetOperationSuccess(const Success: Boolean);
   public
     constructor Create(CreateSuspended: Boolean);
@@ -96,14 +102,29 @@ procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
 implementation
 
 uses
-  Forms, Main, Progress, StrRes, PostInst, SysTools, Version;
+  Forms,
+  Progress,
+  StrRes,
+  PostInst,
+  SysTools,
+  Version,
+  Main;
 
 type
   { TShellThreadHelper }
   TShellThreadHelper = class(TObject)
+  private
+    procedure AddNewLine(const NewLine: string);
   public
     procedure HandleTerminate(Sender: TObject);
     procedure HandleNewLine(Sender: TObject; NewLine: string);
+    procedure HandlePackageManagerStart(Sender: TObject);
+    procedure HandlePackagePickup(Sender: TObject;
+      const SourceFileName, OutputDirectory: TFileName);
+    procedure HandlePackageManagerProgress(Sender: TObject;
+      const CurrentValue: Integer; const TotalValue: Integer);
+    procedure HandlePackageManagerTerminate(Sender: TObject;
+      const Success: Boolean; const Aborted: Boolean);
   end;
 
   { TAbortShellThread }
@@ -120,6 +141,7 @@ type
 var
   ShellThread: TShellThread;
   ShellThreadHelper: TShellThreadHelper;
+  ShellThreadPackageManager: TPackageManager;
 
 procedure AbortThreadOperation;
 begin
@@ -132,6 +154,11 @@ begin
 
   Sleep(500);
 
+  // Toolchains Thread
+  if Assigned(ShellThreadPackageManager) and ShellThreadPackageManager.Running then
+    ShellThreadPackageManager.Abort;
+
+  // KOS, KOS Ports, Dreamcast Tool, and Ruby Thread
   if Assigned(ShellThread) then
   begin
     ShellThread.Manager.Environment.AbortShellCommand;
@@ -151,6 +178,8 @@ begin
   begin
     ShellThread.fPaused := True;
     ShellThread.Manager.Environment.PauseShellCommand;
+    if Assigned(ShellThreadPackageManager) and ShellThreadPackageManager.Running then
+      ShellThreadPackageManager.Pause;
     Application.ProcessMessages;
   end;
 end;
@@ -161,6 +190,8 @@ begin
   begin
     ShellThread.fPaused := False;
     ShellThread.Manager.Environment.ResumeShellCommand;
+    if Assigned(ShellThreadPackageManager) and ShellThreadPackageManager.Running then
+      ShellThreadPackageManager.Resume;
     Application.ProcessMessages;
   end;
 end;
@@ -203,6 +234,20 @@ var
 
   procedure StartupThread;
   begin
+    // This will be used for installing toolchains/debugger after installing DreamSDK (mainly)
+    ShellThreadPackageManager := TPackageManager.Create(
+      DreamcastSoftwareDevelopmentKitManager, False);
+    with ShellThreadPackageManager do
+    begin
+      EnableBusyWaitingOnExecution := True; // Active wait, as we are already on ShellThread
+      Operation := pmrAutoDetectDebuggerToolchain; // Detect if Debugger/Toolchain need to be replaced
+      OnStart := @ShellThreadHelper.HandlePackageManagerStart;
+      OnPackagePickup := @ShellThreadHelper.HandlePackagePickup;
+      OnProgress := @ShellThreadHelper.HandlePackageManagerProgress;
+      OnTerminate := @ShellThreadHelper.HandlePackageManagerTerminate;
+    end;
+
+    // Normal thread dealing with KOS, KOS Ports, DC Tool and Ruby
     ShellThread := TShellThread.Create(True);
     with ShellThread do
     begin
@@ -301,14 +346,65 @@ end;
 
 { TShellThreadHelper }
 
+procedure TShellThreadHelper.AddNewLine(const NewLine: string);
+begin
+  frmProgress.AddNewLine(NewLine);
+end;
+
 procedure TShellThreadHelper.HandleTerminate(Sender: TObject);
 begin
-  ShellThread := nil;
+  ShellThread := nil; // FreeOnTerminate
+  if Assigned(ShellThreadPackageManager) then
+    FreeAndNil(ShellThreadPackageManager);
 end;
 
 procedure TShellThreadHelper.HandleNewLine(Sender: TObject; NewLine: string);
 begin
-  frmProgress.AddNewLine(NewLine);
+  AddNewLine(NewLine);
+end;
+
+procedure TShellThreadHelper.HandlePackageManagerStart(Sender: TObject);
+begin
+  ShellThread.UpdateProgressText(ToolchainsUnpackingText);
+end;
+
+procedure TShellThreadHelper.HandlePackagePickup(Sender: TObject;
+  const SourceFileName, OutputDirectory: TFileName);
+begin
+  AddNewLine(Format(ToolchainsUnpackingPickupText, [
+    ExtractFileName(SourceFileName)
+  ]));
+end;
+
+procedure TShellThreadHelper.HandlePackageManagerProgress(Sender: TObject;
+  const CurrentValue: Integer; const TotalValue: Integer);
+begin
+{$IFDEF DEBUG}
+  DebugLog(Format('HandlePackageManagerProgress: %d%% (%d%%)', [
+    CurrentValue,
+    TotalValue
+  ]));
+{$ENDIF}
+
+  AddNewLine(Format(ToolchainsUnpackingProgressText, [CurrentValue]));
+end;
+
+procedure TShellThreadHelper.HandlePackageManagerTerminate(Sender: TObject;
+  const Success: Boolean; const Aborted: Boolean);
+begin
+{$IFDEF DEBUG}
+  DebugLog(Format('HandlePackageManagerTerminate: Success=%s, Aborted=%s', [
+    DebugBoolToStr(Success),
+    DebugBoolToStr(Aborted)
+  ]));
+{$ENDIF}
+
+  // Updating success status to the main ShellThread
+  ShellThread.fOperationSuccess := ShellThread.fOperationSuccess and Success;
+
+  // Process cancelled while unpacking toolchains...
+  if Aborted then
+    AbortThreadOperation;
 end;
 
 { TShellThread }
@@ -365,8 +461,11 @@ begin
   fResponse := stoNothing;
   fOperationUpdateState := uosUndefined;
 
-  Buffer := '';
+  // Process Unpacking Toolchains (if required)
+  // This is usually used while installing DreamSDK only.
+  ProcessUnpackToolchains;
 
+  // Process KOS, KOS Ports setup or KOS single port
   if FileExists(Manager.Environment.FileSystem.Shell.ShellExecutable) then
     case fContext of
       stcKallisti:
@@ -380,8 +479,10 @@ begin
   begin
     // This should never happens...
     fOperationSuccess := False;
-    fOperationResultOutput := Format(InstallationProblem, [Manager.Environment
-      .Settings.InstallPath, Manager.Environment.Settings.FileName]);
+    fOperationResultOutput := Format(InstallationProblem, [
+      Manager.Environment.Settings.InstallPath,
+      Manager.Environment.Settings.FileName
+    ]);
     UpdateProgressText(fOperationResultOutput);
   end;
 
@@ -756,6 +857,11 @@ begin
       end;
 
   end;
+end;
+
+procedure TShellThread.ProcessUnpackToolchains;
+begin
+  ShellThreadPackageManager.Execute;
 end;
 
 procedure TShellThread.SetOperationSuccess(const Success: Boolean);

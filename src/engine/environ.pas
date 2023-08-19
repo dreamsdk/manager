@@ -45,7 +45,7 @@ const
   SUPPORTED_GCC_VERSIONS: array[0..2] of string = (
      '4',   // tvkLegacy
      '9',   // tvkOldStable
-    '12'    // tvkStable
+    '13'    // tvkStable
   );
 
 type
@@ -59,7 +59,7 @@ type
     tvkUndefined,
     tvkLegacy,      //  4
     tvkOldStable,   //  9
-	  tvkStable       // 12
+    tvkStable       // 13
   );
 
   { TDebuggerVersionKind }
@@ -193,7 +193,7 @@ type
     fPython310: TFileName;
     fPython311: TFileName;
     fPython312: TFileName;
-  public
+  published
     property PythonDisabled: TFileName read fPythonDisabled;
     property Python27: TFileName read fPython27;
     property Python33: TFileName read fPython33;

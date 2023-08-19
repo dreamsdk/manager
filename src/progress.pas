@@ -239,15 +239,20 @@ var
     Buffer: string;
 
   begin
-    Result := ParseValue(':', PROGRESS_LINE + ' (', Message); // for git
-    if Result = -1 then
+    // for Git
+    Result := ParseValue(':', PROGRESS_LINE + ' (', Message);
+
+    // for Wget and Package Manager
+    if (Result = -1) then
     begin
       i := Pos(PROGRESS_LINE, Message);
       Buffer := Copy(Message, i - 4, i - 1);
-      Result := ParseValue(' ', PROGRESS_LINE, Buffer);  // for wget
-      if (Result = -1) and (IsInString(FULL, Buffer)) then
-        Result := 100;
+      Result := ParseValue(' ', PROGRESS_LINE, Buffer);
     end;
+
+    // If we detect "100%" then the value is 100...
+    if (Result = -1) and (IsInString(FULL, Buffer)) then
+      Result := 100;
   end;
 
 begin
