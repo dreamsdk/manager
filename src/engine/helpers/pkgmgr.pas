@@ -634,7 +634,8 @@ begin
       pmrdPython312:
         DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python312;	
     end;
-    Add(DebuggerPackage, FileSystem.ToolchainBase);
+    if not IsEmpty(DebuggerPackage) then
+      Add(DebuggerPackage, FileSystem.ToolchainBase);
   end;
 
   // Offline only
