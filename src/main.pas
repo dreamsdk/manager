@@ -1121,10 +1121,25 @@ begin
 {$ENDIF}
 end;
 
+// TODO: REFACTOR ME
 procedure TfrmMain.UpdateComponentControls;
 var
   DebuggerPackage: TDebuggerVersionKind;
   ToolchainPackage: TToolchainVersionKind;
+
+  // TODO: FIXME
+  function _setItemIndex: Integer;
+  begin
+    (* This should be dynamic. This will refactored later. *)
+    case ToolchainPackage of
+      tvkLegacy:
+        Result := 2;
+      tvkOldStable:
+        Result := 1;
+      tvkStable:
+        Result := 0;
+    end;
+  end;
 
 begin
   rbnComponentsNoChange.Checked := True;
@@ -1139,7 +1154,7 @@ begin
   ToolchainPackage := DreamcastSoftwareDevelopmentKitManager.Versions
     .ToolchainSuperH.PackageToolchain;
   if ToolchainPackage <> tvkUndefined then
-    cbxToolchain.ItemIndex := Integer(ToolchainPackage) - 1; // -1 for Undefined
+    cbxToolchain.ItemIndex := _setItemIndex;
 end;
 
 procedure TfrmMain.UpdateDreamcastToolMediaAccessControlAddressControls;
