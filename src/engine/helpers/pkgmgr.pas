@@ -195,7 +195,7 @@ begin
   Result := True;
 
   VersionWithoutDot := EmptyStr;
-  i := Integer(Version) - 1;
+  i := Integer(Version) - 2; // we ignore pmrdUndefined + pmrdPythonDisabled
   if (i <> -1) then
   begin
     Result := False;

@@ -927,7 +927,7 @@ end;
 
 function TfrmMain.GetSelectedDebugger: TPackageManagerRequestDebugger;
 begin
-  Result := TPackageManagerRequestDebugger(cbxDebugger.ItemIndex);
+  Result := TPackageManagerRequestDebugger(cbxDebugger.ItemIndex + 1); // Ignore pmrdUndefined
 end;
 
 function TfrmMain.GetSelectedKallistiPort: TKallistiPortItem;
@@ -986,6 +986,7 @@ begin
     end;
 end;
 
+// TODO: REFACTOR ME
 function TfrmMain.GetSelectedToolchain: TPackageManagerRequestToolchain;
 begin
   Result := StringToPackageManagerRequestToolchain(cbxToolchain.Text);
