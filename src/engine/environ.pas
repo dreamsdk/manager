@@ -2,6 +2,10 @@ unit Environ;
 
 {$mode objfpc}{$H+}
 
+// Removing libdep bfd plugin on Windows
+// See: https://sourceware.org/bugzilla/show_bug.cgi?id=27113
+{$DEFINE SH_ELF_BFD_PLUGIN_LIBDEP_WORKAROUND}
+
 interface
 
 uses
@@ -595,6 +599,9 @@ var
   ToolchainBaseARM,
   ToolchainBaseWin32,
   PackagesBase: TFileName;
+{$IFDEF SH_ELF_BFD_PLUGIN_LIBDEP_WORKAROUND}
+  ToolchainBfdPluginsSuperH: TFileName;
+{$ENDIF}
 
 begin
   // Base
@@ -724,6 +731,16 @@ begin
     fPackages.fRubyLibrary := PackagesBase + 'ruby-offline-src.7z';
     fPackages.fSamples := PackagesBase + 'ruby-samples-offline-src.7z';
   end;
+
+{$IFDEF SH_ELF_BFD_PLUGIN_LIBDEP_WORKAROUND}
+  // The libdep plugin is incompatible with Windows.
+  // See: https://sourceware.org/bugzilla/show_bug.cgi?id=27113
+  ToolchainBfdPluginsSuperH := ToolchainBaseSuperH + 'lib\bfd-plugins\';
+
+  KillFile(ToolchainBfdPluginsSuperH + 'libdep.a');
+  KillFile(ToolchainBfdPluginsSuperH + 'libdep.la');
+  KillFile(ToolchainBfdPluginsSuperH + 'libdep.dll.a');
+{$ENDIF}
 end;
 
 constructor TDreamcastSoftwareDevelopmentFileSystem.Create;
