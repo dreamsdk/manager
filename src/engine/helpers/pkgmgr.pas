@@ -341,8 +341,24 @@ begin
 end;
 
 procedure TPackageManager.Execute;
-var
-  IsValidAction: Boolean;
+
+  // Check if a valid action need to be performed
+  function IsValidAction: Boolean;
+  begin
+    (*
+      First check if operation is defined and not pmrAutoDetectDebuggerToolchain
+      Indeed, pmrAutoDetectDebuggerToolchain is a fake action used for detecting
+      if we need to update the Toolchain or GDB package(s).
+    *)
+    Result := (fOperation <> pmrUndefined)
+      and (fOperation <> pmrAutoDetectDebuggerToolchain);
+
+    // Handle pmrToolchain; this one requires other parameters to be usable.
+    Result := Result or (
+          (fOperation = pmrToolchain)
+      and ((fDebugger <> pmrdUndefined) or (fToolchain <> pmrtUndefined))
+    );
+  end;
 
 begin
   // Auto Detect Debugger/Toolchain if possible
@@ -362,12 +378,6 @@ begin
       Operation := pmrToolchain; // This includes Debugger
     end;
   end;
-
-  // Check if a valid action need to be performed
-  // First check if operation is defined and NOT pmrToolchain as this one requires other parameters
-  IsValidAction := (fOperation <> pmrUndefined) and (fOperation <> pmrToolchain);
-  // Check now if operation is pmrToolchain and if yes, if parameters are supplied
-  IsValidAction := IsValidAction or ((fOperation = pmrToolchain) and ((fDebugger <> pmrdUndefined) or (fToolchain <> pmrtUndefined)));
 
   // Process only if there is an action to make
   if IsValidAction then
@@ -683,3 +693,4 @@ begin
 end;
 
 end.
+
