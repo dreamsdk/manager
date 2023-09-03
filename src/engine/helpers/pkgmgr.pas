@@ -341,6 +341,9 @@ begin
 end;
 
 procedure TPackageManager.Execute;
+var
+  IsValidAction: Boolean;
+
 begin
   // Auto Detect Debugger/Toolchain if possible
   if (fOperation = pmrAutoDetectDebuggerToolchain) then
@@ -360,9 +363,14 @@ begin
     end;
   end;
 
+  // Check if a valid action need to be performed
+  // First check if operation is defined and NOT pmrToolchain as this one requires other parameters
+  IsValidAction := (fOperation <> pmrUndefined) and (fOperation <> pmrToolchain);
+  // Check now if operation is pmrToolchain and if yes, if parameters are supplied
+  IsValidAction := IsValidAction or ((fOperation = pmrToolchain) and ((fDebugger <> pmrdUndefined) or (fToolchain <> pmrtUndefined)));
+
   // Process only if there is an action to make
-  if (fOperation <> pmrUndefined)
-    and ((fDebugger <> pmrdUndefined) or (fToolchain <> pmrtUndefined)) then
+  if IsValidAction then
   begin
     // Trigger OnStart event (if required)
     if Assigned(fStart) then
@@ -675,4 +683,3 @@ begin
 end;
 
 end.
-
