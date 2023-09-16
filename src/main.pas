@@ -17,9 +17,10 @@ type
   TfrmMain = class(TForm)
     apMain: TApplicationProperties;
     btnAllPortInstall: TButton;
+    btnIdeCodeBlocksInstallDir: TButton;
     btnIdeRefresh: TButton;
     btnAllPortUninstall: TButton;
-    btnIdeCodeBlocksInstallDir: TButton;
+    btnIdeCodeBlocksInstallDetect: TButton;
     btnClose: TButton;
     btnCheckForUpdates: TButton;
     btnIdeInstall: TButton;
@@ -1474,6 +1475,7 @@ begin
   SetButtonElevated(btnIdeUninstall.Handle);
   SetButtonElevated(btnIdeCodeBlocksUsersAvailableInitialize.Handle);
   SetButtonElevated(btnIdeCodeBlocksUsersAvailableRefresh.Handle);
+  SetButtonElevated(btnIdeCodeBlocksInstallDetect.Handle);
 
   lbxIdeList.ItemIndex := 0;
   lbxIdeListClickCheck(Self);

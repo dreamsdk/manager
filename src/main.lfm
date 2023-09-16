@@ -1126,22 +1126,32 @@ object frmMain: TfrmMain
         ClientHeight = 34
         ClientWidth = 398
         TabOrder = 4
-        object btnIdeCodeBlocksInstallDir: TButton
+        object btnIdeCodeBlocksInstallDetect: TButton
+          Tag = 3
           Left = 320
           Height = 21
           Top = 4
           Width = 74
-          Caption = '&Browse...'
-          OnClick = btnIdeCodeBlocksInstallDirClick
+          Caption = '&Detect'
+          OnClick = btnIdeInstallClick
           TabOrder = 0
         end
         object edtIdeCodeBlocksInstallDir: TEdit
           Left = 4
           Height = 21
           Top = 4
-          Width = 310
+          Width = 230
           OnChange = edtIdeCodeBlocksInstallDirChange
           TabOrder = 1
+        end
+        object btnIdeCodeBlocksInstallDir: TButton
+          Left = 240
+          Height = 21
+          Top = 4
+          Width = 74
+          Caption = '&Browse...'
+          OnClick = btnIdeCodeBlocksInstallDirClick
+          TabOrder = 2
         end
       end
       object gbxIdeAll: TGroupBox
