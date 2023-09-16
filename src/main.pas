@@ -1055,7 +1055,7 @@ var
 
 begin
   // Set by default to 115200 if an invalid value has been passed...
-  if (AValue <= DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_MINIMAL_ALLOWED) then
+  if (AValue < DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_MINIMAL_ALLOWED) then
     AValue := DREAMCAST_TOOL_DEFAULT_SERIAL_BAUDRATE_ALTERNATE_ALLOWED;
 
   // Select a value in the list if possible, if not, switch to Custom
@@ -1132,6 +1132,7 @@ var
   // TODO: FIXME
   function _setItemIndex: Integer;
   begin
+    Result := -1;
     (* This should be dynamic. This will refactored later. *)
     case ToolchainPackage of
       tvkLegacy:
@@ -1678,18 +1679,29 @@ var
   SerialPorts: TSerialPortList;
   i: Integer;
   ListEnabled: Boolean;
+  CustomFriendlyName: string;
 
 begin
   SerialPorts := Default(TSerialPortList);
   GetSerialPortList(SerialPorts);
 
+{$IFDEF DEBUG}
+  DebugLog('*** LISTING COM PORTS ***');
+{$ENDIF}
+
   cbxDreamcastToolSerialPort.Clear;
   for i := Low(SerialPorts) to High(SerialPorts) do
   begin
-      with SerialPorts[i] do
-        cbxDreamcastToolSerialPort.Items.AddObject(
-          FriendlyName, TSerialPortListUserInterfaceItem.Create(PortIndex)
-        );
+    with SerialPorts[i] do
+    begin
+      CustomFriendlyName := Format('%s (%s)', [Name, Description]);
+{$IFDEF DEBUG}
+      DebugLog('  ' + FriendlyName);
+{$ENDIF}
+      cbxDreamcastToolSerialPort.Items.AddObject(
+        CustomFriendlyName, TSerialPortListUserInterfaceItem.Create(PortIndex)
+      );
+    end;
   end;
 
   cbxDreamcastToolSerialPort.ItemIndex := -1;
