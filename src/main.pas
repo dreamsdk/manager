@@ -2275,62 +2275,56 @@ begin
 end;
 
 procedure TfrmMain.btnCheckForUpdatesClick(Sender: TObject);
-const
-  VALID_PREFIX = 'http';
-
 var
-  RemoteVersion,
-  Url: string;
+  RemoteVersion: string;
 
   function GetRemoteVersion: string;
   const
-    UPDATE_FILE_CHECK = '.update/version.txt';
+    UPDATE_URL = 'http://www.dreamsdk.org/.update/version.txt';
 
   var
     HTTPClient: TFPHTTPClient;
     UpdateUrl: string;
 
   begin
-    UpdateUrl := Concat(Url, UPDATE_FILE_CHECK);
     try
       HTTPClient := TFPHTTPClient.Create(nil);
       try
         HTTPClient.AllowRedirect := True;
-        Result := Trim(HTTPClient.Get(UpdateUrl));
+        Result := Trim(HTTPClient.Get(UPDATE_URL));
       finally
         HTTPClient.Free;
       end;
     except
-      Result := EmptyStr;
+      on E:Exception do
+      begin
+        Result := EmptyStr;
+{$IFDEF DEBUG}
+        DebugLog('GetRemoteVersion Exception: ' + E.Message);
+{$ENDIF}
+      end;
     end;
   end;
 
 begin
-  Url := GetComments;
-  if AnsiStartsStr(VALID_PREFIX, LowerCase(Url)) then
-  begin
-    RemoteVersion := GetRemoteVersion;
+  RemoteVersion := GetRemoteVersion;
 
-    if IsEmpty(RemoteVersion) then
-      MsgBox(DialogWarningTitle, MsgBoxDlgTranslateString(Format(UnableToRetrieveRemotePackageVersion, [GetProductName])), mtWarning, [mbOk])
-    else
-    begin
-      if CompareVersion(FullVersionNumber, RemoteVersion) > 0 then
-      begin
-        if MsgBox(DialogQuestionTitle, Format(PackageUpdateAvailable, [GetProductName, RemoteVersion]), mtConfirmation, [mbYes, mbNo]) = mrYes then
-          OpenURL(Url);
-      end
-      else
-        MsgBox(DialogInformationTitle, Format(PackageUpToDate, [GetProductName]), mtInformation, [mbOk]);
-    end;
-  end
-  else
 {$IFDEF DEBUG}
-    raise Exception.Create('Invalid website in the File Comments!')
-{$ELSE}
-    MsgBox(DialogErrorTitle, ApplicationNotCorrectlyConfigured, mtError, [mbOk])
+  DebugLog('Version: ' + RemoteVersion);
 {$ENDIF}
-  ;
+
+  if IsEmpty(RemoteVersion) then
+    MsgBox(DialogWarningTitle, MsgBoxDlgTranslateString(Format(UnableToRetrieveRemotePackageVersion, [GetProductName])), mtWarning, [mbOk])
+  else
+  begin
+    if CompareVersion(FullVersionNumber, RemoteVersion) > 0 then
+    begin
+      if MsgBox(DialogQuestionTitle, Format(PackageUpdateAvailable, [GetProductName, RemoteVersion]), mtConfirmation, [mbYes, mbNo]) = mrYes then
+        OpenURL(GetComments);
+    end
+    else
+      MsgBox(DialogInformationTitle, Format(PackageUpToDate, [GetProductName]), mtInformation, [mbOk]);
+  end;
 end;
 
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
