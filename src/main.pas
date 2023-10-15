@@ -2284,7 +2284,6 @@ var
 
   var
     HTTPClient: TFPHTTPClient;
-    UpdateUrl: string;
 
   begin
     try

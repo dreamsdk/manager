@@ -378,8 +378,7 @@ begin
       '--version', 'mingw-get version', sLineBreak);
     fVersionRuby := RetrieveVersion('ruby', '--version', 'ruby ', WhiteSpaceStr);
     fRubyInstalled := IsValidVersion(fVersionRuby);
-    fVersionRake := RetrieveVersion(ParseInputFileSystemObject('%ComSpec%'),
-      '/C "rake --version"', 'version ', sLineBreak, False);
+    fVersionRake := RetrieveVersion('rake', '--version', 'version ', sLineBreak, False);
     fRakeInstalled := IsValidVersion(fVersionRake);
 
     RetrieveVersionToolchain(fToolchainVersionSuperH, ToolchainSuperH);
