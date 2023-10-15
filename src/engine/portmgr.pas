@@ -200,6 +200,7 @@ end;
 
 function TKallistiPortItem.DoInstallOrUpdate: string;
 begin
+  fOwner.InitializeEnvironment;
   Result := ExecuteShellCommand('make install');
   ExecuteShellCommand('make clean');
 end;
