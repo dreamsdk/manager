@@ -295,6 +295,7 @@ type
     procedure edtPortURLMouseEnter(Sender: TObject);
     procedure edtPortURLMouseLeave(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -303,6 +304,7 @@ type
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
     procedure pcMainChange(Sender: TObject);
+    procedure pcMainChanging(Sender: TObject; var AllowChange: Boolean);
     procedure rbnComponentsNoChangeChange(Sender: TObject);
     procedure rgxDreamcastToolSelectionChanged(Sender: TObject);
     procedure rgxTerminalOptionClick(Sender: TObject);
@@ -319,6 +321,7 @@ type
     fShellThreadOutputResult: TShellThreadOutputResponse;
     fShellThreadUpdateState: TUpdateOperationState;
     function CheckRepositoriesUrl: Boolean;
+    function CheckComponentsChangeAllowRequestedOperation: Boolean;
     procedure DisplayEnvironmentComponentVersions;
     procedure DisplayKallistiPorts(ClearList: Boolean);
     procedure DoUpdateAll;
@@ -612,6 +615,11 @@ begin
     UpdateComponentControls;
 end;
 
+procedure TfrmMain.pcMainChanging(Sender: TObject; var AllowChange: Boolean);
+begin
+  AllowChange := CheckComponentsChangeAllowRequestedOperation;
+end;
+
 procedure TfrmMain.rbnComponentsNoChangeChange(Sender: TObject);
 begin
   fPackageManagerOperation := TPackageManagerRequest((Sender as TRadioButton).Tag);
@@ -818,6 +826,18 @@ begin
       MsgBox(DialogWarningTitle, PleaseVerifyRubyRepository, mtWarning, [mbOK]);
       pcMain.ActivePage := tsRuby;
     end;
+  end;
+end;
+
+function TfrmMain.CheckComponentsChangeAllowRequestedOperation: Boolean;
+begin
+  Result := True;
+  if (pcMain.ActivePage = tsComponents)
+    and (fPackageManagerOperation <> pmrUndefined) then
+  begin
+    Result := MsgBox(DialogQuestionTitle,
+      MsgBoxDlgTranslateString(ConfirmComponentsChangePendingCancel),
+      mtConfirmation, mbOkCancel, mbCancel) = mrOk;
   end;
 end;
 
@@ -2853,6 +2873,11 @@ begin
   if not IsPostInstallMode and IsInstallOrUpdateRequired then
     if MsgBox(DialogQuestionTitle, InstallOrUpdateRequiredDoItNow, mtConfirmation, [mbYes, mbNo]) = mrYes then
       ExecuteThreadOperation(stiKallistiManage);
+end;
+
+procedure TfrmMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  CanClose := CheckComponentsChangeAllowRequestedOperation;
 end;
 
 function DoElevatedTask(const ATaskName: string; AParameters: TStringList;

@@ -76,6 +76,7 @@ resourcestring
   WindowsTerminalInstallFailedText = 'An error occured while installing the Windows Terminal integration... Try to reinstall Windows Terminal.';
   WindowsTerminalUninstallText = 'Are you sure to uninstall the Windows Terminal integration?';
   WindowsTerminalUninstallFailedText = 'An error occured while uninstalling the Windows Terminal integration... You may remove the profile manually directly in Windows Terminal.';
+  ConfirmComponentsChangePendingCancel = 'A change request for components is pending.\nTo take it into account, you must click on Apply.\nClick OK to abort your request or Cancel to review it.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, please wait...';

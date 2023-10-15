@@ -24,7 +24,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="3"/>
       <RevisionNr Value="5"/>
-      <BuildNr Value="1147"/>
+      <BuildNr Value="1148"/>
       <StringTable Comments="https://dreamsdk.org/" CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" LegalCopyright="© Copyleft 2018-2023" LegalTrademarks="Sega and Dreamcast are registered trademark of Sega Games Co., Ltd." OriginalFilename="dreamsdk-manager.exe" ProductName="DreamSDK" ProductVersion="3.0.4.2309"/>
     </VersionInfo>
     <BuildModes Count="2">

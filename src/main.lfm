@@ -9,6 +9,7 @@ object frmMain: TfrmMain
   ClientHeight = 400
   ClientWidth = 680
   OnActivate = FormActivate
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
@@ -33,6 +34,7 @@ object frmMain: TfrmMain
     TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
+    OnChanging = pcMainChanging
     object tsHome: TTabSheet
       Caption = 'H&ome'
       ClientHeight = 322
