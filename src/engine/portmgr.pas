@@ -1174,7 +1174,8 @@ var
   ConfigFileName,
   BuildFileName,
   DownloadFileName: TFileName;
-  PythonOld, PythonNew: string;
+  PythonValidateDistFilesOld,
+  PythonValidateDistFilesNew: string;
 
 begin
   ConfigFileName := Environment.FileSystem.Kallisti.KallistiPortsDirectory + CONFIG_MAKEFILE;
@@ -1187,47 +1188,54 @@ begin
     PatchTextFile(
       ConfigFileName,
       '#FETCH_CMD = wget',
-      'FETCH_CMD = wget --no-check-certificate'
+      'FETCH_CMD = wget --no-check-certificate',
+      ptfbPatchWithWatermark
     );
 
     PatchTextFile(
       ConfigFileName,
       'FETCH_CMD = curl',
-      '#FETCH_CMD = curl'
+      '#FETCH_CMD = curl',
+      ptfbPatchWithWatermark
     );
 
     PatchTextFile(
       DownloadFileName,
       'svn checkout',
-      'svn checkout --non-interactive --trust-server-cert'
+      'svn checkout --non-interactive --trust-server-cert',
+      ptfbPatchWithWatermark
     );
 
     // ln doesn't work very well under MinGW/MSYS...
     PatchTextFile(
       BuildFileName,
       'ln -s',
-      'cp -r'
+      'cp -r',
+      ptfbPatchWithWatermark
     );
 
-    // Handle Python
-    PythonOld := EmptyStr;
-    PythonNew := '#';
+    // Python 3 on Windows is always "python"
+    PatchTextFile(
+      ConfigFileName,
+      'PYTHON_CMD = python3',
+      'PYTHON_CMD = python',
+      ptfbPatchWithWatermark
+    );
+
+    // Handle Python "Validate DistFiles"
+    PythonValidateDistFilesOld := 'true';
+    PythonValidateDistFilesNew := 'false';
     if Versions.PythonInstalled then
     begin
-      PythonOld := '#';
-      PythonNew := EmptyStr;
+      PythonValidateDistFilesOld := 'false';
+      PythonValidateDistFilesNew := 'true';
     end;
 
     PatchTextFile(
       ConfigFileName,
-      PythonOld + 'VALIDATE_DISTFILES',
-      PythonNew + 'VALIDATE_DISTFILES'
-    );
-
-    PatchTextFile(
-      ConfigFileName,
-      'PYTHON_CMD = python3',
-      'PYTHON_CMD = python'
+      Format('VALIDATE_DISTFILES = %s', [PythonValidateDistFilesOld]),
+      Format('VALIDATE_DISTFILES = %s', [PythonValidateDistFilesNew]),
+      ptfbAlwaysPatch
     );
   end;
 end;
