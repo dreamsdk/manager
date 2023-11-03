@@ -1114,10 +1114,27 @@ begin
 end;
 
 procedure TfrmMain.SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
+const
+  NOT_CRITICAL_COMPONENTS: array[0..6] of string = (
+    'lblVersionPythonGDB',
+    'lblVersionGit',
+    'lblVersionSVN',
+    'lblVersionPython',
+    'lblVersionRuby',
+    'lblVersionRake',
+    'lblVersionMRuby'
+  );
+
+var
+  LabelFontColor: TColor;
+
 begin
   if Erroneous then
   begin
-    VersionLabel.Font.Color := clRed;
+    LabelFontColor := clRed;
+    if IsInArray(NOT_CRITICAL_COMPONENTS, VersionLabel.Name) then
+      LabelFontColor := clHighlight;
+    VersionLabel.Font.Color := LabelFontColor;
     VersionLabel.Font.Style := [fsBold];
   end
   else
