@@ -657,9 +657,9 @@ begin
       fPython311 := PackagesBase + 'sh-elf-gdb-python-3.11-bin.7z';
       fPython312 := PackagesBase + 'sh-elf-gdb-python-3.12-bin.7z';
     end;
-    fPackages.fLegacy := PackagesBase + 'toolchain-legacy-sh-elf-bin.7z';
-    fPackages.fOldStable := PackagesBase + 'toolchain-oldstable-sh-elf-bin.7z';
-	  fPackages.fStable := PackagesBase + 'toolchain-stable-sh-elf-bin.7z';
+    fPackages.fLegacy := PackagesBase + 'sh-elf-toolchain-legacy-bin.7z';
+    fPackages.fOldStable := PackagesBase + 'sh-elf-toolchain-oldstable-bin.7z';
+    fPackages.fStable := PackagesBase + 'sh-elf-toolchain-stable-bin.7z';
   end;
 
   // Toolchain for ARM
@@ -672,9 +672,9 @@ begin
     fGCCExecutable := ToolchainBaseARM + 'bin\arm-eabi-gcc.exe';
     fGDBExecutable := EmptyStr; // Not Applicable
     fNewlibBinary := EmptyStr; // Not Applicable
-    fPackages.fLegacy := PackagesBase + 'toolchain-legacy-arm-eabi-bin.7z';
-    fPackages.fOldStable := PackagesBase + 'toolchain-oldstable-arm-eabi-bin.7z';
-	  fPackages.fStable := PackagesBase + 'toolchain-stable-arm-eabi-bin.7z';
+    fPackages.fLegacy := PackagesBase + 'arm-eabi-toolchain-legacy-bin.7z';
+    fPackages.fOldStable := PackagesBase + 'arm-eabi-toolchain-oldstable-bin.7z';
+    fPackages.fStable := PackagesBase + 'arm-eabi-toolchain-stable-bin.7z';
   end;
 
   // Toolchain for Win32 (Windows)
