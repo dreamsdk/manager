@@ -897,6 +897,7 @@ begin
     if FileExists(Environment.FileSystem.Kallisti.KallistiChangeLogFile) then
       memKallistiChangeLog.Lines.LoadFromFile(
         Environment.FileSystem.Kallisti.KallistiChangeLogFile);
+    memKallistiChangeLog.Enabled := (memKallistiChangeLog.Lines.Count > 0);
 
     // KallistiOS
     SetVersionLabel(lblVersionRepoKallistiOS, KallistiOS.Repository.Version);

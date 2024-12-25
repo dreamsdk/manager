@@ -219,8 +219,8 @@ object frmMain: TfrmMain
         Left = 8
         Height = 13
         Top = 28
-        Width = 56
-        Caption = 'Build date'
+        Width = 57
+        Caption = 'Build Date'
         Font.Style = [fsBold]
         ParentColor = False
         ParentFont = False
@@ -794,8 +794,8 @@ object frmMain: TfrmMain
         Left = 8
         Height = 13
         Top = 28
-        Width = 56
-        Caption = 'Build date'
+        Width = 57
+        Caption = 'Build Date'
         Font.Style = [fsBold]
         ParentColor = False
         ParentFont = False

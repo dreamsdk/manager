@@ -160,11 +160,11 @@ type
     fKallistiConfigurationFileName: TFileName;
     fKallistiDirectory: TFileName;
     fKallistiLibrary: TFileName;
-    fKallistiChangeLogFile: TFileName;
     fKallistiPortsDirectory: TFileName;
     fKallistiPortsLibraryInformationFile: TFileName;
     fKallistiUtilitiesDirectory: TFileName;
     fPackages: TDreamcastSoftwareDevelopmentFileSystemKallistiPackages;
+    function GetKallistiChangeLogFile: TFileName;
   public
     constructor Create;
     destructor Destroy; override;
@@ -176,7 +176,7 @@ type
     property KallistiDirectory: TFileName read fKallistiDirectory;
     property KallistiUtilitiesDirectory: TFileName read fKallistiUtilitiesDirectory;
     property KallistiLibrary: TFileName read fKallistiLibrary;
-    property KallistiChangeLogFile: TFileName read fKallistiChangeLogFile;
+    property KallistiChangeLogFile: TFileName read GetKallistiChangeLogFile;
     property KallistiConfigurationFileName: TFileName read fKallistiConfigurationFileName;
     property Packages: TDreamcastSoftwareDevelopmentFileSystemKallistiPackages
       read fPackages;
@@ -505,6 +505,13 @@ end;
 
 { TDreamcastSoftwareDevelopmentFileSystemKallisti }
 
+function TDreamcastSoftwareDevelopmentFileSystemKallisti.GetKallistiChangeLogFile: TFileName;
+begin
+  Result := KallistiDirectory + 'doc\CHANGELOG.md';
+  if not FileExists(Result) then
+    Result := KallistiDirectory + 'doc\CHANGELOG';
+end;
+
 constructor TDreamcastSoftwareDevelopmentFileSystemKallisti.Create;
 begin
   fPackages :=  TDreamcastSoftwareDevelopmentFileSystemKallistiPackages.Create;
@@ -709,9 +716,6 @@ begin
     fKallistiDirectory := ToolchainBase + 'kos\';
     fKallistiUtilitiesDirectory := fKallistiDirectory + 'utils\';
     fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
-    fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG.md';
-    if not FileExists(fKallistiChangeLogFile) then
-      fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
     fKallistiConfigurationFileName := KallistiDirectory + 'environ.sh';
     fPackages.fKallisti := PackagesBase + 'kallisti-offline-src.7z';
     fPackages.fKallistiPorts := PackagesBase + 'kallisti-ports-offline-src.7z';
