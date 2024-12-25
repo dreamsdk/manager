@@ -709,7 +709,9 @@ begin
     fKallistiDirectory := ToolchainBase + 'kos\';
     fKallistiUtilitiesDirectory := fKallistiDirectory + 'utils\';
     fKallistiLibrary := KallistiDirectory + 'lib\dreamcast\libkallisti.a';
-    fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
+    fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG.md';
+    if not FileExists(fKallistiChangeLogFile) then
+      fKallistiChangeLogFile := KallistiDirectory + 'doc\CHANGELOG';
     fKallistiConfigurationFileName := KallistiDirectory + 'environ.sh';
     fPackages.fKallisti := PackagesBase + 'kallisti-offline-src.7z';
     fPackages.fKallistiPorts := PackagesBase + 'kallisti-ports-offline-src.7z';
@@ -1005,7 +1007,7 @@ begin
     else
 	  begin
 		  try
-		    Result := Run('git', 'describe --dirty --always', WorkingDirectory, False);
+		    Result := Run('git', 'describe --always --long', WorkingDirectory, False);
 		    if IsInString(FAIL_TAG, Result) then
 			    Result := EmptyStr;
 		  except

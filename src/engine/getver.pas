@@ -234,41 +234,12 @@ begin
 end;
 
 function TComponentVersion.RetrieveKallistiVersion: string;
-const
-  GIT_REVISION_TAG = 'Git revision ';
-  START_TAG1 = 'KallistiOS ';
-  START_TAG2 = 'offline:';
-  END_TAG = ':';
-
 var
   TargetFileName:  TFileName;
 
 begin
   TargetFileName := Environment.FileSystem.Kallisti.KallistiLibrary;
-  Result := GetRegisteredVersion(TargetFileName);
-
-  if IsEmpty(Result) then
-  begin
-    Result := RetrieveVersionWithFind(TargetFileName, START_TAG1, END_TAG, False);
-    if IsInString(START_TAG1, Result) then
-    begin
-      // Online, Git version
-      Result := Right(START_TAG1, Result);
-      Result := Right(GIT_REVISION_TAG, Result);
-
-      // Offline version (failback)
-      if IsEmpty(Result) then
-      begin
-        Result := RetrieveVersionWithFind(TargetFileName, START_TAG2, False);
-        Result := ExtractStr(START_TAG1, END_TAG, Result);
-      end;
-
-      SetRegisteredVersion(TargetFileName, Result);
-    end;
-  end;
-
-  if IsEmpty(Result) then
-    Result := INVALID_VERSION;
+  Result := RetrieveVersionKallisti(TargetFileName, True);
 end;
 
 function TComponentVersion.RetrieveKallistiBuildDate: TDateTime;
@@ -291,7 +262,7 @@ begin
     if FileExists(KallistiLibrary) then
     begin
       fChangeLogKallistiOS := RetrieveVersionWithFind(KallistiChangeLogFile,
-        'KallistiOS version ', ' -----');
+        'KallistiOS version ', sLineBreak);
       if IsVersionValid(fChangeLogKallistiOS) then
         fChangeLogKallistiOS := fChangeLogKallistiOS + DEVELOPMENT_VERSION_SUFFIX;
     end;

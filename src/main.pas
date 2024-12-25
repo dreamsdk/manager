@@ -875,10 +875,11 @@ begin
     // KallistiOS ChangeLog version
     if KallistiOS.Built then
     begin
-      SetVersionLabel(lblVersionKallistiOS, Format(KALLISTI_VERSION_FORMAT, [
-        lblVersionKallistiOS.Caption,
-        Versions.KallistiChangeLog
-      ]));
+      if IsVersionValid(Versions.KallistiChangeLog) then
+        SetVersionLabel(lblVersionKallistiOS, Format(KALLISTI_VERSION_FORMAT, [
+          lblVersionKallistiOS.Caption,
+          Versions.KallistiChangeLog
+        ]));
       SetVersionLabel(lblVersionKallistiOS2, lblVersionKallistiOS.Caption);
     end
     else

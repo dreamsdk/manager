@@ -15,15 +15,15 @@ object frmMain: TfrmMain
   OnShow = FormShow
   Position = poScreenCenter
   ShowHint = True
-  LCLVersion = '2.2.6.0'
+  LCLVersion = '3.4.0.0'
   object btnClose: TButton
     Left = 266
     Height = 25
     Top = 364
     Width = 143
     Caption = '&Quit'
-    OnClick = btnCloseClick
     TabOrder = 0
+    OnClick = btnCloseClick
   end
   object pcMain: TPageControl
     Left = 8
@@ -67,8 +67,8 @@ object frmMain: TfrmMain
           Top = 16
           Width = 139
           Caption = '&Start Shell...'
-          OnClick = btnOpenMSYSClick
           TabOrder = 0
+          OnClick = btnOpenMSYSClick
         end
         object lblHomeShell: TLabel
           Left = 8
@@ -97,8 +97,8 @@ object frmMain: TfrmMain
           Top = 16
           Width = 139
           Caption = 'Open Ho&me...'
-          OnClick = btnOpenHomeClick
           TabOrder = 0
+          OnClick = btnOpenHomeClick
         end
         object lblHomeFolder: TLabel
           Left = 8
@@ -127,8 +127,8 @@ object frmMain: TfrmMain
           Top = 16
           Width = 139
           Caption = 'Open &Help...'
-          OnClick = btnOpenHelpClick
           TabOrder = 0
+          OnClick = btnOpenHelpClick
         end
         object lblHomeHelp: TLabel
           Left = 8
@@ -169,8 +169,8 @@ object frmMain: TfrmMain
         Top = 14
         Width = 150
         Caption = '&Update...'
-        OnClick = btnUpdateKallistiOSClick
         TabOrder = 0
+        OnClick = btnUpdateKallistiOSClick
       end
       object lblBuildDateKallistiOS: TLabel
         Left = 72
@@ -249,10 +249,10 @@ object frmMain: TfrmMain
           BorderSpacing.Around = 4
           ExtendedSelect = False
           ItemHeight = 0
-          OnClickCheck = lbxPortsClickCheck
-          OnSelectionChange = lbxPortsSelectionChange
           Sorted = True
           TabOrder = 0
+          OnClickCheck = lbxPortsClickCheck
+          OnSelectionChange = lbxPortsSelectionChange
         end
       end
       object gbxPortAll: TGroupBox
@@ -270,8 +270,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 112
           Caption = 'U&ninstall...'
-          OnClick = btnAllPortUninstallClick
           TabOrder = 1
+          OnClick = btnAllPortUninstallClick
         end
         object btnAllPortInstall: TButton
           Left = 4
@@ -279,8 +279,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 112
           Caption = 'Insta&ll...'
-          OnClick = btnAllPortInstallClick
           TabOrder = 0
+          OnClick = btnAllPortInstallClick
         end
       end
       object gbxPortDetails: TGroupBox
@@ -298,8 +298,8 @@ object frmMain: TfrmMain
           Top = 264
           Width = 125
           Caption = 'Uninst&all...'
-          OnClick = btnPortUninstallClick
           TabOrder = 7
+          OnClick = btnPortUninstallClick
         end
         object btnPortUpdate: TButton
           Left = 138
@@ -307,8 +307,8 @@ object frmMain: TfrmMain
           Top = 264
           Width = 125
           Caption = 'U&pdate...'
-          OnClick = btnPortUpdateClick
           TabOrder = 6
+          OnClick = btnPortUpdateClick
         end
         object btnPortInstall: TButton
           Left = 6
@@ -316,8 +316,8 @@ object frmMain: TfrmMain
           Top = 264
           Width = 125
           Caption = '&Install...'
-          OnClick = btnPortInstallClick
           TabOrder = 5
+          OnClick = btnPortInstallClick
         end
         object edtPortURL: TLabeledEdit
           Left = 72
@@ -500,10 +500,10 @@ object frmMain: TfrmMain
             '1500000'
             '1562500'
           )
-          OnSelect = cbxDreamcastToolSerialBaudrateSelect
           Style = csDropDownList
           TabOrder = 1
           Text = '115200'
+          OnSelect = cbxDreamcastToolSerialBaudrateSelect
         end
         object ckxDreamcastToolSerialAlternateBaudrate: TCheckBox
           Left = 241
@@ -511,8 +511,8 @@ object frmMain: TfrmMain
           Top = 34
           Width = 65
           Caption = 'Al&ternate'
-          OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 2
+          OnChange = cbxDreamcastToolSerialPortSelect
         end
         object ckxDreamcastToolSerialExternalClock: TCheckBox
           Left = 8
@@ -520,8 +520,8 @@ object frmMain: TfrmMain
           Top = 88
           Width = 194
           Caption = 'Us&e external clock for the serial port'
-          OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 3
+          OnChange = cbxDreamcastToolSerialPortSelect
         end
         object ckxDreamcastToolSerialDumbTerminal: TCheckBox
           Left = 8
@@ -529,8 +529,8 @@ object frmMain: TfrmMain
           Top = 63
           Width = 254
           Caption = '&Use dumb terminal rather than console/fileserver'
-          OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 4
+          OnChange = cbxDreamcastToolSerialPortSelect
         end
         object cbxDreamcastToolSerialPort: TComboBox
           Left = 65
@@ -538,9 +538,9 @@ object frmMain: TfrmMain
           Top = 4
           Width = 245
           ItemHeight = 13
-          OnSelect = cbxDreamcastToolSerialPortSelect
           Style = csDropDownList
           TabOrder = 0
+          OnSelect = cbxDreamcastToolSerialPortSelect
         end
         object lblDreamcastToolSerialPort: TLabel
           Left = 36
@@ -564,9 +564,9 @@ object frmMain: TfrmMain
           Top = 32
           Width = 80
           NumbersOnly = True
-          OnChange = cbxDreamcastToolSerialBaudrateSelect
           TabOrder = 5
           TextHint = 'Baudrate'
+          OnChange = cbxDreamcastToolSerialBaudrateSelect
         end
       end
       object gbxDreamcastToolInternetProtocol: TGroupBox
@@ -584,6 +584,7 @@ object frmMain: TfrmMain
           Top = 5
           Width = 132
           Alignment = taCenter
+          EnableSets = False
           Font.Height = -11
           Font.Name = 'Courier New'
           MaxLength = 15
@@ -624,9 +625,9 @@ object frmMain: TfrmMain
           AutoSize = False
           Caption = 'Use A&ddress Resolution Protocol (ARP) to setup'#13#10'the Dreamcast IP (direct cross-cable connection)'
           Color = clDefault
-          OnChange = ckxDreamcastToolInternetProtocolUseARPChange
           ParentColor = False
           TabOrder = 2
+          OnChange = ckxDreamcastToolInternetProtocolUseARPChange
         end
         object edtDreamcastToolInternetProtocolMAC: TMaskEdit
           Left = 88
@@ -634,6 +635,7 @@ object frmMain: TfrmMain
           Top = 88
           Width = 132
           Alignment = taCenter
+          EnableSets = False
           Font.Height = -11
           Font.Name = 'Courier New'
           MaxLength = 17
@@ -672,10 +674,10 @@ object frmMain: TfrmMain
           Top = 120
           Width = 222
           ItemHeight = 13
-          OnSelect = cbxDreamcastToolSerialPortSelect
           Sorted = True
           Style = csDropDownList
           TabOrder = 3
+          OnSelect = cbxDreamcastToolSerialPortSelect
         end
         object lblDreamcastToolInternetProtocolNetworkAdapter: TLabel
           Left = 4
@@ -701,8 +703,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 176
           Caption = '&Always attach console/fileserver'
-          OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 0
+          OnChange = cbxDreamcastToolSerialPortSelect
         end
         object ckxDreamcastToolClearScreenBeforeDownload: TCheckBox
           Left = 7
@@ -710,8 +712,8 @@ object frmMain: TfrmMain
           Top = 32
           Width = 199
           Caption = 'Al&ways clear screen before download'
-          OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 1
+          OnChange = cbxDreamcastToolSerialPortSelect
         end
       end
       object gbxDreamcastToolCustomCommand: TGroupBox
@@ -729,16 +731,16 @@ object frmMain: TfrmMain
           Top = 20
           Width = 25
           Caption = '...'
-          OnClick = btnDreamcastToolCustomExecutableClick
           TabOrder = 0
+          OnClick = btnDreamcastToolCustomExecutableClick
         end
         object edtDreamcastToolCustomExecutable: TEdit
           Left = 4
           Height = 21
           Top = 20
           Width = 276
-          OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 1
+          OnChange = cbxDreamcastToolSerialPortSelect
         end
         object lblDreamcastToolCustomExecutable: TLabel
           Left = 4
@@ -761,8 +763,8 @@ object frmMain: TfrmMain
           Height = 21
           Top = 60
           Width = 305
-          OnChange = cbxDreamcastToolSerialPortSelect
           TabOrder = 2
+          OnChange = cbxDreamcastToolSerialPortSelect
         end
       end
     end
@@ -813,8 +815,8 @@ object frmMain: TfrmMain
         Top = 14
         Width = 122
         Caption = 'U&ninstall...'
-        OnClick = btnInstallMRubyClick
         TabOrder = 0
+        OnClick = btnInstallMRubyClick
       end
       object btnInstallMRuby: TButton
         Left = 284
@@ -822,8 +824,8 @@ object frmMain: TfrmMain
         Top = 14
         Width = 122
         Caption = '&Install...'
-        OnClick = btnInstallMRubyClick
         TabOrder = 1
+        OnClick = btnInstallMRubyClick
       end
       object gbxUrlRuby: TGroupBox
         Left = 4
@@ -840,8 +842,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 496
           ItemHeight = 13
-          OnChange = cbxUrlRubyChange
           TabOrder = 0
+          OnChange = cbxUrlRubyChange
         end
         object btnUrlRuby: TButton
           Tag = 4
@@ -850,8 +852,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = '&Reset...'
-          OnClick = btnUrlKallistiClick
           TabOrder = 1
+          OnClick = btnUrlKallistiClick
         end
         object btnOfflineRuby: TButton
           Tag = 4
@@ -860,8 +862,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = '&Offline...'
-          OnClick = btnOfflineKallistiClick
           TabOrder = 2
+          OnClick = btnOfflineKallistiClick
         end
       end
       object gbxRubyRunShell: TGroupBox
@@ -879,8 +881,8 @@ object frmMain: TfrmMain
           Top = 16
           Width = 139
           Caption = '&Start Shell...'
-          OnClick = btnRubyOpenMSYSClick
           TabOrder = 0
+          OnClick = btnRubyOpenMSYSClick
         end
         object lblRubyShell: TLabel
           Left = 8
@@ -909,8 +911,8 @@ object frmMain: TfrmMain
           Top = 16
           Width = 139
           Caption = 'Open Sa&mples...'
-          OnClick = btnRubyOpenHomeClick
           TabOrder = 0
+          OnClick = btnRubyOpenHomeClick
         end
         object lblHomeFolder1: TLabel
           Left = 8
@@ -943,8 +945,8 @@ object frmMain: TfrmMain
         Top = 14
         Width = 122
         Caption = 'Upd&ate...'
-        OnClick = btnUpdateMRubyClick
         TabOrder = 6
+        OnClick = btnUpdateMRubyClick
       end
     end
     object tsIDE: TTabSheet
@@ -973,9 +975,9 @@ object frmMain: TfrmMain
             'Code::Blocks'
           )
           ItemHeight = 15
-          OnClickCheck = lbxIdeListClickCheck
           Sorted = True
           TabOrder = 0
+          OnClickCheck = lbxIdeListClickCheck
           Data = {
             0100000000
           }
@@ -996,8 +998,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 125
           Caption = '&Install...'
-          OnClick = btnIdeInstallClick
           TabOrder = 0
+          OnClick = btnIdeInstallClick
         end
         object btnIdeReinstall: TButton
           Tag = 1
@@ -1006,8 +1008,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 125
           Caption = '&Reinstall...'
-          OnClick = btnIdeInstallClick
           TabOrder = 1
+          OnClick = btnIdeInstallClick
         end
         object btnIdeUninstall: TButton
           Tag = 2
@@ -1016,8 +1018,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 125
           Caption = '&Uninstall...'
-          OnClick = btnIdeInstallClick
           TabOrder = 2
+          OnClick = btnIdeInstallClick
         end
       end
       object gbxIdeCodeBlocksUsersAvailable: TGroupBox
@@ -1050,8 +1052,8 @@ object frmMain: TfrmMain
             Width = 86
             Align = alTop
             Caption = 'Initiali&ze...'
-            OnClick = btnIdeInstallClick
             TabOrder = 0
+            OnClick = btnIdeInstallClick
           end
           object btnIdeCodeBlocksUsersAvailableRefresh: TButton
             Tag = 3
@@ -1062,8 +1064,8 @@ object frmMain: TfrmMain
             Align = alTop
             BorderSpacing.Top = 4
             Caption = 'Refr&esh'
-            OnClick = btnIdeInstallClick
             TabOrder = 1
+            OnClick = btnIdeInstallClick
           end
         end
         object lblIdeCodeBlocksUsersAvailable: TLabel
@@ -1135,16 +1137,16 @@ object frmMain: TfrmMain
           Top = 4
           Width = 74
           Caption = '&Detect'
-          OnClick = btnIdeInstallClick
           TabOrder = 0
+          OnClick = btnIdeInstallClick
         end
         object edtIdeCodeBlocksInstallDir: TEdit
           Left = 4
           Height = 21
           Top = 4
           Width = 230
-          OnChange = edtIdeCodeBlocksInstallDirChange
           TabOrder = 1
+          OnChange = edtIdeCodeBlocksInstallDirChange
         end
         object btnIdeCodeBlocksInstallDir: TButton
           Left = 240
@@ -1152,8 +1154,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 74
           Caption = '&Browse...'
-          OnClick = btnIdeCodeBlocksInstallDirClick
           TabOrder = 2
+          OnClick = btnIdeCodeBlocksInstallDirClick
         end
       end
       object gbxIdeAll: TGroupBox
@@ -1173,8 +1175,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 228
           Caption = 'Refres&h'
-          OnClick = btnIdeInstallClick
           TabOrder = 0
+          OnClick = btnIdeInstallClick
         end
       end
     end
@@ -1197,8 +1199,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 496
           ItemHeight = 13
-          OnChange = cbxUrlKallistiChange
           TabOrder = 0
+          OnChange = cbxUrlKallistiChange
         end
         object btnUrlKallisti: TButton
           Left = 508
@@ -1206,8 +1208,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = '&Reset...'
-          OnClick = btnUrlKallistiClick
           TabOrder = 1
+          OnClick = btnUrlKallistiClick
         end
         object btnOfflineKallisti: TButton
           Left = 578
@@ -1215,8 +1217,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = '&Offline...'
-          OnClick = btnOfflineKallistiClick
           TabOrder = 2
+          OnClick = btnOfflineKallistiClick
         end
       end
       object gbxUrlKallistiPorts: TGroupBox
@@ -1234,8 +1236,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 496
           ItemHeight = 13
-          OnChange = cbxUrlKallistiPortsChange
           TabOrder = 0
+          OnChange = cbxUrlKallistiPortsChange
         end
         object btnUrlKallistiPorts: TButton
           Tag = 1
@@ -1244,8 +1246,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = 'R&eset...'
-          OnClick = btnUrlKallistiClick
           TabOrder = 1
+          OnClick = btnUrlKallistiClick
         end
         object btnOfflineKallistiPorts: TButton
           Tag = 1
@@ -1254,8 +1256,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = 'O&ffline...'
-          OnClick = btnOfflineKallistiClick
           TabOrder = 2
+          OnClick = btnOfflineKallistiClick
         end
       end
       object rgxTerminalOption: TRadioGroup
@@ -1297,8 +1299,8 @@ object frmMain: TfrmMain
           Top = 16
           Width = 249
           Caption = 'Min&GW Installation Manager...'
-          OnClick = btnOpenMinGWManagerClick
           TabOrder = 0
+          OnClick = btnOpenMinGWManagerClick
         end
         object btnRestoreDefaults: TButton
           Left = 40
@@ -1306,8 +1308,8 @@ object frmMain: TfrmMain
           Top = 48
           Width = 249
           Caption = 'Reset Defa&ults...'
-          OnClick = btnRestoreDefaultsClick
           TabOrder = 1
+          OnClick = btnRestoreDefaultsClick
         end
       end
       object gbxUrlDreamcastToolSerial: TGroupBox
@@ -1325,8 +1327,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 496
           ItemHeight = 13
-          OnChange = cbxUrlDreamcastToolSerialChange
           TabOrder = 0
+          OnChange = cbxUrlDreamcastToolSerialChange
         end
         object btnUrlDreamcastToolSerial: TButton
           Tag = 2
@@ -1335,8 +1337,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = 'Re&set...'
-          OnClick = btnUrlKallistiClick
           TabOrder = 1
+          OnClick = btnUrlKallistiClick
         end
         object btnOfflineDreamcastToolSerial: TButton
           Tag = 2
@@ -1345,8 +1347,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = 'Off&line...'
-          OnClick = btnOfflineKallistiClick
           TabOrder = 2
+          OnClick = btnOfflineKallistiClick
         end
       end
       object gbxUrlDreamcastToolIP: TGroupBox
@@ -1364,8 +1366,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 496
           ItemHeight = 13
-          OnChange = cbxUrlDreamcastToolIPChange
           TabOrder = 0
+          OnChange = cbxUrlDreamcastToolIPChange
         end
         object btnUrlDreamcastToolIP: TButton
           Tag = 3
@@ -1374,8 +1376,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = 'Rese&t...'
-          OnClick = btnUrlKallistiClick
           TabOrder = 1
+          OnClick = btnUrlKallistiClick
         end
         object btnOfflineDreamcastToolIP: TButton
           Tag = 3
@@ -1384,8 +1386,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = 'Offl&ine...'
-          OnClick = btnOfflineKallistiClick
           TabOrder = 2
+          OnClick = btnOfflineKallistiClick
         end
       end
       object gbxWindowsTerminal: TGroupBox
@@ -1403,8 +1405,8 @@ object frmMain: TfrmMain
           Top = 0
           Width = 135
           Caption = 'Insta&ll Integration'
-          OnClick = btnWindowsTerminalInstallClick
           TabOrder = 0
+          OnClick = btnWindowsTerminalInstallClick
         end
         object btnWindowsTerminalUninstall: TButton
           Left = 12
@@ -1412,8 +1414,8 @@ object frmMain: TfrmMain
           Top = 32
           Width = 135
           Caption = '&Uninstall Integration'
-          OnClick = btnWindowsTerminalUninstallClick
           TabOrder = 1
+          OnClick = btnWindowsTerminalUninstallClick
         end
       end
     end
@@ -1545,8 +1547,8 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = '&Open...'
-          OnClick = btnBrowseHomeBaseDirectoryClick
           TabOrder = 1
+          OnClick = btnBrowseHomeBaseDirectoryClick
         end
       end
       object gbxVersionKallistiPorts: TGroupBox
@@ -1670,8 +1672,8 @@ object frmMain: TfrmMain
           Top = 36
           Width = 64
           Caption = 'A&pply...'
-          OnClick = btnComponentsApplyClick
           TabOrder = 1
+          OnClick = btnComponentsApplyClick
         end
         object cbxToolchain: TComboBox
           Left = 64
@@ -1722,8 +1724,8 @@ object frmMain: TfrmMain
             Top = 12
             Width = 162
             Caption = 'Change GNU Debugger (GD&B)'
-            OnChange = rbnComponentsNoChangeChange
             TabOrder = 0
+            OnChange = rbnComponentsNoChangeChange
           end
           object rbnComponentsChangeToolchain: TRadioButton
             Tag = 1
@@ -1732,8 +1734,8 @@ object frmMain: TfrmMain
             Top = 12
             Width = 105
             Caption = 'Change Toolc&hain'
-            OnChange = rbnComponentsNoChangeChange
             TabOrder = 1
+            OnChange = rbnComponentsNoChangeChange
           end
           object rbnComponentsNoChange: TRadioButton
             Left = 139
@@ -1741,8 +1743,8 @@ object frmMain: TfrmMain
             Top = 12
             Width = 71
             Caption = 'No &change'
-            OnChange = rbnComponentsNoChangeChange
             TabOrder = 2
+            OnChange = rbnComponentsNoChangeChange
           end
           object lblComponentsConfiguration: TLabel
             Left = 8
@@ -2249,9 +2251,9 @@ object frmMain: TfrmMain
           Top = 28
           Width = 298
           ItemHeight = 13
-          OnChange = cbxModuleSelectionChange
           Style = csDropDownList
           TabOrder = 3
+          OnChange = cbxModuleSelectionChange
         end
         object lblComponentInformation: TLabel
           Left = 8
@@ -2461,8 +2463,8 @@ object frmMain: TfrmMain
           Top = 16
           Width = 249
           Caption = 'Additio&nal Information...'
-          OnClick = btnCreditsClick
           TabOrder = 0
+          OnClick = btnCreditsClick
         end
         object btnCheckForUpdates: TButton
           Left = 40
@@ -2470,8 +2472,8 @@ object frmMain: TfrmMain
           Top = 48
           Width = 249
           Caption = 'Check for &Updates...'
-          OnClick = btnCheckForUpdatesClick
           TabOrder = 1
+          OnClick = btnCheckForUpdatesClick
         end
       end
     end
