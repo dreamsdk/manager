@@ -93,6 +93,7 @@ type
     fVersionRake: string;
   protected
     function IsValidVersion(const Version: string): Boolean;
+    function RetrieveKallistiChangeLogVersion: string;
     function RetrieveKallistiVersion: string;
     function RetrieveKallistiBuildDate: TDateTime;
     function RetrieveMRubyBuildDate: TDateTime;
@@ -233,9 +234,25 @@ begin
   Result := not SameText(Version, INVALID_VERSION);
 end;
 
+function TComponentVersion.RetrieveKallistiChangeLogVersion: string;
+var
+  TargetFileName: TFileName;
+
+begin
+  Result := INVALID_VERSION;
+  TargetFileName := Environment.FileSystem.Kallisti.KallistiChangeLogFile;
+  if FileExists(TargetFileName) then
+  begin
+    Result := Trim(StringReplace(RetrieveVersionWithFind(TargetFileName,
+      'KallistiOS version ', sLineBreak), '-', EmptyStr, [rfReplaceAll]));
+    if IsVersionValid(Result) then
+      Result := Result + DEVELOPMENT_VERSION_SUFFIX;
+  end;
+end;
+
 function TComponentVersion.RetrieveKallistiVersion: string;
 var
-  TargetFileName:  TFileName;
+  TargetFileName: TFileName;
 
 begin
   TargetFileName := Environment.FileSystem.Kallisti.KallistiLibrary;
@@ -260,12 +277,7 @@ begin
     fBuildDateKallistiOS := RetrieveKallistiBuildDate;
     fChangeLogKallistiOS := INVALID_VERSION;
     if FileExists(KallistiLibrary) then
-    begin
-      fChangeLogKallistiOS := RetrieveVersionWithFind(KallistiChangeLogFile,
-        'KallistiOS version ', sLineBreak);
-      if IsVersionValid(fChangeLogKallistiOS) then
-        fChangeLogKallistiOS := fChangeLogKallistiOS + DEVELOPMENT_VERSION_SUFFIX;
-    end;
+      fChangeLogKallistiOS := RetrieveKallistiChangeLogVersion;
   end;
 end;
 

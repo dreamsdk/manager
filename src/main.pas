@@ -2071,6 +2071,9 @@ begin
         end;
     end;
   end;
+
+  // Clear flag
+  fPackageManagerOperation := pmrUndefined;
 end;
 
 function TfrmMain.MsgBox(const aCaption: string; const aMsg: string;
