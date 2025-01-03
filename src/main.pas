@@ -46,6 +46,7 @@ type
     btnDreamcastToolCustomExecutable: TButton;
     btnUninstallMRuby: TButton;
     btnInstallMRuby: TButton;
+    btnOptionsShortcut: TButton;
     btnUrlKallisti: TButton;
     btnBrowseHomeBaseDirectory: TButton;
     btnUrlRuby: TButton;
@@ -83,6 +84,7 @@ type
     gbxWindowsTerminal: TGroupBox;
     lblComponentsConfiguration: TLabel;
     lblIdeCodeBlocksUsersAvailable: TLabel;
+    lblTextOfflineStatusKallistiOS: TLabel;
     lblTextToolchainBuildDate: TLabel;
     lblTextToolchainBuildDateARM: TLabel;
     lblToolchain: TLabel;
@@ -98,6 +100,7 @@ type
     lblDebugger: TLabel;
     lblBuildDateToolchain: TLabel;
     lblBuildDateToolchainARM: TLabel;
+    lblOfflineStatusKallistiOS: TLabel;
     lblVersionMRuby: TLabel;
     lblVersionRuby: TLabel;
     lblVersionRake: TLabel;
@@ -265,6 +268,7 @@ type
     procedure btnOpenHomeClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure btnOpenMSYSClick(Sender: TObject);
+    procedure btnOptionsShortcutClick(Sender: TObject);
     procedure btnRubyOpenHomeClick(Sender: TObject);
     procedure btnRubyOpenMSYSClick(Sender: TObject);
     procedure btnPortInstallClick(Sender: TObject);
@@ -345,6 +349,7 @@ type
     procedure UpdateComponentControls;
     procedure UpdateDreamcastToolMediaAccessControlAddressControls;
     procedure UpdateDreamcastToolSerialOptionControls;
+    procedure UpdateKallistiControls;
     procedure UpdateOptionsControls;
     procedure UpdateRepositories;
     procedure UpdateRubyControls;
@@ -610,6 +615,8 @@ procedure TfrmMain.pcMainChange(Sender: TObject);
 begin
   if pcMain.ActivePage = tsOptions then
     UpdateOptionsControls;
+  if pcMain.ActivePage = tsKallistiOS then
+    UpdateKallistiControls;
 
   if pcMain.ActivePage <> tsComponents then
     UpdateComponentControls;
@@ -844,7 +851,8 @@ end;
 procedure TfrmMain.DisplayEnvironmentComponentVersions;
 var
   ComponentName: TComponentName;
-  ComponentVersion, ComponentNameString: string;
+  ComponentVersion,
+  ComponentNameString: string;
 
   procedure SetLabelDate(LabelCtrl: TLabel; const FileName: TFileName;
     const FileDate: TDateTime; const DisplayTime: Boolean = True);
@@ -872,15 +880,28 @@ begin
         ComponentVersion);
     end;
 
-    // KallistiOS ChangeLog version
+    // KallistiOS version in the KallistiOS tab
     if KallistiOS.Built then
     begin
+      // Update the version label in the Components tab
+      SetVersionLabel(lblVersionKallistiOS2, lblVersionKallistiOS.Caption);
+
+      (* If the kos directory is online (using Git) then we show the Change Log
+         version, indeed it means the version is a development one.
+         If the kos directory is offline, it means we are using the version
+         embedded in the DreamSDK Setup package. Then we show the Repository
+         version, that displays the git hash that was used for building this
+         DreamSDK Setup package. *)
+      ComponentVersion := Versions.KallistiChangeLog;
+      if KallistiOS.Repository.Offline then
+        ComponentVersion := KallistiOS.Repository.Version;
+
+      // Show the version in the tab
       if IsVersionValid(Versions.KallistiChangeLog) then
         SetVersionLabel(lblVersionKallistiOS, Format(KALLISTI_VERSION_FORMAT, [
           lblVersionKallistiOS.Caption,
-          Versions.KallistiChangeLog
+          ComponentVersion
         ]));
-      SetVersionLabel(lblVersionKallistiOS2, lblVersionKallistiOS.Caption);
     end
     else
     begin
@@ -1244,6 +1265,23 @@ begin
       SetFocus;
       SelectAll;
     end;
+end;
+
+procedure TfrmMain.UpdateKallistiControls;
+begin
+  with DreamcastSoftwareDevelopmentKitManager do
+  begin
+    if KallistiOS.Repository.Offline then
+    begin
+      btnUpdateKallistiOS.Caption := KallistiMainButtonRebuild;
+      lblOfflineStatusKallistiOS.Caption := RepositoryOfflineStatusOffline;
+    end
+    else
+    begin
+      btnUpdateKallistiOS.Caption := KallistiMainButtonUpdate;
+      lblOfflineStatusKallistiOS.Caption := RepositoryOfflineStatusOnline;
+    end;
+  end;
 end;
 
 procedure TfrmMain.UpdateOptionsControls;
@@ -2049,6 +2087,7 @@ begin
   // Update UI (ComponentSelectedOperation will be reset!)
   DreamcastSoftwareDevelopmentKitManager.Versions.RetrieveVersions;
   DisplayEnvironmentComponentVersions;
+  UpdateKallistiControls;
   UpdateComponentControls;
   UpdateOptionsControls;
 
@@ -2376,6 +2415,11 @@ end;
 procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);
 begin
   RunMSYS;
+end;
+
+procedure TfrmMain.btnOptionsShortcutClick(Sender: TObject);
+begin
+  pcMain.ActivePage := tsOptions;
 end;
 
 procedure TfrmMain.btnRubyOpenHomeClick(Sender: TObject);
