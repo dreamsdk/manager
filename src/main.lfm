@@ -156,11 +156,12 @@ object frmMain: TfrmMain
       ClientHeight = 320
       ClientWidth = 658
       object lblVersionKallistiOS: TLabel
-        Left = 72
+        Left = 124
         Height = 15
         Top = 8
-        Width = 205
-        Caption = '(KallistiOS Version/ChangeLog Version)'
+        Width = 376
+        AutoSize = False
+        Caption = '(KallistiOS Version/Repository Version)'
         ParentColor = False
       end
       object btnUpdateKallistiOS: TButton
@@ -173,10 +174,11 @@ object frmMain: TfrmMain
         OnClick = btnUpdateKallistiOSClick
       end
       object lblBuildDateKallistiOS: TLabel
-        Left = 72
+        Left = 124
         Height = 15
-        Top = 48
-        Width = 114
+        Top = 28
+        Width = 378
+        AutoSize = False
         Caption = '(KallistiOS Build Date)'
         ParentColor = False
       end
@@ -218,7 +220,7 @@ object frmMain: TfrmMain
       object lblTextBuildDateKallistiOS: TLabel
         Left = 8
         Height = 15
-        Top = 48
+        Top = 28
         Width = 58
         Caption = 'Build Date'
         Font.Style = [fsBold]
@@ -235,9 +237,9 @@ object frmMain: TfrmMain
         OnClick = btnOptionsShortcutClick
       end
       object lblTextOfflineStatusKallistiOS: TLabel
-        Left = 8
+        Left = 384
         Height = 15
-        Top = 28
+        Top = 48
         Width = 26
         Caption = 'Type'
         Font.Style = [fsBold]
@@ -245,11 +247,30 @@ object frmMain: TfrmMain
         ParentFont = False
       end
       object lblOfflineStatusKallistiOS: TLabel
-        Left = 72
+        Left = 416
         Height = 15
-        Top = 28
-        Width = 131
-        Caption = '(KallistiOS Offline Status)'
+        Top = 48
+        Width = 84
+        Caption = '(Online/Offline)'
+        ParentColor = False
+      end
+      object lblTextChangeLogKallistiOS: TLabel
+        Left = 8
+        Height = 15
+        Top = 48
+        Width = 108
+        Caption = 'Change Log Version'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
+      object lblVersionChangeLogKallistiOS: TLabel
+        Left = 124
+        Height = 15
+        Top = 48
+        Width = 256
+        AutoSize = False
+        Caption = '(KallistiOS ChangeLog Version)'
         ParentColor = False
       end
     end

@@ -84,6 +84,7 @@ type
     gbxWindowsTerminal: TGroupBox;
     lblComponentsConfiguration: TLabel;
     lblIdeCodeBlocksUsersAvailable: TLabel;
+    lblTextChangeLogKallistiOS: TLabel;
     lblTextOfflineStatusKallistiOS: TLabel;
     lblTextToolchainBuildDate: TLabel;
     lblTextToolchainBuildDateARM: TLabel;
@@ -101,6 +102,7 @@ type
     lblBuildDateToolchain: TLabel;
     lblBuildDateToolchainARM: TLabel;
     lblOfflineStatusKallistiOS: TLabel;
+    lblVersionChangeLogKallistiOS: TLabel;
     lblVersionMRuby: TLabel;
     lblVersionRuby: TLabel;
     lblVersionRake: TLabel;
@@ -881,31 +883,23 @@ begin
     end;
 
     // KallistiOS version in the KallistiOS tab
+    SetVersionLabel(lblVersionChangeLogKallistiOS, INVALID_VERSION);
+    SetVersionLabel(lblVersionKallistiOS2, INVALID_VERSION);
     if KallistiOS.Built then
     begin
       // Update the version label in the Components tab
       SetVersionLabel(lblVersionKallistiOS2, lblVersionKallistiOS.Caption);
 
-      (* If the kos directory is online (using Git) then we show the Change Log
-         version, indeed it means the version is a development one.
-         If the kos directory is offline, it means we are using the version
-         embedded in the DreamSDK Setup package. Then we show the Repository
-         version, that displays the git hash that was used for building this
-         DreamSDK Setup package. *)
-      ComponentVersion := Versions.KallistiChangeLog;
-      if KallistiOS.Repository.Offline then
-        ComponentVersion := KallistiOS.Repository.Version;
-
-      // Show the version in the tab
+      // Display the version extracted from Change Log
       if IsVersionValid(Versions.KallistiChangeLog) then
-        SetVersionLabel(lblVersionKallistiOS, Format(KALLISTI_VERSION_FORMAT, [
-          lblVersionKallistiOS.Caption,
-          ComponentVersion
-        ]));
-    end
-    else
-    begin
-      SetVersionLabel(lblVersionKallistiOS2, INVALID_VERSION);
+        SetVersionLabel(lblVersionChangeLogKallistiOS, Versions.KallistiChangeLog);
+
+      // Show the complete version in the KallistiOS tab
+      ComponentVersion := Format(KALLISTI_VERSION_FORMAT, [
+        lblVersionKallistiOS.Caption,
+        KallistiOS.Repository.Version
+      ]);
+      SetVersionLabel(lblVersionKallistiOS, ComponentVersion);
     end;
 
     // KallistiOS build date

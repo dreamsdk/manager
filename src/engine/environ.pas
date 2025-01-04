@@ -394,6 +394,7 @@ type
     procedure HandleShellCommandRunnerTerminate(Sender: TObject);
     function ExecuteShellCommandRunner(const CommandLine: string): string;
     function GetOfflineFileName(const WorkingDirectory: TFileName): TFileName;
+    function GetRepositoryFetchDateTime(const WorkingDirectory: TFileName): TDateTime;
   public
     constructor Create;
     destructor Destroy; override;
@@ -425,7 +426,8 @@ uses
   RefBase,
   SysTools,
   FSTools,
-  RunTools
+  RunTools,
+  InetUtil
 {$IFDEF GUI}
   , PostInst
 {$ENDIF}
@@ -890,6 +892,30 @@ begin
     + OFFLINE_FILE;
 end;
 
+function TDreamcastSoftwareDevelopmentEnvironment.GetRepositoryFetchDateTime(
+  const WorkingDirectory: TFileName): TDateTime;
+const
+  GIT_CONTROL_DIRNAME = '.git';
+
+var
+  FetchFileName: TFileName;
+
+begin
+  Result := Default(TDateTime);
+  if DirectoryExists(WorkingDirectory) then
+  begin
+    FetchFileName := IncludeTrailingPathDelimiter(WorkingDirectory) + GIT_CONTROL_DIRNAME + DirectorySeparator + 'FETCH_HEAD';
+    if FileExists(FetchFileName) then
+      Result := GetFileDate(FetchFileName)
+    else
+    begin
+      FetchFileName := IncludeTrailingPathDelimiter(WorkingDirectory) + GIT_CONTROL_DIRNAME + DirectorySeparator + 'HEAD';
+      if FileExists(FetchFileName) then
+        Result := GetFileDate(FetchFileName);
+    end;
+  end;
+end;
+
 function TDreamcastSoftwareDevelopmentEnvironment.IsRepositoryReady(
   const WorkingDirectory: TFileName): Boolean;
 const
@@ -1003,6 +1029,12 @@ end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.GetRepositoryVersion(
   const WorkingDirectory: TFileName): string;
+var
+  PullDate: TDateTime;
+  RepositoryProvider,
+  GitHash,
+  StrPullDate: string;
+
 begin
   Result := EmptyStr;
   if DirectoryExists(WorkingDirectory) then
@@ -1011,10 +1043,24 @@ begin
     else
 	  begin
 		  try
-		    Result := Run('git', 'describe --always --long', WorkingDirectory, False);
-		    if IsInString(FAIL_TAG, Result) then
-			    Result := EmptyStr;
-		  except
+		    GitHash := Trim(Run('git', 'describe --always --long', WorkingDirectory, False));
+		    if not IsInString(FAIL_TAG, GitHash) then
+        begin
+          // Get repository provider, usually 'github' or 'gitlab'
+          RepositoryProvider := Run('git', 'config --get remote.origin.url', WorkingDirectory, False);
+          if not IsEmpty(RepositoryProvider) then
+            RepositoryProvider := GetHostFromUri(RepositoryProvider) + '-';
+
+          // Get the git pull date
+          StrPullDate := EmptyStr;
+          PullDate := GetRepositoryFetchDateTime(WorkingDirectory);
+          if PullDate <> Default(TDateTime) then
+            StrPullDate := '-' + FormatDateTime('YYYY.MM.DD', PullDate);
+
+          // Combine final repository version info
+          Result := RepositoryProvider + GitHash + StrPullDate;
+        end;
+      except
 			  // Not needed in that cases
 		  end;
 	  end;

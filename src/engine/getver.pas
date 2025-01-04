@@ -143,9 +143,6 @@ uses
   FSTools,
   PEUtils;
 
-const
-  DEVELOPMENT_VERSION_SUFFIX = '-dev';
-
 function ComponentNameToString(const ComponentName: TComponentName): string;
 const
   COMPONENTS_NAME: array[0..18] of string = (
@@ -245,8 +242,6 @@ begin
   begin
     Result := Trim(StringReplace(RetrieveVersionWithFind(TargetFileName,
       'KallistiOS version ', sLineBreak), '-', EmptyStr, [rfReplaceAll]));
-    if IsVersionValid(Result) then
-      Result := Result + DEVELOPMENT_VERSION_SUFFIX;
   end;
 end;
 
