@@ -799,6 +799,7 @@ object frmMain: TfrmMain
       Caption = 'Rub&y'
       ClientHeight = 320
       ClientWidth = 658
+      TabVisible = False
       object lblTextMRuby: TLabel
         Left = 8
         Height = 15
