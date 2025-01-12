@@ -14,10 +14,9 @@ type
 
   { TComponentName }
   TComponentName = (
+    cnFoundation,
     cnGit,
-    cnSVN,
     cnPython,
-    cnMinGW,
     cnBinutils,
     cnGCC,
     cnGDB,
@@ -32,7 +31,8 @@ type
     cnGCCWin32,
     cnGDBWin32,
     cnRuby,
-    cnRake
+    cnCMake,
+    cnMeson
   );
 
   { TToolchainVersion }
@@ -75,22 +75,22 @@ type
     fPythonInstalled: Boolean;
 	  fGitInstalled: Boolean;
     fMRubyBuildDate: TDateTime;
-    fRakeInstalled: Boolean;
+    fMesonInstalled: Boolean;
     fRubyInstalled: Boolean;
-    fSubversionInstalled: Boolean;
+    fCMakeInstalled: Boolean;
     fToolchainVersionARM: TToolchainVersion;
     fToolchainVersionSuperH: TToolchainVersion;
     fToolchainVersionWin32: TToolchainVersion;
     fVersionGit: string;
     fVersionKallistiOS: string;
     fChangeLogKallistiOS: string;
-    fVersionMinGW: string;
     fVersionPython: string;
-    fVersionSVN: string;
+    fVersionCMake: string;
     fVersionToolIP: string;
     fVersionToolSerial: string;
     fVersionRuby: string;
-    fVersionRake: string;
+    fVersionMeson: string;
+    fVersionFoundation: string;
   protected
     function IsValidVersion(const Version: string): Boolean;
     function RetrieveKallistiChangeLogVersion: string;
@@ -110,9 +110,8 @@ type
 
     property Git: string read fVersionGit;
 	  property GitInstalled: Boolean read fGitInstalled;
-    property MinGW: string read fVersionMinGW;
-    property Subversion: string read fVersionSVN;
-    property SubversionInstalled: Boolean read fSubversionInstalled;
+    property CMake: string read fVersionCMake;
+    property CMakeInstalled: Boolean read fCMakeInstalled;
     property Python: string read fVersionPython;
     property PythonInstalled: Boolean read fPythonInstalled;
     property ToolSerial: string read fVersionToolSerial;
@@ -125,9 +124,10 @@ type
     property ToolchainWin32: TToolchainVersion read fToolchainVersionWin32;
     property Ruby: string read fVersionRuby;
     property RubyInstalled: Boolean read fRubyInstalled;
-    property Rake: string read fVersionRake;
-    property RakeInstalled: Boolean read fRakeInstalled;
+    property Meson: string read fVersionMeson;
+    property MesonInstalled: Boolean read fMesonInstalled;
     property MRubyBuildDate: TDateTime read fMRubyBuildDate;
+    property Foundation: string read fVersionFoundation;
   end;
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
@@ -135,40 +135,29 @@ function ComponentNameToString(const ComponentName: TComponentName): string;
 implementation
 
 uses
+  TypInfo,
 {$IFDEF GUI}
   Forms,
 {$ENDIF}
   SysTools,
   VerIntf,
   FSTools,
-  PEUtils;
+  PEUtils,
+  RefBase;
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
-const
-  COMPONENTS_NAME: array[0..18] of string = (
-    'Git',
-    'SVN',
-    'Python',
-    'MinGW',
-    'Binutils',
-    'GCC',
-    'GDB',
-    'PythonGDB',
-    'Newlib',
-    'ToolSerial',
-    'ToolIP',
-    'KallistiOS',
-    'BinutilsARM',
-    'GCCARM',
-    'BinutilsWin32',
-    'GCCWin32',
-    'GDBWin32',
-    'Ruby',
-    'Rake'
-  );
+var
+  ComponentRadicalName: string;
 
 begin
-  Result := COMPONENTS_NAME[Integer(ComponentName)];
+  // Get 'cnXXXXX'
+  ComponentRadicalName := GetEnumName(TypeInfo(TComponentName), Ord(ComponentName));
+
+  // Remove the 'cn' prefix
+  ComponentRadicalName := Copy(ComponentRadicalName, 3, Length(ComponentRadicalName) - 2);
+
+  // Return 'XXXXX'
+  Result := ComponentRadicalName;
 end;
 
 { TToolchainVersion }
@@ -344,20 +333,32 @@ procedure TComponentVersion.RetrieveVersions;
   end;
 
 begin
+  // Retrieve environment flavour
+  fVersionFoundation := INVALID_VERSION;
+  case Environment.FoundationKind of
+    efkMinGWMSYS:
+      fVersionFoundation := 'MinGW/MSYS';
+    efkMinGW64MSYS2:
+      fVersionFoundation := 'MinGW-w64/MSYS2';
+  end;
+
+  // Retrieve components version
   with Environment.FileSystem do
   begin
     fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak);
 	  fGitInstalled := IsValidVersion(fVersionGit);
-    fVersionSVN := RetrieveVersion('svn', '--version', 'svn, version', sLineBreak);
-    fSubversionInstalled := IsValidVersion(fVersionSVN);
+
     fVersionPython := RetrieveVersion('python', '--version', 'Python', sLineBreak);
     fPythonInstalled := IsValidVersion(fVersionPython);
-    fVersionMinGW := RetrieveVersion(Shell.MinGWGetExecutable,
-      '--version', 'mingw-get version', sLineBreak);
+
     fVersionRuby := RetrieveVersion('ruby', '--version', 'ruby ', WhiteSpaceStr);
     fRubyInstalled := IsValidVersion(fVersionRuby);
-    fVersionRake := RetrieveVersion('rake', '--version', 'version ', sLineBreak, False);
-    fRakeInstalled := IsValidVersion(fVersionRake);
+
+    fVersionCMake := RetrieveVersion('cmake', '--version', 'version ', sLineBreak);
+    fCMakeInstalled := IsValidVersion(fVersionCMake);
+
+    fVersionMeson := RetrieveVersion('meson', '--version', True);
+    fMesonInstalled := IsValidVersion(fVersionMeson);
 
     RetrieveVersionToolchain(fToolchainVersionSuperH, ToolchainSuperH);
     RetrieveVersionToolchain(fToolchainVersionARM, ToolchainARM);
@@ -399,14 +400,12 @@ function TComponentVersion.GetComponentVersion(
 begin
   Result := '';
   case ComponentName of
+    cnFoundation:
+      Result := fVersionFoundation;
     cnGit:
       Result := fVersionGit;
-    cnSVN:
-      Result := fVersionSVN;
     cnPython:
       Result := fVersionPython;
-    cnMinGW:
-      Result := fVersionMinGW;
     cnBinutils:
       Result := fToolchainVersionSuperH.fVersionBinutils;
     cnGCC:
@@ -435,8 +434,10 @@ begin
       Result := fToolchainVersionWin32.fVersionGDB;
     cnRuby:
       Result := fVersionRuby;
-    cnRake:
-      Result := fVersionRake;
+    cnCMake:
+      Result := fVersionCMake;
+    cnMeson:
+      Result := fVersionMeson;
   end;
 end;
 

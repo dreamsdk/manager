@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 808
+  Left = 605
   Height = 400
-  Top = 476
+  Top = 358
   Width = 680
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -1949,20 +1949,20 @@ object frmMain: TfrmMain
         ClientHeight = 165
         ClientWidth = 317
         TabOrder = 1
-        object lblVersionSVN: TLabel
+        object lblVersionCMake: TLabel
           Left = 156
           Height = 13
-          Top = 32
+          Top = 60
           Width = 155
           Alignment = taRightJustify
           AutoSize = False
-          Caption = '(SVN)'
+          Caption = '(CMake)'
           ParentColor = False
         end
         object lblVersionGit: TLabel
           Left = 156
           Height = 13
-          Top = 4
+          Top = 32
           Width = 155
           Alignment = taRightJustify
           AutoSize = False
@@ -1972,27 +1972,27 @@ object frmMain: TfrmMain
         object lblVersionPython: TLabel
           Left = 156
           Height = 13
-          Top = 60
+          Top = 88
           Width = 155
           Alignment = taRightJustify
           AutoSize = False
           Caption = '(Python)'
           ParentColor = False
         end
-        object lblVersionMinGW: TLabel
+        object lblVersionFoundation: TLabel
           Left = 156
           Height = 13
-          Top = 88
+          Top = 4
           Width = 155
           Alignment = taRightJustify
           AutoSize = False
-          Caption = '(MinGW Get)'
+          Caption = '(Foundation)'
           ParentColor = False
         end
         object lblTextGit: TLabel
           Left = 8
           Height = 15
-          Top = 4
+          Top = 32
           Width = 17
           Caption = 'Git'
           Font.Style = [fsBold]
@@ -2002,29 +2002,29 @@ object frmMain: TfrmMain
         object lblTextPython: TLabel
           Left = 8
           Height = 15
-          Top = 60
+          Top = 88
           Width = 39
           Caption = 'Python'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
         end
-        object lblTextSVN: TLabel
+        object lblTextCMake: TLabel
           Left = 8
           Height = 15
-          Top = 32
-          Width = 97
-          Caption = 'Subversion (SVN)'
+          Top = 60
+          Width = 38
+          Caption = 'CMake'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
         end
-        object lblTextMinGW: TLabel
+        object lblTextFoundation: TLabel
           Left = 8
           Height = 15
-          Top = 88
-          Width = 66
-          Caption = 'MinGW Get'
+          Top = 4
+          Width = 62
+          Caption = 'Foundation'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False
@@ -2049,22 +2049,22 @@ object frmMain: TfrmMain
           Caption = '(Ruby)'
           ParentColor = False
         end
-        object lblVersionRake: TLabel
+        object lblVersionMeson: TLabel
           Left = 156
           Height = 13
           Top = 144
           Width = 155
           Alignment = taRightJustify
           AutoSize = False
-          Caption = '(Rake)'
+          Caption = '(Meson)'
           ParentColor = False
         end
-        object lblTextRake: TLabel
+        object lblTextMeson: TLabel
           Left = 8
           Height = 15
           Top = 144
-          Width = 28
-          Caption = 'Rake'
+          Width = 37
+          Caption = 'Meson'
           Font.Style = [fsBold]
           ParentColor = False
           ParentFont = False

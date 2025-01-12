@@ -96,7 +96,7 @@ type
     lblTextBuildDateMRuby: TLabel;
     lblTextMRuby: TLabel;
     lblTextRuby: TLabel;
-    lblTextRake: TLabel;
+    lblTextMeson: TLabel;
     lblTextVersionKallistiOS2: TLabel;
     lblDebugger: TLabel;
     lblBuildDateToolchain: TLabel;
@@ -105,7 +105,7 @@ type
     lblVersionChangeLogKallistiOS: TLabel;
     lblVersionMRuby: TLabel;
     lblVersionRuby: TLabel;
-    lblVersionRake: TLabel;
+    lblVersionMeson: TLabel;
     lblVersionKallistiOS2: TLabel;
     lbxIdeCodeBlocksUsersAvailable: TListBox;
     memPortShortDescription: TEdit;
@@ -193,13 +193,13 @@ type
     lblTextPythonGDB: TLabel;
     lblTextGit: TLabel;
     lblTextKallistiOS: TLabel;
-    lblTextMinGW: TLabel;
+    lblTextFoundation: TLabel;
     lblTextPython: TLabel;
     lblTextRepoKallistiOS: TLabel;
     lblTextVersionDreamcastToolSerial: TLabel;
     lblTextVersionDreamcastToolIP: TLabel;
     lblTextRepoKallistiPorts: TLabel;
-    lblTextSVN: TLabel;
+    lblTextCMake: TLabel;
     lblTextRepoToolSerial: TLabel;
     lblTextRepoToolIP: TLabel;
     lblTitleAbout: TLabel;
@@ -216,11 +216,11 @@ type
     lblVersionPythonGDB: TLabel;
     lblVersionGit: TLabel;
     lblVersionKallistiOS: TLabel;
-    lblVersionMinGW: TLabel;
+    lblVersionFoundation: TLabel;
     lblVersionPython: TLabel;
     lblVersionRepoKallistiOS: TLabel;
     lblVersionRepoKallistiPorts: TLabel;
-    lblVersionSVN: TLabel;
+    lblVersionCMake: TLabel;
     lblVersionRepoToolSerial: TLabel;
     lblVersionRepoToolIP: TLabel;
     lblVersionToolSerial: TLabel;
@@ -874,6 +874,9 @@ begin
   with DreamcastSoftwareDevelopmentKitManager do
   begin
     // Components versions
+{$IFDEF DEBUG}
+    DebugLog('Displaying Components version using Labels');
+{$ENDIF}
     for ComponentName := Low(TComponentName) to High(TComponentName) do
     begin
       ComponentNameString := ComponentNameToString(ComponentName);
@@ -1135,11 +1138,11 @@ const
   NOT_CRITICAL_COMPONENTS: array[0..6] of string = (
     'lblVersionPythonGDB',
     'lblVersionGit',
-    'lblVersionSVN',
     'lblVersionPython',
     'lblVersionRuby',
-    'lblVersionRake',
-    'lblVersionMRuby'
+    'lblVersionMRuby',
+    'lblVersionCMake',
+    'lblVersionMeson'
   );
 
 var
@@ -1166,14 +1169,21 @@ var
   ValidVersion: Boolean;
 
 begin
-  ValidVersion := IsVersionValid(Version);
-  if not ValidVersion then
-    VersionLabel.Caption := BooleanToCaption(False)
-  else
-    VersionLabel.Caption := Version;
-  SetVersionLabelState(VersionLabel, not ValidVersion);
+  if Assigned(VersionLabel) then
+  begin
+    ValidVersion := IsVersionValid(Version);
+    if not ValidVersion then
+      VersionLabel.Caption := BooleanToCaption(False)
+    else
+      VersionLabel.Caption := Version;
+    SetVersionLabelState(VersionLabel, not ValidVersion);
+  end;
+
 {$IFDEF DEBUG}
-  WriteLn(VersionLabel.Name, ': ', VersionLabel.Caption);
+  if not Assigned(VersionLabel) then
+    DebugLog('  (NOT ASSIGNED UI LABEL): "' + Version + '"')
+  else
+    DebugLog('  ' + VersionLabel.Name + ': "' + VersionLabel.Caption + '"');
 {$ENDIF}
 end;
 
@@ -1558,23 +1568,31 @@ begin
 {$IFDEF DEBUG}
   DebugLog('InitializeOptionsScreen');
 {$ENDIF}
-  with DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories do
+  with DreamcastSoftwareDevelopmentKitManager do
   begin
-    cbxUrlKallisti.Text := KallistiURL;
-    cbxUrlKallistiPorts.Text := KallistiPortsURL;
-    cbxUrlDreamcastToolSerial.Text := DreamcastToolSerialURL;
-    cbxUrlDreamcastToolIP.Text := DreamcastToolInternetProtocolURL;
-    cbxUrlRuby.Text := RubyURL;
+
+    // Manage Repositories URL
+    with Environment.Settings.Repositories do
+    begin
+      cbxUrlKallisti.Text := KallistiURL;
+      cbxUrlKallistiPorts.Text := KallistiPortsURL;
+      cbxUrlDreamcastToolSerial.Text := DreamcastToolSerialURL;
+      cbxUrlDreamcastToolIP.Text := DreamcastToolInternetProtocolURL;
+      cbxUrlRuby.Text := RubyURL;
 {$IFDEF DEBUG}
-    DebugLog(
-      '  InitializeOptionsScreen, Loaded URLs:' + sLineBreak +
-      '    * Kallisti: ' + cbxUrlKallisti.Text + sLineBreak +
-      '    * Kallisti Ports: ' + cbxUrlKallistiPorts.Text + sLineBreak +
-      '    * Dreamcast-Tool Serial: ' + cbxUrlDreamcastToolSerial.Text + sLineBreak +
-      '    * Dreamcast-Tool IP: ' + cbxUrlDreamcastToolIP.Text + sLineBreak +
-      '    * Ruby: ' + cbxUrlRuby.Text
-    );
+      DebugLog(
+        '  InitializeOptionsScreen, Loaded URLs:' + sLineBreak +
+        '    * Kallisti: ' + cbxUrlKallisti.Text + sLineBreak +
+        '    * Kallisti Ports: ' + cbxUrlKallistiPorts.Text + sLineBreak +
+        '    * Dreamcast-Tool Serial: ' + cbxUrlDreamcastToolSerial.Text + sLineBreak +
+        '    * Dreamcast-Tool IP: ' + cbxUrlDreamcastToolIP.Text + sLineBreak +
+        '    * Ruby: ' + cbxUrlRuby.Text
+      );
 {$ENDIF}
+    end;
+
+    // Manage MSYS/MSYS2 environments
+    btnOpenMinGWManager.Enabled := (Environment.FoundationKind = efkMinGWMSYS);
   end;
 end;
 
@@ -1690,14 +1708,14 @@ function TfrmMain.GetAllKallistiPortsIcon(
 begin
   Result := mtWarning;
   if (Operation = stiKallistiPortsInstall) and
-     (DreamcastSoftwareDevelopmentKitManager.Versions.SubversionInstalled) then
+     (DreamcastSoftwareDevelopmentKitManager.Versions.CMakeInstalled) then
        Result := mtConfirmation;
 end;
 
 function TfrmMain.GetAllKallistiPortsMessage(const Message: string): string;
 begin
   Result := Message;
-  if (not DreamcastSoftwareDevelopmentKitManager.Versions.SubversionInstalled) then
+  if (not DreamcastSoftwareDevelopmentKitManager.Versions.CMakeInstalled) then
      Result := Message + MsgBoxDlgWrapStr + UseSubversionAllKallistiPorts;
 end;
 
@@ -1705,7 +1723,7 @@ function TfrmMain.CheckKallistiSinglePortPossibleInstallation: Boolean;
 begin
   Result := True;
   if SelectedKallistiPort.UseSubversion
-    and (not DreamcastSoftwareDevelopmentKitManager.Versions.SubversionInstalled) then
+    and (not DreamcastSoftwareDevelopmentKitManager.Versions.CMakeInstalled) then
     begin
       Result := False;
       MsgBox(DialogWarningTitle, Format(UseSubversionKallistiSinglePort,
@@ -2228,7 +2246,7 @@ begin
   begin
     // Check Ruby runtime
     if (not DreamcastSoftwareDevelopmentKitManager.Versions.RubyInstalled) or
-      (not DreamcastSoftwareDevelopmentKitManager.Versions.RakeInstalled) then
+      (not DreamcastSoftwareDevelopmentKitManager.Versions.MesonInstalled) then
     begin
       MsgBox(DialogWarningTitle, UnableToInstallRubyRuntimeText, mtWarning, [mbOK]);
       Exit;
@@ -2403,7 +2421,11 @@ end;
 
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
 begin
-  RunNoWait(DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Shell.MinGWGetExecutable);
+  with DreamcastSoftwareDevelopmentKitManager do
+  begin
+    if (Environment.FoundationKind = efkMinGWMSYS) then
+      RunNoWait(Environment.FileSystem.Shell.MinGWGetExecutable);
+  end;
 end;
 
 procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);

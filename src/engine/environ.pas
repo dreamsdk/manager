@@ -13,7 +13,8 @@ uses
   SysUtils,
   RunCmd,
   RunCmdEx,
-  Settings;
+  Settings,
+  RefBase;
 
 const
   DCLOAD_IP_INSTALLATION_DIRECTORY = 'dcload-ip';
@@ -107,6 +108,7 @@ type
   );
 
   TDreamcastSoftwareDevelopmentEnvironment = class;
+  TDreamcastSoftwareDevelopmentFileSystem = class;
 
   { TDreamcastSoftwareDevelopmentFileSystemDreamcastToolPackages }
   TDreamcastSoftwareDevelopmentFileSystemDreamcastToolPackages = class(TObject)
@@ -258,6 +260,7 @@ type
   { TDreamcastSoftwareDevelopmentFileSystemShell }
   TDreamcastSoftwareDevelopmentFileSystemShell = class(TObject)
   private
+    fOwner: TDreamcastSoftwareDevelopmentFileSystem;
     fCodeBlocksPatcherExecutable: TFileName;
     fConfigurationDirectory: TFileName;
     fDreamSDKDirectory: TFileName;
@@ -269,6 +272,7 @@ type
     fRunnerExecutable: TFileName;
     fShellExecutable: TFileName;
   public
+    constructor Create(AOwner: TDreamcastSoftwareDevelopmentFileSystem);
     property DreamSDKDirectory: TFileName read fDreamSDKDirectory;
     property HelpFileName: TFileName read fHelpFileName;
     property LauncherExecutable: TFileName read fDreamSDKExecutable;
@@ -321,6 +325,7 @@ type
   { TDreamcastSoftwareDevelopmentFileSystem }
   TDreamcastSoftwareDevelopmentFileSystem = class(TObject)
   private
+    fOwner: TDreamcastSoftwareDevelopmentEnvironment;
     fToolchainBase: TFileName;
     fDreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool;
     fKallisti: TDreamcastSoftwareDevelopmentFileSystemKallisti;
@@ -329,11 +334,14 @@ type
     fToolchainARM: TDreamcastSoftwareDevelopmentFileSystemToolchain;
     fToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain;
     fToolchainWin32: TDreamcastSoftwareDevelopmentFileSystemToolchain;
+    function GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
   protected
     function GetReferentialDirectory: TFileName;
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
+    property Environment: TDreamcastSoftwareDevelopmentEnvironment
+      read GetEnvironment;
   public
-    constructor Create;
+    constructor Create(AOwner: TDreamcastSoftwareDevelopmentEnvironment);
     destructor Destroy; override;
     function ResetRepository(const RepositoryKind: TRepositoryKind): Boolean;
     property DreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool
@@ -380,6 +388,7 @@ type
   { TDreamcastSoftwareDevelopmentEnvironment }
   TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
   private
+    fFoundationKind: TEnvironmentFoundationKind;
     fShellCommandError: Boolean;
     fShellCommandNewLine: TNewLineEvent;
     fShellCommandRunner: TRunCommandEx;
@@ -414,6 +423,8 @@ type
       var BufferOutput: string): TUpdateOperationState; overload;
 
     property FileSystem: TDreamcastSoftwareDevelopmentFileSystem read fFileSystem;
+    property FoundationKind: TEnvironmentFoundationKind
+      read fFoundationKind;
     property Settings: TDreamcastSoftwareDevelopmentSettings read fSettings;
     property ShellCommandError: Boolean read fShellCommandError;
     property OnShellCommandNewLine: TNewLineEvent read fShellCommandNewLine
@@ -423,7 +434,6 @@ type
 implementation
 
 uses
-  RefBase,
   SysTools,
   FSTools,
   RunTools,
@@ -592,7 +602,20 @@ begin
   end;
 end;
 
+{ TDreamcastSoftwareDevelopmentFileSystemShell }
+
+constructor TDreamcastSoftwareDevelopmentFileSystemShell.Create(
+  AOwner: TDreamcastSoftwareDevelopmentFileSystem);
+begin
+  fOwner := AOwner;
+end;
+
 { TDreamcastSoftwareDevelopmentFileSystem }
+
+function TDreamcastSoftwareDevelopmentFileSystem.GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+begin
+  Result := fOwner;
+end;
 
 function TDreamcastSoftwareDevelopmentFileSystem.GetReferentialDirectory: TFileName;
 begin
@@ -624,9 +647,18 @@ begin
 
   with fShell do
   begin
-    // MinGW/MSYS
-    fMinGWGetExecutable := InstallPath + 'bin\mingw-get.exe';
-    fShellExecutable := MSYSBase + 'bin\sh.exe';
+    if Environment.FoundationKind = efkMinGW64MSYS2 then
+    begin
+      fMinGWGetExecutable := EmptyStr; // not available on MSYS2
+      fShellExecutable := MSYSBase + 'bin\bash.exe';
+    end
+    else
+    begin
+      // Default for MSYS
+      fMinGWGetExecutable := InstallPath + 'bin\mingw-get.exe';
+      fShellExecutable := MSYSBase + 'bin\sh.exe';
+    end;
+
     fHomeDirectory := MSYSBase + 'home\' + GetEnvironmentVariable('USERNAME')
       + DirectorySeparator;
 
@@ -687,14 +719,14 @@ begin
   end;
 
   // Toolchain for Win32 (Windows)
-  ToolchainBaseWin32 := GetInstallationBaseDirectory;
+  ToolchainBaseWin32 := GetWindowsToolchainBaseDirectory;
   with fToolchainWin32 do
   begin
     fBaseDirectory := ToolchainBaseWin32;
     fToolchainInstalled := DirectoryExists(ToolchainBaseWin32);
-    fBinutilsExecutable := ToolchainBaseWin32 + 'bin\ld.exe';
-    fGCCExecutable := ToolchainBaseWin32 + 'bin\gcc.exe';
-    fGDBExecutable := ToolchainBaseWin32 + 'bin\gdb.exe';
+    fBinutilsExecutable := ToolchainBaseWin32 + 'ld.exe';
+    fGCCExecutable := ToolchainBaseWin32 + 'gcc.exe';
+    fGDBExecutable := ToolchainBaseWin32 + 'gdb.exe';
     fNewlibBinary := EmptyStr; // Not Applicable
   end;
 
@@ -751,14 +783,15 @@ begin
 {$ENDIF}
 end;
 
-constructor TDreamcastSoftwareDevelopmentFileSystem.Create;
+constructor TDreamcastSoftwareDevelopmentFileSystem.Create(AOwner: TDreamcastSoftwareDevelopmentEnvironment);
 begin
+  fOwner := AOwner;
   fDreamcastTool := TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.Create;
   fKallisti := TDreamcastSoftwareDevelopmentFileSystemKallisti.Create;
   fToolchainARM := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkARM);
   fToolchainSuperH := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkSuperH);
   fToolchainWin32 := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkWin32);
-  fShell := TDreamcastSoftwareDevelopmentFileSystemShell.Create;
+  fShell := TDreamcastSoftwareDevelopmentFileSystemShell.Create(Self);
   fRuby := TDreamcastSoftwareDevelopmentFileSystemRuby.Create;
 end;
 
@@ -858,7 +891,6 @@ begin
     Executable := fFileSystem.Shell.ShellExecutable;
 
     Parameters.Add('--login');
-    Parameters.Add('-i');
 
     for i := 1 to GetEnvironmentVariableCount do
     begin
@@ -936,7 +968,8 @@ begin
   fMsysBaseDirectoryNormal := ExcludeTrailingPathDelimiter(GetMSysBaseDirectory);
   fMsysBaseDirectoryReverse := StringReplace(fMsysBaseDirectoryNormal,
     DirectorySeparator, '/', [rfReplaceAll]);
-  fFileSystem := TDreamcastSoftwareDevelopmentFileSystem.Create;
+  fFoundationKind := GetBaseEnvironmentFoundationKind;
+  fFileSystem := TDreamcastSoftwareDevelopmentFileSystem.Create(Self);
   fSettings := TDreamcastSoftwareDevelopmentSettings.Create;
   LoadConfig;
 end;
