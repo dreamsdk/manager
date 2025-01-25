@@ -59,6 +59,7 @@ type
     btnIdeCodeBlocksUsersAvailableRefresh: TButton;
     btnWindowsTerminalInstall: TButton;
     btnWindowsTerminalUninstall: TButton;
+    btnEnvironmentFileSystemDebugPrintAllValues: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
     cbxToolchain: TComboBox;
@@ -243,6 +244,7 @@ type
     rgxDreamcastTool: TRadioGroup;
     rgxTerminalOption: TRadioGroup;
     sddIdeCodeBlocks: TSelectDirectoryDialog;
+    tsDebug: TTabSheet;
     tsRuby: TTabSheet;
     tsIDE: TTabSheet;
     tsComponents: TTabSheet;
@@ -284,6 +286,7 @@ type
     procedure btnIdeInstallClick(Sender: TObject);
     procedure btnWindowsTerminalInstallClick(Sender: TObject);
     procedure btnWindowsTerminalUninstallClick(Sender: TObject);
+    procedure btnEnvironmentFileSystemDebugPrintAllValuesClick(Sender: TObject);
     procedure cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
     procedure cbxDreamcastToolSerialPortSelect(Sender: TObject);
     procedure cbxModuleSelectionChange(Sender: TObject);
@@ -499,6 +502,9 @@ end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
+{$IFDEF RELEASE}
+  tsDebug.TabVisible := False;
+{$ENDIF}
   if not IsElevatedTaskRequested then
   begin
     fShellThreadExecutedAtLeastOnce := False;
@@ -2787,6 +2793,14 @@ begin
     if not UninstallWindowsTerminalIntegration then
       MsgBox(DialogWarningTitle, WindowsTerminalUninstallFailedText, mtWarning, [mbOk]);
   UpdateWindowsTerminalControls;
+end;
+
+procedure TfrmMain.btnEnvironmentFileSystemDebugPrintAllValuesClick(Sender: TObject);
+begin
+{$IFDEF DEBUG}
+  DreamcastSoftwareDevelopmentKitManager.Environment
+    .FileSystem.DebugPrintAllValues;
+{$ENDIF}
 end;
 
 procedure TfrmMain.cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);

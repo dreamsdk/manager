@@ -343,7 +343,13 @@ type
   public
     constructor Create(AOwner: TDreamcastSoftwareDevelopmentEnvironment);
     destructor Destroy; override;
+
+{$IFDEF DEBUG}
+    procedure DebugPrintAllValues;
+{$ENDIF}
+
     function ResetRepository(const RepositoryKind: TRepositoryKind): Boolean;
+
     property DreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool
       read fDreamcastTool;
     property Kallisti: TDreamcastSoftwareDevelopmentFileSystemKallisti
@@ -650,7 +656,7 @@ begin
     if Environment.FoundationKind = efkMinGW64MSYS2 then
     begin
       fMinGWGetExecutable := EmptyStr; // not available on MSYS2
-      fShellExecutable := MSYSBase + 'bin\bash.exe';
+      fShellExecutable := GetUserBinariesBaseDirectory + 'bash.exe';
     end
     else
     begin
@@ -807,6 +813,54 @@ begin
   inherited Destroy;
 end;
 
+{$IFDEF DEBUG}
+
+procedure TDreamcastSoftwareDevelopmentFileSystem.DebugPrintAllValues;
+begin
+  (*
+  Kallisti
+Shell
+ToolchainARM
+ToolchainBase
+ToolchainSuperH
+ToolchainWin32
+Ruby*)
+
+  DebugLog(
+    Format(
+      '#############################################################################' + sLineBreak
+      + 'DreamcastTool:' + sLineBreak
+      + '  BaseDirectory: "%s"' + sLineBreak
+      + '  ConfigurationFileName: "%s"' + sLineBreak
+      + 'Kallisti:' + sLineBreak
+      + '  KallistiChangeLogFile: "%s"' + sLineBreak
+      + '  KallistiConfigurationFileName: "%s"' + sLineBreak
+      + '  KallistiDirectory: "%s"' + sLineBreak
+      + '  KallistiLibrary: "%s"' + sLineBreak
+      + '  KallistiPortsDirectory: "%s"' + sLineBreak
+      + '  KallistiPortsLibraryInformationFile: "%s"' + sLineBreak
+      + '  KallistiUtilitiesDirectory: "%s"' + sLineBreak
+      + '  Packages.Kallisti: "%s"' + sLineBreak
+      + '  Packages.KallistiPorts: "%s"' + sLineBreak
+      + '#############################################################################'
+    , [
+      DreamcastTool.BaseDirectory,
+      DreamcastTool.ConfigurationFileName,
+      Kallisti.KallistiChangeLogFile,
+      Kallisti.KallistiConfigurationFileName,
+      Kallisti.KallistiDirectory,
+      Kallisti.KallistiLibrary,
+      Kallisti.KallistiPortsDirectory,
+      Kallisti.KallistiPortsLibraryInformationFile,
+      Kallisti.KallistiUtilitiesDirectory,
+      Kallisti.Packages.Kallisti,
+      Kallisti.Packages.KallistiPorts
+    ])
+  );
+end;
+
+{$ENDIF}
+
 function TDreamcastSoftwareDevelopmentFileSystem.ResetRepository(
   const RepositoryKind: TRepositoryKind): Boolean;
 begin
@@ -889,6 +943,7 @@ begin
   with fShellCommandRunner do
   begin
     Executable := fFileSystem.Shell.ShellExecutable;
+    WorkingDirectory := GetCurrentDir;
 
     Parameters.Add('--login');
 
@@ -898,6 +953,7 @@ begin
     end;
 
     Environment.Add('_EXTERNAL_COMMAND=' + CommandLine);
+    Environment.Add('_WORKING_DIRECTORY=' + SystemToDreamSdkPath(WorkingDirectory));
     Environment.Add('_AUTOMATED_CALL=1');
 
     OnNewLine := @HandleShellCommandRunnerNewLine;
@@ -1001,16 +1057,32 @@ var
   CurrentDir: TFileName;
 
 begin
+{$IFDEF DEBUG}
+  DebugLog('ExecuteShellCommand');
+{$ENDIF}
+
   CurrentDir := GetCurrentDir;
+
+{$IFDEF DEBUG}
+  DebugLog(Format('  CurrentDir (1): "%s"', [GetCurrentDir]));
+{$ENDIF}
 
   if not DirectoryExists(WorkingDirectory) then
     ForceDirectories(WorkingDirectory);
 
   SetCurrentDir(WorkingDirectory);
 
+{$IFDEF DEBUG}
+  DebugLog(Format('  CurrentDir (2): "%s"', [GetCurrentDir]));
+{$ENDIF}
+
   Result := ExecuteShellCommandRunner(CommandLine);
 
   SetCurrentDir(CurrentDir);
+
+{$IFDEF DEBUG}
+  DebugLog(Format('  CurrentDir (3): "%s"', [GetCurrentDir]));
+{$ENDIF}
 end;
 
 procedure TDreamcastSoftwareDevelopmentEnvironment.PauseShellCommand;
@@ -1038,13 +1110,31 @@ var
 begin
   TargetDirectoryFileName := WorkingDirectory + TargetDirectoryName;
 
+{$IFDEF DEBUG}
+  DebugLog(Format('*** CloneRepository: ' + sLineBreak
+    + '  URL: %s' + sLineBreak
+    + '  TargetDirectoryName: %s' + sLineBreak
+    + '  WorkingDirectory: %s' + sLineBreak
+    + '  TargetDirectoryFileName: %s' + sLineBreak, [
+      URL,
+      TargetDirectoryName,
+      WorkingDirectory,
+      TargetDirectoryFileName
+    ])
+  );
+{$ENDIF}
+
   if not IsOfflineRepository(TargetDirectoryFileName) then
   begin
 {$IFDEF DEBUG}
     if IsEmpty(URL) then
-      WriteLn('Warning: CloneRepository: URL is empty!');
+      DebugLog('Warning: CloneRepository: URL is empty!');
 {$ENDIF}
-    CommandLine := Format('git clone %s %s --progress', [URL, TargetDirectoryName]);
+    CommandLine := Format('git -C "%s" clone "%s" "%s" --progress', [
+      SystemToDreamSdkPath(WorkingDirectory),
+      URL,
+      TargetDirectoryName
+    ]);
     BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
     Result := not IsInString(FAIL_TAG, BufferOutput);
   end
@@ -1120,7 +1210,8 @@ const
   USELESS_TAG = 'Already up to date.';
 
 var
-  TempBuffer: string;
+  TempBuffer,
+  CommandLine: string;
 {$IFDEF DEBUG}
   OfflineVersion: string;
 {$ENDIF}
@@ -1133,7 +1224,10 @@ begin
     if IsRepositoryReady(WorkingDirectory) then
     begin
       // Online (normal path)
-      BufferOutput := ExecuteShellCommand('git pull', WorkingDirectory);
+      CommandLine := Format('git -C "%s" pull', [
+        SystemToDreamSdkPath(WorkingDirectory)
+      ]);
+      BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
       TempBuffer := StringReplace(BufferOutput, '-', ' ', [rfReplaceAll]);
 
       if IsInString(USELESS_TAG, TempBuffer) then

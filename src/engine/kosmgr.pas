@@ -106,6 +106,15 @@ function TKallistiManager.InitializeEnvironment: Boolean;
 begin
   Result := True;
 
+{$IFDEF DEBUG}
+  DebugLog(Format('InitializeEnvironment:' + sLineBreak +
+    '  KallistiConfigurationFileName: "%s"' + sLineBreak +
+    '  EnvironSampleShellScriptFileName: "%s"', [
+      Environment.FileSystem.Kallisti.KallistiConfigurationFileName,
+      fEnvironSampleShellScriptFileName
+  ]));
+{$ENDIF}
+
   // environ.sh
   if not FileExists(Environment.FileSystem.Kallisti.KallistiConfigurationFileName) then
     Result := CopyFile(fEnvironSampleShellScriptFileName, Environment.FileSystem

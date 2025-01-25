@@ -2526,6 +2526,20 @@ object frmMain: TfrmMain
         end
       end
     end
+    object tsDebug: TTabSheet
+      Caption = '&Debug'
+      ClientHeight = 320
+      ClientWidth = 658
+      object btnEnvironmentFileSystemDebugPrintAllValues: TButton
+        Left = 8
+        Height = 25
+        Top = 12
+        Width = 171
+        Caption = 'DebugPrintAllValues'
+        TabOrder = 0
+        OnClick = btnEnvironmentFileSystemDebugPrintAllValuesClick
+      end
+    end
   end
   object tmrShellThreadTerminate: TTimer
     Enabled = False
