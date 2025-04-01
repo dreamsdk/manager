@@ -48,8 +48,8 @@ const
   // Linked to TToolchainVersionKind
   // This should be in the same order!
   SUPPORTED_GCC_VERSIONS: array[0..2] of string = (
-     '4',   // tvkLegacy
-     '9',   // tvkOldStable
+     '9',   // tvk950WinXP
+    '14',   // tvk1420
     '13'    // tvkStable
   );
 
@@ -62,8 +62,8 @@ type
   // Linked to "TPackageManagerRequestToolchain" in "pkgmgr"
   TToolchainVersionKind = (
     tvkUndefined,
-    tvkLegacy,      //  4
-    tvkOldStable,   //  9
+    tvk950WinXP,    //  9
+    tvk1420,   		// 14
     tvkStable       // 13
   );
 
@@ -218,17 +218,17 @@ type
   TDreamcastSoftwareDevelopmentFileSystemToolchainPackages = class(TObject)
   private
     fDebugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger;
-    fLegacy: TFileName;
-    fOldStable: TFileName;
-	  fStable: TFileName;
+    fToolchainProfile950WinXP: TFileName;
+    fToolchainProfile1420: TFileName;
+	  fToolchainProfileStable: TFileName;
   public
     constructor Create;
     destructor Destroy; override;
     property Debugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger
       read fDebugger;
-    property Legacy: TFileName read fLegacy;
-    property OldStable: TFileName read fOldStable;
-	  property Stable: TFileName read fStable;
+    property ToolchainProfile950WinXP: TFileName read fToolchainProfile950WinXP;
+    property ToolchainProfile1420: TFileName read fToolchainProfile1420;
+    property ToolchainProfileStable: TFileName read fToolchainProfileStable;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystemToolchain }
@@ -704,9 +704,9 @@ begin
       fPython311 := PackagesBase + 'sh-elf-gdb-python-3.11-bin.7z';
       fPython312 := PackagesBase + 'sh-elf-gdb-python-3.12-bin.7z';
     end;
-    fPackages.fLegacy := PackagesBase + 'sh-elf-toolchain-legacy-bin.7z';
-    fPackages.fOldStable := PackagesBase + 'sh-elf-toolchain-oldstable-bin.7z';
-    fPackages.fStable := PackagesBase + 'sh-elf-toolchain-stable-bin.7z';
+    fPackages.fToolchainProfile950WinXP := PackagesBase + 'sh-elf-toolchain-950winxp-bin.7z';
+    fPackages.fToolchainProfile1420 := PackagesBase + 'sh-elf-toolchain-1420-bin.7z';
+    fPackages.fToolchainProfileStable := PackagesBase + 'sh-elf-toolchain-stable-bin.7z';
   end;
 
   // Toolchain for ARM
@@ -719,9 +719,9 @@ begin
     fGCCExecutable := ToolchainBaseARM + 'bin\arm-eabi-gcc.exe';
     fGDBExecutable := EmptyStr; // Not Applicable
     fNewlibBinary := EmptyStr; // Not Applicable
-    fPackages.fLegacy := PackagesBase + 'arm-eabi-toolchain-legacy-bin.7z';
-    fPackages.fOldStable := PackagesBase + 'arm-eabi-toolchain-oldstable-bin.7z';
-    fPackages.fStable := PackagesBase + 'arm-eabi-toolchain-stable-bin.7z';
+    fPackages.fToolchainProfile950WinXP := PackagesBase + 'arm-eabi-toolchain-950winxp-bin.7z';
+    fPackages.fToolchainProfile1420 := PackagesBase + 'arm-eabi-toolchain-1420-bin.7z';
+    fPackages.fToolchainProfileStable := PackagesBase + 'arm-eabi-toolchain-stable-bin.7z';
   end;
 
   // Toolchain for Win32 (Windows)

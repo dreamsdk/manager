@@ -99,6 +99,7 @@ resourcestring
   OperationErrorMemoText = '*** %s';
 
   // ShellThd
+  FinalizingPostInstall = 'Executing post-install steps...';
   InstallationProblem =
     'Your installation have problems!!!' + sLineBreak +
     'No required binaries were found in the InstallPath directory ("%s").' + sLineBreak +

@@ -1733,8 +1733,8 @@ object frmMain: TfrmMain
           ItemIndex = 0
           Items.Strings = (
             'Stable'
-            'Old Stable'
-            'Legacy'
+            '14.2.0'
+            '9.5.0-winxp'
           )
           Style = csDropDownList
           TabOrder = 2

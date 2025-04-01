@@ -461,6 +461,14 @@ begin
   fResponse := stoNothing;
   fOperationUpdateState := uosUndefined;
 
+  // If we installed DreamSDK, execute the shell once, as on MinGW64/MSYS2
+  // there is some additional setup done the first time the shell is run
+  if IsPostInstallMode then
+  begin
+    UpdateProgressText(FinalizingPostInstall);
+    Manager.Environment.ExecuteShellCommand('exit', GetCurrentDir);
+  end;
+
   // Process Unpacking Toolchains (if required)
   // This is usually used while installing DreamSDK only.
   ProcessUnpackToolchains;

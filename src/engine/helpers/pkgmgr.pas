@@ -20,9 +20,9 @@ uses
 (*
 const
   PACKAGE_MANAGER_REQUEST_TOOLCHAIN_NAMES: array[0..2] of string = (
-    'Legacy',       // pmrtLegacy
-    'Old Stable',   // pmrtOldStable
-    'Stable'        // pmrtStable
+    '9.5.0-winxp',	// pmrt950WinXP
+    '14.2.0',		// pmrt1420
+    'Stable'		// pmrtStable
   );
 *)
 
@@ -55,8 +55,8 @@ type
   // Please keep the same order please!
   TPackageManagerRequestToolchain = (
     pmrtUndefined,
-    pmrtLegacy,       //  4
-    pmrtOldStable,    //  9
+    pmrt950WinXP,     //  9
+    pmrt1420,    	  // 14
     pmrtStable        // 13
   );
 
@@ -172,10 +172,10 @@ function StringToPackageManagerRequestToolchain(
 begin
   Result := Default(TPackageManagerRequestToolchain);
   case UpperCase(S) of
-    'LEGACY':
-      Result := pmrtLegacy;
-    'OLD STABLE':
-      Result := pmrtOldStable;
+    '9.5.0-WINXP':
+      Result := pmrt950WinXP;
+    '14.2.0':
+      Result := pmrt1420;
     'STABLE':
       Result := pmrtStable;
   end;
@@ -437,12 +437,12 @@ function TPackageManager.AutoDetectRequiredToolchain: Boolean;
 var
   ToolchainBaseDirectorySuperH,
   ToolchainBaseDirectoryArm,
-  LegacyPackageFileNameSuperH,
-  LegacyPackageFileNameArm,
-  OldStablePackageFileNameSuperH,
-  OldStablePackageFileNameArm,
-  StablePackageFileNameSuperH,
-  StablePackageFileNameArm: TFileName;
+  Package950WinXPFileNameSuperH,
+  Package950WinXPFileNameArm,
+  Package1420FileNameSuperH,
+  Package1420FileNameArm,
+  PackageStableFileNameSuperH,
+  PackageStableFileNameArm: TFileName;
 
 begin
   Result := False;
@@ -455,20 +455,20 @@ begin
     ToolchainBaseDirectoryArm := ToolchainARM.BaseDirectory;
 
     // Extracting package names for Super-H
-    LegacyPackageFileNameSuperH := ToolchainBaseDirectorySuperH
-      + GetStampFromPackageFileName(ToolchainSuperH.Packages.Legacy);
-    OldStablePackageFileNameSuperH := ToolchainBaseDirectorySuperH
-      + GetStampFromPackageFileName(ToolchainSuperH.Packages.OldStable);
-    StablePackageFileNameSuperH := ToolchainBaseDirectorySuperH
-      + GetStampFromPackageFileName(ToolchainSuperH.Packages.Stable);
+    Package950WinXPFileNameSuperH := ToolchainBaseDirectorySuperH
+      + GetStampFromPackageFileName(ToolchainSuperH.Packages.ToolchainProfile950WinXP);
+    Package1420FileNameSuperH := ToolchainBaseDirectorySuperH
+      + GetStampFromPackageFileName(ToolchainSuperH.Packages.ToolchainProfile1420);
+    PackageStableFileNameSuperH := ToolchainBaseDirectorySuperH
+      + GetStampFromPackageFileName(ToolchainSuperH.Packages.ToolchainProfileStable);
 
     // Extracting package names for Arm
-    LegacyPackageFileNameArm := ToolchainBaseDirectoryArm
-      + GetStampFromPackageFileName(ToolchainArm.Packages.Legacy);
-    OldStablePackageFileNameArm := ToolchainBaseDirectoryArm
-      + GetStampFromPackageFileName(ToolchainArm.Packages.OldStable);
-    StablePackageFileNameArm := ToolchainBaseDirectoryArm
-      + GetStampFromPackageFileName(ToolchainArm.Packages.Stable);
+    Package950WinXPFileNameArm := ToolchainBaseDirectoryArm
+      + GetStampFromPackageFileName(ToolchainArm.Packages.ToolchainProfile950WinXP);
+    Package1420FileNameArm := ToolchainBaseDirectoryArm
+      + GetStampFromPackageFileName(ToolchainArm.Packages.ToolchainProfile1420);
+    PackageStableFileNameArm := ToolchainBaseDirectoryArm
+      + GetStampFromPackageFileName(ToolchainArm.Packages.ToolchainProfileStable);
   end;
 
   (*
@@ -490,15 +490,15 @@ begin
   *)
 
   // Legacy (the worst)
-  if FileExists(LegacyPackageFileNameSuperH) or FileExists(LegacyPackageFileNameArm) then
-    fAutoDetectedToolchain := pmrtLegacy;
+  if FileExists(Package950WinXPFileNameSuperH) or FileExists(Package950WinXPFileNameArm) then
+    fAutoDetectedToolchain := pmrt950WinXP;
 
   // Old Stable (intermediate)
-  if FileExists(OldStablePackageFileNameSuperH) or FileExists(OldStablePackageFileNameArm) then
-    fAutoDetectedToolchain := pmrtOldStable;
+  if FileExists(Package1420FileNameSuperH) or FileExists(Package1420FileNameArm) then
+    fAutoDetectedToolchain := pmrt1420;
 
   // Stable (the best)
-  if FileExists(StablePackageFileNameSuperH) or FileExists(StablePackageFileNameArm) then
+  if FileExists(PackageStableFileNameSuperH) or FileExists(PackageStableFileNameArm) then
     fAutoDetectedToolchain := pmrtStable;
 
   // Final result
@@ -604,20 +604,20 @@ begin
     FileSystem.ToolchainARM.Reset;
     FileSystem.ToolchainSuperH.Reset;
     case Toolchain of
-      pmrtLegacy:
+      pmrt950WinXP:
         begin
-          Add(FileSystem.ToolchainARM.Packages.Legacy, FileSystem.ToolchainBase);
-          Add(FileSystem.ToolchainSuperH.Packages.Legacy, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainARM.Packages.ToolchainProfile950WinXP, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainSuperH.Packages.ToolchainProfile950WinXP, FileSystem.ToolchainBase);
         end;	
-      pmrtOldStable:
+      pmrt1420:
         begin
-          Add(FileSystem.ToolchainARM.Packages.OldStable, FileSystem.ToolchainBase);
-          Add(FileSystem.ToolchainSuperH.Packages.OldStable, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainARM.Packages.ToolchainProfile1420, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainSuperH.Packages.ToolchainProfile1420, FileSystem.ToolchainBase);
         end;	
       pmrtStable:
         begin
-          Add(FileSystem.ToolchainARM.Packages.Stable, FileSystem.ToolchainBase);
-          Add(FileSystem.ToolchainSuperH.Packages.Stable, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainARM.Packages.ToolchainProfileStable, FileSystem.ToolchainBase);
+          Add(FileSystem.ToolchainSuperH.Packages.ToolchainProfileStable, FileSystem.ToolchainBase);
         end;
     end;
   end;

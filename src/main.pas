@@ -1205,9 +1205,9 @@ var
     Result := -1;
     (* This should be dynamic. This will refactored later. *)
     case ToolchainPackage of
-      tvkLegacy:
+      tvk950WinXP:
         Result := 2;
-      tvkOldStable:
+      tvk1420:
         Result := 1;
       tvkStable:
         Result := 0;
