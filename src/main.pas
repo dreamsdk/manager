@@ -333,6 +333,7 @@ type
     function CheckComponentsChangeAllowRequestedOperation: Boolean;
     procedure DisplayEnvironmentComponentVersions;
     procedure DisplayKallistiPorts(ClearList: Boolean);
+    procedure DoKallistiPortsClearList;
     procedure DoUpdateAll;
     function GetComponentSelectedOperation: TPackageManagerRequest;
     function GetSelectedDebugger: TPackageManagerRequestDebugger;
@@ -447,6 +448,15 @@ const
   ELEVATED_TASK_CODEBLOCKS_IDE_INITIALIZE_PROFILES = 'elevated_task_cb_ide_initialize';
 
 type
+  { TIntegerObject }
+  TIntegerObject = class(TObject)
+  private
+    fValue: Integer;
+  public
+    property Value: Integer read fValue;
+    constructor Create(AValue: Integer);
+  end;
+
   { TNetworkAdapterListUserInterfaceItem }
   TNetworkAdapterListUserInterfaceItem = class(TObject)
   private
@@ -485,6 +495,15 @@ begin
     ModulesList.Free;
   end;
 end;
+
+{ TIntegerObject }
+
+constructor TIntegerObject.Create(AValue: Integer);
+begin
+  fValue := AValue;
+end;
+
+{ TSerialPortListUserInterfaceItem }
 
 constructor TSerialPortListUserInterfaceItem.Create(ASerialPortIndex: Integer);
 begin
@@ -533,6 +552,7 @@ end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
+  DoKallistiPortsClearList;
   if not IsElevatedTaskRequested then
   begin
     if not fShellThreadExecutedAtLeastOnce then
@@ -679,14 +699,17 @@ begin
 
     SavedIndex := lbxPorts.ItemIndex;
 
-    lbxPorts.Clear;
+    // Clear all objects in lbxPorts
+    DoKallistiPortsClearList;
+
+    // Fill lbxPorts again
     for i := 0 to DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Count - 1 do
     begin
       PortInfo := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[i];
       if not PortInfo.Hidden then
       begin
         j := lbxPorts.Items.Add(PortInfo.Name);
-        lbxPorts.Items.Objects[j] := TObject(i);
+        lbxPorts.Items.Objects[j] :=  TIntegerObject.Create(i);
         if PortInfo.Installed then
           lbxPorts.State[j] := cbGrayed;
       end;
@@ -712,7 +735,7 @@ begin
 
     for i := 0 to lbxPorts.Items.Count - 1 do
     begin
-      j := Integer(lbxPorts.Items.Objects[i]);
+      j := TIntegerObject(lbxPorts.Items.Objects[i]).Value;
       PortInfo := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[j];
       if PortInfo.Installed then
         lbxPorts.State[i] := cbGrayed
@@ -961,6 +984,17 @@ begin
   tmDisplayKallistiPorts.Enabled := True;
 end;
 
+procedure TfrmMain.DoKallistiPortsClearList;
+var
+  i: Integer;
+
+begin
+  for i := 0 to lbxPorts.Items.Count - 1 do
+    if Assigned(lbxPorts.Items.Objects[i]) then
+      lbxPorts.Items.Objects[i].Free;
+  lbxPorts.Clear;
+end;
+
 procedure TfrmMain.DoUpdateAll;
 begin
   if CheckRepositoriesUrl then
@@ -992,7 +1026,7 @@ function TfrmMain.GetSelectedKallistiPortItemIndex: Integer;
 begin
   Result := lbxPorts.ItemIndex;
   if Result <> -1 then
-    Result := Integer(lbxPorts.Items.Objects[Result]);
+    Result := TIntegerObject(lbxPorts.Items.Objects[Result]).Value;
 end;
 
 function TfrmMain.GetSelectedMediaAccessControlHostAddress: string;
