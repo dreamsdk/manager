@@ -71,6 +71,7 @@ implementation
 
 uses
   SysTools,
+  StrTools,
   RunTools,
   RefBase,
   CBTools;

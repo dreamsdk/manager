@@ -441,6 +441,7 @@ implementation
 
 uses
   SysTools,
+  StrTools,
   FSTools,
   RunTools,
   InetUtil

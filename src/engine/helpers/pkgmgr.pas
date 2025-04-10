@@ -164,7 +164,8 @@ implementation
 uses
   TypInfo,
   Variants,
-  PEUtils;
+  PEUtils,
+  StrTools;
 
 // TODO: Refactor Me, as this suc*s
 function StringToPackageManagerRequestToolchain(

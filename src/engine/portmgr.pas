@@ -162,7 +162,9 @@ type
 implementation
 
 uses
-  FileUtil, FSTools;
+  FileUtil,
+  FSTools,
+  StrTools;
 
 const
   KALLISTI_PORTS_PACKAGE_DESCRIPTION = 'pkg-descr';

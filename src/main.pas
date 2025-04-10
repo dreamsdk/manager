@@ -432,10 +432,33 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, IniFiles, StrUtils, FPHttpClient, OpenSSLSockets,
-  UITools, GetVer, SysTools, PostInst, Settings,
-  Version, VerIntf, About, UxTheme, MsgDlg, Progress, ModVer, InetUtil,
-  RunTools, RefBase, Elevate, FSTools, Unpack, CBTools, EnumCom, WtTools;
+  LCLIntf,
+  IniFiles,
+  StrUtils,
+  FPHttpClient,
+  OpenSSLSockets,
+  UITools,
+  GetVer,
+  SysTools,
+  PostInst,
+  Settings,
+  Version,
+  VerIntf,
+  About,
+  UxTheme,
+  MsgDlg,
+  Progress,
+  ModVer,
+  InetUtil,
+  RunTools,
+  RefBase,
+  Elevate,
+  FSTools,
+  Unpack,
+  CBTools,
+  EnumCom,
+  WtTools,
+  StrTools;
 
 const
   KALLISTI_VERSION_FORMAT = '%s (%s)';

@@ -44,7 +44,10 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, SysTools, Version;
+  LCLIntf,
+  SysTools,
+  StrTools,
+  Version;
 
 type
   TComponentItem = packed record

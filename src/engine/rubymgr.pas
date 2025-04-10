@@ -74,7 +74,10 @@ type
 implementation
 
 uses
-  FileUtil, FSTools, SysTools;
+  FileUtil,
+  FSTools,
+  SysTools,
+  StrTools;
 
 { TRubySampleList }
 

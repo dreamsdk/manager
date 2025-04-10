@@ -39,7 +39,10 @@ type
 implementation
 
 uses
-  FileUtil, SysTools, FSTools;
+  FileUtil,
+  SysTools,
+  StrTools,
+  FSTools;
 
 { TKallistiManager }
 

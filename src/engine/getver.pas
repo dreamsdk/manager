@@ -140,6 +140,7 @@ uses
   Forms,
 {$ENDIF}
   SysTools,
+  StrTools,
   VerIntf,
   FSTools,
   PEUtils,

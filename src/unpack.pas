@@ -42,6 +42,7 @@ implementation
 
 uses
   SysTools,
+  StrTools,
   PkgMgr,
   MsgDlg,
   StrRes,
