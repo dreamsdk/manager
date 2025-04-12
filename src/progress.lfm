@@ -12,10 +12,10 @@ object frmProgress: TfrmProgress
   OnCreate = FormCreate
   OnShow = FormShow
   Position = poScreenCenter
-  LCLVersion = '2.2.6.0'
+  LCLVersion = '3.6.0.0'
   object memBufferOutput: TMemo
     Left = 2
-    Height = 335
+    Height = 333
     Top = 52
     Width = 746
     Align = alClient
@@ -83,22 +83,31 @@ object frmProgress: TfrmProgress
       Top = 8
       Width = 150
       Caption = '(Dynamic)'
-      OnClick = btnAbortClick
       TabOrder = 0
+      OnClick = btnAbortClick
     end
   end
   object cbxAutocloseWindow: TCheckBox
     Left = 2
-    Height = 17
-    Top = 391
+    Height = 19
+    Top = 389
     Width = 748
     Align = alBottom
     BorderSpacing.Left = 2
     BorderSpacing.Top = 4
     Caption = '&Autoclose the window when the operation is completed'
     Checked = True
-    OnClick = cbxAutocloseWindowClick
     State = cbChecked
     TabOrder = 3
+    OnClick = cbxAutocloseWindowClick
+  end
+  object tmrAbortFailSafe: TTimer
+    Enabled = False
+    Interval = 100
+    OnTimer = tmrAbortFailSafeTimer
+    OnStartTimer = tmrAbortFailSafeStartTimer
+    OnStopTimer = tmrAbortFailSafeStopTimer
+    Left = 540
+    Top = 356
   end
 end

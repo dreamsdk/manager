@@ -2,6 +2,9 @@ unit Progress;
 
 {$mode objfpc}{$H+}
 
+(* Enable me if you want to test the abort system *)
+// {$DEFINE DEBUG_PROGRESS_SIMULATE_ABORT_ERROR}
+
 interface
 
 uses
@@ -18,16 +21,22 @@ type
     pnlBottom: TPanel;
     pgbOperationProgress: TProgressBar;
     pnlTop: TPanel;
+    tmrAbortFailSafe: TTimer;
     procedure btnAbortClick(Sender: TObject);
     procedure cbxAutocloseWindowClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure tmrAbortFailSafeStartTimer(Sender: TObject);
+    procedure tmrAbortFailSafeStopTimer(Sender: TObject);
+    procedure tmrAbortFailSafeTimer(Sender: TObject);
   private
     fFinished: Boolean;
     function GetAbortOperation: Boolean;
     function GetAutoCloseState: Boolean;
     procedure SetIdleState(State: Boolean);
+    procedure StartSafeAbort;
+    procedure StopSafeAbort;
     procedure SetCloseButtonState(State: Boolean);
   public
     property Finished: Boolean read fFinished write fFinished;
@@ -70,12 +79,7 @@ begin
     CloseAction := caNone;
     PauseThreadOperation;
     if MsgBoxDlg(Handle, CancelDialogCaption, CancelDialogText, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
-    begin
-      AbortThreadOperation;
-      SetCloseButtonState(False);
-      memBufferOutput.Lines.Add(SendingCancelSignal);
-      lblProgressStep.Caption := SendingCancelSignal;
-    end
+      StartSafeAbort
     else
       ResumeThreadOperation;
   end
@@ -120,6 +124,40 @@ begin
   end;
 end;
 
+procedure TfrmProgress.tmrAbortFailSafeStartTimer(Sender: TObject);
+begin
+  AbortThreadOperation;
+
+{$IFDEF DEBUG_PROGRESS_SIMULATE_ABORT_ERROR}
+  ShowMessage('This message will causes issues in Abort process.');
+{$ENDIF}
+
+  if not Finished then
+  begin
+    SetCloseButtonState(False);
+    memBufferOutput.Lines.Add(SendingCancelSignal);
+    lblProgressStep.Caption := SendingCancelSignal;
+  end;
+end;
+
+procedure TfrmProgress.tmrAbortFailSafeStopTimer(Sender: TObject);
+begin
+  pgbOperationProgress.Position := 0;
+  Sleep(500);
+  SetIdleState(True);
+  lblProgressStep.Caption := OperationAborted;  
+  Application.ProcessMessages;
+end;
+
+procedure TfrmProgress.tmrAbortFailSafeTimer(Sender: TObject);
+begin
+  pgbOperationProgress.Position := pgbOperationProgress.Position + 1;
+
+  // Abort after 100 (progress bar max) * 100 (timer frequency) = 10000 milliseconds (10 seconds)
+  if (pgbOperationProgress.Position >= pgbOperationProgress.Max) then
+    StopSafeAbort;
+end;
+
 procedure TfrmProgress.SetIdleState(State: Boolean);
 begin
   if State then
@@ -137,9 +175,21 @@ begin
   end;
 end;
 
+procedure TfrmProgress.StartSafeAbort;
+begin
+  // Start the fail-safe timer...
+  pgbOperationProgress.Position := 0;    
+  tmrAbortFailSafe.Enabled := True;
+end;
+
+procedure TfrmProgress.StopSafeAbort;
+begin
+  tmrAbortFailSafe.Enabled := False;
+end;
+
 // Thanks: https://www.tek-tips.com/faqs.cfm?fid=7515
 procedure TfrmProgress.SetCloseButtonState(State: Boolean);
-{$IFDEF Windows}
+{$IFDEF WINDOWS}
 var
   hSysMenu: HMENU;
 
@@ -157,6 +207,11 @@ begin
 begin
 {$ENDIF}
   btnAbort.Enabled := State;
+
+  (* If for some reason, the Close button has been disabled again, restart the
+     the fail-safe timer... *)
+  if not State then
+    StartSafeAbort;
 end;
 
 function TfrmProgress.GetAbortOperation: Boolean;
@@ -175,6 +230,7 @@ var
   LongMessage: string;
 
 begin
+  StopSafeAbort;
   SetIdleState(True);
 
   if not Success then
