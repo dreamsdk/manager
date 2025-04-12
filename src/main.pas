@@ -1601,7 +1601,7 @@ procedure TfrmMain.InitializeComponentsScreen;
 begin
   gbxEnvironmentContext.Caption := Format(gbxEnvironmentContext.Caption,
     [GetProductName]);
-  edtValueHomeBaseDir.Caption := GetInstallationBaseDirectory;
+  edtValueHomeBaseDir.Caption := GetBaseInstallationHomeDirectory;
   UpdateComponentControls;
 end;
 

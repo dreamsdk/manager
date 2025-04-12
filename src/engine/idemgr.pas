@@ -113,7 +113,7 @@ var
 
 begin
   CmdLine := Format('--operation=%s --home-dir="%s" --internal-integration', [
-    Operation, GetInstallationBaseDirectory]);
+    Operation, GetBaseInstallationHomeDirectory]);
 {$IFDEF DEBUG}
   DebugLog('RunCodeBlocksPatcher: ' + CmdLine);
 {$ENDIF}
