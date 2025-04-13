@@ -113,7 +113,8 @@ uses
   Main;
 
 const
-  ABORT_SHELL_THREAD_INSTANCES_COUNT_MAX = 5;
+  ABORT_SHELL_THREAD_INSTANCES_COUNT_MAX = 3;
+  ABORT_SHELL_THREAD_MAX_ABORT_CALLS = 5;
 
 type
   { TShellThreadHelper }
@@ -173,12 +174,25 @@ begin
 end;
 
 procedure DoAbortThreadOperation;
+
+  function IsThreadOperationAborted: Boolean;
+  begin
+    // Test if toolchains thread has been aborted
+    Result := Assigned(ShellThreadHelper)
+      and ShellThreadHelper.fAbortOrderReceived;
+
+    // Test if ShellThread (regular) thread has been aborted
+    Result := Result
+      or (Assigned(ShellThread) and (ShellThread.Running)
+      and (ShellThread.Aborted));
+  end;
+
 begin
   LogMessageEnter('DoAbortThreadOperation');
   try
     try
 
-      if not ShellThreadHelper.fAbortOrderReceived then
+      if not IsThreadOperationAborted then
       begin
         ResumeThreadOperation;
         Sleep(500);
@@ -435,6 +449,9 @@ begin
 end;
 
 procedure TAbortShellThread.Execute;
+var
+  i: Integer;
+
 begin
   LogMessageEnter('TAbortShellThread.Execute');
   try
@@ -444,11 +461,16 @@ begin
         ThreadID
       ]));
 
-      while Assigned(ShellThread) and (not ShellThread.CheckTerminated)
+      i := 0;
+      while (i < ABORT_SHELL_THREAD_MAX_ABORT_CALLS)
+        and Assigned(ShellThread)
+        and (not ShellThread.CheckTerminated)
         and (not ShellThreadHelper.fAbortOrderReceived) do
       begin
+        Sleep(500);
         LogMessage('TAbortShellThread.Execute::Abort called');
         Abort;
+        Inc(i);
       end;
 
     except

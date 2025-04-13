@@ -103,7 +103,6 @@ object frmProgress: TfrmProgress
   end
   object tmrAbortFailSafe: TTimer
     Enabled = False
-    Interval = 100
     OnTimer = tmrAbortFailSafeTimer
     OnStartTimer = tmrAbortFailSafeStartTimer
     OnStopTimer = tmrAbortFailSafeStopTimer

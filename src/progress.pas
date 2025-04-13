@@ -79,6 +79,7 @@ uses
 
 const
   CLOSE_TAG_VALUE = 1000;
+  ABORT_SAFE_MAX_TRIES = 5;
 
 { TfrmProgress }
 
@@ -138,11 +139,13 @@ end;
 
 procedure TfrmProgress.FormShow(Sender: TObject);
 begin
-  lblProgressStep.Caption := '';
+  pgbOperationProgress.Max := 100;
+  lblProgressStep.Caption := EmptyStr;
   memBufferOutput.Clear;
   SetIdleState(False);
   SetCloseButtonState(True);
   Finished := False;
+
   if IsPostInstallMode then
   begin
 {$IF DEFINED(RELEASE) AND NOT DEFINED(DEBUG_PROGRESS_AVOID_STAY_ON_TOP)}
@@ -214,7 +217,6 @@ begin
 
       pgbOperationProgress.Position := pgbOperationProgress.Position + 1;
 
-      // Abort after 100 (progress bar max) * 100 (timer frequency) = 10000 milliseconds (10 seconds)
       if (pgbOperationProgress.Position >= pgbOperationProgress.Max) then
         StopSafeAbort;
 
@@ -247,6 +249,7 @@ procedure TfrmProgress.StartSafeAbort;
 begin
   // Start the fail-safe timer...
   pgbOperationProgress.Position := 0;
+  pgbOperationProgress.Max := ABORT_SAFE_MAX_TRIES;
   pgbOperationProgress.Style := pbstNormal;
   tmrAbortFailSafe.Enabled := True;
 end;
@@ -399,8 +402,9 @@ begin
     PrintLine
   else
   begin
+    // Handle percent steps (0% to 100%)
     Value := ExtractValue;
-    if Value <> -1 then
+    if (Value <> -1) and (pgbOperationProgress.Max = 100) then
     begin
       pgbOperationProgress.Position := Value;
       pgbOperationProgress.Style := pbstNormal;
