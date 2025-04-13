@@ -63,6 +63,7 @@ type
     fOperationResultOutput: string;
     fCommandTerminate: TShellThreadCommandTerminateEvent;
     fSelectedKallistiPort: TKallistiPortItem;
+    function GetRunning: Boolean;
     procedure SyncSetProgressTerminateState;
     procedure SyncUpdateProgressText;
     procedure SyncTriggerCommandTerminate;
@@ -89,6 +90,7 @@ type
     property Manager: TDreamcastSoftwareDevelopmentKitManager
       read fManager write fManager;
     property Paused: Boolean read fPaused;
+    property Running: Boolean read GetRunning;
 
     property OnCommandTerminate: TShellThreadCommandTerminateEvent
       read fCommandTerminate write fCommandTerminate;
@@ -110,10 +112,14 @@ uses
   Version,
   Main;
 
+const
+  ABORT_SHELL_THREAD_INSTANCES_COUNT_MAX = 5;
+
 type
   { TShellThreadHelper }
   TShellThreadHelper = class(TObject)
   private
+    fAbortOrderReceived: Boolean;
     procedure AddNewLine(const NewLine: string);
   public
     procedure HandleTerminate(Sender: TObject);
@@ -139,60 +145,127 @@ type
   end;
 
 var
+  AbortShellThreadInstancesCount: Integer = 0;
   ShellThread: TShellThread;
   ShellThreadHelper: TShellThreadHelper;
   ShellThreadPackageManager: TPackageManager;
 
 procedure AbortThreadOperation;
 begin
-  TAbortShellThread.Create(False);
+  LogMessageEnter('AbortThreadOperation');
+  try
+    try
+
+      if AbortShellThreadInstancesCount < ABORT_SHELL_THREAD_INSTANCES_COUNT_MAX then
+      begin
+        TAbortShellThread.Create(False);
+        Inc(AbortShellThreadInstancesCount);
+      end
+      else
+        LogMessage('AbortThreadOperation::Max concurrent instances reached.');
+
+    except
+      raise;
+    end;
+  finally
+    LogMessageExit('AbortThreadOperation');
+  end;
 end;
 
 procedure DoAbortThreadOperation;
 begin
-  ResumeThreadOperation;
+  LogMessageEnter('DoAbortThreadOperation');
+  try
+    try
 
-  Sleep(500);
+      if not ShellThreadHelper.fAbortOrderReceived then
+      begin
+        ResumeThreadOperation;
+        Sleep(500);
 
-  // Toolchains Thread
-  if Assigned(ShellThreadPackageManager) and ShellThreadPackageManager.Running then
-    ShellThreadPackageManager.Abort;
+        // Toolchains Thread
+        if Assigned(ShellThreadPackageManager) and ShellThreadPackageManager.Running then
+        begin
+          LogMessage('ShellThreadPackageManager::Abort');
+          ShellThreadPackageManager.Abort;
+        end;
 
-  // KOS, KOS Ports, Dreamcast Tool, and Ruby Thread
-  if Assigned(ShellThread) then
-  begin
-    ShellThread.Manager.Environment.AbortShellCommand;
-    if (not ShellThread.Aborted) then
-    begin
-      ShellThread.Aborted := True;
-      Application.ProcessMessages;
-      if Assigned(ShellThread) then
-        ShellThread.Terminate;
+        // KOS, KOS Ports, Dreamcast Tool, and Ruby Thread
+        if Assigned(ShellThread) and ShellThread.Running then
+        begin
+          LogMessage('ShellThread.Manager.Environment.AbortShellCommand');
+          ShellThread.Manager.Environment.AbortShellCommand;
+          if (not ShellThread.Aborted) then
+          begin
+            LogMessage('ShellThread.Aborted');
+            ShellThread.Aborted := True;
+            Application.ProcessMessages;
+            if Assigned(ShellThread) then
+            begin
+              LogMessage('ShellThread.Terminate');
+              ShellThread.Terminate;
+            end;
+          end;
+        end;
+      end
+      else
+        LogMessage('DoAbortThreadOperation::ShellThreadHelper.fAbortOrderReceived is TRUE');
+
+    except
+      raise;
     end;
+  finally
+    LogMessageExit('DoAbortThreadOperation');
   end;
 end;
 
 procedure PauseThreadOperation;
 begin
-  if Assigned(ShellThread) and (not ShellThread.Paused) then
-  begin
-    ShellThread.fPaused := True;
-    ShellThread.Manager.Environment.PauseShellCommand;
-    if Assigned(ShellThreadPackageManager) and ShellThreadPackageManager.Running then
-      ShellThreadPackageManager.Pause;
-    Application.ProcessMessages;
+  LogMessageEnter('PauseThreadOperation');
+  try
+    try
+
+      if Assigned(ShellThread) and (not ShellThread.Paused) then
+      begin
+        ShellThread.fPaused := True;
+        ShellThread.Manager.Environment.PauseShellCommand;
+        if Assigned(ShellThreadPackageManager) and ShellThreadPackageManager.Running then
+          ShellThreadPackageManager.Pause;
+        Application.ProcessMessages;
+      end;
+
+    except
+      raise;
+    end;
+  finally
+    LogMessageExit('PauseThreadOperation');
   end;
 end;
 
 procedure ResumeThreadOperation;
 begin
-  if Assigned(ShellThread) and (ShellThread.Paused) then
-  begin
-    ShellThread.fPaused := False;
-    ShellThread.Manager.Environment.ResumeShellCommand;
-    if Assigned(ShellThreadPackageManager) and ShellThreadPackageManager.Running then
-      ShellThreadPackageManager.Resume;
-    Application.ProcessMessages;
+  LogMessageEnter('ResumeThreadOperation');
+  try
+    try
+
+      if Assigned(ShellThread) and (ShellThread.Paused) then
+      begin
+        LogMessage('ResumeThreadOperation::ShellThread.Paused');
+        ShellThread.fPaused := False;
+        ShellThread.Manager.Environment.ResumeShellCommand;
+        if Assigned(ShellThreadPackageManager) and ShellThreadPackageManager.Running then
+        begin
+          LogMessage('ResumeThreadOperation::ShellThread::ShellThreadPackageManager.Resume');
+          ShellThreadPackageManager.Resume;
+        end;
+        Application.ProcessMessages;
+      end;
+
+    except
+      raise;
+    end;
+  finally
+    LogMessageExit('ResumeThreadOperation');
   end;
 end;
 
@@ -247,10 +320,17 @@ var
       OnTerminate := @ShellThreadHelper.HandlePackageManagerTerminate;
     end;
 
+    // Restart new Abort cycle
+    AbortShellThreadInstancesCount := 0;
+    ShellThreadHelper.fAbortOrderReceived := False;
+
     // Normal thread dealing with KOS, KOS Ports, DC Tool and Ruby
     ShellThread := TShellThread.Create(True);
     with ShellThread do
     begin
+{$IFDEF DEBUG}
+      SetThreadName('TShellThread', ShellThread.Handle);
+{$ENDIF}
       Aborted := False;
       Manager := DreamcastSoftwareDevelopmentKitManager;
       SelectedKallistiPort := frmMain.SelectedKallistiPort;
@@ -306,14 +386,27 @@ var
   end;
 
 begin
-  DoAbortThreadOperation;
+  LogMessageEnter('ExecuteThreadOperation');
+  try
+    try
 
-  ShellThreadContext := GetThreadContext(AOperation);
-  if ShellThreadContext <> stcUndefined then
-  begin
-    InitializeNewLineHandler;
-    StartupThread;
-    ShowProgressWindow;
+      DoAbortThreadOperation;
+
+      ShellThreadContext := GetThreadContext(AOperation);
+      if ShellThreadContext <> stcUndefined then
+      begin
+        LogMessage('ShellThread initialization');
+        InitializeNewLineHandler;
+        StartupThread;
+        ShowProgressWindow;
+        LogMessage('ShellThread started');
+      end;
+
+    except
+      raise;
+    end;
+  finally
+    LogMessageExit('ExecuteThreadOperation');
   end;
 end;
 
@@ -321,8 +414,19 @@ end;
 
 procedure TAbortShellThread.SyncAbort;
 begin
-  DoAbortThreadOperation;
-  Delay(1000);
+  LogMessageEnter('TAbortShellThread.SyncAbort');
+  try
+    try
+
+      DoAbortThreadOperation;
+      Sleep(500);
+
+    except
+      raise;
+    end;
+  finally
+    LogMessageExit('TAbortShellThread.SyncAbort');
+  end;
 end;
 
 procedure TAbortShellThread.Abort;
@@ -332,9 +436,26 @@ end;
 
 procedure TAbortShellThread.Execute;
 begin
-  while Assigned(ShellThread) and (not ShellThread.CheckTerminated) do
-  begin
-    Abort;
+  LogMessageEnter('TAbortShellThread.Execute');
+  try
+    try
+
+      LogMessage(Format('TAbortShellThread.Execute::ThreadId: %d', [
+        ThreadID
+      ]));
+
+      while Assigned(ShellThread) and (not ShellThread.CheckTerminated)
+        and (not ShellThreadHelper.fAbortOrderReceived) do
+      begin
+        LogMessage('TAbortShellThread.Execute::Abort called');
+        Abort;
+      end;
+
+    except
+      raise;
+    end;
+  finally
+    LogMessageExit('TAbortShellThread.Execute');
   end;
 end;
 
@@ -353,9 +474,20 @@ end;
 
 procedure TShellThreadHelper.HandleTerminate(Sender: TObject);
 begin
-  ShellThread := nil; // FreeOnTerminate
-  if Assigned(ShellThreadPackageManager) then
-    FreeAndNil(ShellThreadPackageManager);
+  LogMessageEnter('TShellThreadHelper.HandleTerminate');
+  try
+    try
+
+      ShellThread := nil; // FreeOnTerminate
+      if Assigned(ShellThreadPackageManager) then
+        FreeAndNil(ShellThreadPackageManager);
+
+    except
+      raise;
+    end;
+  finally
+    LogMessageExit('TShellThreadHelper.HandleTerminate');
+  end;
 end;
 
 procedure TShellThreadHelper.HandleNewLine(Sender: TObject; NewLine: string);
@@ -392,19 +524,33 @@ end;
 procedure TShellThreadHelper.HandlePackageManagerTerminate(Sender: TObject;
   const Success: Boolean; const Aborted: Boolean);
 begin
-{$IFDEF DEBUG}
-  DebugLog(Format('HandlePackageManagerTerminate: Success=%s, Aborted=%s', [
-    DebugBoolToStr(Success),
-    DebugBoolToStr(Aborted)
-  ]));
-{$ENDIF}
+  LogMessageEnter('TShellThreadHelper.HandlePackageManagerTerminate');
+  try
+    try
 
-  // Updating success status to the main ShellThread
-  ShellThread.fOperationSuccess := ShellThread.fOperationSuccess and Success;
+      LogMessage(Format('TShellThreadHelper.HandlePackageManagerTerminate: Success=%s, Aborted=%s', [
+        BoolToStr(Success, True),
+        BoolToStr(Aborted, True)
+      ]));
 
-  // Process cancelled while unpacking toolchains...
-  if Aborted then
-    AbortThreadOperation;
+      // Updating success status to the main ShellThread
+      ShellThread.fOperationSuccess := ShellThread.fOperationSuccess
+        and Success;
+
+      // Process cancelled while unpacking toolchains...
+      if Aborted then
+      begin
+        LogMessage('TShellThreadHelper.HandlePackageManagerTerminate::AbortThreadOperation called');
+        ShellThreadHelper.fAbortOrderReceived := True; // Indicates that we are in Abort cycle
+        AbortThreadOperation;
+      end;
+
+    except
+      raise;
+    end;
+  finally
+    LogMessageExit('TShellThreadHelper.HandlePackageManagerTerminate');
+  end;
 end;
 
 { TShellThread }
@@ -420,6 +566,11 @@ begin
   frmProgress.Finished := True;
   frmProgress.SetTerminateState(fOperationSuccess, Aborted);
   Application.ProcessMessages;
+end;
+
+function TShellThread.GetRunning: Boolean;
+begin
+  Result := (not Finished);
 end;
 
 procedure TShellThread.SyncUpdateProgressText;
@@ -457,45 +608,60 @@ var
   Buffer: string;
 
 begin
-  fOperationSuccess := True;
-  fResponse := stoNothing;
-  fOperationUpdateState := uosUndefined;
+  LogMessageEnter('TShellThread.Execute');
+  try
+    try
 
-  // If we installed DreamSDK, execute the shell once, as on MinGW64/MSYS2
-  // there is some additional setup done the first time the shell is run
-  if IsPostInstallMode then
-  begin
-    UpdateProgressText(FinalizingPostInstall);
-    Manager.Environment.ExecuteShellCommand('exit', GetCurrentDir);
+      LogMessage(Format('TShellThread.Execute::ThreadId: %d', [
+        ThreadID
+      ]));
+
+      fOperationSuccess := True;
+      fResponse := stoNothing;
+      fOperationUpdateState := uosUndefined;
+
+      // If we installed DreamSDK, execute the shell once, as on MinGW64/MSYS2
+      // there is some additional setup done the first time the shell is run
+      if IsPostInstallMode then
+      begin
+        UpdateProgressText(FinalizingPostInstall);
+        Manager.Environment.ExecuteShellCommand('exit', GetCurrentDir);
+      end;
+
+      // Process Unpacking Toolchains (if required)
+      // This is usually used while installing DreamSDK only.
+      ProcessUnpackToolchains;
+
+      // Process KOS, KOS Ports setup or KOS single port
+      if FileExists(Manager.Environment.FileSystem.Shell.ShellExecutable) then
+        case fContext of
+          stcKallisti:
+            Buffer := ProcessKallistiOS;
+          stcKallistiSinglePort:
+            Buffer := ProcessKallistiPortSingle;
+          stcKallistiPorts:
+            Buffer := ProcessKallistiPorts;
+        end
+      else
+      begin
+        // This should never happens...
+        fOperationSuccess := False;
+        fOperationResultOutput := Format(InstallationProblem, [
+          Manager.Environment.Settings.InstallPath,
+          Manager.Environment.Settings.FileName
+        ]);
+        UpdateProgressText(fOperationResultOutput);
+      end;
+
+      // Finish
+      TriggerCommandTerminate(Buffer);
+
+    except
+      raise;
+    end;
+  finally
+    LogMessageExit('TShellThread.Execute');
   end;
-
-  // Process Unpacking Toolchains (if required)
-  // This is usually used while installing DreamSDK only.
-  ProcessUnpackToolchains;
-
-  // Process KOS, KOS Ports setup or KOS single port
-  if FileExists(Manager.Environment.FileSystem.Shell.ShellExecutable) then
-    case fContext of
-      stcKallisti:
-        Buffer := ProcessKallistiOS;
-      stcKallistiSinglePort:
-        Buffer := ProcessKallistiPortSingle;
-      stcKallistiPorts:
-        Buffer := ProcessKallistiPorts;
-    end
-  else
-  begin
-    // This should never happens...
-    fOperationSuccess := False;
-    fOperationResultOutput := Format(InstallationProblem, [
-      Manager.Environment.Settings.InstallPath,
-      Manager.Environment.Settings.FileName
-    ]);
-    UpdateProgressText(fOperationResultOutput);
-  end;
-
-  // Finish
-  TriggerCommandTerminate(Buffer);
 end;
 
 procedure TShellThread.UpdateProgressText(const Text: string);

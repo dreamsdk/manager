@@ -5,7 +5,8 @@ unit PostInst;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes,
+  SysUtils;
 
 function IsPostInstallMode: Boolean;
 function IsInstallOrUpdateRequired: Boolean;
@@ -14,7 +15,11 @@ procedure ExecutePostInstall;
 implementation
 
 uses
-  Main, ShellThd, Forms, Settings;
+  Forms,
+  SysTools,
+  Main,
+  ShellThd,
+  Settings;
 
 var
   PostInstallMode,
@@ -56,24 +61,39 @@ end;
 
 procedure ExecutePostInstall;
 begin
-  if PostInstallMode then
-  begin
-    if IsInstallOrUpdateRequired then
-    begin
-      with DreamcastSoftwareDevelopmentKitManager.Environment.Settings
-        .Repositories do
+  LogMessageEnter('ExecutePostInstall');
+  try
+    try
+
+      LogMessage(Format('ExecutePostInstall::Main ThreadId: %d', [ThreadID]));
+      if PostInstallMode then
       begin
-        KallistiURL := GetDefaultUrlKallisti;
-        KallistiPortsURL := GetDefaultUrlKallistiPorts;
-        DreamcastToolSerialURL := GetDefaultUrlDreamcastToolSerial;
-        DreamcastToolInternetProtocolURL := GetDefaultUrlDreamcastToolInternetProtocol;
-        RubyURL := GetDefaultUrlRuby;
+        if IsInstallOrUpdateRequired then
+        begin
+          with DreamcastSoftwareDevelopmentKitManager.Environment.Settings
+            .Repositories do
+          begin
+            KallistiURL := GetDefaultUrlKallisti;
+            KallistiPortsURL := GetDefaultUrlKallistiPorts;
+            DreamcastToolSerialURL := GetDefaultUrlDreamcastToolSerial;
+            DreamcastToolInternetProtocolURL := GetDefaultUrlDreamcastToolInternetProtocol;
+            RubyURL := GetDefaultUrlRuby;
+          end;
+          DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := RubyEnabled;
+          ExecuteThreadOperation(stiKallistiManage);
+        end
+        else
+        begin
+          LogMessage('ExecutePostInstall::Calling Application.Terminate');
+          Application.Terminate;
+        end;
       end;
-      DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := RubyEnabled;
-      ExecuteThreadOperation(stiKallistiManage);
-    end
-    else
-      Application.Terminate;
+
+    except
+      raise;
+    end;
+  finally
+    LogMessageExit('ExecutePostInstall');
   end;
 end;
 

@@ -1,7 +1,7 @@
 object frmProgress: TfrmProgress
-  Left = 459
+  Left = 899
   Height = 450
-  Top = 358
+  Top = 191
   Width = 750
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
@@ -95,7 +95,7 @@ object frmProgress: TfrmProgress
     Align = alBottom
     BorderSpacing.Left = 2
     BorderSpacing.Top = 4
-    Caption = '&Autoclose the window when the operation is completed'
+    Caption = '&Autoclose the window when the operation is successfully completed'
     Checked = True
     State = cbChecked
     TabOrder = 3
@@ -107,7 +107,7 @@ object frmProgress: TfrmProgress
     OnTimer = tmrAbortFailSafeTimer
     OnStartTimer = tmrAbortFailSafeStartTimer
     OnStopTimer = tmrAbortFailSafeStopTimer
-    Left = 540
-    Top = 356
+    Left = 352
+    Top = 164
   end
 end

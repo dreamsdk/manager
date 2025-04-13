@@ -338,7 +338,8 @@ end;
 procedure TPackageManager.Abort;
 begin
   fAborted := True;
-  fSevenZipCommander.Abort;
+  if Assigned(fSevenZipCommander) then
+    fSevenZipCommander.Abort;
 end;
 
 procedure TPackageManager.Execute;
@@ -362,43 +363,57 @@ procedure TPackageManager.Execute;
   end;
 
 begin
-  // Auto Detect Debugger/Toolchain if possible
-  if (fOperation = pmrAutoDetectDebuggerToolchain) then
-  begin
-    // Auto detect Debugger (if possible)
-    if (fDebugger = pmrdUndefined) and AutoDetectRequiredDebugger then
-    begin
-      fDebugger := fAutoDetectedDebugger;
-      Operation := pmrDebugger;
+  LogMessageEnter('TPackageManager.Execute');
+  try
+    try
+
+      // Auto Detect Debugger/Toolchain if possible
+      if (fOperation = pmrAutoDetectDebuggerToolchain) then
+      begin
+        // Auto detect Debugger (if possible)
+        if (fDebugger = pmrdUndefined) and AutoDetectRequiredDebugger then
+        begin
+          fDebugger := fAutoDetectedDebugger;
+          Operation := pmrDebugger;
+        end;
+
+        // Auto detect Toolchain (if possible)
+        if (fToolchain = pmrtUndefined) and AutoDetectRequiredToolchain then
+        begin
+          fToolchain := fAutoDetectedToolchain;
+          Operation := pmrToolchain; // This includes Debugger
+        end;
+      end;
+
+      // Process only if there is an action to make
+      if IsValidAction then
+      begin
+        // Trigger OnStart event (if required)
+        if Assigned(fStart) then
+          fStart(Self);
+
+        // Execute the process itself
+        InitializeOperations;
+        fSevenZipCommander.Execute;
+
+        // Display the standard Unpack window (NOT in a thread)
+        if fEnableUnpackWindow then
+          ShowUnpackWindow;
+
+        // Active Wait. Used only if this is used in a real Thread (e.g., ShellThread).
+        if EnableBusyWaitingOnExecution then
+          while Running do
+          begin
+            Sleep(100); // Not effective indeed, but it works from threaded code.
+            LogMessage('TPackageManager.Execute::EnableBusyWaitingOnExecution::Running');
+          end;
+      end;
+
+    except
+      raise;
     end;
-
-    // Auto detect Toolchain (if possible)
-    if (fToolchain = pmrtUndefined) and AutoDetectRequiredToolchain then
-    begin
-      fToolchain := fAutoDetectedToolchain;
-      Operation := pmrToolchain; // This includes Debugger
-    end;
-  end;
-
-  // Process only if there is an action to make
-  if IsValidAction then
-  begin
-    // Trigger OnStart event (if required)
-    if Assigned(fStart) then
-      fStart(Self);
-
-    // Execute the process itself
-    InitializeOperations;
-    fSevenZipCommander.Execute;
-
-    // Display the standard Unpack window (NOT in a thread)
-    if fEnableUnpackWindow then
-      ShowUnpackWindow;
-
-    // Active Wait. Used only if this is used in a real Thread (e.g., ShellThread).
-    if EnableBusyWaitingOnExecution then
-      while Running do
-        Sleep(100); // Not effective indeed, but it works from threaded code.
+  finally
+    LogMessageExit('TPackageManager.Execute');
   end;
 end;
 

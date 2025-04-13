@@ -88,9 +88,9 @@ resourcestring
   CancelDialogText = 'Are you really sure to cancel? This may let your installation in an unpredictable state.';
   CloseButtonCaption = '&Close';
   CancelButtonCaption = '&Cancel';
-  OperationSuccessfullyTerminated = 'Operation done.';
+  OperationSuccessfullyTerminated = 'Operation terminated.';
   OperationAborted = 'Operation aborted.';
-  OperationDoneWithErrors = 'Operation done with errors.';
+  OperationDoneWithErrors = 'Operation terminated with errors.';
   OperationDoneWithErrorsPostInstall = 'Sorry, everything was successfully installed...'
     + sLineBreak + '...but some errors happened while doing the initial libraries/utilities compilation and build.'
     + sLineBreak + 'You may save the log in that window and search for the ''error:'' and ''fatal:'' keywords.'
