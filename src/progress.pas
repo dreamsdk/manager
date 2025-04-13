@@ -191,7 +191,7 @@ end;
 
 procedure TfrmProgress.tmrAbortFailSafeStopTimer(Sender: TObject);
 begin
-  LogMessageExit('TfrmProgress.tmrAbortFailSafeStopTimer');
+  LogMessageEnter('TfrmProgress.tmrAbortFailSafeStopTimer');
   try
     try
 
@@ -211,7 +211,7 @@ end;
 
 procedure TfrmProgress.tmrAbortFailSafeTimer(Sender: TObject);
 begin
-  LogMessageExit('TfrmProgress.tmrAbortFailSafeTimer');
+  LogMessageEnter('TfrmProgress.tmrAbortFailSafeTimer');
   try
     try
 

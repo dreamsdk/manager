@@ -467,7 +467,7 @@ begin
         and (not ShellThread.CheckTerminated)
         and (not ShellThreadHelper.fAbortOrderReceived) do
       begin
-        Sleep(500);
+        Sleep(1000);
         LogMessage('TAbortShellThread.Execute::Abort called');
         Abort;
         Inc(i);
