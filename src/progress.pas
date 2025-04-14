@@ -44,6 +44,7 @@ type
     fFinished: Boolean;
     function GetAbortOperation: Boolean;
     function GetAutoCloseState: Boolean;
+    function IsSafeAbortRequested: Boolean;
     procedure SetIdleState(State: Boolean);
     procedure StartSafeAbort;
     procedure StopSafeAbort;
@@ -216,7 +217,6 @@ begin
     try
 
       pgbOperationProgress.Position := pgbOperationProgress.Position + 1;
-
       if (pgbOperationProgress.Position >= pgbOperationProgress.Max) then
         StopSafeAbort;
 
@@ -296,6 +296,11 @@ begin
   Result := cbxAutocloseWindow.Checked;
 end;
 
+function TfrmProgress.IsSafeAbortRequested: Boolean;
+begin
+  Result := tmrAbortFailSafe.Enabled;
+end;
+
 procedure TfrmProgress.SetTerminateState(Success: Boolean; Aborted: Boolean);
 var
   Message,
@@ -359,8 +364,11 @@ var
 
   procedure PrintLine;
   begin
-    pgbOperationProgress.Position := 0;
-    pgbOperationProgress.Style := pbstMarquee;
+    if not IsSafeAbortRequested then
+    begin
+      pgbOperationProgress.Position := 0;
+      pgbOperationProgress.Style := pbstMarquee;
+    end;
     memBufferOutput.Lines.Add(Message);
   end;
 
@@ -404,7 +412,7 @@ begin
   begin
     // Handle percent steps (0% to 100%)
     Value := ExtractValue;
-    if (Value <> -1) and (pgbOperationProgress.Max = 100) then
+    if (not IsSafeAbortRequested) and (Value <> -1) then
     begin
       pgbOperationProgress.Position := Value;
       pgbOperationProgress.Style := pbstNormal;

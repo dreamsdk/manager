@@ -151,6 +151,18 @@ var
   ShellThreadHelper: TShellThreadHelper;
   ShellThreadPackageManager: TPackageManager;
 
+function IsThreadOperationAborted: Boolean;
+begin
+  // Test if toolchains thread has been aborted
+  Result := Assigned(ShellThreadHelper)
+    and ShellThreadHelper.fAbortOrderReceived;
+
+  // Test if ShellThread (regular) thread has been aborted
+  Result := Result
+    or (Assigned(ShellThread) and (ShellThread.Running)
+    and (ShellThread.Aborted));
+end;
+
 procedure AbortThreadOperation;
 begin
   LogMessageEnter('AbortThreadOperation');
@@ -159,6 +171,10 @@ begin
 
       if AbortShellThreadInstancesCount < ABORT_SHELL_THREAD_INSTANCES_COUNT_MAX then
       begin
+        LogMessage(Format('AbortThreadOperation::Running new TAbortShellThread (%d of %d)', [
+          AbortShellThreadInstancesCount + 1,
+          ABORT_SHELL_THREAD_INSTANCES_COUNT_MAX
+        ]));
         TAbortShellThread.Create(False);
         Inc(AbortShellThreadInstancesCount);
       end
@@ -174,19 +190,6 @@ begin
 end;
 
 procedure DoAbortThreadOperation;
-
-  function IsThreadOperationAborted: Boolean;
-  begin
-    // Test if toolchains thread has been aborted
-    Result := Assigned(ShellThreadHelper)
-      and ShellThreadHelper.fAbortOrderReceived;
-
-    // Test if ShellThread (regular) thread has been aborted
-    Result := Result
-      or (Assigned(ShellThread) and (ShellThread.Running)
-      and (ShellThread.Aborted));
-  end;
-
 begin
   LogMessageEnter('DoAbortThreadOperation');
   try
@@ -467,10 +470,15 @@ begin
         and (not ShellThread.CheckTerminated)
         and (not ShellThreadHelper.fAbortOrderReceived) do
       begin
-        Sleep(1000);
-        LogMessage('TAbortShellThread.Execute::Abort called');
+        LogMessage(Format('TAbortShellThread.Execute::Abort called (%d of %d)', [
+          i + 1,
+          ABORT_SHELL_THREAD_MAX_ABORT_CALLS
+        ]));
+
         Abort;
+
         Inc(i);
+        Sleep(1000);
       end;
 
     except
