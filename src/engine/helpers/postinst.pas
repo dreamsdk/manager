@@ -60,40 +60,39 @@ begin
 end;
 
 procedure ExecutePostInstall;
+var
+  LogContext: TLogMessageContext;
+
 begin
-  LogMessageEnter('ExecutePostInstall');
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%});
   try
-    try
 
-      LogMessage(Format('ExecutePostInstall::Main ThreadId: %d', [ThreadID]));
-      if PostInstallMode then
+    LogMessage(LogContext, Format('Main ThreadId: %d', [ThreadID]));
+    if PostInstallMode then
+    begin
+      if IsInstallOrUpdateRequired then
       begin
-        if IsInstallOrUpdateRequired then
+        with DreamcastSoftwareDevelopmentKitManager.Environment.Settings
+          .Repositories do
         begin
-          with DreamcastSoftwareDevelopmentKitManager.Environment.Settings
-            .Repositories do
-          begin
-            KallistiURL := GetDefaultUrlKallisti;
-            KallistiPortsURL := GetDefaultUrlKallistiPorts;
-            DreamcastToolSerialURL := GetDefaultUrlDreamcastToolSerial;
-            DreamcastToolInternetProtocolURL := GetDefaultUrlDreamcastToolInternetProtocol;
-            RubyURL := GetDefaultUrlRuby;
-          end;
-          DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := RubyEnabled;
-          ExecuteThreadOperation(stiKallistiManage);
-        end
-        else
-        begin
-          LogMessage('ExecutePostInstall::Calling Application.Terminate');
-          Application.Terminate;
+          KallistiURL := GetDefaultUrlKallisti;
+          KallistiPortsURL := GetDefaultUrlKallistiPorts;
+          DreamcastToolSerialURL := GetDefaultUrlDreamcastToolSerial;
+          DreamcastToolInternetProtocolURL := GetDefaultUrlDreamcastToolInternetProtocol;
+          RubyURL := GetDefaultUrlRuby;
         end;
+        DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := RubyEnabled;
+        ExecuteThreadOperation(stiKallistiManage);
+      end
+      else
+      begin
+        LogMessage(LogContext, 'Calling Application.Terminate');
+        Application.Terminate;
       end;
-
-    except
-      raise;
     end;
+
   finally
-    LogMessageExit('ExecutePostInstall');
+    LogMessageExit(LogContext);
   end;
 end;
 

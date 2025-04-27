@@ -39,10 +39,8 @@ uses
 {$R *.res}
 
 begin
-{$IFDEF DEBUG}
-{$IFDEF CONSOLE}
+{$IF DEFINED(DEBUG) AND DEFINED(CONSOLE)}
   SetConsoleCtrlHandler(nil, True);
-{$ENDIF}
 {$ENDIF}
   Application.Scaled:=True;
   Application.Title:='DreamSDK Manager';

@@ -85,38 +85,37 @@ const
 { TfrmProgress }
 
 procedure TfrmProgress.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+var
+  LogContext: TLogMessageContext;
+
 begin
-  LogMessageEnter('TfrmProgress.FormClose');
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
   try
-    try
 
-      if not Finished and AbortOperation then
+    if not Finished and AbortOperation then
+    begin
+      LogMessage(LogContext, 'PauseThreadOperation');
+      CloseAction := caNone;
+      PauseThreadOperation;
+      if MsgBoxDlg(Handle, CancelDialogCaption, CancelDialogText, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
       begin
-        LogMessage('TfrmProgress.FormClose::PauseThreadOperation');
-        CloseAction := caNone;
-        PauseThreadOperation;
-        if MsgBoxDlg(Handle, CancelDialogCaption, CancelDialogText, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
-        begin
-          LogMessage('TfrmProgress.FormClose::StartSafeAbort');
-          StartSafeAbort
-        end
-        else
-        begin
-          LogMessage('TfrmProgress.FormClose::ResumeThreadOperation');
-          ResumeThreadOperation;
-        end;
+        LogMessage(LogContext, 'StartSafeAbort');
+        StartSafeAbort
       end
-      else if Finished and IsPostInstallMode then
+      else
       begin
-        LogMessage('TfrmProgress.FormClose::Application.Terminate called');
-        Application.Terminate;
+        LogMessage(LogContext, 'ResumeThreadOperation');
+        ResumeThreadOperation;
       end;
-
-    except
-      raise;
+    end
+    else if Finished and IsPostInstallMode then
+    begin
+      LogMessage(LogContext, 'Application.Terminate called');
+      Application.Terminate;
     end;
+
   finally
-    LogMessageExit('TfrmProgress.FormClose');
+    LogMessageExit(LogContext);
   end;
 end;
 
@@ -162,69 +161,66 @@ begin
 end;
 
 procedure TfrmProgress.tmrAbortFailSafeStartTimer(Sender: TObject);
-begin
-  LogMessageEnter('TfrmProgress.tmrAbortFailSafeStartTimer');
-  try
-    try
+var
+  LogContext: TLogMessageContext;
 
-      // Abort all the processes!
-      AbortThreadOperation;
+begin
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
+  try
+
+    // Abort all the processes!
+    AbortThreadOperation;
 
 {$IFDEF DEBUG_PROGRESS_SIMULATE_ABORT_ERROR}
-      ShowMessage('This message will causes issues in Abort process.');
+    ShowMessage('This message will causes issues in Abort process.');
 {$ENDIF}
 
-      // Updating the progress UI
-      if not Finished then
-      begin
-        SetCloseButtonState(False);
-        memBufferOutput.Lines.Add(SendingCancelSignal);
-        lblProgressStep.Caption := SendingCancelSignal;
-      end;
-
-    except
-      raise;
+    // Updating the progress UI
+    if not Finished then
+    begin
+      SetCloseButtonState(False);
+      memBufferOutput.Lines.Add(SendingCancelSignal);
+      lblProgressStep.Caption := SendingCancelSignal;
     end;
+
   finally
-    LogMessageExit('TfrmProgress.tmrAbortFailSafeStartTimer');
+    LogMessageExit(LogContext);
   end;
 end;
 
 procedure TfrmProgress.tmrAbortFailSafeStopTimer(Sender: TObject);
+var
+  LogContext: TLogMessageContext;
+
 begin
-  LogMessageEnter('TfrmProgress.tmrAbortFailSafeStopTimer');
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
   try
-    try
 
-      pgbOperationProgress.Position := 0;
-      Sleep(500);
-      SetIdleState(True);
-      lblProgressStep.Caption := OperationAborted;
-      Application.ProcessMessages;
+    pgbOperationProgress.Position := 0;
+    Sleep(500);
+    SetIdleState(True);
+    lblProgressStep.Caption := OperationAborted;
+    Application.ProcessMessages;
 
-    except
-      raise;
-    end;
   finally
-    LogMessageExit('TfrmProgress.tmrAbortFailSafeStopTimer');
+    LogMessageExit(LogContext);
   end;
 end;
 
 procedure TfrmProgress.tmrAbortFailSafeTimer(Sender: TObject);
+var
+  LogContext: TLogMessageContext;
+
 begin
-  LogMessageEnter('TfrmProgress.tmrAbortFailSafeTimer');
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
   try
-    try
 
-      pgbOperationProgress.Position := pgbOperationProgress.Position + 1;
-      if (pgbOperationProgress.Position >= pgbOperationProgress.Max) then
-        StopSafeAbort;
+    pgbOperationProgress.Position := pgbOperationProgress.Position + 1;
+    if (pgbOperationProgress.Position >= pgbOperationProgress.Max) then
+      StopSafeAbort;
 
-    except
-      raise;
-    end;
   finally
-    LogMessageExit('TfrmProgress.tmrAbortFailSafeTimer');
+    LogMessageExit(LogContext);
   end;
 end;
 
@@ -305,46 +301,43 @@ procedure TfrmProgress.SetTerminateState(Success: Boolean; Aborted: Boolean);
 var
   Message,
   LongMessage: string;
+  LogContext: TLogMessageContext;
 
 begin
-  LogMessageEnter('TfrmProgress.SetTerminateState');
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
   try
-    try
 
-      StopSafeAbort;
-      SetIdleState(True);
+    StopSafeAbort;
+    SetIdleState(True);
 
-      if not Success then
-      begin
-        LongMessage := EmptyStr;
+    if not Success then
+    begin
+      LongMessage := EmptyStr;
 
-        if Aborted then
-          Message := OperationAborted
-        else
-        begin
-          Message := OperationDoneWithErrors;
-          if IsPostInstallMode then
-            LongMessage := Concat(Message, sLineBreak, OperationDoneWithErrorsPostInstall);
-        end;
-
-        if IsEmpty(LongMessage) then
-          LongMessage := Message;
-
-        memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [LongMessage]));
-        lblProgressStep.Caption := Message;
-      end
+      if Aborted then
+        Message := OperationAborted
       else
       begin
-        SetProgressText(OperationSuccessfullyTerminated);
-        if (not IsPostInstallMode) and IsProgressAutoClose then
-          Close;
+        Message := OperationDoneWithErrors;
+        if IsPostInstallMode then
+          LongMessage := Concat(Message, sLineBreak, OperationDoneWithErrorsPostInstall);
       end;
 
-    except
-      raise;
+      if IsEmpty(LongMessage) then
+        LongMessage := Message;
+
+      memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [LongMessage]));
+      lblProgressStep.Caption := Message;
+    end
+    else
+    begin
+      SetProgressText(OperationSuccessfullyTerminated);
+      if (not IsPostInstallMode) and IsProgressAutoClose then
+        Close;
     end;
+
   finally
-    LogMessageExit('TfrmProgress.SetTerminateState');
+    LogMessageExit(LogContext);
   end;
 end;
 
