@@ -2530,14 +2530,23 @@ object frmMain: TfrmMain
       Caption = '&Debug'
       ClientHeight = 320
       ClientWidth = 658
-      object btnEnvironmentFileSystemDebugPrintAllValues: TButton
+      object btnDebugEnvironmentFileSystemPrintAllValues: TButton
         Left = 8
         Height = 25
         Top = 12
         Width = 171
         Caption = 'DebugPrintAllValues'
         TabOrder = 0
-        OnClick = btnEnvironmentFileSystemDebugPrintAllValuesClick
+        OnClick = btnDebugEnvironmentFileSystemPrintAllValuesClick
+      end
+      object btnDebugRaiseException: TButton
+        Left = 8
+        Height = 25
+        Top = 48
+        Width = 171
+        Caption = 'DebugRaiseException'
+        TabOrder = 1
+        OnClick = btnDebugRaiseExceptionClick
       end
     end
   end

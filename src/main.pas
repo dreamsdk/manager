@@ -59,7 +59,8 @@ type
     btnIdeCodeBlocksUsersAvailableRefresh: TButton;
     btnWindowsTerminalInstall: TButton;
     btnWindowsTerminalUninstall: TButton;
-    btnEnvironmentFileSystemDebugPrintAllValues: TButton;
+    btnDebugEnvironmentFileSystemPrintAllValues: TButton;
+    btnDebugRaiseException: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
     cbxToolchain: TComboBox;
@@ -265,6 +266,7 @@ type
     procedure btnCloseClick(Sender: TObject);
     procedure btnCreditsClick(Sender: TObject);
     procedure btnComponentsApplyClick(Sender: TObject);
+    procedure btnDebugRaiseExceptionClick(Sender: TObject);
     procedure btnIdeCodeBlocksInstallDirClick(Sender: TObject);
     procedure btnInstallMRubyClick(Sender: TObject);
     procedure btnOfflineKallistiClick(Sender: TObject);
@@ -286,7 +288,7 @@ type
     procedure btnIdeInstallClick(Sender: TObject);
     procedure btnWindowsTerminalInstallClick(Sender: TObject);
     procedure btnWindowsTerminalUninstallClick(Sender: TObject);
-    procedure btnEnvironmentFileSystemDebugPrintAllValuesClick(Sender: TObject);
+    procedure btnDebugEnvironmentFileSystemPrintAllValuesClick(Sender: TObject);
     procedure cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
     procedure cbxDreamcastToolSerialPortSelect(Sender: TObject);
     procedure cbxModuleSelectionChange(Sender: TObject);
@@ -547,30 +549,41 @@ begin
 {$IFDEF RELEASE}
   tsDebug.TabVisible := False;
 {$ENDIF}
-  if not IsElevatedTaskRequested then
+
+  (* Check if we are running this instance in elevated task mode... if yes,
+     just exits all this UI code. *)
+  if IsElevatedTaskRequested then
+    Exit;
+
+  // Initialize the main singleton objects
+  fShellThreadExecutedAtLeastOnce := False;
+  DreamcastSoftwareDevelopmentKitManager :=
+    TDreamcastSoftwareDevelopmentKitManager.Create(not IsPostInstallMode);
+  PackageManager := TPackageManager.Create(DreamcastSoftwareDevelopmentKitManager);
+  PackageManager.OnTerminate := @OnPackageManagerTerminate;
+  HelpFileName := DreamcastSoftwareDevelopmentKitManager.Environment
+    .FileSystem.Shell.HelpFileName;
+
+  (* If we are not running in post-install mode (i.e., froml DreamSDK Setup)
+     then get some environment information that will be used in the app *)
+  if (not IsPostInstallMode) then
   begin
-    fShellThreadExecutedAtLeastOnce := False;
-    DreamcastSoftwareDevelopmentKitManager :=
-      TDreamcastSoftwareDevelopmentKitManager.Create(not IsPostInstallMode);
-    PackageManager := TPackageManager.Create(DreamcastSoftwareDevelopmentKitManager);
-    PackageManager.OnTerminate := @OnPackageManagerTerminate;
-    HelpFileName := DreamcastSoftwareDevelopmentKitManager.Environment
-      .FileSystem.Shell.HelpFileName;
-
-    if (not IsPostInstallMode) then
-    begin
-      ModuleVersionList := CreateModuleVersionList;
-      CreateNetworkAdapterList;
-      CreateSerialPortList;
-    end;
-
-    DoubleBuffered := True;
-    pcMain.TabIndex := 0;
-    if IsWindowsVistaOrGreater and IsElevated then
-      Caption := Format(ElevatedCaption, [Caption]);
-    Application.Title := Caption;
-    HandleAero;
+    ModuleVersionList := CreateModuleVersionList;
+    CreateNetworkAdapterList;
+    CreateSerialPortList;
   end;
+
+  // Basic initialization of the UI
+  DoubleBuffered := True;
+  pcMain.TabIndex := 0;
+
+  // Handle main window title
+  if IsWindowsVistaOrGreater and IsElevated then
+    Caption := Format(ElevatedCaption, [Caption]);
+  Application.Title := Caption;
+
+  // Properly handle Aero on Windows
+  HandleAero;
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
@@ -773,100 +786,89 @@ end;
 
 procedure TfrmMain.tmrShellThreadTerminateTimer(Sender: TObject);
 var
+  LogContext: TLogMessageContext;
   IsSinglePortRefreshOnly: Boolean;
 
 begin
-  LogMessageEnter('tmrShellThreadTerminateTimer');
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
   try
-    try
 
-      LogMessage(Format('ShellThreadSuccess: %s, ShellThreadOutputResult: %d', [
-        BoolToStr(fShellThreadSuccess, True),
-        fShellThreadOutputResult
-      ]));
-{$IFDEF DEBUG}
-      WriteLn('[ShellThreadTerminateTimer::START] ShellThreadSuccess: ', fShellThreadSuccess,
-        ', ShellThreadOutputResult: ', fShellThreadOutputResult);
-{$ENDIF}
+    LogMessage(LogContext, Format('ShellThreadSuccess: %s, ShellThreadOutputResult: %d', [
+      BoolToStr(fShellThreadSuccess, True),
+      fShellThreadOutputResult
+    ]));
 
-      tmrShellThreadTerminate.Enabled := False;
+    tmrShellThreadTerminate.Enabled := False;
 
-      if fShellThreadSuccess then
-      begin
-        case fShellThreadOutputResult of
-          // No action was done
-          stoNothing:
-            MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [EverythingText]), mtInformation, [mbOk]);
+    if fShellThreadSuccess then
+    begin
+      case fShellThreadOutputResult of
+        // No action was done
+        stoNothing:
+          MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [EverythingText]), mtInformation, [mbOk]);
 
-          // KallistiOS was installed
-          stoKallistiInstall:
-            MsgBox(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk]);
+        // KallistiOS was installed
+        stoKallistiInstall:
+          MsgBox(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk]);
 
-          // KallistiOS, KallistiOS Ports, Dreamcast Tool or Ruby were updated
-          stoKallistiUpdate:
-            case fShellThreadUpdateState of
-              uosUpdateSuccess:
-                MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [EverythingText]), mtInformation, [mbOk]);
-            end;
+        // KallistiOS, KallistiOS Ports, Dreamcast Tool or Ruby were updated
+        stoKallistiUpdate:
+          case fShellThreadUpdateState of
+            uosUpdateSuccess:
+              MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [EverythingText]), mtInformation, [mbOk]);
+          end;
 
-          // All KallistiOS Ports were installed
-          stoKallistiPortsInstall:
-            MsgBox(DialogInformationTitle, UpdateProcessAllKallistiPortsInstalled, mtInformation, [mbOk]);
+        // All KallistiOS Ports were installed
+        stoKallistiPortsInstall:
+          MsgBox(DialogInformationTitle, UpdateProcessAllKallistiPortsInstalled, mtInformation, [mbOk]);
 
-          // All KallistiOS Ports were uninstalled
-          stoKallistiPortsUninstall:
-            MsgBox(DialogInformationTitle, UpdateProcessAllKallistiPortsUninstalled, mtInformation, [mbOk]);
+        // All KallistiOS Ports were uninstalled
+        stoKallistiPortsUninstall:
+          MsgBox(DialogInformationTitle, UpdateProcessAllKallistiPortsUninstalled, mtInformation, [mbOk]);
 
-          // A single KallistiOS Port was updated
-          stoKallistiSinglePortUpdate:
-            case fShellThreadUpdateState of
-              uosUpdateSuccess:
-                MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
-              uosUpdateUseless:
-                MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
-            end;
+        // A single KallistiOS Port was updated
+        stoKallistiSinglePortUpdate:
+          case fShellThreadUpdateState of
+            uosUpdateSuccess:
+              MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
+            uosUpdateUseless:
+              MsgBox(DialogInformationTitle, Format(UpdateProcessUpdateUselessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
+          end;
 
-          // A single KallistiOS Port was installed
-          stoKallistiSinglePortInstall:
-            if not DreamcastSoftwareDevelopmentKitManager.Environment.Settings.ProgressWindowAutoClose then
-              MsgBox(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
+        // A single KallistiOS Port was installed
+        stoKallistiSinglePortInstall:
+          if not DreamcastSoftwareDevelopmentKitManager.Environment.Settings.ProgressWindowAutoClose then
+            MsgBox(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
 
-          // A single KallistiOS Port was uninstalled
-          stoKallistiSinglePortUninstall:
-            if not DreamcastSoftwareDevelopmentKitManager.Environment.Settings.ProgressWindowAutoClose then
-              MsgBox(DialogInformationTitle, Format(UpdateProcessUninstallSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
-        end;
-
-        // Handle IDE files
-        DreamcastSoftwareDevelopmentKitManager.KallistiPorts
-          .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
+        // A single KallistiOS Port was uninstalled
+        stoKallistiSinglePortUninstall:
+          if not DreamcastSoftwareDevelopmentKitManager.Environment.Settings.ProgressWindowAutoClose then
+            MsgBox(DialogInformationTitle, Format(UpdateProcessUninstallSuccessText, [SelectedKallistiPort.Name]), mtInformation, [mbOk]);
       end;
 
-      if not IsPostInstallMode then
-      begin
-        IsSinglePortRefreshOnly := (fShellThreadOutputResult = stoKallistiSinglePortInstall)
-          or (fShellThreadOutputResult = stoKallistiSinglePortUpdate)
-          or (fShellThreadOutputResult = stoKallistiSinglePortUninstall);
-
-        if IsSinglePortRefreshOnly then
-          RefreshViewKallistiPorts(False) // Single KallistiPorts change
-        else
-          RefreshEverything(True);
-      end;
-
-      Delay(250);
-      Screen.Cursor := crDefault;
-      fShellThreadExecutedAtLeastOnce := True;
-
-{$IFDEF DEBUG}
-      DebugLog('[ShellThreadTerminateTimer::END]');
-{$ENDIF}
-
-    except
-      raise;
+      // Handle IDE files
+      DreamcastSoftwareDevelopmentKitManager.KallistiPorts
+        .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
     end;
+
+    if not IsPostInstallMode then
+    begin
+      IsSinglePortRefreshOnly := (fShellThreadOutputResult = stoKallistiSinglePortInstall)
+        or (fShellThreadOutputResult = stoKallistiSinglePortUpdate)
+        or (fShellThreadOutputResult = stoKallistiSinglePortUninstall);
+
+      if IsSinglePortRefreshOnly then
+        RefreshViewKallistiPorts(False) // Single KallistiPorts change
+      else
+        RefreshEverything(True);
+    end;
+
+    Delay(250);
+    Screen.Cursor := crDefault;
+    fShellThreadExecutedAtLeastOnce := True;
+
   finally
-    LogMessageExit('tmrShellThreadTerminateTimer');
+    LogMessageExit(LogContext);
   end;
 end;
 
@@ -2299,6 +2301,13 @@ begin
   end;
 end;
 
+procedure TfrmMain.btnDebugRaiseExceptionClick(Sender: TObject);
+begin
+{$IFDEF DEBUG}
+  raise Exception.Create('Test Exception');
+{$ENDIF}
+end;
+
 procedure TfrmMain.btnIdeCodeBlocksInstallDirClick(Sender: TObject);
 begin
   with sddIdeCodeBlocks do
@@ -2867,7 +2876,7 @@ begin
   UpdateWindowsTerminalControls;
 end;
 
-procedure TfrmMain.btnEnvironmentFileSystemDebugPrintAllValuesClick(Sender: TObject);
+procedure TfrmMain.btnDebugEnvironmentFileSystemPrintAllValuesClick(Sender: TObject);
 begin
 {$IFDEF DEBUG}
   DreamcastSoftwareDevelopmentKitManager.Environment
