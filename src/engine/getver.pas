@@ -40,8 +40,8 @@ type
   private
     fBuildDate: TDateTime;
     fKind: TToolchainKind;
-    fPackageGDB: TDebuggerVersionKind;
-    fPackageToolchain: TToolchainVersionKind;
+    fPackageProfileGDB: string;
+    fPackageProfileToolchain: string;
     fVersionBinutils: string;
     fVersionGCC: string;
     fVersionGDB: string;
@@ -49,18 +49,19 @@ type
     fVersionPythonGDB: string;
     fOwner: TComponentVersion;
   protected
-    function GetStringVersionToDebuggerVersionKind(
-      const Version: string): TDebuggerVersionKind;
+    (*function GetStringVersionToDebuggerVersionKind(
+      const Version: string): TDebuggerKind;
     function GetStringVersionToPackageToolchainKind(
-      const Version: string): TToolchainVersionKind;
+      const Version: string): TToolchainVersionKind;*)
   public
     constructor Create(AOwner: TComponentVersion; ToolchainKind: TToolchainKind);
+
     property BuildDate: TDateTime read fBuildDate;
     property Binutils: string read fVersionBinutils;
     property GCC: string read fVersionGCC;
     property GDB: string read fVersionGDB;
-    property PackageGDB: TDebuggerVersionKind read fPackageGDB;
-    property PackageToolchain: TToolchainVersionKind read fPackageToolchain;
+    property PackageProfileGDB: string read fPackageProfileGDB;
+    property PackageProfileToolchain: string read fPackageProfileToolchain;
     property PythonGDB: string read fVersionPythonGDB;
     property Newlib: string read fVersionNewlib;
     property Kind: TToolchainKind read fKind;
@@ -163,7 +164,7 @@ end;
 
 { TToolchainVersion }
 
-function TToolchainVersion.GetStringVersionToDebuggerVersionKind(
+(*function TToolchainVersion.GetStringVersionToDebuggerVersionKind(
   const Version: string): TDebuggerVersionKind;
 var
   i: Integer;
@@ -205,7 +206,7 @@ begin
       end;
     end;
   end;
-end;
+end;*)
 
 constructor TToolchainVersion.Create(AOwner: TComponentVersion;
   ToolchainKind: TToolchainKind);
@@ -318,17 +319,29 @@ procedure TComponentVersion.RetrieveVersions;
       begin
         // Super-H only
         AVersion.fVersionPythonGDB := RetrievePythonGdb(AEnvironment.GDBExecutable);
-        AVersion.fPackageGDB := AVersion.GetStringVersionToDebuggerVersionKind(
-          AVersion.fVersionPythonGDB);
+        AVersion.fPackageProfileGDB := AEnvironment.GetGdbProfileKeyFromFileName(
+          AEnvironment.GDBExecutable);
+{$IFDEF DEBUG}
+        DebugLog(Format('[%s] GDB PackageProfile: "%s"', [
+          GetEnumName(TypeInfo(TToolchainKind), Ord(AEnvironment.Kind)),
+          AVersion.fPackageProfileGDB
+        ]));
+{$ENDIF}
         AVersion.fVersionNewlib := RetrieveVersionWithFind(AEnvironment.NewlibBinary,
           '/dc-chain/newlib-', '/newlib/libc/');
       end;
 
-      if AEnvironment.Kind <> tkWin32 then
+      if AEnvironment.Kind = tkSuperH then
       begin
-        // Super-H and ARM
-        AVersion.fPackageToolchain := AVersion.GetStringVersionToPackageToolchainKind(
-          AVersion.fVersionGCC);
+        // Super-H
+        AVersion.fPackageProfileToolchain := AEnvironment
+          .GetToolchainProfileKeyFromFileName(AEnvironment.GCCExecutable);
+{$IFDEF DEBUG}
+        DebugLog(Format('[%s] Toolchain PackageProfile: "%s"', [
+          GetEnumName(TypeInfo(TToolchainKind), Ord(AEnvironment.Kind)),
+          AVersion.fPackageProfileToolchain
+        ]));
+{$ENDIF}
       end;
     end;
   end;

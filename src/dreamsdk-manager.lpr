@@ -34,7 +34,8 @@ uses
   Splash,
   RubyMgr,
   Unpack,
-  PkgMgr;
+  PkgMgr,
+  Global;
 
 {$R *.res}
 

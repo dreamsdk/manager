@@ -76,7 +76,7 @@ uses
   PostInst,
   StrRes,
   MsgDlg,
-  Main;
+  Global;
 
 const
   CLOSE_TAG_VALUE = 1000;

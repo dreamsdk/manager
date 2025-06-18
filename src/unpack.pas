@@ -46,6 +46,7 @@ uses
   PkgMgr,
   MsgDlg,
   StrRes,
+  Global,
   Main;
 
 { TfrmUnpack }

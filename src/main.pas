@@ -8,9 +8,26 @@ uses
 {$IFDEF Windows}
   Windows,
 {$ENDIF}
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  StdCtrls, ExtCtrls, CheckLst, MaskEdit, PortMgr, ShellThd, DCSDKMgr, Environ,
-  StrRes, PkgMgr;
+  Classes,
+  SysUtils,
+  FileUtil,
+  Forms,
+  Controls,
+  Graphics,
+  Dialogs,
+  ComCtrls,
+  StdCtrls,
+  ExtCtrls,
+  CheckLst,
+  MaskEdit,
+  SysTools,
+  Global,
+  PortMgr,
+  ShellThd,
+  DCSDKMgr,
+  Environ,
+  StrRes,
+  PkgMgr;
 
 type
   { TfrmMain }
@@ -61,6 +78,8 @@ type
     btnWindowsTerminalUninstall: TButton;
     btnDebugEnvironmentFileSystemPrintAllValues: TButton;
     btnDebugRaiseException: TButton;
+    btnDebugGetSelectedToolchain: TButton;
+    btnDebugGetSelectedDebugger: TButton;
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
     cbxToolchain: TComboBox;
@@ -266,6 +285,7 @@ type
     procedure btnCloseClick(Sender: TObject);
     procedure btnCreditsClick(Sender: TObject);
     procedure btnComponentsApplyClick(Sender: TObject);
+    procedure btnDebugGetSelectedDebuggerClick(Sender: TObject);
     procedure btnDebugRaiseExceptionClick(Sender: TObject);
     procedure btnIdeCodeBlocksInstallDirClick(Sender: TObject);
     procedure btnInstallMRubyClick(Sender: TObject);
@@ -289,6 +309,7 @@ type
     procedure btnWindowsTerminalInstallClick(Sender: TObject);
     procedure btnWindowsTerminalUninstallClick(Sender: TObject);
     procedure btnDebugEnvironmentFileSystemPrintAllValuesClick(Sender: TObject);
+    procedure btnDebugGetSelectedToolchainClick(Sender: TObject);
     procedure cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
     procedure cbxDreamcastToolSerialPortSelect(Sender: TObject);
     procedure cbxModuleSelectionChange(Sender: TObject);
@@ -322,6 +343,8 @@ type
     procedure tmDisplayKallistiPortsTimer(Sender: TObject);
     procedure tmrShellThreadTerminateTimer(Sender: TObject);
   private
+    fPackageProfileKeysMapToolchains: TStringIntegerMap;
+    fPackageProfileKeysMapGdb: TStringIntegerMap;
     fPackageManagerSelectedOfflinePackage: TPackageManagerRequestOffline;
     fPackageManagerOperation: TPackageManagerRequest;
     fLoadingConfiguration: Boolean;
@@ -338,23 +361,24 @@ type
     procedure DoKallistiPortsClearList;
     procedure DoUpdateAll;
     function GetComponentSelectedOperation: TPackageManagerRequest;
-    function GetSelectedDebugger: TPackageManagerRequestDebugger;
+    function GetSelectedDebugger: string;
     function GetSelectedKallistiPort: TKallistiPortItem;
     function GetSelectedKallistiPortItemIndex: Integer;
     function GetSelectedMediaAccessControlHostAddress: string;
     function GetSelectedSerialBaudrate: Integer;
     function GetSelectedSerialPort: Integer;
-    function GetSelectedToolchain: TPackageManagerRequestToolchain;
+    function GetSelectedToolchain: string;
     procedure LoadConfiguration;
     function BooleanToCaption(Value: Boolean): string;
     function BooleanToCheckboxState(State: Boolean): TCheckBoxState;
     procedure ClearKallistiPortPanel;
+    procedure DoComponentsClearLists;
     procedure SetSelectedSerialBaudrate(AValue: Integer);
     procedure UpdateKallistiPortControls;
     function IsVersionLabelValid(VersionLabel: TLabel): Boolean;
     procedure SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
     procedure SetVersionLabel(VersionLabel: TLabel; Version: string);
-    procedure UpdateComponentControls;
+    procedure UpdateComponentControls(const Initialize: Boolean = False);
     procedure UpdateDreamcastToolMediaAccessControlAddressControls;
     procedure UpdateDreamcastToolSerialOptionControls;
     procedure UpdateKallistiControls;
@@ -416,9 +440,9 @@ type
       read GetSelectedSerialBaudrate write SetSelectedSerialBaudrate;
     property SelectedHostMediaAccessControlAddress: string
       read GetSelectedMediaAccessControlHostAddress;
-    property ComponentSelectedToolchain: TPackageManagerRequestToolchain read
+    property ComponentSelectedToolchain: string read
       GetSelectedToolchain;
-    property ComponentSelectedDebugger: TPackageManagerRequestDebugger read
+    property ComponentSelectedDebugger: string read
       GetSelectedDebugger;
     property ComponentSelectedOperation: TPackageManagerRequest
       read GetComponentSelectedOperation;
@@ -426,8 +450,6 @@ type
 
 var
   frmMain: TfrmMain;
-  DreamcastSoftwareDevelopmentKitManager: TDreamcastSoftwareDevelopmentKitManager;
-  PackageManager: TPackageManager;
 
 implementation
 
@@ -441,7 +463,6 @@ uses
   OpenSSLSockets,
   UITools,
   GetVer,
-  SysTools,
   PostInst,
   Settings,
   Version,
@@ -556,10 +577,10 @@ begin
     Exit;
 
   // Initialize the main singleton objects
+  fPackageProfileKeysMapToolchains := TStringIntegerMap.Create;
+  fPackageProfileKeysMapGdb := TStringIntegerMap.Create;
   fShellThreadExecutedAtLeastOnce := False;
-  DreamcastSoftwareDevelopmentKitManager :=
-    TDreamcastSoftwareDevelopmentKitManager.Create(not IsPostInstallMode);
-  PackageManager := TPackageManager.Create(DreamcastSoftwareDevelopmentKitManager);
+  GlobalInitialization;
   PackageManager.OnTerminate := @OnPackageManagerTerminate;
   HelpFileName := DreamcastSoftwareDevelopmentKitManager.Environment
     .FileSystem.Shell.HelpFileName;
@@ -588,7 +609,12 @@ end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
+  fPackageProfileKeysMapGdb.Free;
+  fPackageProfileKeysMapToolchains.Free;
+
   DoKallistiPortsClearList;
+  DoComponentsClearLists;
+
   if not IsElevatedTaskRequested then
   begin
     if not fShellThreadExecutedAtLeastOnce then
@@ -604,8 +630,7 @@ begin
       ModuleVersionList.Free;
     end;
 
-    PackageManager.Free;
-    DreamcastSoftwareDevelopmentKitManager.Free;
+    GlobalFinalization;
   end;
 end;
 
@@ -1046,9 +1071,22 @@ begin
   Result := fPackageManagerOperation;
 end;
 
-function TfrmMain.GetSelectedDebugger: TPackageManagerRequestDebugger;
+function TfrmMain.GetSelectedDebugger: string;
+var
+  ItemIndex: Integer;
+  GdbProfile: TGdbProfileInfo;
+
 begin
-  Result := TPackageManagerRequestDebugger(cbxDebugger.ItemIndex + 1); // Ignore pmrdUndefined
+  Result := EmptyStr;
+
+  ItemIndex := TIntegerObject(cbxDebugger.Items.Objects[cbxDebugger.ItemIndex]).Value;
+  if cbxDebugger.ItemIndex <> -1 then
+  begin
+    GdbProfile := DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem
+      .Packages.GdbProfiles[ItemIndex];
+    if Assigned(GdbProfile) then
+      Result := GdbProfile.ProfileKey;
+  end;
 end;
 
 function TfrmMain.GetSelectedKallistiPort: TKallistiPortItem;
@@ -1107,10 +1145,22 @@ begin
     end;
 end;
 
-// TODO: REFACTOR ME
-function TfrmMain.GetSelectedToolchain: TPackageManagerRequestToolchain;
+function TfrmMain.GetSelectedToolchain: string;
+var
+  ItemIndex: Integer;
+  ToolchainProfile: TToolchainProfileInfo;
+
 begin
-  Result := StringToPackageManagerRequestToolchain(cbxToolchain.Text);
+  Result := EmptyStr;
+
+  ItemIndex := TIntegerObject(cbxToolchain.Items.Objects[cbxToolchain.ItemIndex]).Value;
+  if cbxToolchain.ItemIndex <> -1 then
+  begin
+    ToolchainProfile := DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem
+      .Packages.ToolchainProfiles[ItemIndex];
+    if Assigned(ToolchainProfile) then
+      Result := ToolchainProfile.ProfileKey;
+  end;
 end;
 
 procedure TfrmMain.LoadConfiguration;
@@ -1166,6 +1216,22 @@ begin
   btnPortInstall.Enabled := False;
   btnPortUninstall.Enabled := False;
   btnPortUpdate.Enabled := False;
+end;
+
+procedure TfrmMain.DoComponentsClearLists;
+var
+  i: Integer;
+
+begin
+  // Clear Debugger Components
+  for i := 0 to cbxDebugger.Items.Count - 1 do
+    cbxDebugger.Items.Objects[i].Free;
+  cbxDebugger.Clear;
+
+  // Clear Toolchain Components
+  for i := 0 to cbxToolchain.Items.Count - 1 do
+    cbxToolchain.Items.Objects[i].Free;
+  cbxToolchain.Clear;
 end;
 
 procedure TfrmMain.SetSelectedSerialBaudrate(AValue: Integer);
@@ -1267,41 +1333,46 @@ begin
 {$ENDIF}
 end;
 
-// TODO: REFACTOR ME
-procedure TfrmMain.UpdateComponentControls;
+procedure TfrmMain.UpdateComponentControls(const Initialize: Boolean);
 var
-  DebuggerPackage: TDebuggerVersionKind;
-  ToolchainPackage: TToolchainVersionKind;
-
-  // TODO: FIXME
-  function _setItemIndex: Integer;
-  begin
-    Result := -1;
-    (* This should be dynamic. This will refactored later. *)
-    case ToolchainPackage of
-      tvk950WinXP:
-        Result := 2;
-      tvk1420:
-        Result := 1;
-      tvkStable:
-        Result := 0;
-    end;
-  end;
+  i: Integer;
 
 begin
   rbnComponentsNoChange.Checked := True;
 
-  // Debugger Package
-  DebuggerPackage := DreamcastSoftwareDevelopmentKitManager.Versions
-    .ToolchainSuperH.PackageGDB;
-  if DebuggerPackage <> dvkUndefined then
-    cbxDebugger.ItemIndex := Integer(DebuggerPackage) - 1; // -1 for Undefined
+  with DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem do
+  begin
+    // Fill the lists
+    if Initialize then
+    begin
+      // Clear Debugger/Toolchain drop-down lists
+      DoComponentsClearLists;
 
-  // Toolchain Package
-  ToolchainPackage := DreamcastSoftwareDevelopmentKitManager.Versions
-    .ToolchainSuperH.PackageToolchain;
-  if ToolchainPackage <> tvkUndefined then
-    cbxToolchain.ItemIndex := _setItemIndex;
+      // Debugger
+      for i := 0 to Packages.GetGdbProfileCount - 1 do
+        fPackageProfileKeysMapGdb.Add(Packages.GdbProfiles[i].ProfileKey,
+          cbxDebugger.Items.AddObject(Packages.GdbProfiles[i].Name, TIntegerObject.Create(i))
+        );
+
+      // Toolchain
+      for i := 0 to Packages.GetToolchainProfileCount - 1 do
+        fPackageProfileKeysMapToolchains.Add(Packages.ToolchainProfiles[i].ProfileKey,
+          cbxToolchain.Items.AddObject(Packages.ToolchainProfiles[i].Name, TIntegerObject.Create(i))
+        );
+    end;
+
+    // Select the correct items in the drop downs
+
+    // Debugger
+    i := fPackageProfileKeysMapGdb.IndexOf(DreamcastSoftwareDevelopmentKitManager
+      .Versions.ToolchainSuperH.PackageProfileGDB);
+    cbxDebugger.ItemIndex := i;
+
+    // Toolchain
+    i := fPackageProfileKeysMapToolchains.IndexOf(DreamcastSoftwareDevelopmentKitManager
+      .Versions.ToolchainSuperH.PackageProfileToolchain);
+    cbxToolchain.ItemIndex := i;
+  end;
 end;
 
 procedure TfrmMain.UpdateDreamcastToolMediaAccessControlAddressControls;
@@ -1619,7 +1690,7 @@ begin
   gbxEnvironmentContext.Caption := Format(gbxEnvironmentContext.Caption,
     [GetProductName]);
   edtValueHomeBaseDir.Caption := GetBaseInstallationHomeDirectory;
-  UpdateComponentControls;
+  UpdateComponentControls(True);
 end;
 
 procedure TfrmMain.InitializeIdeScreen;
@@ -2234,8 +2305,7 @@ end;
 
 procedure TfrmMain.btnComponentsApplyClick(Sender: TObject);
 var
-  IsValidPythonVersionSelected,
-  IsValidToolchainsVersionSelected: Boolean;
+  IsValidPythonVersionSelected: Boolean;
   AnywayText,
   PayAttentionText,
   MessageText,
@@ -2245,25 +2315,16 @@ var
 begin
   ErrorMessages := TStringList.Create;
   try
-    // Check if requested Toolchains version are compatible with current OS
-    IsValidToolchainsVersionSelected :=
-      ((ComponentSelectedToolchain = pmrtStable) and IsWindowsVistaOrGreater)
-        or (ComponentSelectedToolchain <> pmrtStable);
-
     // Check if requested Python version is available
     SelectedPythonVersion := EmptyStr;
     IsValidPythonVersionSelected := IsDebuggerPythonVersionInstalled(
       ComponentSelectedDebugger, SelectedPythonVersion);
 
-  {$IFDEF DEBUG}
+{$IFDEF DEBUG}
     WriteLn('Package Manager Operation: ', ComponentSelectedOperation);
-    WriteLn('  Selected Toolchain: ', ComponentSelectedToolchain, ' [', IsValidToolchainsVersionSelected, ']');
+    WriteLn('  Selected Toolchain: ', ComponentSelectedToolchain);
     WriteLn('  Selected Debugger: ', ComponentSelectedDebugger, ' [', IsValidPythonVersionSelected, ']');
-  {$ENDIF}
-
-    // Added if the Stable toolchain is selected on Windows XP
-    if not IsValidToolchainsVersionSelected then
-      ErrorMessages.Add(UnpackConfirmationInvalidToolchainsText);
+{$ENDIF}
 
     // Added if Python 32-bit runtime was not found
     if not IsValidPythonVersionSelected then
@@ -2291,14 +2352,21 @@ begin
     if (MsgBox(DialogWarningTitle, MessageText, mtWarning, [mbYes, mbNo], mbNo) = mrYes) then
       with PackageManager do
       begin
-        Debugger := ComponentSelectedDebugger;
-        Toolchain := ComponentSelectedToolchain;
+        DebuggerProfileKey := ComponentSelectedDebugger;
+        ToolchainProfileKey := ComponentSelectedToolchain;
         Operation := ComponentSelectedOperation;
         Execute;
       end;
   finally
     ErrorMessages.Free;
   end;
+end;
+
+procedure TfrmMain.btnDebugGetSelectedDebuggerClick(Sender: TObject);
+begin
+{$IFDEF DEBUG}
+  ShowMessage(GetSelectedDebugger);
+{$ENDIF}
 end;
 
 procedure TfrmMain.btnDebugRaiseExceptionClick(Sender: TObject);
@@ -2881,6 +2949,13 @@ begin
 {$IFDEF DEBUG}
   DreamcastSoftwareDevelopmentKitManager.Environment
     .FileSystem.DebugPrintAllValues;
+{$ENDIF}
+end;
+
+procedure TfrmMain.btnDebugGetSelectedToolchainClick(Sender: TObject);
+begin
+{$IFDEF DEBUG}
+  ShowMessage(GetSelectedToolchain);
 {$ENDIF}
 end;
 

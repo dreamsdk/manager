@@ -110,6 +110,7 @@ uses
   PostInst,
   SysTools,
   Version,
+  Global,
   Main;
 
 const
@@ -327,7 +328,7 @@ var
     with ShellThreadPackageManager do
     begin
       EnableBusyWaitingOnExecution := True; // Active wait, as we are already on ShellThread
-      Operation := pmrAutoDetectDebuggerToolchain; // Detect if Debugger/Toolchain need to be replaced
+      Operation := pmrAutoDetectDebuggerToolchain; // Detect if DebuggerProfileKey/ToolchainProfileKey need to be replaced
       OnStart := @ShellThreadHelper.HandlePackageManagerStart;
       OnPackagePickup := @ShellThreadHelper.HandlePackagePickup;
       OnProgress := @ShellThreadHelper.HandlePackageManagerProgress;

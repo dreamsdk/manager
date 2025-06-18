@@ -17,9 +17,9 @@ implementation
 uses
   Forms,
   SysTools,
-  Main,
   ShellThd,
-  Settings;
+  Settings,
+  Global;
 
 var
   PostInstallMode,

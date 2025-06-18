@@ -16,16 +16,6 @@ uses
   Environ,
   Unpack;
 
-// TODO: Implement me
-(*
-const
-  PACKAGE_MANAGER_REQUEST_TOOLCHAIN_NAMES: array[0..2] of string = (
-    '9.5.0-winxp',	// pmrt950WinXP
-    '14.2.0',		// pmrt1420
-    'Stable'		// pmrtStable
-  );
-*)
-
 type
   TPackageManagerPackagePickupEvent = procedure(Sender: TObject;
     const SourceFileName, OutputDirectory: TFileName) of object;
@@ -51,31 +41,6 @@ type
     pmroRuby
   );
 
-  // Linked to TToolchainVersionKind from "Environ"
-  // Please keep the same order please!
-  TPackageManagerRequestToolchain = (
-    pmrtUndefined,
-    pmrt950WinXP,     //  9
-    pmrt1420,    	  // 14
-    pmrtStable        // 13
-  );
-
-  TPackageManagerRequestDebugger = (
-    pmrdUndefined,
-    pmrdPythonDisabled,
-    pmrdPython27,
-    pmrdPython33,
-    pmrdPython34,
-    pmrdPython35,
-    pmrdPython36,
-    pmrdPython37,
-    pmrdPython38,
-    pmrdPython39,
-    pmrdPython310,
-    pmrdPython311,
-    pmrdPython312
-  );
-
   { TPackageManager }
   TPackageManager = class(TObject)
   private
@@ -88,14 +53,14 @@ type
     fProgressRecord: TPackageManagerProgressRecordEvent;
     fStart: TNotifyEvent;
     fSuccessOperation: Boolean;
-    fAutoDetectedDebugger: TPackageManagerRequestDebugger;
-    fDebugger: TPackageManagerRequestDebugger;
+    fAutoDetectedDebuggerProfileKey: string;
+    fDebuggerProfileKey: string;
     fManager: TDreamcastSoftwareDevelopmentKitManager;
     fOperation: TPackageManagerRequest;
     fSevenZipCommander: TSevenZipCommander;
     fTerminate: TPackageManagerTerminateEvent;
-    fAutoDetectedToolchain: TPackageManagerRequestToolchain;
-    fToolchain: TPackageManagerRequestToolchain;
+    fAutoDetectedToolchainProfileKey: string;
+    fToolchainProfileKey: string;
 
     function GetFileSystem: TDreamcastSoftwareDevelopmentFileSystem;
     function GetRunning: Boolean;
@@ -129,8 +94,8 @@ type
     procedure Pause;
     procedure Resume;
 
-    property Debugger: TPackageManagerRequestDebugger
-      read fDebugger write fDebugger;
+    property DebuggerProfileKey: string
+      read fDebuggerProfileKey write fDebuggerProfileKey;
     property EnableBusyWaitingOnExecution: Boolean
       read fEnableBusyWaitingOnExecution write fEnableBusyWaitingOnExecution;
     property EnableUnpackWindow: Boolean
@@ -138,8 +103,8 @@ type
     property OfflinePackage: TPackageManagerRequestOffline
       read fOffline write fOffline;
     property Operation: TPackageManagerRequest read fOperation write fOperation;
-    property Toolchain: TPackageManagerRequestToolchain
-      read fToolchain write fToolchain;
+    property ToolchainProfileKey: string
+      read fToolchainProfileKey write fToolchainProfileKey;
     property Running: Boolean read GetRunning;
 
     property OnStart: TNotifyEvent
@@ -154,10 +119,8 @@ type
       write fTerminate;
   end;
 
-function IsDebuggerPythonVersionInstalled(const Version: TPackageManagerRequestDebugger;
+function IsDebuggerPythonVersionInstalled(const DebuggerProfileKey: string;
   var VersionWithDot: string): Boolean;
-function StringToPackageManagerRequestToolchain(
-  const S: string): TPackageManagerRequestToolchain;
 
 implementation
 
@@ -165,26 +128,13 @@ uses
   TypInfo,
   Variants,
   PEUtils,
-  StrTools;
+  StrTools,
+  Global;
 
-// TODO: Refactor Me, as this suc*s
-function StringToPackageManagerRequestToolchain(
-  const S: string): TPackageManagerRequestToolchain;
-begin
-  Result := Default(TPackageManagerRequestToolchain);
-  case UpperCase(S) of
-    '9.5.0-WINXP':
-      Result := pmrt950WinXP;
-    '14.2.0':
-      Result := pmrt1420;
-    'STABLE':
-      Result := pmrtStable;
-  end;
-end;
-
-function IsDebuggerPythonVersionInstalled(const Version: TPackageManagerRequestDebugger;
+function IsDebuggerPythonVersionInstalled(const DebuggerProfileKey: string;
   var VersionWithDot: string): Boolean;
 var
+  GdbProfileInfo: TGdbProfileInfo;
   i: Integer;
   PythonFilePaths: TStringList;
   PythonFileName,
@@ -193,44 +143,48 @@ var
   VersionWithoutDot: string;
 
 begin
-  Result := True;
+  Result := False;
 
-  VersionWithoutDot := EmptyStr;
-  i := Integer(Version) - 2; // we ignore pmrdUndefined + pmrdPythonDisabled
-  if (i <> -1) then
+  GdbProfileInfo := DreamcastSoftwareDevelopmentKitManager.Environment
+    .FileSystem.Packages.GetGdbProfileByKey(DebuggerProfileKey);
+
+  if Assigned(GdbProfileInfo) then
   begin
-    Result := False;
+    VersionWithDot := GdbProfileInfo.PythonVersion;
+    Result := IsEmpty(VersionWithDot); // if no Python version available, then return TRUE (OK to continue)
+    if not Result then
+    begin
+      // If there is a version to test, then do it
 
-    VersionWithDot := SUPPORTED_PYTHON_VERSIONS[i];
-    VersionWithoutDot := StringReplace(VersionWithDot, '.', EmptyStr, []);
-    PythonFileName := Format('python%s.dll', [VersionWithoutDot]);
+      VersionWithoutDot := StringReplace(VersionWithDot, '.', EmptyStr, []);
+      PythonFileName := Format('python%s.dll', [VersionWithoutDot]);
 
 {$IFDEF DEBUG}
-    WriteLn('Checking Python ', VersionWithDot, ' ...');
+      WriteLn('Checking Python ', VersionWithDot, ' ...');
 {$ENDIF}
-
-    PythonFilePaths := TStringList.Create;
-    try
-      if GetFileLocationsInSystemPath(PythonFileName, PythonFilePaths) then
-        for i := 0 to PythonFilePaths.Count - 1 do
-        begin
-          PythonFilePath := PythonFilePaths[i];
+      PythonFilePaths := TStringList.Create;
+      try
+        if GetFileLocationsInSystemPath(PythonFileName, PythonFilePaths) then
+          for i := 0 to PythonFilePaths.Count - 1 do
+          begin
+            PythonFilePath := PythonFilePaths[i];
 {$IFDEF DEBUG}
-          WriteLn('  Python ', VersionWithDot, ' is installed: ', PythonFilePath);
+            WriteLn('  Python ', VersionWithDot, ' is installed: ', PythonFilePath);
 {$ENDIF}
-          PythonBitness := GetPortableExecutableBitness(PythonFilePath);
-          Result := Result or (PythonBitness = peb32); // 32-bits only
+            PythonBitness := GetPortableExecutableBitness(PythonFilePath);
+            Result := Result or (PythonBitness = GdbProfileInfo.Bitness);
 {$IFDEF DEBUG}
-          WriteLn('  Python ', VersionWithDot, ' bitness: ', PythonBitness);
+            WriteLn('  Python ', VersionWithDot, ' bitness: ', PythonBitness);
 {$ENDIF}
-        end
+          end
 {$IFDEF DEBUG}
-        else
-          WriteLn(Format('  Python %s is not installed', [VersionWithDot]))
+          else
+            WriteLn(Format('  Python %s is not installed', [VersionWithDot]))
 {$ENDIF}
-        ;
-    finally
-      PythonFilePaths.Free;
+          ;
+      finally
+        PythonFilePaths.Free;
+      end;
     end;
   end;
 end;
@@ -309,8 +263,8 @@ end;
 constructor TPackageManager.Create(AManager: TDreamcastSoftwareDevelopmentKitManager;
   const AEnableUnpackWindow: Boolean);
 begin
-  fAutoDetectedDebugger := pmrdUndefined;
-  fAutoDetectedToolchain := pmrtUndefined;
+  fAutoDetectedDebuggerProfileKey := EmptyStr;
+  fAutoDetectedToolchainProfileKey := EmptyStr;
   fEnableBusyWaitingOnExecution := False;
   fEnableUnpackWindow := AEnableUnpackWindow;
   fManager := AManager;
@@ -360,7 +314,7 @@ var
     // Handle pmrToolchain; this one requires other parameters to be usable.
     Result := Result or (
           (fOperation = pmrToolchain)
-      and ((fDebugger <> pmrdUndefined) or (fToolchain <> pmrtUndefined))
+      and ((fDebuggerProfileKey <> EmptyStr) or (fToolchainProfileKey <> EmptyStr))
     );
   end;
 
@@ -368,21 +322,22 @@ begin
   LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
   try
 
-    // Auto Detect Debugger/Toolchain if possible
+    // Auto Detect DebuggerProfileKey/ToolchainProfileKey if possible
     if (fOperation = pmrAutoDetectDebuggerToolchain) then
     begin
-      // Auto detect Debugger (if possible)
-      if (fDebugger = pmrdUndefined) and AutoDetectRequiredDebugger then
+      // Auto detect DebuggerProfileKey (if possible)
+
+      if (fDebuggerProfileKey = EmptyStr) and AutoDetectRequiredDebugger then
       begin
-        fDebugger := fAutoDetectedDebugger;
+        fDebuggerProfileKey := fAutoDetectedDebuggerProfileKey;
         Operation := pmrDebugger;
       end;
 
-      // Auto detect Toolchain (if possible)
-      if (fToolchain = pmrtUndefined) and AutoDetectRequiredToolchain then
+      // Auto detect ToolchainProfileKey (if possible)
+      if (fToolchainProfileKey = EmptyStr) and AutoDetectRequiredToolchain then
       begin
-        fToolchain := fAutoDetectedToolchain;
-        Operation := pmrToolchain; // This includes Debugger
+        fToolchainProfileKey := fAutoDetectedToolchainProfileKey;
+        Operation := pmrToolchain; // This includes DebuggerProfileKey
       end;
     end;
 
@@ -448,162 +403,77 @@ begin
 end;
 
 function TPackageManager.AutoDetectRequiredToolchain: Boolean;
+(*
+  This feature is designed to unpack the toolchains after installing
+  DreamSDK for saving space on the installer. Indeed this avoid us to have
+  the toolchains packaged in the 'packages' directory AND in the installer.
+  Now the installation is done by DreamSDK itself.
+
+  We check for all toolchains releases to install. First try with the worst
+  (Legacy) and ends with the best (Stable), so it means that if there is
+  different packages copied to the correct location, we take the best option.
+  This should not happend by the way but we never know.
+
+  Same as if we have different packages requests between Super-H and Arm.
+  It should be the same flavour (e.g., 'Legacy' for both Super-H and Arm) but
+  again, we never know. We take the best package if several different were
+  copied to the destination directory, so if we have 'Super-H Legacy' and
+  'Arm Stable', result will be 'Stable'.
+*)
 var
-  ToolchainBaseDirectorySuperH,
-  ToolchainBaseDirectoryArm,
-  Package950WinXPFileNameSuperH,
-  Package950WinXPFileNameArm,
-  Package1420FileNameSuperH,
-  Package1420FileNameArm,
-  PackageStableFileNameSuperH,
-  PackageStableFileNameArm: TFileName;
+  i: Integer;
+  StampFileName: TFileName;
 
 begin
   Result := False;
-  fAutoDetectedToolchain := pmrtUndefined;
+  fAutoDetectedToolchainProfileKey := EmptyStr;
 
   with fManager.Environment.FileSystem do
-  begin
-    // Extracting base directories for both Super-H and Arm
-    ToolchainBaseDirectorySuperH := ToolchainSuperH.BaseDirectory;
-    ToolchainBaseDirectoryArm := ToolchainARM.BaseDirectory;
-
-    // Extracting package names for Super-H
-    Package950WinXPFileNameSuperH := ToolchainBaseDirectorySuperH
-      + GetStampFromPackageFileName(ToolchainSuperH.Packages.ToolchainProfile950WinXP);
-    Package1420FileNameSuperH := ToolchainBaseDirectorySuperH
-      + GetStampFromPackageFileName(ToolchainSuperH.Packages.ToolchainProfile1420);
-    PackageStableFileNameSuperH := ToolchainBaseDirectorySuperH
-      + GetStampFromPackageFileName(ToolchainSuperH.Packages.ToolchainProfileStable);
-
-    // Extracting package names for Arm
-    Package950WinXPFileNameArm := ToolchainBaseDirectoryArm
-      + GetStampFromPackageFileName(ToolchainArm.Packages.ToolchainProfile950WinXP);
-    Package1420FileNameArm := ToolchainBaseDirectoryArm
-      + GetStampFromPackageFileName(ToolchainArm.Packages.ToolchainProfile1420);
-    PackageStableFileNameArm := ToolchainBaseDirectoryArm
-      + GetStampFromPackageFileName(ToolchainArm.Packages.ToolchainProfileStable);
-  end;
-
-  (*
-    This feature is designed to unpack the toolchains after installing
-    DreamSDK for saving space on the installer. Indeed this avoid us to have
-    the toolchains packaged in the 'packages' directory AND in the installer.
-    Now the installation is done by DreamSDK itself.
-
-    We check for all toolchains releases to install. First try with the worst
-    (Legacy) and ends with the best (Stable), so it means that if there is
-    different packages copied to the correct location, we take the best option.
-    This should not happend by the way but we never know.
-
-    Same as if we have different packages requests between Super-H and Arm.
-    It should be the same flavour (e.g., 'Legacy' for both Super-H and Arm) but
-    again, we never know. We take the best package if several different were
-    copied to the destination directory, so if we have 'Super-H Legacy' and
-    'Arm Stable', result will be 'Stable'.
-  *)
-
-  // Legacy (the worst)
-  if FileExists(Package950WinXPFileNameSuperH) or FileExists(Package950WinXPFileNameArm) then
-    fAutoDetectedToolchain := pmrt950WinXP;
-
-  // Old Stable (intermediate)
-  if FileExists(Package1420FileNameSuperH) or FileExists(Package1420FileNameArm) then
-    fAutoDetectedToolchain := pmrt1420;
-
-  // Stable (the best)
-  if FileExists(PackageStableFileNameSuperH) or FileExists(PackageStableFileNameArm) then
-    fAutoDetectedToolchain := pmrtStable;
+    for i := 0 to Packages.GetToolchainProfileCount - 1 do
+    begin
+      StampFileName := GetStampFromPackageFileName(
+        Packages.ToolchainProfiles[i].ShElfPackage);
+      if FileExists(StampFileName) then
+      begin
+        fAutoDetectedToolchainProfileKey := Packages.ToolchainProfiles[i].ProfileKey;
+        KillFile(StampFileName);
+        // TODO: We retain only the newer version...
+      end;
+    end;
 
   // Final result
-  Result := (fAutoDetectedToolchain <> pmrtUndefined);
+  Result := not IsEmpty(fAutoDetectedToolchainProfileKey);
 end;
 
 function TPackageManager.AutoDetectRequiredDebugger: Boolean;
 var
-  ToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain;
-  ToolchainBaseDirectorySuperH,
-  StampFileName: TFileName;
-  PropertyInfo: PPropInfo;
-  PropertiesList: PPropList;
-  PropertiesCount,
   i: Integer;
-  PropertyName,
-  PropertyType,
-  PropertyValue: string;
+  StampFileName: TFileName;
 
 begin
   Result := False;
-  fAutoDetectedDebugger := pmrdUndefined;
+  fAutoDetectedToolchainProfileKey := EmptyStr;
 
-{$IFDEF DEBUG}
-  DebugLog('IsPackageManagerInstallationRequestRequiredDebugger');
-{$ENDIF}
-
-  // We will use only SuperH toolchain
-  ToolchainSuperH := fManager.Environment.FileSystem.ToolchainSuperH;
-
-  // Extracting base directories for Super-H
-  ToolchainBaseDirectorySuperH := ToolchainSuperH.BaseDirectory;
-
-  (*
-    This will use all published properties from the object:
-    TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger
-  *)
-
-  try
-
-    // Checking for all ".stamp" files for each Python build
-    PropertiesCount := GetPropList(ToolchainSuperH.Packages.Debugger.ClassInfo, PropertiesList);
-    for i := 0 to PropertiesCount - 1 do
+  with fManager.Environment.FileSystem do
+    for i := 0 to Packages.GetGdbProfileCount - 1 do
     begin
-      PropertyInfo := PropertiesList^[i];
-      if Assigned(PropertyInfo) then
+      StampFileName := GetStampFromPackageFileName(Packages.GdbProfiles[i].GdbPackage);
+      if FileExists(StampFileName) then
       begin
-        PropertyName := PropertyInfo^.Name;
-        PropertyType := PropertyInfo^.PropType^.Name;
+        fAutoDetectedDebuggerProfileKey := Packages.GdbProfiles[i].ProfileKey;
+        KillFile(StampFileName);
+        // TODO: We retain only the newer version...
+      end;
+    end;
 
-        // We take into account only properties of TFileName type
-        if (PropertyInfo^.PropType^.Kind in tkProperties) and (PropertyType = 'TFileName') then
-        begin
-          PropertyValue := VarToStr(GetPropValue(ToolchainSuperH.Packages.Debugger, PropertyName));
-          StampFileName := ToolchainBaseDirectorySuperH
-            + GetStampFromPackageFileName(PropertyValue);
-
-{$IFDEF DEBUG}
-          DebugLog(
-            Format('* Name="%s", Value="%s"' + sLineBreak
-              + '  Stamp = "%s"', [
-              PropertyName,
-              PropertyValue,
-              StampFileName
-            ])
-          );
-{$ENDIF}
-
-          // If the ".stamp" file is present, then we assign RequestedDebugger
-          if FileExists(StampFileName) then
-          begin
-            fAutoDetectedDebugger := TPackageManagerRequestDebugger(
-              GetEnumValue(TypeInfo(TPackageManagerRequestDebugger), 'pmrd' + PropertyName)
-            );
-            KillFile(StampFileName);
-          end;
-
-        end; // PropertyInfo + TFileName
-      end; // Assigned(PropertyInfo)
-    end; // for
-
-  finally
-    FreeMem(PropertiesList);
-  end;
-
-  Result := (fAutoDetectedDebugger <> pmrdUndefined);
+  Result := not IsEmpty(fAutoDetectedDebuggerProfileKey);
 end;
 
 procedure TPackageManager.InitializeOperations;
 var
-  DebuggerPackage: TFileName;
+  DebuggerPackage,
+  ToolchainArmPackage,
+  ToolchainSuperHPackage: TFileName;
 
 begin
   fAborted := False;
@@ -617,55 +487,27 @@ begin
   begin
     FileSystem.ToolchainARM.Reset;
     FileSystem.ToolchainSuperH.Reset;
-    case Toolchain of
-      pmrt950WinXP:
-        begin
-          Add(FileSystem.ToolchainARM.Packages.ToolchainProfile950WinXP, FileSystem.ToolchainBase);
-          Add(FileSystem.ToolchainSuperH.Packages.ToolchainProfile950WinXP, FileSystem.ToolchainBase);
-        end;	
-      pmrt1420:
-        begin
-          Add(FileSystem.ToolchainARM.Packages.ToolchainProfile1420, FileSystem.ToolchainBase);
-          Add(FileSystem.ToolchainSuperH.Packages.ToolchainProfile1420, FileSystem.ToolchainBase);
-        end;	
-      pmrtStable:
-        begin
-          Add(FileSystem.ToolchainARM.Packages.ToolchainProfileStable, FileSystem.ToolchainBase);
-          Add(FileSystem.ToolchainSuperH.Packages.ToolchainProfileStable, FileSystem.ToolchainBase);
-        end;
+
+    with DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Packages do
+    begin
+      // ARM
+      ToolchainArmPackage := GetToolchainPackage(ToolchainProfileKey, tkARM);
+      Add(ToolchainArmPackage, FileSystem.ToolchainBase);
+
+      // Super-H
+      ToolchainSuperHPackage := GetToolchainPackage(ToolchainProfileKey, tkSuperH);
+      Add(ToolchainSuperHPackage, FileSystem.ToolchainBase);
     end;
   end;
 
-  // Toolchain and/or Debugger
-  if fOperation <> pmrOffline then
+  // Toolchain and/or Debugger (GDB)
+  if (fOperation = pmrToolchain) or (fOperation = pmrDebugger) then
   begin
     DebuggerPackage := EmptyStr;
-    case Debugger of
-      pmrdPythonDisabled:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.PythonDisabled;
-      pmrdPython27:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python27;
-      pmrdPython33:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python33;
-      pmrdPython34:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python34;
-      pmrdPython35:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python35;
-      pmrdPython36:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python36;
-      pmrdPython37:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python37;
-      pmrdPython38:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python38;
-      pmrdPython39:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python39;
-      pmrdPython310:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python310;
-      pmrdPython311:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python311;
-      pmrdPython312:
-        DebuggerPackage := FileSystem.ToolchainSuperH.Packages.Debugger.Python312;	
-    end;
+
+    with DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Packages do
+      DebuggerPackage := GetGdbPackage(DebuggerProfileKey);
+
     if not IsEmpty(DebuggerPackage) then
       Add(DebuggerPackage, FileSystem.ToolchainBase);
   end;

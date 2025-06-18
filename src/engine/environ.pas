@@ -11,10 +11,13 @@ interface
 uses
   Classes,
   SysUtils,
+  FGL,
+  IniFiles,
   RunCmd,
   RunCmdEx,
   Settings,
-  RefBase;
+  RefBase,
+  PEUtils;
 
 const
   DCLOAD_IP_INSTALLATION_DIRECTORY = 'dcload-ip';
@@ -30,59 +33,11 @@ const
   DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
   DREAMSDK_MSYS_TOOLCHAINS_INSTALL_DIRECTORY = '/opt/toolchains/dc/';
 
-  // Linked to TDebuggerVersionKind
-  SUPPORTED_PYTHON_VERSIONS: array[0..10] of string = (
-    '2.7',
-    '3.3',
-    '3.4',
-    '3.5',
-    '3.6',
-    '3.7',
-    '3.8',
-    '3.9',
-    '3.10',
-    '3.11',
-    '3.12'
-  );
-
-  // Linked to TToolchainVersionKind
-  // This should be in the same order!
-  SUPPORTED_GCC_VERSIONS: array[0..2] of string = (
-     '9',   // tvk950WinXP
-    '14',   // tvk1420
-    '13'    // tvkStable
-  );
-
 type
   EEnvironment = class(Exception);
   EKallistiReferentialNotAvailable = class(EEnvironment);
   EEmptyRepositoryUrl = class(EEnvironment);
-
-  { TToolchainVersionKind }
-  // Linked to "TPackageManagerRequestToolchain" in "pkgmgr"
-  TToolchainVersionKind = (
-    tvkUndefined,
-    tvk950WinXP,    //  9
-    tvk1420,   		// 14
-    tvkStable       // 13
-  );
-
-  { TDebuggerVersionKind }
-  TDebuggerVersionKind = (
-    dvkUndefined,
-    dvkPythonDisabled,
-    dvkPython27,
-    dvkPython33,
-    dvkPython34,
-    dvkPython35,
-    dvkPython36,
-    dvkPython37,
-    dvkPython38,
-    dvkPython39,
-    dvkPython310,
-    dvkPython311,
-    dvkPython312
-  );
+  EUnsupportedToolchainKind = class(Exception); // Exception for unsupported toolchain kind
 
   TRepositoryKind = (
     rkUndefined,
@@ -101,14 +56,23 @@ type
     uosUpdateFailed
   );
 
+  // Toolchain architecture type
   TToolchainKind = (
     tkSuperH,
     tkARM,
     tkWin32
   );
 
+  TDebuggerKind = (
+    dkUndefined,
+    dkPythonDisabled,
+    dkPythonEnabled
+  );
+
   TDreamcastSoftwareDevelopmentEnvironment = class;
   TDreamcastSoftwareDevelopmentFileSystem = class;
+
+  { Dreamcast Tool / dc-tool }
 
   { TDreamcastSoftwareDevelopmentFileSystemDreamcastToolPackages }
   TDreamcastSoftwareDevelopmentFileSystemDreamcastToolPackages = class(TObject)
@@ -146,6 +110,8 @@ type
       read fPackages;
   end;
 
+  { KallistiOS }
+
   { TDreamcastSoftwareDevelopmentFileSystemKallistiPackages }
   TDreamcastSoftwareDevelopmentFileSystemKallistiPackages = class(TObject)
   private
@@ -170,9 +136,11 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+
     function ResetRespository: Boolean;
     function ResetRepositoryKallisti: Boolean;
     function ResetRepositoryKallistiPorts: Boolean;
+
     property KallistiPortsDirectory: TFileName read fKallistiPortsDirectory;
     property KallistiPortsLibraryInformationFile: TFileName read fKallistiPortsLibraryInformationFile;
     property KallistiDirectory: TFileName read fKallistiDirectory;
@@ -184,68 +152,26 @@ type
       read fPackages;
   end;
 
-  { TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger }
-  TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger = class(TObject)
-  private
-    fPythonDisabled: TFileName;
-    fPython27: TFileName;
-    fPython33: TFileName;
-    fPython34: TFileName;
-    fPython35: TFileName;
-    fPython36: TFileName;
-    fPython37: TFileName;
-    fPython38: TFileName;
-    fPython39: TFileName;
-    fPython310: TFileName;
-    fPython311: TFileName;
-    fPython312: TFileName;
-  published
-    property PythonDisabled: TFileName read fPythonDisabled;
-    property Python27: TFileName read fPython27;
-    property Python33: TFileName read fPython33;
-    property Python34: TFileName read fPython34;
-    property Python35: TFileName read fPython35;
-    property Python36: TFileName read fPython36;
-    property Python37: TFileName read fPython37;
-    property Python38: TFileName read fPython38;
-    property Python39: TFileName read fPython39;
-    property Python310: TFileName read fPython310;
-    property Python311: TFileName read fPython311;
-    property Python312: TFileName read fPython312;
-  end;
-
-  { TDreamcastSoftwareDevelopmentFileSystemToolchainPackages }
-  TDreamcastSoftwareDevelopmentFileSystemToolchainPackages = class(TObject)
-  private
-    fDebugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger;
-    fToolchainProfile950WinXP: TFileName;
-    fToolchainProfile1420: TFileName;
-	  fToolchainProfileStable: TFileName;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    property Debugger: TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger
-      read fDebugger;
-    property ToolchainProfile950WinXP: TFileName read fToolchainProfile950WinXP;
-    property ToolchainProfile1420: TFileName read fToolchainProfile1420;
-    property ToolchainProfileStable: TFileName read fToolchainProfileStable;
-  end;
-
   { TDreamcastSoftwareDevelopmentFileSystemToolchain }
   TDreamcastSoftwareDevelopmentFileSystemToolchain = class(TObject)
   private
+    fOwner: TDreamcastSoftwareDevelopmentFileSystem;
     fBaseDirectory: TFileName;
     fBinutilsExecutable: TFileName;
     fGCCExecutable: TFileName;
     fGDBExecutable: TFileName;
     fKind: TToolchainKind;
     fNewlibBinary: TFileName;
-    fPackages: TDreamcastSoftwareDevelopmentFileSystemToolchainPackages;
     fToolchainInstalled: Boolean;
   public
-    constructor Create(AToolchainKind: TToolchainKind);
+    constructor Create(AOwner: TDreamcastSoftwareDevelopmentFileSystem;
+      AToolchainKind: TToolchainKind);
     destructor Destroy; override;
+
+    function GetGdbProfileKeyFromFileName(const FileName: TFileName): string;
+    function GetToolchainProfileKeyFromFileName(const FileName: TFileName): string;
     function Reset: Boolean;
+
     property BaseDirectory: TFileName read fBaseDirectory;
     property BinutilsExecutable: TFileName read fBinutilsExecutable;
     property GCCExecutable: TFileName read fGCCExecutable;
@@ -253,8 +179,6 @@ type
     property NewlibBinary: TFileName read fNewlibBinary;
     property Installed: Boolean read fToolchainInstalled;
     property Kind: TToolchainKind read fKind;
-    property Packages: TDreamcastSoftwareDevelopmentFileSystemToolchainPackages
-      read fPackages;
   end;
 
   { TDreamcastSoftwareDevelopmentFileSystemShell }
@@ -322,10 +246,117 @@ type
       read fPackages;
   end;
 
+  { TToolchainProfileInfo }
+  // Class for toolchain profile information
+  TToolchainProfileInfo = class(TObject)
+  private
+    fBitness: TPortableExecutableBitness;
+    fProfileKey: string;
+    fName: string;
+    fVersion: string;
+    fDescription: string;
+    fArmEabiPackage: TFileName;
+    fShElfPackage: TFileName;
+    fChecksum: string;
+  protected
+    function GetPackageForToolchainKind(ToolchainKind: TToolchainKind): TFileName;
+  public
+    constructor Create;
+
+    property ProfileKey: string read fProfileKey;
+    property Name: string read fName;
+    property Version: string read fVersion;
+    property Description: string read fDescription;
+    property ArmEabiPackage: TFileName read fArmEabiPackage;
+    property ShElfPackage: TFileName read fShElfPackage;
+    property Checksum: string read fChecksum;
+    property Bitness: TPortableExecutableBitness read fBitness;
+  end;
+
+  { TGdbProfileInfo }
+  // Class for GDB profile information
+  TGdbProfileInfo = class(TObject)
+  private
+    fBitness: TPortableExecutableBitness;
+    fProfileKey: string;
+    fName: string;
+    fPythonVersion: string;
+    fVersion: string;
+    fGdbPackage: string;
+    fChecksum: string;
+  public
+    constructor Create;
+
+    property ProfileKey: string read fProfileKey;
+    property Name: string read fName;
+    property Version: string read fVersion;
+    property GdbPackage: string read fGdbPackage;
+    property PythonVersion: string read fPythonVersion;
+    property Checksum: string read fChecksum;
+    property Bitness: TPortableExecutableBitness read fBitness;
+  end;
+
+  // Typed lists
+  TToolchainProfileList = specialize TFPGObjectList<TToolchainProfileInfo>;
+  TGdbProfileList = specialize TFPGObjectList<TGdbProfileInfo>;
+
+  { TDreamcastSoftwareDevelopmentFileSystemPackages }
+  TDreamcastSoftwareDevelopmentFileSystemPackages = class(TObject)
+  private
+    fOwner: TDreamcastSoftwareDevelopmentFileSystem;
+    fToolchainProfiles: TToolchainProfileList;
+    fGdbProfiles: TGdbProfileList;
+    fAvailableToolchainProfiles: TStringList;
+    fAvailableGdbProfiles: TStringList;
+
+    procedure ParseConfigFile(IniFile: TMemIniFile);
+    procedure LoadToolchainProfiles(IniFile: TMemIniFile);
+    procedure LoadGdbProfiles(IniFile: TMemIniFile);
+    procedure LoadChecksums(IniFile: TMemIniFile);
+    procedure UpdateAvailableProfiles;
+  protected
+    // Loading methods
+    procedure LoadFromFile(const FileName: string);
+    procedure LoadFromString(const ConfigContent: string);
+  public
+    constructor Create(AOwner: TDreamcastSoftwareDevelopmentFileSystem;
+      const AutoLoad: Boolean = True);
+    destructor Destroy; override;
+
+    // Data access properties
+    property ToolchainProfiles: TToolchainProfileList read fToolchainProfiles;
+    property GdbProfiles: TGdbProfileList read fGdbProfiles;
+
+    // Search methods
+    function GetToolchainProfileByKey(const ProfileKey: string): TToolchainProfileInfo;
+    function GetGdbProfileByKey(const ProfileKey: string): TGdbProfileInfo;
+    function GetGdbPackage(const ProfileKey: string): TFileName;
+    function GetToolchainPackage(const ProfileKey: string;
+      ToolchainKind: TToolchainKind): TFileName;
+
+    // Utility methods
+    function GetAvailableToolchainProfiles: TStringList;
+    function GetAvailableGdbProfiles: TStringList;
+
+    // Profile validation
+    function IsValidToolchainProfile(const ProfileKey: string): Boolean;
+    function IsValidGdbProfile(const ProfileKey: string): Boolean;
+
+    // Checksum lookup methods
+    function GetToolchainProfileKeyByChecksum(const Checksum: string): string;
+    function GetGdbProfileKeyByChecksum(const Checksum: string): string;
+
+    // Count properties
+    function GetToolchainProfileCount: Integer;
+    function GetGdbProfileCount: Integer;
+  end;
+
   { TDreamcastSoftwareDevelopmentFileSystem }
   TDreamcastSoftwareDevelopmentFileSystem = class(TObject)
   private
     fOwner: TDreamcastSoftwareDevelopmentEnvironment;
+    fPackages: TDreamcastSoftwareDevelopmentFileSystemPackages;
+    fPackagesBase: TFileName;
     fToolchainBase: TFileName;
     fDreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool;
     fKallisti: TDreamcastSoftwareDevelopmentFileSystemKallisti;
@@ -334,12 +365,16 @@ type
     fToolchainARM: TDreamcastSoftwareDevelopmentFileSystemToolchain;
     fToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain;
     fToolchainWin32: TDreamcastSoftwareDevelopmentFileSystemToolchain;
+
     function GetEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
   protected
-    function GetReferentialDirectory: TFileName;
+    procedure ComputeBaseDirectories;
     procedure ComputeFileSystemObjectValues(InstallPath: TFileName);
+    function GetReferentialDirectory: TFileName;
+
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read GetEnvironment;
+    property PackagesBase: TFileName read fPackagesBase;
   public
     constructor Create(AOwner: TDreamcastSoftwareDevelopmentEnvironment);
     destructor Destroy; override;
@@ -363,6 +398,8 @@ type
       read fToolchainSuperH;
     property ToolchainWin32: TDreamcastSoftwareDevelopmentFileSystemToolchain
       read fToolchainWin32;
+    property Packages: TDreamcastSoftwareDevelopmentFileSystemPackages
+      read fPackages;
     property Ruby: TDreamcastSoftwareDevelopmentFileSystemRuby
       read fRuby;
   end;
@@ -440,6 +477,9 @@ type
 implementation
 
 uses
+{$IFDEF DEBUG}
+  TypInfo,
+{$ENDIF}
   SysTools,
   StrTools,
   FSTools,
@@ -452,19 +492,6 @@ uses
 
 const
   FAIL_TAG = 'fatal: ';
-
-{ TDreamcastSoftwareDevelopmentFileSystemToolchainPackages }
-
-constructor TDreamcastSoftwareDevelopmentFileSystemToolchainPackages.Create;
-begin
-  fDebugger := TDreamcastSoftwareDevelopmentFileSystemToolchainPackagesDebugger.Create;
-end;
-
-destructor TDreamcastSoftwareDevelopmentFileSystemToolchainPackages.Destroy;
-begin
-  fDebugger.Free;
-  inherited Destroy;
-end;
 
 { TDreamcastSoftwareDevelopmentFileSystemRuby }
 
@@ -587,16 +614,36 @@ end;
 
 { TDreamcastSoftwareDevelopmentFileSystemToolchain }
 
+function TDreamcastSoftwareDevelopmentFileSystemToolchain.GetGdbProfileKeyFromFileName(
+  const FileName: TFileName): string;
+var
+  CurrentHash: string;
+
+begin
+  CurrentHash := GetFileHash(FileName);
+  Result := fOwner.Packages.GetGdbProfileKeyByChecksum(CurrentHash);
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemToolchain.GetToolchainProfileKeyFromFileName
+  (const FileName: TFileName): string;
+var
+  CurrentHash: string;
+
+begin
+  CurrentHash := GetFileHash(FileName);
+  Result := fOwner.Packages.GetToolchainProfileKeyByChecksum(CurrentHash);
+end;
+
 constructor TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(
+  AOwner: TDreamcastSoftwareDevelopmentFileSystem;
   AToolchainKind: TToolchainKind);
 begin
-  fPackages := TDreamcastSoftwareDevelopmentFileSystemToolchainPackages.Create;
+  fOwner := AOwner;
   fKind := AToolchainKind;
 end;
 
 destructor TDreamcastSoftwareDevelopmentFileSystemToolchain.Destroy;
 begin
-  fPackages.Free;
   inherited Destroy;
 end;
 
@@ -624,6 +671,12 @@ begin
   Result := fOwner;
 end;
 
+procedure TDreamcastSoftwareDevelopmentFileSystem.ComputeBaseDirectories;
+begin
+  fPackagesBase := GetMSysBaseDirectory
+    + UnixPathToSystem(DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY);
+end;
+
 function TDreamcastSoftwareDevelopmentFileSystem.GetReferentialDirectory: TFileName;
 begin
   Result := GetConfigurationDirectory + 'referentials' + DirectorySeparator;
@@ -636,8 +689,7 @@ var
   MSYSBase,
   ToolchainBaseSuperH,
   ToolchainBaseARM,
-  ToolchainBaseWin32,
-  PackagesBase: TFileName;
+  ToolchainBaseWin32: TFileName;
 {$IFDEF SH_ELF_BFD_PLUGIN_LIBDEP_WORKAROUND}
   ToolchainBfdPluginsSuperH: TFileName;
 {$ENDIF}
@@ -646,7 +698,6 @@ begin
   // Base
   MSYSBase := GetMSysBaseDirectory;
   fToolchainBase := MSYSBase + UnixPathToSystem(DREAMSDK_MSYS_TOOLCHAINS_INSTALL_DIRECTORY);
-  PackagesBase := MSYSBase + UnixPathToSystem(DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY);
 
   // Translate DREAMSDK_MSYS_INSTALL_DIRECTORY to Windows location
   DreamSDKBase := IncludeTrailingPathDelimiter(MSYSBase
@@ -690,24 +741,6 @@ begin
     fGCCExecutable := ToolchainBaseSuperH + 'bin\sh-elf-gcc.exe';
     fGDBExecutable := ToolchainBaseSuperH + 'bin\sh-elf-gdb.exe';
     fNewlibBinary := ToolchainBaseSuperH + 'sh-elf\lib\libnosys.a';
-    with fPackages.fDebugger do
-    begin
-      fPythonDisabled := PackagesBase +'sh-elf-gdb-no-python-bin.7z';
-      fPython27 := PackagesBase + 'sh-elf-gdb-python-2.7-bin.7z';
-      fPython33 := PackagesBase + 'sh-elf-gdb-python-3.3-bin.7z';
-      fPython34 := PackagesBase + 'sh-elf-gdb-python-3.4-bin.7z';
-      fPython35 := PackagesBase + 'sh-elf-gdb-python-3.5-bin.7z';
-      fPython36 := PackagesBase + 'sh-elf-gdb-python-3.6-bin.7z';
-      fPython37 := PackagesBase + 'sh-elf-gdb-python-3.7-bin.7z';
-      fPython38 := PackagesBase + 'sh-elf-gdb-python-3.8-bin.7z';
-      fPython39 := PackagesBase + 'sh-elf-gdb-python-3.9-bin.7z';
-      fPython310 := PackagesBase + 'sh-elf-gdb-python-3.10-bin.7z';
-      fPython311 := PackagesBase + 'sh-elf-gdb-python-3.11-bin.7z';
-      fPython312 := PackagesBase + 'sh-elf-gdb-python-3.12-bin.7z';
-    end;
-    fPackages.fToolchainProfile950WinXP := PackagesBase + 'sh-elf-toolchain-950winxp-bin.7z';
-    fPackages.fToolchainProfile1420 := PackagesBase + 'sh-elf-toolchain-1420-bin.7z';
-    fPackages.fToolchainProfileStable := PackagesBase + 'sh-elf-toolchain-stable-bin.7z';
   end;
 
   // Toolchain for ARM
@@ -720,9 +753,6 @@ begin
     fGCCExecutable := ToolchainBaseARM + 'bin\arm-eabi-gcc.exe';
     fGDBExecutable := EmptyStr; // Not Applicable
     fNewlibBinary := EmptyStr; // Not Applicable
-    fPackages.fToolchainProfile950WinXP := PackagesBase + 'arm-eabi-toolchain-950winxp-bin.7z';
-    fPackages.fToolchainProfile1420 := PackagesBase + 'arm-eabi-toolchain-1420-bin.7z';
-    fPackages.fToolchainProfileStable := PackagesBase + 'arm-eabi-toolchain-stable-bin.7z';
   end;
 
   // Toolchain for Win32 (Windows)
@@ -790,14 +820,20 @@ begin
 {$ENDIF}
 end;
 
-constructor TDreamcastSoftwareDevelopmentFileSystem.Create(AOwner: TDreamcastSoftwareDevelopmentEnvironment);
+constructor TDreamcastSoftwareDevelopmentFileSystem.Create(
+  AOwner: TDreamcastSoftwareDevelopmentEnvironment);
 begin
   fOwner := AOwner;
+
+  // Directories
+  ComputeBaseDirectories;
+
+  fPackages := TDreamcastSoftwareDevelopmentFileSystemPackages.Create(Self);
   fDreamcastTool := TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.Create;
   fKallisti := TDreamcastSoftwareDevelopmentFileSystemKallisti.Create;
-  fToolchainARM := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkARM);
-  fToolchainSuperH := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkSuperH);
-  fToolchainWin32 := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(tkWin32);
+  fToolchainARM := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(Self, tkARM);
+  fToolchainSuperH := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(Self, tkSuperH);
+  fToolchainWin32 := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(Self, tkWin32);
   fShell := TDreamcastSoftwareDevelopmentFileSystemShell.Create(Self);
   fRuby := TDreamcastSoftwareDevelopmentFileSystemRuby.Create;
 end;
@@ -811,6 +847,7 @@ begin
   fToolchainARM.Free;
   fToolchainSuperH.Free;
   fShell.Free;
+  fPackages.Free;
   inherited Destroy;
 end;
 
@@ -1249,6 +1286,446 @@ begin
       Result := uosUpdateSuccess
     else
       Result := uosUpdateFailed;
+  end;
+end;
+
+{ TToolchainProfileInfo }
+
+constructor TToolchainProfileInfo.Create;
+begin
+  inherited Create;
+  fProfileKey := '';
+  fName := '';
+  fVersion := '';
+  fDescription := '';
+  fArmEabiPackage := '';
+  fShElfPackage := '';
+  fChecksum := '';
+end;
+
+function TToolchainProfileInfo.GetPackageForToolchainKind(ToolchainKind: TToolchainKind): TFileName;
+begin
+  case ToolchainKind of
+    tkARM: Result := fArmEabiPackage;
+    tkSuperH: Result := fShElfPackage;
+    tkWin32: raise EUnsupportedToolchainKind.Create('Win32 toolchain kind is not supported in this context');
+  else
+    Result := '';
+  end;
+end;
+
+{ TGdbProfileInfo }
+
+constructor TGdbProfileInfo.Create;
+begin
+  inherited Create;
+  fProfileKey := '';
+  fName := '';
+  fVersion := '';
+  fGdbPackage := '';
+  fChecksum := '';
+end;
+
+{ TDreamcastSoftwareDevelopmentFileSystemPackages }
+
+constructor TDreamcastSoftwareDevelopmentFileSystemPackages.Create(
+  AOwner: TDreamcastSoftwareDevelopmentFileSystem;
+  const AutoLoad: Boolean);
+const
+  PACKAGES_FILE = 'packages.conf';
+
+begin
+  inherited Create;
+
+  fOwner := AOwner;
+  fToolchainProfiles := TToolchainProfileList.Create(True);
+  fGdbProfiles := TGdbProfileList.Create(True);
+  fAvailableToolchainProfiles := TStringList.Create;
+  fAvailableGdbProfiles := TStringList.Create;
+
+  if AutoLoad then
+    LoadFromFile(GetConfigurationDirectory + PACKAGES_FILE);
+end;
+
+destructor TDreamcastSoftwareDevelopmentFileSystemPackages.Destroy;
+begin
+  fAvailableGdbProfiles.Free;
+  fAvailableToolchainProfiles.Free;
+  fGdbProfiles.Free;
+  fToolchainProfiles.Free;
+  inherited Destroy;
+end;
+
+procedure TDreamcastSoftwareDevelopmentFileSystemPackages.LoadFromFile(const FileName: string);
+var
+  IniFile: TMemIniFile;
+begin
+  IniFile := TMemIniFile.Create(FileName);
+  try
+    ParseConfigFile(IniFile);
+  finally
+    IniFile.Free;
+  end;
+end;
+
+procedure TDreamcastSoftwareDevelopmentFileSystemPackages.LoadFromString(const ConfigContent: string);
+var
+  IniFile: TMemIniFile;
+  TempFile: TStringList;
+begin
+  TempFile := TStringList.Create;
+  IniFile := TMemIniFile.Create('');
+  try
+    TempFile.Text := ConfigContent;
+    IniFile.SetStrings(TempFile);
+    ParseConfigFile(IniFile);
+  finally
+    IniFile.Free;
+    TempFile.Free;
+  end;
+end;
+
+procedure TDreamcastSoftwareDevelopmentFileSystemPackages.ParseConfigFile(IniFile: TMemIniFile);
+begin
+  // Clear existing data
+  fToolchainProfiles.Clear;
+  fGdbProfiles.Clear;
+  fAvailableToolchainProfiles.Clear;
+  fAvailableGdbProfiles.Clear;
+
+  // Load profiles
+  LoadToolchainProfiles(IniFile);
+  LoadGdbProfiles(IniFile);
+
+  // Load checksums
+  LoadChecksums(IniFile);
+
+  // Update available profiles lists
+  UpdateAvailableProfiles;
+end;
+
+procedure TDreamcastSoftwareDevelopmentFileSystemPackages.LoadToolchainProfiles(IniFile: TMemIniFile);
+var
+  Sections: TStringList;
+  i: Integer;
+  SectionName,
+  ProfileName,
+  ProfileKeys,
+  Bitness: string;
+  Profile: TToolchainProfileInfo;
+
+begin
+  Sections := TStringList.Create;
+  try
+    ProfileKeys := IniFile.ReadString('Packages', 'ToolchainProfiles', EmptyStr);
+    StringToStringList(ProfileKeys, ';', Sections);
+
+{$IFDEF DEBUG}
+    DebugLog(Format('LoadToolchainProfiles: %d entries', [Sections.Count]));
+{$ENDIF}
+
+    for i := 0 to Sections.Count - 1 do
+    begin
+      ProfileName := Sections[i];
+
+{$IFDEF DEBUG}
+      DebugLog('  ' + ProfileName + ':');
+{$ENDIF}
+
+      SectionName := 'ToolchainProfile_' + ProfileName;
+
+      if IniFile.SectionExists(SectionName) then
+      begin
+        Profile := TToolchainProfileInfo.Create;
+        Profile.fProfileKey := ProfileName;
+        Profile.fName := IniFile.ReadString(SectionName, 'Name', '');
+        Profile.fVersion := IniFile.ReadString(SectionName, 'Version', '');
+        Profile.fDescription := IniFile.ReadString(SectionName, 'Description', '');
+
+        Profile.fArmEabiPackage := fOwner.PackagesBase +
+          IniFile.ReadString(SectionName, 'ArmEabiPackage', '');
+        Profile.fShElfPackage := fOwner.PackagesBase +
+          IniFile.ReadString(SectionName, 'ShElfPackage', '');
+
+        // Handle Bitness
+        Profile.fBitness := pebUnknown;
+        Bitness := IniFile.ReadString(SectionName, 'Architecture', EmptyStr);
+        if Bitness = '32' then
+          Profile.fBitness := peb32
+        else if Bitness = '64' then
+          Profile.fBitness := peb64;
+
+{$IFDEF DEBUG}
+        Bitness := GetEnumName(TypeInfo(TPortableExecutableBitness), Ord(Profile.fBitness));
+        DebugLog('    Bitness: ' + Bitness);
+{$ENDIF}
+
+{$IFDEF DEBUG}
+        DebugLog('    Loaded: ' + Profile.Version );
+{$ENDIF}
+
+        fToolchainProfiles.Add(Profile);
+      end;
+    end;
+
+  finally
+    Sections.Free;
+  end;
+end;
+
+procedure TDreamcastSoftwareDevelopmentFileSystemPackages.LoadGdbProfiles(IniFile: TMemIniFile);
+const
+  PYTHON_NAME_KEYWORD = 'Python';
+
+var
+  Sections: TStringList;
+  i: Integer;
+  SectionName,
+  ProfileKey,
+  ProfileKeys,
+  Bitness: string;
+  Profile: TGdbProfileInfo;
+
+begin
+  Sections := TStringList.Create;
+  try
+    ProfileKeys := IniFile.ReadString('Packages', 'GdbProfiles', EmptyStr);
+    StringToStringList(ProfileKeys, ';', Sections);
+
+{$IFDEF DEBUG}
+    DebugLog(Format('LoadGdbProfiles: %d entries', [Sections.Count]));
+{$ENDIF}
+
+    for i := 0 to Sections.Count - 1 do
+    begin
+      ProfileKey := Sections[i];
+
+{$IFDEF DEBUG}
+      DebugLog('  ' + ProfileKey + ':');
+{$ENDIF}
+
+      SectionName := 'GdbProfile_' + ProfileKey;
+      if IniFile.SectionExists(SectionName) then
+      begin
+        Profile := TGdbProfileInfo.Create;
+        Profile.fProfileKey := ProfileKey;
+        Profile.fName := IniFile.ReadString(SectionName, 'Name', '');
+        Profile.fVersion := IniFile.ReadString(SectionName, 'Version', '');
+        Profile.fGdbPackage := fOwner.PackagesBase
+          + IniFile.ReadString(SectionName, 'GdbPackage', '');
+        if StartsWith(PYTHON_NAME_KEYWORD, Profile.fName) then
+          Profile.fPythonVersion := Trim(StringReplace(Profile.fName, PYTHON_NAME_KEYWORD, EmptyStr, []));
+
+        // Handle Bitness
+        Profile.fBitness := pebUnknown;
+        Bitness := IniFile.ReadString(SectionName, 'Architecture', EmptyStr);
+        if Bitness = '32' then
+          Profile.fBitness := peb32
+        else if Bitness = '64' then
+          Profile.fBitness := peb64;
+
+{$IFDEF DEBUG}
+        Bitness := GetEnumName(TypeInfo(TPortableExecutableBitness), Ord(Profile.fBitness));
+        DebugLog('    Bitness: ' + Bitness);
+{$ENDIF}
+
+{$IFDEF DEBUG}
+        DebugLog('    Loaded: ' + Profile.Version );
+{$ENDIF}
+
+        fGdbProfiles.Add(Profile);
+      end;
+    end;
+
+  finally
+    Sections.Free;
+  end;
+end;
+
+procedure TDreamcastSoftwareDevelopmentFileSystemPackages.LoadChecksums(IniFile: TMemIniFile);
+var
+  ChecksumKeys: TStringList;
+  i: Integer;
+  Checksum,
+  ProfileKey: string;
+  ToolchainProfile: TToolchainProfileInfo;
+  GdbProfile: TGdbProfileInfo;
+
+begin
+  ChecksumKeys := TStringList.Create;
+  try
+    // Load toolchain profile checksums
+    if IniFile.SectionExists('ToolchainProfilesChecksums') then
+    begin
+      IniFile.ReadSection('ToolchainProfilesChecksums', ChecksumKeys);
+
+      for i := 0 to ChecksumKeys.Count - 1 do
+      begin
+        Checksum := ChecksumKeys[i];
+        ProfileKey := IniFile.ReadString('ToolchainProfilesChecksums', Checksum, '');
+
+        ToolchainProfile := GetToolchainProfileByKey(ProfileKey);
+        if Assigned(ToolchainProfile) then
+          ToolchainProfile.fChecksum := Checksum;
+      end;
+    end;
+
+    // Clear buffer before dealing with GDB profiles
+    ChecksumKeys.Clear;
+
+    // Load GDB profile checksums
+    if IniFile.SectionExists('GdbProfilesChecksums') then
+    begin
+      IniFile.ReadSection('GdbProfilesChecksums', ChecksumKeys);
+
+      for i := 0 to ChecksumKeys.Count - 1 do
+      begin
+        Checksum := ChecksumKeys[i];
+        ProfileKey := IniFile.ReadString('GdbProfilesChecksums', Checksum, '');
+
+        GdbProfile := GetGdbProfileByKey(ProfileKey);
+        if Assigned(GdbProfile) then
+          GdbProfile.fChecksum := Checksum;
+      end;
+    end;
+
+  finally
+    ChecksumKeys.Free;
+  end;
+end;
+
+procedure TDreamcastSoftwareDevelopmentFileSystemPackages.UpdateAvailableProfiles;
+var
+  i: Integer;
+begin
+  fAvailableToolchainProfiles.Clear;
+  for i := 0 to fToolchainProfiles.Count - 1 do
+    fAvailableToolchainProfiles.Add(fToolchainProfiles[i].ProfileKey);
+
+  fAvailableGdbProfiles.Clear;
+  for i := 0 to fGdbProfiles.Count - 1 do
+    fAvailableGdbProfiles.Add(fGdbProfiles[i].ProfileKey);
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetToolchainProfileByKey(
+  const ProfileKey: string): TToolchainProfileInfo;
+var
+  i: Integer;
+begin
+  Result := nil;
+
+  for i := 0 to fToolchainProfiles.Count - 1 do
+  begin
+    if SameText(fToolchainProfiles[i].ProfileKey, ProfileKey) then
+    begin
+      Result := fToolchainProfiles[i];
+      Break;
+    end;
+  end;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetGdbProfileByKey(
+  const ProfileKey: string): TGdbProfileInfo;
+var
+  i: Integer;
+begin
+  Result := nil;
+
+  for i := 0 to fGdbProfiles.Count - 1 do
+  begin
+    if SameText(fGdbProfiles[i].ProfileKey, ProfileKey) then
+    begin
+      Result := fGdbProfiles[i];
+      Break;
+    end;
+  end;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetGdbPackage(
+  const ProfileKey: string): TFileName;
+var
+  Profile: TGdbProfileInfo;
+
+begin
+  Result := EmptyStr;
+  Profile := GetGdbProfileByKey(ProfileKey);
+  if Assigned(Profile) then
+    Result := Profile.GdbPackage;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetToolchainPackage(
+  const ProfileKey: string; ToolchainKind: TToolchainKind): TFileName;
+var
+  Profile: TToolchainProfileInfo;
+
+begin
+  Result := EmptyStr;
+  Profile := GetToolchainProfileByKey(ProfileKey);
+  if Assigned(Profile) then
+    Result := Profile.GetPackageForToolchainKind(ToolchainKind);
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetAvailableToolchainProfiles: TStringList;
+begin
+  Result := TStringList.Create;
+  Result.Assign(fAvailableToolchainProfiles);
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetAvailableGdbProfiles: TStringList;
+begin
+  Result := TStringList.Create;
+  Result.Assign(fAvailableGdbProfiles);
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.IsValidToolchainProfile(const ProfileKey: string): Boolean;
+begin
+  Result := fAvailableToolchainProfiles.IndexOf(ProfileKey) >= 0;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.IsValidGdbProfile(const ProfileKey: string): Boolean;
+begin
+  Result := fAvailableGdbProfiles.IndexOf(ProfileKey) >= 0;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetToolchainProfileCount: Integer;
+begin
+  Result := fToolchainProfiles.Count;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetGdbProfileCount: Integer;
+begin
+  Result := fGdbProfiles.Count;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetToolchainProfileKeyByChecksum(const Checksum: string): string;
+var
+  i: Integer;
+begin
+  Result := '';
+
+  for i := 0 to fToolchainProfiles.Count - 1 do
+  begin
+    if SameText(fToolchainProfiles[i].Checksum, Checksum) then
+    begin
+      Result := fToolchainProfiles[i].ProfileKey;
+      Break;
+    end;
+  end;
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetGdbProfileKeyByChecksum(const Checksum: string): string;
+var
+  i: Integer;
+begin
+  Result := '';
+
+  for i := 0 to fGdbProfiles.Count - 1 do
+  begin
+    if SameText(fGdbProfiles[i].Checksum, Checksum) then
+    begin
+      Result := fGdbProfiles[i].ProfileKey;
+      Break;
+    end;
   end;
 end;
 

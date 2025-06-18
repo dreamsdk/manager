@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 606
+  Left = 482
   Height = 400
-  Top = 359
+  Top = 317
   Width = 680
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -30,8 +30,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 666
-    ActivePage = tsHome
-    TabIndex = 0
+    ActivePage = tsDebug
+    TabIndex = 10
     TabOrder = 1
     OnChange = pcMainChange
     OnChanging = pcMainChanging
@@ -1697,22 +1697,11 @@ object frmMain: TfrmMain
           ItemHeight = 15
           ItemIndex = 0
           Items.Strings = (
-            'Disable Python for GDB'
-            'Python 2.7'
-            'Python 3.3'
-            'Python 3.4'
-            'Python 3.5'
-            'Python 3.6'
-            'Python 3.7'
-            'Python 3.8'
-            'Python 3.9'
-            'Python 3.10'
-            'Python 3.11'
-            'Python 3.12'
+            '(Dynamic)'
           )
           Style = csDropDownList
           TabOrder = 0
-          Text = 'Disable Python for GDB'
+          Text = '(Dynamic)'
         end
         object btnComponentsApply: TButton
           Tag = 2
@@ -1732,13 +1721,11 @@ object frmMain: TfrmMain
           ItemHeight = 15
           ItemIndex = 0
           Items.Strings = (
-            'Stable'
-            '14.2.0'
-            '9.5.0-winxp'
+            '(Dynamic)'
           )
           Style = csDropDownList
           TabOrder = 2
-          Text = 'Stable'
+          Text = '(Dynamic)'
         end
         object lblToolchain: TLabel
           Left = 8
@@ -2547,6 +2534,24 @@ object frmMain: TfrmMain
         Caption = 'DebugRaiseException'
         TabOrder = 1
         OnClick = btnDebugRaiseExceptionClick
+      end
+      object btnDebugGetSelectedToolchain: TButton
+        Left = 8
+        Height = 25
+        Top = 84
+        Width = 171
+        Caption = 'GetSelectedToolchain'
+        TabOrder = 2
+        OnClick = btnDebugGetSelectedToolchainClick
+      end
+      object btnDebugGetSelectedDebugger: TButton
+        Left = 8
+        Height = 25
+        Top = 120
+        Width = 171
+        Caption = 'GetSelectedDebugger'
+        TabOrder = 3
+        OnClick = btnDebugGetSelectedDebuggerClick
       end
     end
   end
