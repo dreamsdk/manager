@@ -35,9 +35,13 @@ uses
   RubyMgr,
   Unpack,
   PkgMgr,
-  Global;
+  Global,
+  SysTools;
 
 {$R *.res}
+
+var
+  LogContext: TLogMessageContext;
 
 begin
 {$IF DEFINED(DEBUG) AND DEFINED(CONSOLE)}
@@ -46,13 +50,29 @@ begin
   Application.Scaled:=True;
   Application.Title:='DreamSDK Manager';
   RequireDerivedFormResource:=True;
-  Application.Initialize;
-  SplashInitialize;
-  Application.CreateForm(TfrmMain, frmMain);
-  Application.CreateForm(TfrmAbout, frmAbout);
-  Application.ShowMainForm := not IsPostInstallMode;
-  ExecutePostInstall;
-  SplashFinalize;
-  Application.Run;
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%});
+  try
+    LogMessage(LogContext, 'Initialize application');
+    Application.Initialize;
+
+    LogMessage(LogContext, 'Initialize splash screen');
+    SplashInitialize;
+
+    LogMessage(LogContext, 'Initialize forms');
+    Application.CreateForm(TfrmMain, frmMain);
+    Application.CreateForm(TfrmAbout, frmAbout);
+
+    LogMessage(LogContext, 'Execute post-install');
+    Application.ShowMainForm := not IsPostInstallMode;
+    ExecutePostInstall;
+
+    LogMessage(LogContext, 'Finalize splash screen');
+    SplashFinalize;
+
+    LogMessage(LogContext, 'Startup application');
+    Application.Run;
+  finally
+    LogMessageExit(LogContext);
+  end;
 end.
 

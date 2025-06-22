@@ -30,8 +30,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 666
-    ActivePage = tsDebug
-    TabIndex = 10
+    ActivePage = tsIDE
+    TabIndex = 5
     TabOrder = 1
     OnChange = pcMainChange
     OnChanging = pcMainChanging

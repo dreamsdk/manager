@@ -456,6 +456,9 @@ implementation
 {$R *.lfm}
 
 uses
+{$IFDEF DEBUG}
+  TypInfo,
+{$ENDIF}
   LCLIntf,
   IniFiles,
   StrUtils,
@@ -2106,8 +2109,10 @@ end;
 function TfrmMain.RunElevatedTask(const ATaskName: string;
   AParameters: TStringList): Boolean;
 var
+  LogContext: TLogMessageContext;
   SwapExchangeFileName: TFileName;
   ElevatedParameters: string;
+  RunElevatedResult: Cardinal;
 
   procedure StartWait;
   begin
@@ -2125,29 +2130,50 @@ var
 
 begin
   Result := False;
-  SwapExchangeFileName := GetTemporaryFileName;
-
-  StartWait;
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%});
   try
-    AParameters.Insert(0, SwapExchangeFileName);
-    ElevatedParameters := EncodeParameters(AParameters);
-    SetLastError(RunElevated(ATaskName, ElevatedParameters, Handle,
-      @Application.ProcessMessages));
+    SwapExchangeFileName := GetTemporaryFileName;
 
-    if IsRealOSError(GetLastError) then
-      RaiseLastOSError
-    else
-    begin
-      Result := (GetLastError = ERROR_SUCCESS);
-      with DreamcastSoftwareDevelopmentKitManager
-        .IntegratedDevelopmentEnvironment.CodeBlocks do
+    LogMessage(LogContext, Format('SwapExchangeFileName: "%s"', [
+      SwapExchangeFileName
+    ]));
+
+    StartWait;
+    try
+      AParameters.Insert(0, SwapExchangeFileName);
+      if IsLogMessageEnabled then
+        AParameters.Add(GetLogMessageCommandLineSwitch);
+      ElevatedParameters := EncodeParameters(AParameters);
+
+      RunElevatedResult := RunElevated(ATaskName, ElevatedParameters, Handle,
+        @Application.ProcessMessages);
+
+      LogMessage(LogContext, Format('RunElevatedResult: %d, ATaskName: %s, ElevatedParameters: %s', [
+        RunElevatedResult,
+        ATaskName,
+        ElevatedParameters
+      ]));
+
+      SetLastError(RunElevatedResult);
+
+      if IsRealOSError(GetLastError) then
+        RaiseLastOSError
+      else
       begin
-        UpdateStateFromElevatedTask(SwapExchangeFileName);
-        KillFile(SwapExchangeFileName);
+        Result := (GetLastError = ERROR_SUCCESS);
+        with DreamcastSoftwareDevelopmentKitManager
+          .IntegratedDevelopmentEnvironment.CodeBlocks do
+        begin
+          UpdateStateFromElevatedTask(SwapExchangeFileName);
+          KillFile(SwapExchangeFileName);
+        end;
       end;
+    finally
+      EndWait;
     end;
+
   finally
-    EndWait;
+    LogMessageExit(LogContext);
   end;
 end;
 
@@ -3132,6 +3158,7 @@ begin
   CanClose := CheckComponentsChangeAllowRequestedOperation;
 end;
 
+(* This code is running in an elevated thread! *)
 function DoElevatedTask(const ATaskName: string; AParameters: TStringList;
   ASourceWindowHandle: THandle): Cardinal;
 type
@@ -3145,9 +3172,11 @@ type
   );
 
 var
+  LogContext: TLogMessageContext;
   ElevatedDreamcastSoftwareDevelopmentKitManager: TDreamcastSoftwareDevelopmentKitManager;
   SwapExchangeFileName: TFileName;
   ParamInstallationDirectory: TFileName;
+  LogMessageCommandLineSwitchItemIndex: Integer;
 
   function TaskNameToElavatedTask: TElevatedTask;
   begin
@@ -3169,59 +3198,89 @@ var
     // Handle IDE files
     ElevatedDreamcastSoftwareDevelopmentKitManager.KallistiPorts
       .GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
+
+    LogMessage(LogContext, 'GenerateIntegratedDevelopmentEnvironmentLibraryInformation called');
   end;
 
 begin
   Result := ERROR_SUCCESS;
-  SwapExchangeFileName := AParameters[0];
-  ElevatedDreamcastSoftwareDevelopmentKitManager :=
-    TDreamcastSoftwareDevelopmentKitManager.Create(False);
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%});
   try
-    with ElevatedDreamcastSoftwareDevelopmentKitManager
-      .IntegratedDevelopmentEnvironment.CodeBlocks do
-    begin
-      // Load the KallistiOS Ports only as we need that for C::B DreaSDK Project Wizard...
-      ElevatedDreamcastSoftwareDevelopmentKitManager.KallistiPorts
-        .RetrieveAvailablePorts;
+    (* Remove the "--debug" switch from the AParameters, this already has been
+       handled by SysTools, in the initialization section. *)
+    LogMessageCommandLineSwitchItemIndex := AParameters.IndexOf(GetLogMessageCommandLineSwitch);
+    if LogMessageCommandLineSwitchItemIndex >= 0 then
+      AParameters.Delete(LogMessageCommandLineSwitchItemIndex);
 
-      // Execute the C::B Patcher
-      case TaskNameToElavatedTask of
-        etCodeBlocksPatchInstall:
-          begin
-            ParamInstallationDirectory := AParameters[1];
-            Install(ParamInstallationDirectory);
-            WriteLibraryInformation;
-          end;
-        etCodeBlocksPatchUninstall:
-          Uninstall;
-        etCodeBlocksPatchReinstall:
-          begin
-            Reinstall;
-            WriteLibraryInformation;
-          end;
-        etCodeBlocksPatchRefresh:
-          begin
-            Refresh(True);
-            WriteLibraryInformation;
-          end;
-        etCodeBlocksPatchInitializeProfiles:
-          begin
-            InitializeProfiles;
-            WriteLibraryInformation;
-          end;
-        etUnknown:
-          begin
-            MsgBoxDlg(ASourceWindowHandle, sError, UnknownElevatedTask, mtError, [mbOK]);
-            Result := ERROR_GEN_FAILURE;
-          end;
+    // Get the exchange files
+    SwapExchangeFileName := AParameters[0];
+    LogMessage(LogContext, Format('Swap File: "%s"', [
+      SwapExchangeFileName
+    ]));
+
+    ElevatedDreamcastSoftwareDevelopmentKitManager :=
+      TDreamcastSoftwareDevelopmentKitManager.Create(False);
+
+    try
+      with ElevatedDreamcastSoftwareDevelopmentKitManager
+        .IntegratedDevelopmentEnvironment.CodeBlocks do
+      begin
+        // Load the KallistiOS Ports only as we need that for C::B DreamSDK Project Wizard...
+        ElevatedDreamcastSoftwareDevelopmentKitManager.KallistiPorts
+          .RetrieveAvailablePorts;
+
+{$IFDEF DEBUG}
+        LogMessage(LogContext, GetEnumName(TypeInfo(TElevatedTask),
+          Ord(TaskNameToElavatedTask)));
+{$ENDIF}
+
+        // Execute the C::B Patcher
+        case TaskNameToElavatedTask of
+          etCodeBlocksPatchInstall:
+            begin
+              ParamInstallationDirectory := AParameters[1];
+              Install(ParamInstallationDirectory);
+              WriteLibraryInformation;
+            end;
+
+          etCodeBlocksPatchUninstall:
+            Uninstall;
+
+          etCodeBlocksPatchReinstall:
+            begin
+              Reinstall;
+              WriteLibraryInformation;
+            end;
+
+          etCodeBlocksPatchRefresh:
+            begin
+              Refresh(True);
+              WriteLibraryInformation;
+            end;
+
+          etCodeBlocksPatchInitializeProfiles:
+            begin
+              InitializeProfiles;
+              WriteLibraryInformation;
+            end;
+
+          etUnknown:
+            begin
+              MsgBoxDlg(ASourceWindowHandle, sError, UnknownElevatedTask, mtError, [mbOK]);
+              Result := ERROR_GEN_FAILURE;
+            end;
+        end;
+
+        // Handle the output
+        if not LastOperationSuccess then
+          SaveStringToFile(Trim(LastErrorMessage), SwapExchangeFileName);
       end;
-
-      // Handle the output
-      if not LastOperationSuccess then
-        SaveStringToFile(Trim(LastErrorMessage), SwapExchangeFileName);
+    finally
+      ElevatedDreamcastSoftwareDevelopmentKitManager.Free;
     end;
+
   finally
-    ElevatedDreamcastSoftwareDevelopmentKitManager.Free;
+    LogMessageExit(LogContext);
   end;
 end;
 

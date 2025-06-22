@@ -46,6 +46,9 @@ type
 
 implementation
 
+uses
+  SysTools;
+
 { TDreamcastSoftwareDevelopmentKitManager }
 
 procedure TDreamcastSoftwareDevelopmentKitManager.UpdateRepositoriesURL;
@@ -61,19 +64,29 @@ end;
 
 procedure TDreamcastSoftwareDevelopmentKitManager.InitializeObject(
   const AutoLoad: Boolean);
+var
+  LogContext: TLogMessageContext;
+
 begin
-  fEnvironment := TDreamcastSoftwareDevelopmentEnvironment.Create;
-  fIntegratedDevelopmentEnvironment := TIntegratedDevelopmentEnvironment
-    .Create(fEnvironment);
-  fVersionRetriever := TComponentVersion.Create(fEnvironment, AutoLoad);
-  fKallistiPortsManager := TKallistiPortManager.Create(fEnvironment,
-    fIntegratedDevelopmentEnvironment, fVersionRetriever, AutoLoad);
-  fKallistiManager := TKallistiManager.Create(fEnvironment);
-  fDreamcastTool := TDreamcastToolManager.Create(fEnvironment);
-  fRubyManager := TRubyManager.Create(fEnvironment);
-  if AutoLoad then
-    UpdateRepositoriesURL;
-  fIntegratedDevelopmentEnvironment.CodeBlocks.Refresh;
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
+  try
+
+    fEnvironment := TDreamcastSoftwareDevelopmentEnvironment.Create(AutoLoad);
+    fIntegratedDevelopmentEnvironment := TIntegratedDevelopmentEnvironment
+      .Create(fEnvironment);
+    fVersionRetriever := TComponentVersion.Create(fEnvironment, AutoLoad);
+    fKallistiPortsManager := TKallistiPortManager.Create(fEnvironment,
+      fIntegratedDevelopmentEnvironment, fVersionRetriever, AutoLoad);
+    fKallistiManager := TKallistiManager.Create(fEnvironment);
+    fDreamcastTool := TDreamcastToolManager.Create(fEnvironment);
+    fRubyManager := TRubyManager.Create(fEnvironment);
+    if AutoLoad then
+      UpdateRepositoriesURL;
+    fIntegratedDevelopmentEnvironment.CodeBlocks.Refresh;
+
+  finally
+    LogMessageExit(LogContext);
+  end;
 end;
 
 constructor TDreamcastSoftwareDevelopmentKitManager.Create;

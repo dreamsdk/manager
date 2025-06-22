@@ -133,20 +133,41 @@ end;
 
 procedure TCodeBlocksIntegratedDevelopmentEnvironment.Refresh(
   const Force: Boolean);
+var
+  LogContext: TLogMessageContext;
+
 begin
-  if Force then
-    RetrievePatchState;
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
+  try
 
-  if Settings.LoadConfiguration then
-  begin
-    // Available Users
-    fAvailableUsers.Clear;
-    fAvailableUsers.Assign(Settings.AvailableUsers);
+    if Force then
+    begin
+      RetrievePatchState;
+      Settings.ClearCachedAvailableUsers;
+    end;
 
-    // Installed Users
-    fInstalledUsers.Clear;
-    if Settings.Installed then
-      fInstalledUsers.Assign(Settings.InstalledUsers);
+    LogMessage(LogContext, Format('Force: "%s"', [
+      BoolToStr(Force, True)
+    ]));
+
+    if Settings.LoadConfiguration(Force) then
+    begin
+      // Save updated configuration
+      if Force then
+        Settings.SaveConfiguration;
+
+      // Available Users
+      fAvailableUsers.Clear;
+      fAvailableUsers.Assign(Settings.AvailableUsers);
+
+      // Installed Users
+      fInstalledUsers.Clear;
+      if Settings.Installed then
+        fInstalledUsers.Assign(Settings.InstalledUsers);
+    end;
+
+  finally
+    LogMessageExit(LogContext);
   end;
 end;
 

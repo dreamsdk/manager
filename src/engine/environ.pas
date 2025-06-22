@@ -431,6 +431,7 @@ type
   { TDreamcastSoftwareDevelopmentEnvironment }
   TDreamcastSoftwareDevelopmentEnvironment = class(TObject)
   private
+    fAutoLoad: Boolean;
     fFoundationKind: TEnvironmentFoundationKind;
     fShellCommandError: Boolean;
     fShellCommandNewLine: TNewLineEvent;
@@ -448,7 +449,7 @@ type
     function GetOfflineFileName(const WorkingDirectory: TFileName): TFileName;
     function GetRepositoryFetchDateTime(const WorkingDirectory: TFileName): TDateTime;
   public
-    constructor Create;
+    constructor Create(const AutoLoad: Boolean);
     destructor Destroy; override;
 
     procedure AbortShellCommand;
@@ -828,7 +829,8 @@ begin
   // Directories
   ComputeBaseDirectories;
 
-  fPackages := TDreamcastSoftwareDevelopmentFileSystemPackages.Create(Self);
+  fPackages := TDreamcastSoftwareDevelopmentFileSystemPackages.Create(Self,
+    fOwner.fAutoLoad);
   fDreamcastTool := TDreamcastSoftwareDevelopmentFileSystemDreamcastTool.Create;
   fKallisti := TDreamcastSoftwareDevelopmentFileSystemKallisti.Create;
   fToolchainARM := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(Self, tkARM);
@@ -1056,8 +1058,10 @@ begin
     DirectoryExists(AWorkingDirectory + GIT_SYSTEM_DIRECTORY);
 end;
 
-constructor TDreamcastSoftwareDevelopmentEnvironment.Create;
+constructor TDreamcastSoftwareDevelopmentEnvironment.Create(
+  const AutoLoad: Boolean);
 begin
+  fAutoLoad := AutoLoad;
   fShellCommandError := False;
   fMsysBaseDirectoryNormal := ExcludeTrailingPathDelimiter(GetMSysBaseDirectory);
   fMsysBaseDirectoryReverse := StringReplace(fMsysBaseDirectoryNormal,
