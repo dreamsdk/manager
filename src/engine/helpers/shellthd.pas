@@ -104,7 +104,9 @@ procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
 implementation
 
 uses
+  TypInfo,
   Forms,
+  FSTools,
   Progress,
   StrRes,
   PostInst,
@@ -696,6 +698,7 @@ type
   TRepositoryOperation = (roNothing, roClone, roUpdate);
 
 var
+  LogContext: TLogMessageContext;
   OutputBuffer: string;
   IsModifiedKallisti,
   IsModifiedKallistiPorts,
@@ -730,52 +733,99 @@ var
   function HandleRepository(Installed: Boolean; RepositoryKind: TRepositoryKind;
     var UpdateState: TUpdateOperationState): TRepositoryOperation;
   var
+    LogSubContext: TLogMessageContext;
     RepositoryName,
     TempBuffer: string;
     IsSuccess: Boolean;
+    WorkDirectory: TFileName;
 
   begin
     IsSuccess := False;
     Result := roNothing;
     TempBuffer := EmptyStr;
-    RepositoryName := RepositoryKindToString(RepositoryKind);
-    if CanContinue then
-    begin
-      if not Installed then
+
+    LogSubContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
+    try
+      RepositoryName := RepositoryKindToString(RepositoryKind);
+
+      (* Specific process: we will force the cloning in that case, so remove old
+         directories in that case *)
+      if IsPostInstallMode then
       begin
-        // Install (Clone)
-        Result := roClone;
-        UpdateProgressText(Format(CloningOperation, [RepositoryName]));
         case RepositoryKind of
           rkKallisti:
-            IsSuccess := Manager.KallistiOS.CloneRepository(TempBuffer);
+            WorkDirectory := Manager.Environment.FileSystem.Kallisti.KallistiDirectory;
           rkKallistiPorts:
-            IsSuccess := Manager.KallistiPorts.CloneRepository(TempBuffer);
+            WorkDirectory := Manager.Environment.FileSystem.Kallisti.KallistiPortsDirectory;
           rkDreamcastTool:
-            IsSuccess := Manager.DreamcastTool.CloneRepository(TempBuffer);
+            WorkDirectory := Manager.Environment.FileSystem.DreamcastTool.BaseDirectory;
           rkRuby:
-            IsSuccess := Manager.Ruby.CloneRepository(TempBuffer);
+            WorkDirectory := Manager.Environment.FileSystem.Ruby.BaseDirectory;
         end;
-        SetOperationSuccess(IsSuccess);
-      end
-      else
-      begin
-        // Update
-        Result := roUpdate;
-        UpdateProgressText(Format(UpdatingOperation, [RepositoryName]));
-        case RepositoryKind of
-          rkKallisti:
-            UpdateState := Manager.KallistiOS.UpdateRepository(TempBuffer);
-          rkKallistiPorts:
-            UpdateState := Manager.KallistiPorts.UpdateRepository(TempBuffer);
-          rkDreamcastTool:
-            UpdateState := Manager.DreamcastTool.UpdateRepository(TempBuffer);
-          rkRuby:
-            UpdateState := Manager.Ruby.UpdateRepository(TempBuffer);
-        end;
-        SetOperationSuccess(UpdateState <> uosUpdateFailed);
+        IsSuccess := RenameFileOrDirectoryAsBackup(WorkDirectory);
+        LogMessage(LogSubContext, Format('PostInstall Mode, renaming directory [%s]: "%s"', [
+          BoolToStr(IsSuccess, True),
+          WorkDirectory
+        ]));
+        IsSuccess := False;
       end;
-      CombineOutputBuffer(TempBuffer);
+
+      if CanContinue then
+      begin
+        if not Installed then
+        begin
+          // Install (Clone)
+          Result := roClone;
+          UpdateProgressText(Format(CloningOperation, [RepositoryName]));
+          case RepositoryKind of
+            rkKallisti:
+              IsSuccess := Manager.KallistiOS.CloneRepository(TempBuffer);
+            rkKallistiPorts:
+              IsSuccess := Manager.KallistiPorts.CloneRepository(TempBuffer);
+            rkDreamcastTool:
+              IsSuccess := Manager.DreamcastTool.CloneRepository(TempBuffer);
+            rkRuby:
+              IsSuccess := Manager.Ruby.CloneRepository(TempBuffer);
+          end;
+          SetOperationSuccess(IsSuccess);
+        end
+        else
+        begin
+          // Update
+          Result := roUpdate;
+          UpdateProgressText(Format(UpdatingOperation, [RepositoryName]));
+          case RepositoryKind of
+            rkKallisti:
+              UpdateState := Manager.KallistiOS.UpdateRepository(TempBuffer);
+            rkKallistiPorts:
+              UpdateState := Manager.KallistiPorts.UpdateRepository(TempBuffer);
+            rkDreamcastTool:
+              UpdateState := Manager.DreamcastTool.UpdateRepository(TempBuffer);
+            rkRuby:
+              UpdateState := Manager.Ruby.UpdateRepository(TempBuffer);
+          end;
+          SetOperationSuccess(UpdateState <> uosUpdateFailed);
+        end;
+        CombineOutputBuffer(TempBuffer);
+      end;
+
+      LogMessage(LogSubContext, Format('RepositoryKind: "%s", ' +
+        'RepositoryName: "%s", Result: "%s", UpdateState: "%s", ' +
+        'Installed: "%s", IsSuccess: "%s", CanContinue: "%s"', [
+        GetEnumName(TypeInfo(TRepositoryKind), Ord(RepositoryKind)),
+        RepositoryName,
+        GetEnumName(TypeInfo(TRepositoryOperation), Ord(Result)),
+        GetEnumName(TypeInfo(TUpdateOperationState), Ord(UpdateState)),
+        BoolToStr(Installed, True),
+        BoolToStr(IsSuccess, True),
+        BoolToStr(CanContinue, True)
+      ]));
+
+      LogMessage(LogSubContext, Format('TempBuffer: "%s"', [
+        TempBuffer
+      ]));
+    finally
+      LogMessageExit(LogSubContext);
     end;
   end;
 
@@ -832,6 +882,7 @@ var
     // Handle KallistiOS Repository
     TempBuffer := EmptyStr;
     UpdateState := uosUndefined;
+
     RepositoryOperation := HandleRepository(Manager.KallistiOS.Installed,
       rkKallisti, UpdateState);
 
@@ -894,6 +945,7 @@ var
     // Handle Dreamcast Tool(dc-tool) repository
     TempBuffer := EmptyStr;
     UpdateState := uosUndefined;
+
     RepositoryOperation := HandleRepository(Manager.DreamcastTool.Installed,
       rkDreamcastTool, UpdateState);
 
@@ -967,20 +1019,43 @@ begin
   OutputBuffer := EmptyStr;
   IsEnvironShellScriptUpdated := False;
 
-  IsModifiedKallisti := HandleKallisti;
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
+  try
+    IsModifiedKallisti := HandleKallisti;
+    LogMessage(LogContext, Format('IsModifiedKallisti: "%s"', [
+      BoolToStr(IsModifiedKallisti, True)
+    ]));
 
-  IsModifiedKallistiPorts := HandleKallistiPorts;
+    IsModifiedKallistiPorts := HandleKallistiPorts;
+    LogMessage(LogContext, Format('IsModifiedKallistiPorts: "%s"', [
+      BoolToStr(IsModifiedKallistiPorts, True)
+    ]));
 
-  IsModifiedDreamcastTool := HandleDreamcastTool;
+    IsModifiedDreamcastTool := HandleDreamcastTool;
+    LogMessage(LogContext, Format('IsModifiedDreamcastTool: "%s"', [
+      BoolToStr(IsModifiedDreamcastTool, True)
+    ]));
 
-  IsModifiedRuby := (not Manager.Environment.Settings.Ruby.Enabled) or
-    (Manager.Environment.Settings.Ruby.Enabled and HandleRuby);
+    IsModifiedRuby := (not Manager.Environment.Settings.Ruby.Enabled) or
+      (Manager.Environment.Settings.Ruby.Enabled and HandleRuby);
+    LogMessage(LogContext, Format('IsModifiedRuby: "%s"', [
+      BoolToStr(IsModifiedRuby, True)
+    ]));
 
-  if (CanContinue) and (not IsModifiedKallisti) and (not IsModifiedKallistiPorts)
-    and (not IsModifiedDreamcastTool) and (not IsModifiedRuby) then
-      UpdateProgressText(KallistiOperationNothingNeededText);
+    if (CanContinue) and (not IsModifiedKallisti) and (not IsModifiedKallistiPorts)
+      and (not IsModifiedDreamcastTool) and (not IsModifiedRuby) then
+        UpdateProgressText(KallistiOperationNothingNeededText);
+    LogMessage(LogContext, Format('CanContinue: "%s"', [
+      BoolToStr(CanContinue, True)
+    ]));
 
-  Result := OutputBuffer;
+    Result := OutputBuffer;
+    LogMessage(LogContext, Format('Result: "%s"', [
+      Result
+    ]));
+  finally
+    LogMessageExit(LogContext);
+  end;
 end;
 
 function TShellThread.ProcessKallistiPortSingle: string;
