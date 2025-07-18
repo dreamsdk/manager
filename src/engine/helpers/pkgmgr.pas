@@ -421,43 +421,97 @@ function TPackageManager.AutoDetectRequiredToolchain: Boolean;
   'Arm Stable', result will be 'Stable'.
 *)
 var
+  LogContext: TLogMessageContext;
   i: Integer;
-  StampFileName: TFileName;
+  StampFileNameSuperH,
+  StampFileNameArm,
+  ToolchainBaseDirectorySuperH,
+  ToolchainBaseDirectoryArm: TFileName;
+  AutoDetectedToolchainProfileKeySelected: TStringList;
 
 begin
   Result := False;
   fAutoDetectedToolchainProfileKey := EmptyStr;
 
-  with fManager.Environment.FileSystem do
-    for i := 0 to Packages.GetToolchainProfileCount - 1 do
-    begin
-      StampFileName := GetStampFromPackageFileName(
-        Packages.ToolchainProfiles[i].ShElfPackage);
-      if FileExists(StampFileName) then
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
+  try
+    AutoDetectedToolchainProfileKeySelected := TStringList.Create;
+    try
+      with fManager.Environment.FileSystem do
       begin
-        fAutoDetectedToolchainProfileKey := Packages.ToolchainProfiles[i].ProfileKey;
-        KillFile(StampFileName);
-        // TODO: We retain only the newer version...
+        // Extracting base directories for both Super-H and Arm
+        ToolchainBaseDirectorySuperH := ToolchainSuperH.BaseDirectory;
+        ToolchainBaseDirectoryArm := ToolchainARM.BaseDirectory;
+
+        for i := 0 to Packages.GetToolchainProfileCount - 1 do
+        begin
+          StampFileNameSuperH := ToolchainBaseDirectorySuperH
+            + GetStampFromPackageFileName(Packages.ToolchainProfiles[i].ShElfPackage);
+          StampFileNameArm := ToolchainBaseDirectoryArm
+            + GetStampFromPackageFileName(Packages.ToolchainProfiles[i].ArmEabiPackage);
+          if FileExists(StampFileNameSuperH) or FileExists(StampFileNameArm) then
+          begin
+            // We detected a request to install a new toolchain, it could be from SH or ARM
+            AutoDetectedToolchainProfileKeySelected.Add(
+              Format('%02d'#9'%s', [
+                i,
+                Packages.ToolchainProfiles[i].ProfileKey
+              ])
+            );
+
+            LogMessage(LogContext, Format('Detected profile: "%s"', [
+              Packages.ToolchainProfiles[i].ProfileKey
+            ]));
+
+            // Cleanup
+            KillFile(StampFileNameSuperH);
+            KillFile(StampFileNameArm);
+          end;
+        end;
       end;
+
+      // Choose the best toolchain to use
+      if AutoDetectedToolchainProfileKeySelected.Count > 0 then
+      begin
+        AutoDetectedToolchainProfileKeySelected.Sort;
+        fAutoDetectedToolchainProfileKey :=
+          Right(#9, AutoDetectedToolchainProfileKeySelected[0]);
+      end;
+    finally
+      AutoDetectedToolchainProfileKeySelected.Free;
     end;
 
-  // Final result
-  Result := not IsEmpty(fAutoDetectedToolchainProfileKey);
+    // Final result
+    Result := not IsEmpty(fAutoDetectedToolchainProfileKey);
+
+    LogMessage(LogContext, Format('Result: %s, AutoDetectedToolchainProfileKey: "%s"', [
+      BoolToStr(Result),
+      fAutoDetectedToolchainProfileKey
+    ]));
+  finally
+    LogMessageExit(LogContext);
+  end;
 end;
 
 function TPackageManager.AutoDetectRequiredDebugger: Boolean;
 var
   i: Integer;
-  StampFileName: TFileName;
+  StampFileName,
+  ToolchainBaseDirectorySuperH: TFileName;
 
 begin
   Result := False;
   fAutoDetectedToolchainProfileKey := EmptyStr;
 
   with fManager.Environment.FileSystem do
+  begin
+    // Extracting base directories for both Super-H and Arm
+    ToolchainBaseDirectorySuperH := ToolchainSuperH.BaseDirectory;
+
     for i := 0 to Packages.GetGdbProfileCount - 1 do
     begin
-      StampFileName := GetStampFromPackageFileName(Packages.GdbProfiles[i].GdbPackage);
+      StampFileName := ToolchainBaseDirectorySuperH +
+        GetStampFromPackageFileName(Packages.GdbProfiles[i].GdbPackage);
       if FileExists(StampFileName) then
       begin
         fAutoDetectedDebuggerProfileKey := Packages.GdbProfiles[i].ProfileKey;
@@ -465,6 +519,7 @@ begin
         // TODO: We retain only the newer version...
       end;
     end;
+  end;
 
   Result := not IsEmpty(fAutoDetectedDebuggerProfileKey);
 end;
