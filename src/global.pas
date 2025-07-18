@@ -25,7 +25,7 @@ uses
 procedure GlobalInitialization;
 begin
   DreamcastSoftwareDevelopmentKitManager :=
-    TDreamcastSoftwareDevelopmentKitManager.Create(not IsPostInstallMode);
+    TDreamcastSoftwareDevelopmentKitManager.Create;
   PackageManager := TPackageManager.Create(DreamcastSoftwareDevelopmentKitManager);
 end;
 
