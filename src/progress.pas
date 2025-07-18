@@ -306,6 +306,10 @@ var
 begin
   LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
   try
+    LogMessage(LogContext, Format('Success: "%s", Aborted: "%s"', [
+      BoolToStr(Success),
+      BoolToStr(Aborted)
+    ]));
 
     StopSafeAbort;
     SetIdleState(True);
@@ -335,6 +339,11 @@ begin
       if (not IsPostInstallMode) and IsProgressAutoClose then
         Close;
     end;
+
+    LogMessage(LogContext, Format('Message: "%s", LongMessage: "%s"', [
+      Message,
+      LongMessage
+    ]));
 
   finally
     LogMessageExit(LogContext);
