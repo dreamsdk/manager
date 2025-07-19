@@ -22,6 +22,8 @@ uses
   ExtCtrls;
 
 type
+  TProgressType = (ptNoPercentage, ptPercentageSingle, ptPercentagePersistent);
+
   { TfrmProgress }
   TfrmProgress = class(TForm)
     btnAbort: TButton;
@@ -42,6 +44,7 @@ type
     procedure tmrAbortFailSafeTimer(Sender: TObject);
   private
     fFinished: Boolean;
+    fProgressType: TProgressType;
     function GetAbortOperation: Boolean;
     function GetAutoCloseState: Boolean;
     function IsSafeAbortRequested: Boolean;
@@ -49,6 +52,10 @@ type
     procedure StartSafeAbort;
     procedure StopSafeAbort;
     procedure SetCloseButtonState(State: Boolean);
+  protected
+    function IsProgressLine(const Message: string): Boolean;
+    procedure PrintLine(const Message: string);
+    function ExtractValueFromLine(const Message: string): Integer;
   public
     property Finished: Boolean read fFinished write fFinished;
     procedure SetTerminateState(Success: Boolean; Aborted: Boolean);
@@ -81,6 +88,10 @@ uses
 const
   CLOSE_TAG_VALUE = 1000;
   ABORT_SAFE_MAX_TRIES = 5;
+
+  PROGRESS_LINE1 = '% ';
+  PROGRESS_LINE2 = '%] ';
+  FULL = '100%';
 
 { TfrmProgress }
 
@@ -139,6 +150,7 @@ end;
 
 procedure TfrmProgress.FormShow(Sender: TObject);
 begin
+  fProgressType := ptNoPercentage;
   pgbOperationProgress.Max := 100;
   lblProgressStep.Caption := EmptyStr;
   memBufferOutput.Clear;
@@ -282,6 +294,85 @@ begin
     StartSafeAbort;
 end;
 
+function TfrmProgress.IsProgressLine(const Message: string): Boolean;
+begin
+  Result := (IsInString(PROGRESS_LINE1, Message))
+    or (IsInString(PROGRESS_LINE2, Message));
+end;
+
+procedure TfrmProgress.PrintLine(const Message: string);
+begin
+  if (fProgressType <> ptPercentageSingle) then
+    memBufferOutput.Lines.Add(Message);
+
+  if (not IsSafeAbortRequested) and (fProgressType = ptNoPercentage) then
+  begin
+    pgbOperationProgress.Position := 0;
+    pgbOperationProgress.Style := pbstMarquee;
+  end;
+
+{$IFDEF DEBUG}
+  DebugLog(Format('ProgressType: %d, Message: "%s"', [
+    Ord(fProgressType),
+    Message
+  ]));
+{$ENDIF}
+end;
+
+function TfrmProgress.ExtractValueFromLine(const Message: string): Integer;
+const
+  MAX_PERCENT = 100;
+
+  function ParseValue(LeftStr, RightStr, Str: string): Integer;
+  var
+    StrExtractedValue: string;
+
+  begin
+    StrExtractedValue := Trim(ExtractStr(LeftStr, RightStr, Str));
+    Result := StrToIntDef(StrExtractedValue, -1);
+  end;
+
+var
+  i: Integer;
+  Buffer: string;
+  IsPersistentPercentageMode: Boolean;
+
+begin
+  Result := -1;
+  IsPersistentPercentageMode := False;
+  Buffer := Default(string);
+
+  // For Git
+  Result := ParseValue(':', PROGRESS_LINE1 + ' (', Message);
+
+  // For Wget and Package Manager
+  if (Result = -1) then
+  begin
+    i := Pos(PROGRESS_LINE1, Message);
+    Buffer := Copy(Message, i - 4, i - 1);
+    Result := ParseValue(' ', PROGRESS_LINE1, Buffer);
+  end;
+
+  // If we detect "100%" then the value is 100...
+  if (Result = -1) and (IsInString(FULL, Buffer)) then
+    Result := MAX_PERCENT;
+
+  // For CMake
+  if (Result = -1) then
+  begin
+    Result := ParseValue('[', PROGRESS_LINE2, Message);
+    IsPersistentPercentageMode := (Result <> -1);
+  end;
+
+  // There is a value here to display in the progress bar...
+  if (Result <> -1) then
+  begin
+    fProgressType := ptPercentageSingle;
+    if IsPersistentPercentageMode and (Result < MAX_PERCENT) then
+      fProgressType := ptPercentagePersistent;
+  end;
+end;
+
 function TfrmProgress.GetAbortOperation: Boolean;
 begin
   Result := btnAbort.Tag <> CLOSE_TAG_VALUE;
@@ -357,71 +448,33 @@ begin
 end;
 
 procedure TfrmProgress.AddNewLine(const Message: string);
-const
-  PROGRESS_LINE = '% ';
-
 var
-  StrExtractedValue: string;
   Value: Integer;
 
-  procedure PrintLine;
-  begin
-    if not IsSafeAbortRequested then
-    begin
-      pgbOperationProgress.Position := 0;
-      pgbOperationProgress.Style := pbstMarquee;
-    end;
-    memBufferOutput.Lines.Add(Message);
-  end;
-
-  function ParseValue(LeftStr, RightStr, Str: string): Integer;
-  begin
-    StrExtractedValue := Trim(ExtractStr(LeftStr, RightStr, Str));
-    Result := StrToIntDef(StrExtractedValue, -1);
-  end;
-
-  function ExtractValue: Integer;
-  const
-    FULL = '100%';
-
-  var
-    i: Integer;
-    Buffer: string;
-
-  begin
-    Buffer := Default(string);
-
-    // for Git
-    Result := ParseValue(':', PROGRESS_LINE + ' (', Message);
-
-    // for Wget and Package Manager
-    if (Result = -1) then
-    begin
-      i := Pos(PROGRESS_LINE, Message);
-      Buffer := Copy(Message, i - 4, i - 1);
-      Result := ParseValue(' ', PROGRESS_LINE, Buffer);
-    end;
-
-    // If we detect "100%" then the value is 100...
-    if (Result = -1) and (IsInString(FULL, Buffer)) then
-      Result := 100;
-  end;
-
 begin
-  if not IsInString(PROGRESS_LINE, Message) then
-    PrintLine
-  else
-  begin
-    // Handle percent steps (0% to 100%)
-    Value := ExtractValue;
-    if (not IsSafeAbortRequested) and (Value <> -1) then
-    begin
-      pgbOperationProgress.Position := Value;
-      pgbOperationProgress.Style := pbstNormal;
-    end
-    else
-      PrintLine;
+  // Handle percent steps (0% to 100%)
+  case IsProgressLine(Message) of
+    // The current line contains a percentage. We will extract it and handle it
+    True:
+      begin
+        Value := ExtractValueFromLine(Message);
+        if (not IsSafeAbortRequested) and (Value <> -1) then
+        begin
+          pgbOperationProgress.Position := Value;
+          pgbOperationProgress.Style := pbstNormal;
+        end;
+      end;
+    // The current line don't have any percentage.
+    False:
+      begin
+        if (fProgressType <> ptPercentagePersistent) then
+          // We don't have any percentage currently, so reset the flag.
+          fProgressType := ptNoPercentage;
+      end;
   end;
+
+  // Display the line
+  PrintLine(Message);
 end;
 
 function IsProgressAutoClose: Boolean;

@@ -187,10 +187,20 @@ begin
 end;
 
 function TKallistiPortItem.DeleteInstallPortDirectoryIfNeeded: Boolean;
+var
+  ExamplePortDirectory: TFileName;
+
 begin
   Result := True; // By default, everything is OK
+
+  // Clean-up the kos-ports/lib/<lib> directory if needed
   if not IsEmpty(InstallDirectory) and DirectoryExists(InstallDirectory) then
     Result := KillDirectory(InstallDirectory);
+
+  // Clean-up the kos-ports/examples/<lib> directory if needed
+  ExamplePortDirectory := Environment.FileSystem.Kallisti.KallistiPortsDirectory
+    + 'examples' + DirectorySeparator + Name + DirectorySeparator;
+  KillDirectory(ExamplePortDirectory);
 end;
 
 procedure TKallistiPortItem.DetectUsability;

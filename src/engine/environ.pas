@@ -962,7 +962,9 @@ end;
 procedure TDreamcastSoftwareDevelopmentEnvironment.HandleShellCommandRunnerTerminate
   (Sender: TObject);
 begin
-  fShellCommandBufferOutput := fShellCommandRunner.BufferOutput.Text;
+  fShellCommandBufferOutput := EmptyStr;
+  if Assigned(fShellCommandRunner) then
+    fShellCommandBufferOutput := fShellCommandRunner.BufferOutput.Text;
 end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.ExecuteShellCommandRunner(
