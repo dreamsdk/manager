@@ -516,7 +516,7 @@ begin
       begin
         fAutoDetectedDebuggerProfileKey := Packages.GdbProfiles[i].ProfileKey;
         KillFile(StampFileName);
-        // TODO: We retain only the newer version...
+        // TODO: We retain only the newer version... ? not really needed probably
       end;
     end;
   end;
@@ -528,7 +528,9 @@ procedure TPackageManager.InitializeOperations;
 var
   DebuggerPackage,
   ToolchainArmPackage,
-  ToolchainSuperHPackage: TFileName;
+  ToolchainArmWrappersPackage,
+  ToolchainSuperHPackage,
+  ToolchainSuperHWrappersPackage: TFileName;
 
 begin
   fAborted := False;
@@ -547,11 +549,15 @@ begin
     begin
       // ARM
       ToolchainArmPackage := GetToolchainPackage(ToolchainProfileKey, tkARM);
+      ToolchainArmWrappersPackage := GetToolchainWrappersPackage(ToolchainProfileKey, tkARM);
       Add(ToolchainArmPackage, FileSystem.ToolchainBase);
+      Add(ToolchainArmWrappersPackage, FileSystem.ToolchainBase); // DreamSDK Runner wrappers for IDE
 
       // Super-H
       ToolchainSuperHPackage := GetToolchainPackage(ToolchainProfileKey, tkSuperH);
+      ToolchainSuperHWrappersPackage := GetToolchainWrappersPackage(ToolchainProfileKey, tkSuperH);
       Add(ToolchainSuperHPackage, FileSystem.ToolchainBase);
+      Add(ToolchainSuperHWrappersPackage, FileSystem.ToolchainBase); // DreamSDK Runner wrappers for IDE
     end;
   end;
 

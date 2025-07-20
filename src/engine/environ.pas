@@ -250,9 +250,11 @@ type
   // Class for toolchain profile information
   TToolchainProfileInfo = class(TObject)
   private
+    fArmEabiWrapperPackage: TFileName;
     fBitness: TPortableExecutableBitness;
     fProfileKey: string;
     fName: string;
+    fShElfWrapperPackage: TFileName;
     fVersion: string;
     fDescription: string;
     fArmEabiPackage: TFileName;
@@ -260,6 +262,8 @@ type
     fChecksum: string;
   protected
     function GetPackageForToolchainKind(ToolchainKind: TToolchainKind): TFileName;
+    property ArmEabiWrapperPackage: TFileName read fArmEabiWrapperPackage;
+    property ShElfWrapperPackage: TFileName read fShElfWrapperPackage;
   public
     constructor Create;
 
@@ -332,6 +336,8 @@ type
     function GetGdbProfileByKey(const ProfileKey: string): TGdbProfileInfo;
     function GetGdbPackage(const ProfileKey: string): TFileName;
     function GetToolchainPackage(const ProfileKey: string;
+      ToolchainKind: TToolchainKind): TFileName;
+    function GetToolchainWrappersPackage(const ProfileKey: string;
       ToolchainKind: TToolchainKind): TFileName;
 
     // Utility methods
@@ -1448,10 +1454,17 @@ begin
         Profile.fVersion := IniFile.ReadString(SectionName, 'Version', '');
         Profile.fDescription := IniFile.ReadString(SectionName, 'Description', '');
 
+        // ARM
         Profile.fArmEabiPackage := fOwner.PackagesBase +
           IniFile.ReadString(SectionName, 'ArmEabiPackage', '');
+        Profile.fArmEabiWrapperPackage := fOwner.PackagesBase
+          + 'arm-eabi-wrappers-bin.7z';
+
+        // Super-H
         Profile.fShElfPackage := fOwner.PackagesBase +
           IniFile.ReadString(SectionName, 'ShElfPackage', '');
+        Profile.fShElfWrapperPackage := fOwner.PackagesBase
+          + 'sh-elf-wrappers-bin.7z';
 
         // Handle Bitness
         Profile.fBitness := pebUnknown;
@@ -1669,6 +1682,23 @@ begin
   Profile := GetToolchainProfileByKey(ProfileKey);
   if Assigned(Profile) then
     Result := Profile.GetPackageForToolchainKind(ToolchainKind);
+end;
+
+function TDreamcastSoftwareDevelopmentFileSystemPackages.GetToolchainWrappersPackage(
+  const ProfileKey: string; ToolchainKind: TToolchainKind): TFileName;
+var
+  Profile: TToolchainProfileInfo;
+
+begin
+  Result := EmptyStr;
+  Profile := GetToolchainProfileByKey(ProfileKey);
+  if Assigned(Profile) then
+    case ToolchainKind of
+      tkSuperH:
+        Result := Profile.ShElfWrapperPackage;
+      tkARM:
+        Result := Profile.ArmEabiWrapperPackage;
+    end;
 end;
 
 function TDreamcastSoftwareDevelopmentFileSystemPackages.GetAvailableToolchainProfiles: TStringList;

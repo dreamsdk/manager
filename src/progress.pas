@@ -8,6 +8,9 @@ unit Progress;
 (* Enable me if you don't want the window Stay On Top even in RELEASE mode *)
 // {$DEFINE DEBUG_PROGRESS_AVOID_STAY_ON_TOP}
 
+(* Use this if you want to debug the AddNewLine output *)
+// {$DEFINE DEBUG_PROGRESS_ADD_NEW_LINE}
+
 interface
 
 uses
@@ -311,7 +314,7 @@ begin
     pgbOperationProgress.Style := pbstMarquee;
   end;
 
-{$IFDEF DEBUG}
+{$IF DEFINED(DEBUG) AND DEFINED(DEBUG_PROGRESS_ADD_NEW_LINE)}
   DebugLog(Format('ProgressType: %d, Message: "%s"', [
     Ord(fProgressType),
     Message
