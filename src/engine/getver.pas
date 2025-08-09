@@ -304,15 +304,15 @@ procedure TComponentVersion.RetrieveVersions;
       AVersion.fBuildDate := GetFileDate(AEnvironment.GCCExecutable);
 
       AVersion.fVersionBinutils := RetrieveVersion(AEnvironment.BinutilsExecutable,
-        '--version', ' (GNU Binutils)', sLineBreak);
+        '--version', ' (GNU Binutils)', sLineBreak, [rvfRegister]);
       AVersion.fVersionGCC := RetrieveVersion(AEnvironment.GCCExecutable,
-        '--version', ') ', sLineBreak);
+        '--version', ') ', sLineBreak, [rvfRegister]);
 
       if AEnvironment.Kind <> tkARM then
       begin
         // Super-H and Win32
         AVersion.fVersionGDB := RetrieveVersion(AEnvironment.GDBExecutable,
-          '--version', ' (GDB)', sLineBreak);
+          '--version', ' (GDB)', sLineBreak, [rvfRegister]);
       end;
 
       if AEnvironment.Kind = tkSuperH then
@@ -359,19 +359,34 @@ begin
   // Retrieve components version
   with Environment.FileSystem do
   begin
-    fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak);
+    fVersionGit := RetrieveVersion('git', '--version', 'git version', sLineBreak, [
+      rvfRegister,
+      rvfUseShellRunner
+    ]);
 	  fGitInstalled := IsValidVersion(fVersionGit);
 
-    fVersionPython := RetrieveVersion('python', '--version', 'Python', sLineBreak);
+    fVersionPython := RetrieveVersion('python', '--version', 'Python', sLineBreak, [
+      rvfRegister,
+      rvfUseShellRunner
+    ]);
     fPythonInstalled := IsValidVersion(fVersionPython);
 
-    fVersionRuby := RetrieveVersion('ruby', '--version', 'ruby ', WhiteSpaceStr);
+    fVersionRuby := RetrieveVersion('ruby', '--version', 'ruby ', WhiteSpaceStr, [
+      rvfRegister,
+      rvfUseShellRunner
+    ]);
     fRubyInstalled := IsValidVersion(fVersionRuby);
 
-    fVersionCMake := RetrieveVersion('cmake', '--version', 'version ', sLineBreak);
+    fVersionCMake := RetrieveVersion('cmake', '--version', 'version ', sLineBreak, [
+      rvfRegister,
+      rvfUseShellRunner
+    ]);
     fCMakeInstalled := IsValidVersion(fVersionCMake);
 
-    fVersionMeson := RetrieveVersion('meson', '--version', True);
+    fVersionMeson := RetrieveVersion('meson', '--version', [
+      rvfRegister,
+      rvfUseShellRunner
+    ]);
     fMesonInstalled := IsValidVersion(fVersionMeson);
 
     RetrieveVersionToolchain(fToolchainVersionSuperH, ToolchainSuperH);
@@ -379,9 +394,9 @@ begin
     RetrieveVersionToolchain(fToolchainVersionWin32, ToolchainWin32);
 
     fVersionToolSerial := RetrieveVersion(DreamcastTool.SerialExecutable,
-      '-h', 'dc-tool', 'by ');
+      '-h', 'dc-tool', 'by ', [rvfRegister]);
     fVersionToolIP := RetrieveVersion(DreamcastTool.InternetProtocolExecutable,
-      '-h', 'dc-tool-ip', 'by ');
+      '-h', 'dc-tool-ip', 'by ', [rvfRegister]);
 
     RetrieveKallistiInformation;
 
