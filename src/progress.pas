@@ -106,25 +106,36 @@ begin
   LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
   try
 
-    if not Finished and AbortOperation then
+    if not Finished then
     begin
-      LogMessage(LogContext, 'PauseThreadOperation');
-      CloseAction := caNone;
-      PauseThreadOperation;
-      if MsgBoxDlg(Handle, CancelDialogCaption, CancelDialogText, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
+      LogMessage(LogContext, 'User tried to close frmProgress, but process is running');    
+    
+      if AbortOperation then
       begin
-        LogMessage(LogContext, 'StartSafeAbort');
-        StartSafeAbort
-      end
-      else
-      begin
-        LogMessage(LogContext, 'ResumeThreadOperation');
-        ResumeThreadOperation;
+        LogMessage(LogContext, 'AbortOperation is requested; pausing thread');      
+        PauseThreadOperation;
+        if MsgBoxDlg(Handle, CancelDialogCaption, CancelDialogText, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
+        begin
+          LogMessage(LogContext, 'User want to abort the current process; StartSafeAbort called');
+          StartSafeAbort;
+        end
+        else
+        begin
+          LogMessage(LogContext, 'User finally changed his/her mind; ResumeThreadOperation called');
+          ResumeThreadOperation;
+        end;    
       end;
-    end
-    else if Finished and IsPostInstallMode then
+    
+      // Abort closing the window
+      CloseAction := caNone;  
+      Exit;
+    end;
+
+    LogMessage(LogContext, 'frmProgress will close now, as process is finished');
+  
+    if IsPostInstallMode then
     begin
-      LogMessage(LogContext, 'Application.Terminate called');
+      LogMessage(LogContext, 'Closing frmProgress on post-install mode: calling Application.Terminate');
       Application.Terminate;
     end;
 
