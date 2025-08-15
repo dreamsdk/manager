@@ -482,6 +482,7 @@ uses
   FSTools,
   Unpack,
   CBTools,
+  CBVerInf,
   EnumCom,
   WtTools,
   StrTools;
