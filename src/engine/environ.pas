@@ -975,6 +975,27 @@ end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.ExecuteShellCommandRunner(
   const CommandLine: string): string;
+
+  procedure WaitForThread;
+  const
+    MAX_WAITS = 10;
+
+  var
+    Counter: Integer;
+    WaitDone: Boolean;
+
+  begin
+    Counter := 0;
+    WaitDone := False;
+    while not WaitDone do
+    begin
+      Sleep(500);
+      Inc(Counter);
+      WaitDone := (Counter >= MAX_WAITS) or (not Assigned(fShellCommandRunner)) or
+        (Assigned(fShellCommandRunner) and fShellCommandRunner.Finished);
+    end;
+  end;
+
 var
   i: Integer;
 
@@ -986,7 +1007,11 @@ begin
   DebugLog('ExecuteShellCommandRunner: ' + CommandLine + ' in: ' + GetCurrentDir);
 {$ENDIF}
 
+  // Wait for completion if needed
+  WaitForThread;
   FreeAndNil(fShellCommandRunner);
+
+  // Start new thread
   fShellCommandRunner := TRunCommandEx.Create(True);
   with fShellCommandRunner do
   begin
@@ -1013,7 +1038,8 @@ begin
     Result := fShellCommandBufferOutput;
 
 {$IFDEF DEBUG}
-    DebugLog('  ExitCode: ' + IntToStr(fShellCommandRunner.ExitCode));
+    if Assigned(fShellCommandRunner) then
+      DebugLog('  ExitCode: ' + IntToStr(fShellCommandRunner.ExitCode));
 {$ENDIF}
   end;
 end;
