@@ -51,6 +51,7 @@ type
     function GetAbortOperation: Boolean;
     function GetAutoCloseState: Boolean;
     function IsSafeAbortRequested: Boolean;
+    procedure SetFinished(AValue: Boolean);
     procedure SetIdleState(State: Boolean);
     procedure StartSafeAbort;
     procedure StopSafeAbort;
@@ -60,8 +61,9 @@ type
     procedure PrintLine(const Message: string);
     function ExtractValueFromLine(const Message: string): Integer;
   public
-    property Finished: Boolean read fFinished write fFinished;
-    procedure SetTerminateState(Success: Boolean; Aborted: Boolean);
+    property Finished: Boolean read fFinished write SetFinished;
+    procedure SetTerminateState(Success: Boolean; Aborted: Boolean;
+      ForcedAbort: Boolean = False);
     procedure SetProgressText(const Message: string);
     procedure AddNewLine(const Message: string);
     property AbortOperation: Boolean read GetAbortOperation;
@@ -224,8 +226,10 @@ begin
 
     pgbOperationProgress.Position := 0;
     Sleep(500);
-    SetIdleState(True);
-    lblProgressStep.Caption := OperationAborted;
+    (*SetIdleState(True);
+    Finished := True;
+    lblProgressStep.Caption := OperationAborted;*)
+    SetTerminateState(False, True, True);
     Application.ProcessMessages;
 
   finally
@@ -402,7 +406,27 @@ begin
   Result := tmrAbortFailSafe.Enabled;
 end;
 
-procedure TfrmProgress.SetTerminateState(Success: Boolean; Aborted: Boolean);
+procedure TfrmProgress.SetFinished(AValue: Boolean);
+var
+  LogContext: TLogMessageContext;
+
+begin
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
+  try
+    if fFinished = AValue then
+      Exit;
+
+    LogMessage(LogContext, Format('Marking frmProgress.Finished: %s', [
+      BoolToStr(AValue, True)
+    ]));
+    fFinished := AValue;
+  finally
+    LogMessageExit(LogContext);
+  end;
+end;
+
+procedure TfrmProgress.SetTerminateState(Success: Boolean; Aborted: Boolean;
+  ForcedAbort: Boolean);
 var
   Message,
   LongMessage: string;
@@ -415,6 +439,8 @@ begin
       BoolToStr(Success),
       BoolToStr(Aborted)
     ]));
+
+    Finished := True;
 
     StopSafeAbort;
     SetIdleState(True);
@@ -435,7 +461,8 @@ begin
       if IsEmpty(LongMessage) then
         LongMessage := Message;
 
-      memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [LongMessage]));
+      if not ForcedAbort then
+        memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [LongMessage]));
       lblProgressStep.Caption := Message;
     end
     else
@@ -449,7 +476,6 @@ begin
       Message,
       LongMessage
     ]));
-
   finally
     LogMessageExit(LogContext);
   end;

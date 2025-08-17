@@ -582,10 +582,18 @@ begin
 end;
 
 procedure TShellThread.SyncSetProgressTerminateState;
+var
+  LogContext: TLogMessageContext;
+
 begin
-  frmProgress.Finished := True;
-  frmProgress.SetTerminateState(fOperationSuccess, Aborted);
-  Application.ProcessMessages;
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
+  try
+    frmProgress.Finished := True;
+    frmProgress.SetTerminateState(fOperationSuccess, Aborted);
+    Application.ProcessMessages;
+  finally
+    LogMessageExit(LogContext);
+  end;
 end;
 
 function TShellThread.GetRunning: Boolean;
