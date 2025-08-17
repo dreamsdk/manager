@@ -88,6 +88,7 @@ type
     cbxUrlKallisti: TComboBox;
     cbxUrlRuby: TComboBox;
     cbxUrlKallistiPorts: TComboBox;
+    ckxAutoCheckForUpdates: TCheckBox;
     ckxDreamcastToolInternetProtocolUseARP: TCheckBox;
     ckxDreamcastToolAttachConsoleFileServer: TCheckBox;
     ckxDreamcastToolClearScreenBeforeDownload: TCheckBox;
@@ -318,6 +319,7 @@ type
     procedure cbxUrlKallistiChange(Sender: TObject);
     procedure cbxUrlKallistiPortsChange(Sender: TObject);
     procedure cbxUrlRubyChange(Sender: TObject);
+    procedure ckxAutoCheckForUpdatesChange(Sender: TObject);
     procedure ckxDreamcastToolInternetProtocolUseARPChange(Sender: TObject);
     procedure edtDreamcastToolInternetProtocolAddressChange(Sender: TObject);
     procedure edtDreamcastToolInternetProtocolMACChange(Sender: TObject);
@@ -343,6 +345,7 @@ type
     procedure tmDisplayKallistiPortsTimer(Sender: TObject);
     procedure tmrShellThreadTerminateTimer(Sender: TObject);
   private
+    fAutoCheckForUpdatesCaptionString: string;
     fPackageProfileKeysMapToolchains: TStringIntegerMap;
     fPackageProfileKeysMapGdb: TStringIntegerMap;
     fPackageManagerSelectedOfflinePackage: TPackageManagerRequestOffline;
@@ -354,10 +357,12 @@ type
     fShellThreadInputRequest: TShellThreadInputRequest;
     fShellThreadOutputResult: TShellThreadOutputResponse;
     fShellThreadUpdateState: TUpdateOperationState;
+    procedure AutoCheckForUpdatesUpdateUI;
     function CheckRepositoriesUrl: Boolean;
     function CheckComponentsChangeAllowRequestedOperation: Boolean;
     procedure DisplayEnvironmentComponentVersions;
     procedure DisplayKallistiPorts(ClearList: Boolean);
+    procedure DoCheckForUpdates;
     procedure DoKallistiPortsClearList;
     procedure DoUpdateAll;
     function GetComponentSelectedOperation: TPackageManagerRequest;
@@ -371,6 +376,7 @@ type
     procedure LoadConfiguration;
     function BooleanToCaption(Value: Boolean): string;
     function BooleanToCheckboxState(State: Boolean): TCheckBoxState;
+    procedure CheckForUpdates(SilentMode: Boolean);
     procedure ClearKallistiPortPanel;
     procedure DoComponentsClearLists;
     procedure SetSelectedSerialBaudrate(AValue: Integer);
@@ -481,7 +487,6 @@ uses
   Elevate,
   FSTools,
   Unpack,
-  CBTools,
   CBVerInf,
   EnumCom,
   WtTools,
@@ -901,6 +906,17 @@ begin
   end;
 end;
 
+procedure TfrmMain.AutoCheckForUpdatesUpdateUI;
+begin
+  ckxAutoCheckForUpdates.Caption := Format(fAutoCheckForUpdatesCaptionString, [
+    FormatDateTime(
+      STRING_DATE_FORMAT_SHORT,
+      DreamcastSoftwareDevelopmentKitManager.Environment.Settings
+        .AutoCheckForUpdatesLastCheckDate
+    )
+  ]);
+end;
+
 function TfrmMain.CheckRepositoriesUrl: Boolean;
 
   function CheckRepositoryUrl(ComboBox: TComboBox): Boolean;
@@ -1051,6 +1067,27 @@ procedure TfrmMain.DisplayKallistiPorts(ClearList: Boolean);
 begin
   fKallistiPortsClearList := ClearList;
   tmDisplayKallistiPorts.Enabled := True;
+end;
+
+procedure TfrmMain.DoCheckForUpdates;
+const
+  NEXT_DATE_SHIFT_IN_DAYS = 7;
+
+var
+  Today: TDateTime;
+
+begin
+  with DreamcastSoftwareDevelopmentKitManager.Environment.Settings do
+    if AutoCheckForUpdates then
+    begin
+      Today := Date();
+      if Today >= AutoCheckForUpdatesLastCheckDate then
+      begin
+        CheckForUpdates(True);
+        AutoCheckForUpdatesLastCheckDate := Today + NEXT_DATE_SHIFT_IN_DAYS;
+        AutoCheckForUpdatesUpdateUI;
+      end;
+    end;
 end;
 
 procedure TfrmMain.DoKallistiPortsClearList;
@@ -1206,6 +1243,58 @@ begin
   Result := cbUnchecked;
   if State then
     Result := cbGrayed;
+end;
+
+procedure TfrmMain.CheckForUpdates(SilentMode: Boolean);
+var
+  RemoteVersion: string;
+
+  function GetRemoteVersion: string;
+  const
+    UPDATE_URL = 'http://www.dreamsdk.org/.update/version.txt';
+
+  var
+    HTTPClient: TFPHTTPClient;
+
+  begin
+    try
+      HTTPClient := TFPHTTPClient.Create(nil);
+      try
+        HTTPClient.AllowRedirect := True;
+        Result := Trim(HTTPClient.Get(UPDATE_URL));
+      finally
+        HTTPClient.Free;
+      end;
+    except
+      on E:Exception do
+      begin
+        Result := EmptyStr;
+{$IFDEF DEBUG}
+        DebugLog('GetRemoteVersion Exception: ' + E.Message);
+{$ENDIF}
+      end;
+    end;
+  end;
+
+begin
+  RemoteVersion := GetRemoteVersion;
+
+{$IFDEF DEBUG}
+  DebugLog('Version: ' + RemoteVersion);
+{$ENDIF}
+
+  if IsEmpty(RemoteVersion) then
+    MsgBox(DialogWarningTitle, MsgBoxDlgTranslateString(Format(UnableToRetrieveRemotePackageVersion, [GetProductName])), mtWarning, [mbOk])
+  else
+  begin
+    if CompareVersion(FullVersionNumber, RemoteVersion) > 0 then
+    begin
+      if MsgBox(DialogQuestionTitle, Format(PackageUpdateAvailable, [GetProductName, RemoteVersion]), mtConfirmation, [mbYes, mbNo]) = mrYes then
+        OpenURL(GetComments);
+    end
+    else if not SilentMode then
+      MsgBox(DialogInformationTitle, Format(PackageUpToDate, [GetProductName]), mtInformation, [mbOk]);
+  end;
 end;
 
 procedure TfrmMain.ClearKallistiPortPanel;
@@ -1659,6 +1748,10 @@ var
 
 begin
   btnCheckForUpdates.Caption := Format(btnCheckForUpdates.Caption, [GetProductName]);
+  fAutoCheckForUpdatesCaptionString := ckxAutoCheckForUpdates.Caption;
+  ckxAutoCheckForUpdates.Checked := DreamcastSoftwareDevelopmentKitManager
+    .Environment.Settings.AutoCheckForUpdates;
+  AutoCheckForUpdatesUpdateUI;
   gbxPackageInfo.Caption := Format(gbxPackageInfo.Caption, [GetProductName]);
   lblTitleAbout.Caption := Format(lblTitleAbout.Caption, [GetProductName]);
 
@@ -1745,9 +1838,6 @@ begin
       );
 {$ENDIF}
     end;
-
-    // Manage MSYS/MSYS2 environments
-    btnOpenMinGWManager.Enabled := (Environment.FoundationKind = efkMinGWMSYS);
   end;
 end;
 
@@ -2550,64 +2640,22 @@ begin
 end;
 
 procedure TfrmMain.btnCheckForUpdatesClick(Sender: TObject);
-var
-  RemoteVersion: string;
-
-  function GetRemoteVersion: string;
-  const
-    UPDATE_URL = 'http://www.dreamsdk.org/.update/version.txt';
-
-  var
-    HTTPClient: TFPHTTPClient;
-
-  begin
-    try
-      HTTPClient := TFPHTTPClient.Create(nil);
-      try
-        HTTPClient.AllowRedirect := True;
-        Result := Trim(HTTPClient.Get(UPDATE_URL));
-      finally
-        HTTPClient.Free;
-      end;
-    except
-      on E:Exception do
-      begin
-        Result := EmptyStr;
-{$IFDEF DEBUG}
-        DebugLog('GetRemoteVersion Exception: ' + E.Message);
-{$ENDIF}
-      end;
-    end;
-  end;
-
 begin
-  RemoteVersion := GetRemoteVersion;
-
-{$IFDEF DEBUG}
-  DebugLog('Version: ' + RemoteVersion);
-{$ENDIF}
-
-  if IsEmpty(RemoteVersion) then
-    MsgBox(DialogWarningTitle, MsgBoxDlgTranslateString(Format(UnableToRetrieveRemotePackageVersion, [GetProductName])), mtWarning, [mbOk])
-  else
-  begin
-    if CompareVersion(FullVersionNumber, RemoteVersion) > 0 then
-    begin
-      if MsgBox(DialogQuestionTitle, Format(PackageUpdateAvailable, [GetProductName, RemoteVersion]), mtConfirmation, [mbYes, mbNo]) = mrYes then
-        OpenURL(GetComments);
-    end
-    else
-      MsgBox(DialogInformationTitle, Format(PackageUpToDate, [GetProductName]), mtInformation, [mbOk]);
-  end;
+  CheckForUpdates(False);
 end;
 
 procedure TfrmMain.btnOpenMinGWManagerClick(Sender: TObject);
 begin
-  with DreamcastSoftwareDevelopmentKitManager do
-  begin
-    if (Environment.FoundationKind = efkMinGWMSYS) then
-      RunNoWait(Environment.FileSystem.Shell.MinGWGetExecutable);
-  end;
+  with DreamcastSoftwareDevelopmentKitManager.Environment do
+    case FoundationKind of
+      efkMinGWMSYS:
+        RunNoWait(FileSystem.Shell.MinGWGetExecutable);
+      efkMinGW64MSYS2:
+        MsgBoxDlg(Handle, DialogInformationTitle,
+          MsgBoxDlgTranslateString(Format(UsePacmanToManageOnMSYS2, [
+            GetProductName
+          ])), mtInformation, [mbOK]);
+    end;
 end;
 
 procedure TfrmMain.btnOpenMSYSClick(Sender: TObject);
@@ -3052,6 +3100,12 @@ begin
     .RubyURL := cbxUrlRuby.Text;
 end;
 
+procedure TfrmMain.ckxAutoCheckForUpdatesChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Settings
+    .AutoCheckForUpdates := ckxAutoCheckForUpdates.Checked;
+end;
+
 procedure TfrmMain.ckxDreamcastToolInternetProtocolUseARPChange(Sender: TObject
   );
 begin
@@ -3148,7 +3202,13 @@ end;
 
 procedure TfrmMain.FormActivate(Sender: TObject);
 begin
+  // Update UI label
   SetControlMultilineLabel(ckxDreamcastToolInternetProtocolUseARP);
+
+  // Automatically check for updates if enabled
+  DoCheckForUpdates;
+
+  // Install or update required for KOS
   if not IsPostInstallMode and IsInstallOrUpdateRequired then
     if MsgBox(DialogQuestionTitle, InstallOrUpdateRequiredDoItNow, mtConfirmation, [mbYes, mbNo]) = mrYes then
       ExecuteThreadOperation(stiKallistiManage);

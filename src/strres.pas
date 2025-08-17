@@ -81,6 +81,7 @@ resourcestring
   KallistiMainButtonRebuild = '&Rebuild...';
   RepositoryOfflineStatusOnline = 'Online';
   RepositoryOfflineStatusOffline = 'Offline';
+  UsePacmanToManageOnMSYS2 = 'Since you are using MinGW-w64/MSYS2 as a foundation, you need to use the "pacman" tool directly from %s Shell.';
 
   // Progress
   SendingCancelSignal = 'Sending abort signal, please wait...';

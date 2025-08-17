@@ -30,8 +30,8 @@ object frmMain: TfrmMain
     Height = 348
     Top = 8
     Width = 666
-    ActivePage = tsIDE
-    TabIndex = 5
+    ActivePage = tsHome
+    TabIndex = 0
     TabOrder = 1
     OnChange = pcMainChange
     OnChanging = pcMainChanging
@@ -2217,11 +2217,11 @@ object frmMain: TfrmMain
       end
       object gbxModuleInfo: TGroupBox
         Left = 332
-        Height = 190
+        Height = 166
         Top = 36
         Width = 322
         Caption = 'Components Information:'
-        ClientHeight = 170
+        ClientHeight = 146
         ClientWidth = 318
         TabOrder = 0
         object edtModuleFileVersion: TLabeledEdit
@@ -2486,11 +2486,11 @@ object frmMain: TfrmMain
       end
       object pnlAbout: TPanel
         Left = 332
-        Height = 85
-        Top = 232
+        Height = 105
+        Top = 212
         Width = 322
         BevelOuter = bvLowered
-        ClientHeight = 85
+        ClientHeight = 105
         ClientWidth = 322
         TabOrder = 4
         object btnCredits: TButton
@@ -2510,6 +2510,15 @@ object frmMain: TfrmMain
           Caption = 'Check for &Updates...'
           TabOrder = 1
           OnClick = btnCheckForUpdatesClick
+        end
+        object ckxAutoCheckForUpdates: TCheckBox
+          Left = 40
+          Height = 19
+          Top = 76
+          Width = 223
+          Caption = 'Automatic update check (next run: %s)'
+          TabOrder = 2
+          OnChange = ckxAutoCheckForUpdatesChange
         end
       end
     end
