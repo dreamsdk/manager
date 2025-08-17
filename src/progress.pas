@@ -226,9 +226,6 @@ begin
 
     pgbOperationProgress.Position := 0;
     Sleep(500);
-    (*SetIdleState(True);
-    Finished := True;
-    lblProgressStep.Caption := OperationAborted;*)
     SetTerminateState(False, True, True);
     Application.ProcessMessages;
 
