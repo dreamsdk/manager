@@ -104,10 +104,39 @@ type
     gbxUrlRuby: TGroupBox;
     gbxDebugger: TGroupBox;
     gbxWindowsTerminal: TGroupBox;
+    lblManagerCompilerInfo: TLabel;
+    lblModuleFileVersion: TLabel;
+    lblManagerTargetInfo: TLabel;
+    lblManagerLCLVersion: TLabel;
+    lblModuleCompiledDate: TLabel;
+    lblManagerWidgetSet: TLabel;
+    lblModuleProductVersion: TLabel;
+    lblProductVersion: TLabel;
+    lblProductBuildDate: TLabel;
+    lblProductHelpVersion: TLabel;
+    lblManagerOS: TLabel;
+    lblTextManagerCompilerInfo: TLabel;
+    lblTextModuleFileVersion: TLabel;
+    lblTextManagerTargetInfo: TLabel;
+    lblTextManagerLCLVersion: TLabel;
+    lblTextModuleCompiledDate: TLabel;
+    lblTextManagerWidgetSet: TLabel;
+    lblTextModuleProductVersion: TLabel;
+    lblTextProductVersion: TLabel;
+    lblPortURL: TLabel;
+    lblPortMaintainer: TLabel;
+    lblPortLicense: TLabel;
+    lblTextPortLicense: TLabel;
+    lblTextPortURL: TLabel;
+    lblTextPortVersion: TLabel;
     lblComponentsConfiguration: TLabel;
     lblIdeCodeBlocksUsersAvailable: TLabel;
     lblTextChangeLogKallistiOS: TLabel;
     lblTextOfflineStatusKallistiOS: TLabel;
+    lblTextPortMaintainer: TLabel;
+    lblTextProductBuildDate: TLabel;
+    lblTextProductHelpVersion: TLabel;
+    lblTextManagerOS: TLabel;
     lblTextToolchainBuildDate: TLabel;
     lblTextToolchainBuildDateARM: TLabel;
     lblToolchain: TLabel;
@@ -125,6 +154,7 @@ type
     lblBuildDateToolchainARM: TLabel;
     lblOfflineStatusKallistiOS: TLabel;
     lblVersionChangeLogKallistiOS: TLabel;
+    lblPortVersion: TLabel;
     lblVersionMRuby: TLabel;
     lblVersionRuby: TLabel;
     lblVersionMeson: TLabel;
@@ -137,21 +167,6 @@ type
     edtDreamcastToolCustomArguments: TEdit;
     edtDreamcastToolInternetProtocolAddress: TMaskEdit;
     edtDreamcastToolInternetProtocolMAC: TMaskEdit;
-    edtModuleCompiledDate: TLabeledEdit;
-    edtManagerCompilerInfo: TLabeledEdit;
-    edtModuleFileVersion: TLabeledEdit;
-    edtModuleProductVersion: TLabeledEdit;
-    edtManagerLCLVersion: TLabeledEdit;
-    edtManagerOS: TLabeledEdit;
-    edtProductHelpVersion: TLabeledEdit;
-    edtProductVersion: TLabeledEdit;
-    edtManagerTargetInfo: TLabeledEdit;
-    edtManagerWidgetSet: TLabeledEdit;
-    edtPortLicense: TLabeledEdit;
-    edtPortMaintainer: TLabeledEdit;
-    edtPortURL: TLabeledEdit;
-    edtPortVersion: TLabeledEdit;
-    edtProductBuildDate: TLabeledEdit;
     gbxIdeCodeBlocksInstallDir: TGroupBox;
     gbxIdeList: TGroupBox;
     gbxIdeAll: TGroupBox;
@@ -324,16 +339,15 @@ type
     procedure edtDreamcastToolInternetProtocolAddressChange(Sender: TObject);
     procedure edtDreamcastToolInternetProtocolMACChange(Sender: TObject);
     procedure edtIdeCodeBlocksInstallDirChange(Sender: TObject);
-    procedure edtPortMaintainerClick(Sender: TObject);
-    procedure edtPortURLClick(Sender: TObject);
-    procedure edtPortURLMouseEnter(Sender: TObject);
-    procedure edtPortURLMouseLeave(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure gbxIdeAllClick(Sender: TObject);
+    procedure lblPortMaintainerClick(Sender: TObject);
+    procedure lblPortMaintainerMouseEnter(Sender: TObject);
+    procedure lblPortMaintainerMouseLeave(Sender: TObject);
     procedure lbxIdeListClickCheck(Sender: TObject);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
@@ -393,6 +407,7 @@ type
     procedure UpdateRubyControls;
     procedure UpdateWindowsTerminalControls;
     procedure InstallDreamcastTool;
+    procedure HandleUrlProtocol(Sender: TObject);
     procedure HandleInvalidInternetProtocolAddress(const InvalidMaskFormat: Boolean);
     procedure HandleInvalidMediaAccessControlAddress(const InvalidMaskFormat: Boolean);
     procedure LoadRepositoriesSelectionList;
@@ -668,6 +683,32 @@ begin
 
 end;
 
+procedure TfrmMain.lblPortMaintainerClick(Sender: TObject);
+begin
+  HandleUrlProtocol(Sender);
+end;
+
+procedure TfrmMain.lblPortMaintainerMouseEnter(Sender: TObject);
+begin
+  with (Sender as TLabel) do
+    if IsInString('@', Text) or IsInString('http', Text) then
+    begin
+      Font.Underline := True;
+      Font.Color := clHotLight;
+      Cursor := crHandPoint;
+    end;
+end;
+
+procedure TfrmMain.lblPortMaintainerMouseLeave(Sender: TObject);
+begin
+  with (Sender as TLabel) do
+  begin
+    Font.Underline := False;
+    Font.Color := clDefault;
+    Cursor := crDefault;
+  end;
+end;
+
 procedure TfrmMain.lbxIdeListClickCheck(Sender: TObject);
 begin
   RefreshIdeScreen;
@@ -685,11 +726,11 @@ begin
   if Assigned(SelectedKallistiPort) and User then
   begin
     lblPortName.Caption := SelectedKallistiPort.Name;
-    edtPortVersion.Text := SelectedKallistiPort.Version;
-    edtPortLicense.Text := SelectedKallistiPort.License;
-    edtPortMaintainer.Text := SelectedKallistiPort.Maintainer;
+    lblPortVersion.Caption := SelectedKallistiPort.Version;
+    lblPortLicense.Caption := SelectedKallistiPort.License;
+    lblPortMaintainer.Caption := SelectedKallistiPort.Maintainer;
+    lblPortURL.Caption := SelectedKallistiPort.URL;
     memPortShortDescription.Text := SelectedKallistiPort.ShortDescription;
-    edtPortURL.Text := SelectedKallistiPort.URL;
     memPortDescription.Text := SelectedKallistiPort.Description;
     UpdateKallistiPortControls;
 {$IFDEF DEBUG}
@@ -1299,12 +1340,12 @@ end;
 
 procedure TfrmMain.ClearKallistiPortPanel;
 begin
-  lblPortName.Caption := '';
-  edtPortVersion.Clear;
-  edtPortLicense.Clear;
-  edtPortMaintainer.Clear;
+  lblPortName.Caption := EmptyStr;
+  lblPortVersion.Caption := EmptyStr;
+  lblPortLicense.Caption := EmptyStr;
+  lblPortMaintainer.Caption := EmptyStr;
+  lblPortURL.Caption := EmptyStr;
   memPortShortDescription.Clear;
-  edtPortURL.Clear;
   memPortDescription.Clear;
   btnPortInstall.Enabled := False;
   btnPortUninstall.Enabled := False;
@@ -1638,6 +1679,40 @@ begin
   end;
 end;
 
+procedure TfrmMain.HandleUrlProtocol(Sender: TObject);
+const
+  MAIL_TO_URL = 'mailto:%s?subject=%s';
+
+var
+  Value,
+  MailTo,
+  Subject: string;
+
+  function EncodeUrl(Value: string): string;
+  begin
+    Result := StringReplace(Value, WhiteSpaceStr, '%20', [rfReplaceAll]);
+  end;
+
+begin
+  Value := EmptyStr;
+  if Sender is TEdit then
+    Value := (Sender as TEdit).Text
+  else if Sender is TLabeledEdit then
+    Value := (Sender as TLabeledEdit).Text
+  else if Sender is TLabel then
+    Value := (Sender as TLabel).Caption;
+
+  if IsInString('@', Value) then
+  begin
+    MailTo := EncodeUrl(Value);
+    Subject := EncodeUrl(Format(MailToSubject, [
+      SelectedKallistiPort.Name
+    ]));
+    OpenURL(Format(MAIL_TO_URL, [MailTo, Subject]));
+  end else if IsInString('http', Value) then
+    OpenURL(Value);
+end;
+
 procedure TfrmMain.HandleInvalidInternetProtocolAddress(const InvalidMaskFormat: Boolean);
 var
   InvalidValue: Boolean;
@@ -1710,11 +1785,11 @@ var
       .FileSystem.Shell.DreamSDKDirectory + VERSION_FILE_NAME);
     try
       FullVersionNumber := IniFile.ReadString(VERSION_SECTION_NAME, 'BuildNumber', UNKNOWN_VALUE);
-      edtProductVersion.Text := Format('%s (%s)', [
+      lblProductVersion.Caption := Format('%s (%s)', [
         IniFile.ReadString(VERSION_SECTION_NAME, 'Release', UNKNOWN_VALUE),
         FullVersionNumber
       ]);
-      edtProductBuildDate.Text := IniFile.ReadString(VERSION_SECTION_NAME, 'Date', UNKNOWN_VALUE);
+      lblProductBuildDate.Caption := IniFile.ReadString(VERSION_SECTION_NAME, 'Date', UNKNOWN_VALUE);
     finally
       IniFile.Free;
     end;
@@ -1743,7 +1818,7 @@ var
     else
       SetRegisteredVersion(HelpFileName, HelpFileVersion);
 
-    edtProductHelpVersion.Text := HelpFileVersion;
+    lblProductHelpVersion.Caption := HelpFileVersion;
   end;
 
 begin
@@ -1755,11 +1830,11 @@ begin
   gbxPackageInfo.Caption := Format(gbxPackageInfo.Caption, [GetProductName]);
   lblTitleAbout.Caption := Format(lblTitleAbout.Caption, [GetProductName]);
 
-  edtManagerCompilerInfo.Text := GetCompilerInfo;
-  edtManagerTargetInfo.Text := GetTargetInfo;
-  edtManagerOS.Text := GetOS;
-  edtManagerLCLVersion.Text := GetLCLVersion;
-  edtManagerWidgetSet.Text := GetWidgetSet;
+  lblManagerCompilerInfo.Caption := GetCompilerInfo;
+  lblManagerTargetInfo.Caption := GetTargetInfo;
+  lblManagerOS.Caption := GetOS;
+  lblManagerLCLVersion.Caption := GetLCLVersion;
+  lblManagerWidgetSet.Caption := GetWidgetSet;
 
   for i := 0 to ModuleVersionList.Count - 1 do
     cbxModuleSelection.Items.Add(ModuleVersionList[i].FileDescription);
@@ -1854,11 +1929,12 @@ var
   ItemButton: TButton;
   ItemLabel: TLabel;
 
-  procedure SetTransparent(Control: TControl);
+  procedure SetTransparentLabeledEdit(LabeledEdit: TLabeledEdit);
   begin
-    Control.ControlStyle := ItemEdit.ControlStyle - [csOpaque]
+    LabeledEdit.ControlStyle := LabeledEdit.ControlStyle - [csOpaque]
       + [csParentBackground];
-    Control.Color := clNone;
+    LabeledEdit.Color := clRed;
+    LabeledEdit.ParentColor := False;
   end;
 
 begin
@@ -1893,8 +1969,7 @@ begin
         DebugLog('    TLabeledEdit: ' + ItemEdit.Name);
 {$ENDIF}
         // Handle background color
-        SetTransparent(ItemEdit);
-        ItemEdit.ParentColor := False;
+        SetTransparentLabeledEdit(ItemEdit);
       end;
 
       // TLabel
@@ -3051,9 +3126,9 @@ var
   ValidItemIndex: Boolean;
 
 begin
-  edtModuleProductVersion.Text := EmptyStr;
-  edtModuleCompiledDate.Text := EmptyStr;
-  edtModuleFileVersion.Text := EmptyStr;
+  lblModuleProductVersion.Caption := EmptyStr;
+  lblModuleCompiledDate.Caption := EmptyStr;
+  lblModuleFileVersion.Caption := EmptyStr;
 
   ValidItemIndex := (cbxModuleSelection.ItemIndex > -1) and
     (cbxModuleSelection.ItemIndex < ModuleVersionList.Count);
@@ -3063,9 +3138,9 @@ begin
     ModuleVersionItem := ModuleVersionList[cbxModuleSelection.ItemIndex];
     if Assigned(ModuleVersionItem) then
     begin
-      edtModuleProductVersion.Text := ModuleVersionItem.ProductVersion;
-      edtModuleCompiledDate.Text := ModuleVersionItem.BuildDateTime;
-      edtModuleFileVersion.Text := ModuleVersionItem.FileVersion;
+      lblModuleProductVersion.Caption := ModuleVersionItem.ProductVersion;
+      lblModuleCompiledDate.Caption := ModuleVersionItem.BuildDateTime;
+      lblModuleFileVersion.Caption := ModuleVersionItem.FileVersion;
     end;
   end;
 end;
@@ -3137,67 +3212,6 @@ begin
 {$ELSE}
 begin
 {$ENDIF}
-end;
-
-procedure TfrmMain.edtPortMaintainerClick(Sender: TObject);
-const
-  MAIL_TO_URL = 'mailto:%s?subject=%s';
-
-var
-  MailTo,
-  Subject: string;
-
-  function EncodeUrl(Value: string): string;
-  begin
-    Result := StringReplace(Value, WhiteSpaceStr, '%20', [rfReplaceAll]);
-  end;
-
-begin
-  if IsInString('@', edtPortMaintainer.Text) then
-  begin
-    MailTo := EncodeUrl(edtPortMaintainer.Text);
-    Subject := EncodeUrl(Format(MailToSubject, [SelectedKallistiPort.Name]));
-    OpenURL(Format(MAIL_TO_URL, [MailTo, Subject]));
-  end;
-end;
-
-procedure TfrmMain.edtPortURLClick(Sender: TObject);
-var
-  Url: string;
-
-begin
-  Url := '';
-
-  if Sender is TEdit then
-    Url := (Sender as TEdit).Text
-  else if Sender is TLabeledEdit then
-    Url := (Sender as TLabeledEdit).Text
-  else
-    Url := (Sender as TLabel).Caption;
-
-  if IsInString('http', Url) then
-    OpenURL(Url);
-end;
-
-procedure TfrmMain.edtPortURLMouseEnter(Sender: TObject);
-begin
-  with (Sender as TLabeledEdit) do
-    if IsInString('@', Text) or IsInString('http', Text) then
-    begin
-      Font.Underline := True;
-      Font.Color := clHotLight;
-      Cursor := crHandPoint;
-    end;
-end;
-
-procedure TfrmMain.edtPortURLMouseLeave(Sender: TObject);
-begin
-  with (Sender as TLabeledEdit) do
-  begin
-    Font.Underline := False;
-    Font.Color := clDefault;
-    Cursor := crDefault;
-  end;
 end;
 
 procedure TfrmMain.FormActivate(Sender: TObject);

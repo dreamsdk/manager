@@ -19,7 +19,7 @@ resourcestring
 
   // Main
   ElevatedCaption = '%s [Elevated]';
-  MailToSubject = 'Question about the KallistiOS Port: %s';
+  MailToSubject = '[KallistiOS] Question regarding the port: %s';
   RestoreDefaultsText = 'Are you sure to restore Options and Dreamcast Tool settings to their defaults?';
   UserInterfaceNotInstalledText = 'Not installed';
   UserInterfaceInstalledText = 'OK';

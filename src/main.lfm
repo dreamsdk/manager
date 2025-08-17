@@ -346,7 +346,7 @@ object frmMain: TfrmMain
           Top = 264
           Width = 125
           Caption = 'Uninst&all...'
-          TabOrder = 7
+          TabOrder = 3
           OnClick = btnPortUninstallClick
         end
         object btnPortUpdate: TButton
@@ -355,7 +355,7 @@ object frmMain: TfrmMain
           Top = 264
           Width = 125
           Caption = 'U&pdate...'
-          TabOrder = 6
+          TabOrder = 2
           OnClick = btnPortUpdateClick
         end
         object btnPortInstall: TButton
@@ -364,86 +364,8 @@ object frmMain: TfrmMain
           Top = 264
           Width = 125
           Caption = '&Install...'
-          TabOrder = 5
-          OnClick = btnPortInstallClick
-        end
-        object edtPortURL: TLabeledEdit
-          Left = 72
-          Height = 15
-          Top = 240
-          Width = 322
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 23
-          EditLabel.Caption = 'URL'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 4
-          Text = 'edtPortURL'
-          OnClick = edtPortURLClick
-          OnMouseEnter = edtPortURLMouseEnter
-          OnMouseLeave = edtPortURLMouseLeave
-        end
-        object edtPortLicense: TLabeledEdit
-          Left = 72
-          Height = 15
-          Top = 216
-          Width = 322
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 41
-          EditLabel.Caption = 'License'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 3
-          Text = 'edtPortLicense'
-        end
-        object edtPortMaintainer: TLabeledEdit
-          Left = 72
-          Height = 15
-          Top = 192
-          Width = 322
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 60
-          EditLabel.Caption = 'Maintainer'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 2
-          Text = 'edtPortMaintainer'
-          OnClick = edtPortMaintainerClick
-          OnMouseEnter = edtPortURLMouseEnter
-          OnMouseLeave = edtPortURLMouseLeave
-        end
-        object edtPortVersion: TLabeledEdit
-          Left = 72
-          Height = 15
-          Top = 168
-          Width = 322
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 41
-          EditLabel.Caption = 'Version'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
           TabOrder = 1
-          Text = 'edtPortVersion'
+          OnClick = btnPortInstallClick
         end
         object memPortDescription: TMemo
           Left = 6
@@ -474,7 +396,94 @@ object frmMain: TfrmMain
           Top = 35
           Width = 388
           ReadOnly = True
-          TabOrder = 8
+          TabOrder = 4
+        end
+        object lblTextPortVersion: TLabel
+          Left = 8
+          Height = 15
+          Top = 168
+          Width = 61
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Version'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblTextPortMaintainer: TLabel
+          Left = 8
+          Height = 15
+          Top = 192
+          Width = 61
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Maintainer'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblTextPortLicense: TLabel
+          Left = 8
+          Height = 15
+          Top = 216
+          Width = 61
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'License'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblTextPortURL: TLabel
+          Left = 8
+          Height = 15
+          Top = 240
+          Width = 61
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'URL'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblPortVersion: TLabel
+          Left = 72
+          Height = 15
+          Top = 168
+          Width = 322
+          AutoSize = False
+          Caption = '(Port Version)'
+          ParentColor = False
+        end
+        object lblPortMaintainer: TLabel
+          Left = 72
+          Height = 15
+          Top = 192
+          Width = 322
+          AutoSize = False
+          Caption = '(Maintainer)'
+          ParentColor = False
+          OnClick = lblPortMaintainerClick
+          OnMouseEnter = lblPortMaintainerMouseEnter
+          OnMouseLeave = lblPortMaintainerMouseLeave
+        end
+        object lblPortLicense: TLabel
+          Left = 72
+          Height = 15
+          Top = 216
+          Width = 322
+          AutoSize = False
+          Caption = '(License)'
+          ParentColor = False
+          OnClick = lblPortMaintainerClick
+        end
+        object lblPortURL: TLabel
+          Left = 72
+          Height = 15
+          Top = 240
+          Width = 322
+          AutoSize = False
+          Caption = '(URL)'
+          ParentColor = False
+          OnClick = lblPortMaintainerClick
+          OnMouseEnter = lblPortMaintainerMouseEnter
+          OnMouseLeave = lblPortMaintainerMouseLeave
         end
       end
     end
@@ -2224,63 +2233,6 @@ object frmMain: TfrmMain
         ClientHeight = 146
         ClientWidth = 318
         TabOrder = 0
-        object edtModuleFileVersion: TLabeledEdit
-          Left = 120
-          Height = 15
-          Top = 60
-          Width = 186
-          Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 63
-          EditLabel.Caption = 'File Version'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 0
-          Text = 'edtModuleFileVersion'
-        end
-        object edtModuleCompiledDate: TLabeledEdit
-          Left = 120
-          Height = 15
-          Top = 80
-          Width = 186
-          Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 58
-          EditLabel.Caption = 'Build Date'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 1
-          Text = 'edtModuleCompiledDate'
-        end
-        object edtModuleProductVersion: TLabeledEdit
-          Left = 120
-          Height = 15
-          Top = 100
-          Width = 186
-          Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 88
-          EditLabel.Caption = 'Product Version'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 2
-          Text = 'edtModuleProductVersion'
-        end
         object cbxModuleSelection: TComboBox
           Left = 8
           Height = 23
@@ -2288,7 +2240,7 @@ object frmMain: TfrmMain
           Width = 298
           ItemHeight = 15
           Style = csDropDownList
-          TabOrder = 3
+          TabOrder = 0
           OnChange = cbxModuleSelectionChange
         end
         object lblComponentInformation: TLabel
@@ -2301,6 +2253,66 @@ object frmMain: TfrmMain
           ParentColor = False
           ParentFont = False
         end
+        object lblTextModuleFileVersion: TLabel
+          Left = 8
+          Height = 15
+          Top = 60
+          Width = 109
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'File Version'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblTextModuleCompiledDate: TLabel
+          Left = 8
+          Height = 15
+          Top = 80
+          Width = 109
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Build Date'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblTextModuleProductVersion: TLabel
+          Left = 8
+          Height = 15
+          Top = 100
+          Width = 109
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Product Version'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblModuleFileVersion: TLabel
+          Left = 124
+          Height = 15
+          Top = 60
+          Width = 186
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'lblModuleFileVersion'
+        end
+        object lblModuleCompiledDate: TLabel
+          Left = 124
+          Height = 15
+          Top = 80
+          Width = 186
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'lblModuleCompiledDate'
+        end
+        object lblModuleProductVersion: TLabel
+          Left = 124
+          Height = 15
+          Top = 100
+          Width = 186
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'lblModuleProductVersion'
+        end
       end
       object gbxCompilerInfo: TGroupBox
         Left = 4
@@ -2311,43 +2323,45 @@ object frmMain: TfrmMain
         ClientHeight = 65
         ClientWidth = 317
         TabOrder = 1
-        object edtManagerCompilerInfo: TLabeledEdit
+        object lblTextManagerCompilerInfo: TLabel
+          Left = 12
+          Height = 15
+          Top = 8
+          Width = 109
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'FPC Version'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblTextManagerLCLVersion: TLabel
+          Left = 12
+          Height = 15
+          Top = 32
+          Width = 109
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'LCL Version'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblManagerCompilerInfo: TLabel
           Left = 124
           Height = 15
           Top = 8
           Width = 186
           Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 64
-          EditLabel.Caption = 'FPC Version'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 0
-          Text = 'edtManagerCompilerInfo'
+          AutoSize = False
+          Caption = 'lblManagerCompilerInfo'
         end
-        object edtManagerLCLVersion: TLabeledEdit
+        object lblManagerLCLVersion: TLabel
           Left = 124
           Height = 15
           Top = 32
           Width = 186
           Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 63
-          EditLabel.Caption = 'LCL Version'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 1
-          Text = 'edtManagerLCLVersion'
+          AutoSize = False
+          Caption = 'lblManagerLCLVersion'
         end
       end
       object gbxHostEnvironment: TGroupBox
@@ -2359,62 +2373,65 @@ object frmMain: TfrmMain
         ClientHeight = 70
         ClientWidth = 317
         TabOrder = 2
-        object edtManagerOS: TLabeledEdit
+        object lblTextManagerOS: TLabel
+          Left = 12
+          Height = 15
+          Top = 8
+          Width = 109
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Operating System'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblTextManagerTargetInfo: TLabel
+          Left = 12
+          Height = 15
+          Top = 28
+          Width = 109
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Target Info'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblTextManagerWidgetSet: TLabel
+          Left = 12
+          Height = 15
+          Top = 48
+          Width = 108
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Widget Set'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblManagerOS: TLabel
           Left = 124
           Height = 15
           Top = 8
           Width = 186
           Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 100
-          EditLabel.Caption = 'Operating System'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 0
-          Text = 'edtManagerOS'
+          AutoSize = False
+          Caption = 'lblManagerOS'
         end
-        object edtManagerWidgetSet: TLabeledEdit
-          Left = 124
-          Height = 15
-          Top = 48
-          Width = 186
-          Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 63
-          EditLabel.Caption = 'Widget Set'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 1
-          Text = 'edtManagerWidgetSet'
-        end
-        object edtManagerTargetInfo: TLabeledEdit
+        object lblManagerTargetInfo: TLabel
           Left = 124
           Height = 15
           Top = 28
           Width = 186
           Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 62
-          EditLabel.Caption = 'Target Info'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 2
-          Text = 'edtManagerTargetInfo'
+          AutoSize = False
+          Caption = 'lblManagerTargetInfo'
+        end
+        object lblManagerWidgetSet: TLabel
+          Left = 124
+          Height = 15
+          Top = 48
+          Width = 186
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'lblManagerWidgetSet'
         end
       end
       object gbxPackageInfo: TGroupBox
@@ -2426,62 +2443,65 @@ object frmMain: TfrmMain
         ClientHeight = 72
         ClientWidth = 317
         TabOrder = 3
-        object edtProductVersion: TLabeledEdit
-          Left = 123
+        object lblTextProductVersion: TLabel
+          Left = 12
+          Height = 15
+          Top = 8
+          Width = 108
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Product Version'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblTextProductBuildDate: TLabel
+          Left = 12
+          Height = 15
+          Top = 28
+          Width = 108
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Build Date'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblTextProductHelpVersion: TLabel
+          Left = 12
+          Height = 15
+          Top = 48
+          Width = 108
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Help Version'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblProductVersion: TLabel
+          Left = 124
           Height = 15
           Top = 8
           Width = 186
           Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 88
-          EditLabel.Caption = 'Product Version'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 0
-          Text = 'edtProductVersion'
+          AutoSize = False
+          Caption = 'lblProductVersion'
         end
-        object edtProductBuildDate: TLabeledEdit
-          Left = 123
+        object lblProductBuildDate: TLabel
+          Left = 124
           Height = 15
           Top = 28
           Width = 186
           Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 58
-          EditLabel.Caption = 'Build Date'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 1
-          Text = 'edtProductBuildDate'
+          AutoSize = False
+          Caption = 'lblProductBuildDate'
         end
-        object edtProductHelpVersion: TLabeledEdit
-          Left = 123
+        object lblProductHelpVersion: TLabel
+          Left = 124
           Height = 15
           Top = 48
           Width = 186
           Alignment = taRightJustify
-          BorderStyle = bsNone
-          Color = clForm
-          EditLabel.Height = 15
-          EditLabel.Width = 70
-          EditLabel.Caption = 'Help Version'
-          EditLabel.ParentColor = False
-          EditLabel.ParentFont = False
-          EditLabel.Font.Style = [fsBold]
-          LabelPosition = lpLeft
-          ReadOnly = True
-          TabOrder = 2
-          Text = 'edtProductHelpVersion'
+          AutoSize = False
+          Caption = 'lblProductHelpVersion'
         end
       end
       object pnlAbout: TPanel
