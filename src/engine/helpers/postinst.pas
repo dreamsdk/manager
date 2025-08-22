@@ -74,7 +74,6 @@ begin
           KallistiPortsURL := GetDefaultUrlKallistiPorts;
           DreamcastToolSerialURL := GetDefaultUrlDreamcastToolSerial;
           DreamcastToolInternetProtocolURL := GetDefaultUrlDreamcastToolInternetProtocol;
-          RubyURL := GetDefaultUrlRuby;
         end;
         ExecuteThreadOperation(stiKallistiManage);
       end

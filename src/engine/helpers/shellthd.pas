@@ -211,7 +211,7 @@ begin
         ShellThreadPackageManager.Abort;
       end;
 
-      // KOS, KOS Ports, Dreamcast Tool, and Ruby Thread
+      // KOS, KOS Ports and Dreamcast Tool thread
       if Assigned(ShellThread) and ShellThread.Running then
       begin
         LogMessage(LogContext, 'ShellThread.Manager.Environment.AbortShellCommand');
@@ -341,7 +341,7 @@ var
     AbortShellThreadInstancesCount := 0;
     ShellThreadHelper.fAbortOrderReceived := False;
 
-    // Normal thread dealing with KOS, KOS Ports, DC Tool and Ruby
+    // Normal thread dealing with KOS, KOS Ports and DC Tool
     ShellThread := TShellThread.Create(True);
     with ShellThread do
     begin

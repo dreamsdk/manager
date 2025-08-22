@@ -297,7 +297,6 @@ type
     procedure btnRestoreDefaultsClick(Sender: TObject);
     procedure btnUpdateKallistiOSClick(Sender: TObject);
     procedure btnDreamcastToolCustomExecutableClick(Sender: TObject);
-    procedure btnUpdateMRubyClick(Sender: TObject);
     procedure btnUrlKallistiClick(Sender: TObject);
     procedure btnIdeInstallClick(Sender: TObject);
     procedure btnWindowsTerminalInstallClick(Sender: TObject);
@@ -862,7 +861,7 @@ begin
         stoKallistiInstall:
           MsgBox(DialogInformationTitle, Format(UpdateProcessInstallSuccessText, [KallistiText]), mtInformation, [mbOk]);
 
-        // KallistiOS, KallistiOS Ports, Dreamcast Tool or Ruby were updated
+        // KallistiOS, KallistiOS Ports or Dreamcast Tool were updated
         stoKallistiUpdate:
           case fShellThreadUpdateState of
             uosUpdateSuccess:
@@ -1372,12 +1371,11 @@ end;
 
 procedure TfrmMain.SetVersionLabelState(VersionLabel: TLabel; Erroneous: Boolean);
 const
-  NOT_CRITICAL_COMPONENTS: array[0..6] of string = (
+  NOT_CRITICAL_COMPONENTS: array[0..5] of string = (
     'lblVersionPythonGDB',
     'lblVersionGit',
     'lblVersionPython',
     'lblVersionRuby',
-    'lblVersionMRuby',
     'lblVersionCMake',
     'lblVersionMeson'
   );
@@ -2384,7 +2382,7 @@ begin
     case PackageManagerUpdateNeededType of
       pmuntOffline:
         begin
-          // If an Offline button (but not for Ruby) was hit and everything is OK
+          // If an Offline button was hit and everything is OK
           AskForUpdate;
         end;
 
@@ -2698,11 +2696,6 @@ begin
   with opdDreamcastToolCustom do
     if Execute then
       edtDreamcastToolCustomExecutable.Text := opdDreamcastToolCustom.FileName;
-end;
-
-procedure TfrmMain.btnUpdateMRubyClick(Sender: TObject);
-begin
-  DoUpdateAll;
 end;
 
 procedure TfrmMain.btnUrlKallistiClick(Sender: TObject);

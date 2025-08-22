@@ -27,7 +27,6 @@ const
   DREAMSDK_LAUNCHER_EXECUTABLE = 'dreamsdk-shell.exe';
   DREAMSDK_HELP_FILE = 'dreamsdk.chm';
 
-  DREAMSDK_MSYS_MRUBY_INSTALL_DIRECTORY = '/opt/mruby/';
   DREAMSDK_MSYS_INSTALL_DIRECTORY = '/opt/dreamsdk/';
   DREAMSDK_MSYS_INSTALL_HELPERS_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'helpers/';
   DREAMSDK_MSYS_INSTALL_PACKAGES_DIRECTORY = DREAMSDK_MSYS_INSTALL_DIRECTORY + 'packages/';
@@ -208,41 +207,6 @@ type
       read fIntegratedDevelopmentEnvironmentConfigurationFile;
     property CodeBlocksPatcherExecutable: TFileName
       read fCodeBlocksPatcherExecutable;
-  end;
-
-  { TDreamcastSoftwareDevelopmentFileSystemRubyPackages }
-  TDreamcastSoftwareDevelopmentFileSystemRubyPackages = class(TObject)
-  private
-    fRubyLibrary: TFileName;
-    fSamples: TFileName;
-  public
-    property RubyLibrary: TFileName read fRubyLibrary;
-    property Samples: TFileName read fSamples;
-  end;
-
-  { TDreamcastSoftwareDevelopmentFileSystemRuby }
-  TDreamcastSoftwareDevelopmentFileSystemRuby = class(TObject)
-  private
-    fBinariesDirectory: TFileName;
-    fBuildDirectory: TFileName;
-    fPackages: TDreamcastSoftwareDevelopmentFileSystemRubyPackages;
-    fRubyDirectory: TFileName;
-    fRubyLibrary: TFileName;
-    fSamplesDirectory: TFileName;
-    fSamplesLibraryInformationFile: TFileName;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    function ResetRepository: Boolean;
-    property BaseDirectory: TFileName read fRubyDirectory;
-    property RubyLibrary: TFileName read fRubyLibrary;
-    property BinariesDirectory: TFileName read fBinariesDirectory;
-    property BuildDirectory: TFileName read fBuildDirectory;
-    property SamplesDirectory: TFileName read fSamplesDirectory;
-    property SamplesLibraryInformationFile: TFileName
-      read fSamplesLibraryInformationFile;
-    property Packages: TDreamcastSoftwareDevelopmentFileSystemRubyPackages
-      read fPackages;
   end;
 
   { TToolchainProfileInfo }
@@ -495,25 +459,6 @@ uses
 
 const
   FAIL_TAG = 'fatal: ';
-
-{ TDreamcastSoftwareDevelopmentFileSystemRuby }
-
-constructor TDreamcastSoftwareDevelopmentFileSystemRuby.Create;
-begin
-  fPackages := TDreamcastSoftwareDevelopmentFileSystemRubyPackages.Create;
-end;
-
-destructor TDreamcastSoftwareDevelopmentFileSystemRuby.Destroy;
-begin
-  fPackages.Free;
-  inherited Destroy;
-end;
-
-function TDreamcastSoftwareDevelopmentFileSystemRuby.ResetRepository: Boolean;
-begin
-  Result := KillDirectory(BaseDirectory);
-  KillDirectory(SamplesDirectory); // not so critical, don't need to fail if this wasn't possible
-end;
 
 { TDreamcastSoftwareDevelopmentRepository }
 
@@ -844,15 +789,6 @@ end;
 
 procedure TDreamcastSoftwareDevelopmentFileSystem.DebugPrintAllValues;
 begin
-  (*
-  Kallisti
-Shell
-ToolchainARM
-ToolchainBase
-ToolchainSuperH
-ToolchainWin32
-Ruby*)
-
   DebugLog(
     Format(
       '#############################################################################' + sLineBreak
