@@ -45,8 +45,7 @@ type
     rkKallistiPorts,
     rkDreamcastTool, // Both Serial and Internet Protocol
     rkDreamcastToolSerial,
-    rkDreamcastToolInternetProtocol,
-    rkRuby
+    rkDreamcastToolInternetProtocol
   );
 
   TUpdateOperationState = (
@@ -366,7 +365,6 @@ type
     fToolchainBase: TFileName;
     fDreamcastTool: TDreamcastSoftwareDevelopmentFileSystemDreamcastTool;
     fKallisti: TDreamcastSoftwareDevelopmentFileSystemKallisti;
-    fRuby: TDreamcastSoftwareDevelopmentFileSystemRuby;
     fShell: TDreamcastSoftwareDevelopmentFileSystemShell;
     fToolchainARM: TDreamcastSoftwareDevelopmentFileSystemToolchain;
     fToolchainSuperH: TDreamcastSoftwareDevelopmentFileSystemToolchain;
@@ -406,8 +404,6 @@ type
       read fToolchainWin32;
     property Packages: TDreamcastSoftwareDevelopmentFileSystemPackages
       read fPackages;
-    property Ruby: TDreamcastSoftwareDevelopmentFileSystemRuby
-      read fRuby;
   end;
 
   { TDreamcastSoftwareDevelopmentRepository }
@@ -803,19 +799,6 @@ begin
         'The KallistiOS Ports library referential file was not found: %s', [fKallistiPortsLibraryInformationFile]);
   end;
 
-  // Ruby
-  with fRuby do
-  begin
-    fRubyDirectory := IncludeTrailingPathDelimiter(MSYSBase + UnixPathToSystem(DREAMSDK_MSYS_MRUBY_INSTALL_DIRECTORY));
-    fBuildDirectory := fRubyDirectory + 'build\';
-    fBinariesDirectory := fRubyDirectory + 'bin\';
-    fRubyLibrary := fBuildDirectory + 'dreamcast\lib\libmruby.a';
-    fSamplesDirectory := ToolchainBase + 'ruby\';
-    fSamplesLibraryInformationFile := GetReferentialDirectory + 'mruby.conf';
-    fPackages.fRubyLibrary := PackagesBase + 'ruby-offline-src.7z';
-    fPackages.fSamples := PackagesBase + 'ruby-samples-offline-src.7z';
-  end;
-
 {$IFDEF SH_ELF_BFD_PLUGIN_LIBDEP_WORKAROUND}
   // The libdep plugin is incompatible with Windows.
   // See: https://sourceware.org/bugzilla/show_bug.cgi?id=27113
@@ -843,12 +826,10 @@ begin
   fToolchainSuperH := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(Self, tkSuperH);
   fToolchainWin32 := TDreamcastSoftwareDevelopmentFileSystemToolchain.Create(Self, tkWin32);
   fShell := TDreamcastSoftwareDevelopmentFileSystemShell.Create(Self);
-  fRuby := TDreamcastSoftwareDevelopmentFileSystemRuby.Create;
 end;
 
 destructor TDreamcastSoftwareDevelopmentFileSystem.Destroy;
 begin
-  fRuby.Free;
   fDreamcastTool.Free;
   fKallisti.Free;
   fToolchainWin32.Free;
@@ -922,8 +903,6 @@ begin
       Result := DreamcastTool.ResetRepositorySerial;
     rkDreamcastToolInternetProtocol:
       Result := DreamcastTool.ResetRepositoryInternetProtocol;
-    rkRuby:
-      Result := Ruby.ResetRepository;
   end;
 end;
 
@@ -1509,7 +1488,10 @@ begin
         DebugLog('    Loaded: ' + Profile.Version );
 {$ENDIF}
 
+{$PUSH}
+{$NOTES OFF}
         fToolchainProfiles.Add(Profile);
+{$POP}
       end;
     end;
 
@@ -1578,7 +1560,10 @@ begin
         DebugLog('    Loaded: ' + Profile.Version );
 {$ENDIF}
 
+{$PUSH}
+{$NOTES OFF}
         fGdbProfiles.Add(Profile);
+{$POP}
       end;
     end;
 
@@ -1645,11 +1630,17 @@ var
 begin
   fAvailableToolchainProfiles.Clear;
   for i := 0 to fToolchainProfiles.Count - 1 do
+{$PUSH}
+{$NOTES OFF}
     fAvailableToolchainProfiles.Add(fToolchainProfiles[i].ProfileKey);
+{$POP}
 
   fAvailableGdbProfiles.Clear;
   for i := 0 to fGdbProfiles.Count - 1 do
+{$PUSH}
+{$NOTES OFF}
     fAvailableGdbProfiles.Add(fGdbProfiles[i].ProfileKey);
+{$POP}
 end;
 
 function TDreamcastSoftwareDevelopmentFileSystemPackages.GetToolchainProfileByKey(
@@ -1661,11 +1652,14 @@ begin
 
   for i := 0 to fToolchainProfiles.Count - 1 do
   begin
+{$PUSH}
+{$NOTES OFF}
     if SameText(fToolchainProfiles[i].ProfileKey, ProfileKey) then
     begin
       Result := fToolchainProfiles[i];
       Break;
     end;
+{$POP}
   end;
 end;
 
@@ -1678,11 +1672,14 @@ begin
 
   for i := 0 to fGdbProfiles.Count - 1 do
   begin
+{$PUSH}
+{$NOTES OFF}
     if SameText(fGdbProfiles[i].ProfileKey, ProfileKey) then
     begin
       Result := fGdbProfiles[i];
       Break;
     end;
+{$POP}
   end;
 end;
 
@@ -1767,11 +1764,14 @@ begin
 
   for i := 0 to fToolchainProfiles.Count - 1 do
   begin
+{$PUSH}
+{$NOTES OFF}
     if SameText(fToolchainProfiles[i].Checksum, Checksum) then
     begin
       Result := fToolchainProfiles[i].ProfileKey;
       Break;
     end;
+{$POP}
   end;
 end;
 
@@ -1783,11 +1783,14 @@ begin
 
   for i := 0 to fGdbProfiles.Count - 1 do
   begin
+{$PUSH}
+{$NOTES OFF}
     if SameText(fGdbProfiles[i].Checksum, Checksum) then
     begin
       Result := fGdbProfiles[i].ProfileKey;
       Break;
     end;
+{$POP}
   end;
 end;
 

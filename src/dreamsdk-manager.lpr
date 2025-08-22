@@ -32,7 +32,6 @@ uses
   ModVer,
   IDEMgr,
   Splash,
-  RubyMgr,
   Unpack,
   PkgMgr,
   Global,

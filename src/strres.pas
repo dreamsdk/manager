@@ -9,7 +9,6 @@ resourcestring
   KallistiText = 'KallistiOS';
   KallistiPortsText = 'KallistiOS Ports';
   DreamcastToolText = 'Dreamcast Tool';
-  RubyText = 'Ruby';
   DreamcastToolSerialText = 'Dreamcast Tool Serial (RS-232)';
   DreamcastToolInternetProtocolText = 'Dreamcast Tool Internet Protocol (IP)';
   DialogInformationTitle = 'Information';
@@ -58,14 +57,7 @@ resourcestring
   CodeBlocksConfirmInitializeProfile = 'This will create the required files to enable Code::Blocks integration for all the users on this computer.\nAlternatively, you may start Code::Blocks once on the user session where you want to enable the integration.\nContinue?';
   UnknownElevatedTask = 'Unknown elevated task!';
   PleaseVerifyRepositories = 'Repositories settings are incorrect!';
-  PleaseVerifyRubyRepository = 'Ruby repository setting is incorrect!';
-  InstallRubyText = 'Ruby for the Sega Dreamcast is experimental. Are you sure to enable it?';
-  UninstallRubyText = 'Are you sure to disable the Ruby support?';
-  UninstallRubyFailedText = 'Failed to uninstall the Ruby directory. You may delete it manually.';
-  RubySamplesNotInstalled = 'Ruby samples are currently not installed or were deleted since Ruby installation.\nPlease install them by resetting repository URL or installing offline packages.';
   GitNeeded = 'Git is needed to use this feature.';
-  UnableToInstallRubyRuntimeText = 'Please install RubyInstaller for Windows before trying to enable Ruby.';
-  UnableToInstallRubyGitText = 'Ruby online installation requires Git.';
   UnableToInstallPackageText = 'An error occured when installing the requested packages.';
   PackageUpdateAvailable = 'A new version of %s is available (%s). Download it now?';
   PackageUpToDate = '%s is up-to-date.';
@@ -125,8 +117,6 @@ resourcestring
   KallistiPortUpdateText = 'Updating the KallistiOS Port...';
   KallistiPortsInstallText = 'Installing all KallistiOS Ports...';
   KallistiPortsUninstallText = 'Uninstalling all KallistiOS Ports...';
-  RubyInitializeText = 'Initialize Ruby configuration...';
-  RubyBuildText = 'Building Ruby library...';
   PostInstallOperationText = '%s Setup';
   ToolchainsUnpackingText = 'Unpacking toolchains packages...';
   ToolchainsUnpackingPickupText = 'Processing: %s';

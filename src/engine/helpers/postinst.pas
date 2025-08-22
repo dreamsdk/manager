@@ -22,13 +22,11 @@ uses
   Global;
 
 var
-  PostInstallMode,
-  RubyEnabled: Boolean;
+  PostInstallMode: Boolean;
 
 procedure SetPostInstallMode;
 const
   POST_INSTALL_SWITCH = '--post-install';
-  RUBY_ENABLED = '--enable-ruby';
 
 var
   i: Integer;
@@ -36,14 +34,11 @@ var
 
 begin
   PostInstallMode := False;
-  RubyEnabled := False;
   for i := 1 to ParamCount do
   begin
     ParamValue := LowerCase(ParamStr(i));
     if (ParamValue = POST_INSTALL_SWITCH) then
       PostInstallMode := True;
-    if (ParamValue = RUBY_ENABLED) then
-      RubyEnabled := True;
   end;
 end;
 
@@ -81,7 +76,6 @@ begin
           DreamcastToolInternetProtocolURL := GetDefaultUrlDreamcastToolInternetProtocol;
           RubyURL := GetDefaultUrlRuby;
         end;
-        DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := RubyEnabled;
         ExecuteThreadOperation(stiKallistiManage);
       end
       else

@@ -37,8 +37,7 @@ type
     pmroKallisti,
     pmroKallistiPorts,
     pmroDreamcastToolSerial,
-    pmroDreamcastToolInternetProtocol,
-    pmroRuby
+    pmroDreamcastToolInternetProtocol
   );
 
   { TPackageManager }
@@ -598,12 +597,6 @@ begin
           KillFile(FileSystem.DreamcastTool.InternetProtocolExecutable);
           FileSystem.DreamcastTool.ResetRepositoryInternetProtocol;
           Add(FileSystem.DreamcastTool.Packages.InternetProtocol, FileSystem.DreamcastTool.InternetProtocolDirectory);
-        end;
-      pmroRuby:
-        begin
-          FileSystem.Ruby.ResetRepository;
-          Add(FileSystem.Ruby.Packages.RubyLibrary, FileSystem.Ruby.BaseDirectory);
-          Add(FileSystem.Ruby.Packages.Samples, FileSystem.Ruby.SamplesDirectory);
         end;
     end;
   end;

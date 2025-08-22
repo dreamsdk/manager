@@ -75,7 +75,6 @@ type
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
     fPythonInstalled: Boolean;
 	  fGitInstalled: Boolean;
-    fMRubyBuildDate: TDateTime;
     fMesonInstalled: Boolean;
     fRubyInstalled: Boolean;
     fCMakeInstalled: Boolean;
@@ -97,7 +96,6 @@ type
     function RetrieveKallistiChangeLogVersion: string;
     function RetrieveKallistiVersion: string;
     function RetrieveKallistiBuildDate: TDateTime;
-    function RetrieveMRubyBuildDate: TDateTime;
     procedure RetrieveKallistiInformation;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
@@ -127,7 +125,6 @@ type
     property RubyInstalled: Boolean read fRubyInstalled;
     property Meson: string read fVersionMeson;
     property MesonInstalled: Boolean read fMesonInstalled;
-    property MRubyBuildDate: TDateTime read fMRubyBuildDate;
     property Foundation: string read fVersionFoundation;
   end;
 
@@ -248,11 +245,6 @@ end;
 function TComponentVersion.RetrieveKallistiBuildDate: TDateTime;
 begin
   Result := GetFileDate(Environment.FileSystem.Kallisti.KallistiLibrary);
-end;
-
-function TComponentVersion.RetrieveMRubyBuildDate: TDateTime;
-begin
-  Result := GetFileDate(Environment.FileSystem.Ruby.RubyLibrary);
 end;
 
 procedure TComponentVersion.RetrieveKallistiInformation;
@@ -399,8 +391,6 @@ begin
       '-h', 'dc-tool-ip', 'by ', [rvfRegister]);
 
     RetrieveKallistiInformation;
-
-    fMRubyBuildDate := RetrieveMRubyBuildDate;
   end;
 end;
 

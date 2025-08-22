@@ -19,9 +19,6 @@ procedure GlobalFinalization;
 
 implementation
 
-uses
-  PostInst;
-
 procedure GlobalInitialization;
 begin
   DreamcastSoftwareDevelopmentKitManager :=

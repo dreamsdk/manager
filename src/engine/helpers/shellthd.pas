@@ -711,7 +711,6 @@ var
   IsModifiedKallisti,
   IsModifiedKallistiPorts,
   IsModifiedDreamcastTool,
-  IsModifiedRuby,
   IsEnvironShellScriptUpdated: Boolean;
 
   procedure CombineOutputBuffer(const InputBuffer: string);
@@ -733,8 +732,6 @@ var
         Result := KallistiPortsText;
       rkDreamcastTool:
         Result := DreamcastToolText;
-      rkRuby:
-        Result := RubyText;
     end;
   end;
 
@@ -767,8 +764,6 @@ var
             WorkDirectory := Manager.Environment.FileSystem.Kallisti.KallistiPortsDirectory;
           rkDreamcastTool:
             WorkDirectory := Manager.Environment.FileSystem.DreamcastTool.BaseDirectory;
-          rkRuby:
-            WorkDirectory := Manager.Environment.FileSystem.Ruby.BaseDirectory;
         end;
         IsSuccess := RenameFileOrDirectoryAsBackup(WorkDirectory);
         LogMessage(LogSubContext, Format('PostInstall Mode, renaming directory [%s]: "%s"', [
@@ -792,8 +787,6 @@ var
               IsSuccess := Manager.KallistiPorts.CloneRepository(TempBuffer);
             rkDreamcastTool:
               IsSuccess := Manager.DreamcastTool.CloneRepository(TempBuffer);
-            rkRuby:
-              IsSuccess := Manager.Ruby.CloneRepository(TempBuffer);
           end;
           SetOperationSuccess(IsSuccess);
         end
@@ -809,8 +802,6 @@ var
               UpdateState := Manager.KallistiPorts.UpdateRepository(TempBuffer);
             rkDreamcastTool:
               UpdateState := Manager.DreamcastTool.UpdateRepository(TempBuffer);
-            rkRuby:
-              UpdateState := Manager.Ruby.UpdateRepository(TempBuffer);
           end;
           SetOperationSuccess(UpdateState <> uosUpdateFailed);
         end;
@@ -987,41 +978,6 @@ var
     CombineOutputBuffer(TempBuffer);
   end;
 
-  function HandleRuby: Boolean;
-  var
-    RepositoryOperation: TRepositoryOperation;
-    UpdateState: TUpdateOperationState;
-    TempBuffer: string;
-
-  begin
-    // Handle Ruby (mruby) Repository
-    TempBuffer := EmptyStr;
-    UpdateState := uosUndefined;
-    RepositoryOperation := HandleRepository(Manager.Ruby.Installed,
-      rkRuby, UpdateState);
-    Result := HandleResponse(rkRuby, RepositoryOperation, UpdateState,
-      Manager.Ruby.Built);
-
-    // Determine if we need to do something
-    if Result then
-    begin
-      // Copying build_config.rb file
-      if CanContinue then
-      begin
-        UpdateProgressText(RubyInitializeText);
-        SetOperationSuccess(Manager.Ruby.InitializeEnvironment);
-      end;
-
-      // Making Ruby library
-      if CanContinue then
-      begin
-        UpdateProgressText(RubyBuildText);
-        SetOperationSuccess(Manager.Ruby.Build(TempBuffer));
-      end;
-    end;
-    CombineOutputBuffer(TempBuffer);
-  end;
-
 begin
   Result := EmptyStr;
   OutputBuffer := EmptyStr;
@@ -1044,14 +1000,8 @@ begin
       BoolToStr(IsModifiedDreamcastTool, True)
     ]));
 
-    IsModifiedRuby := (not Manager.Environment.Settings.Ruby.Enabled) or
-      (Manager.Environment.Settings.Ruby.Enabled and HandleRuby);
-    LogMessage(LogContext, Format('IsModifiedRuby: "%s"', [
-      BoolToStr(IsModifiedRuby, True)
-    ]));
-
     if (CanContinue) and (not IsModifiedKallisti) and (not IsModifiedKallistiPorts)
-      and (not IsModifiedDreamcastTool) and (not IsModifiedRuby) then
+      and (not IsModifiedDreamcastTool) then
         UpdateProgressText(KallistiOperationNothingNeededText);
     LogMessage(LogContext, Format('CanContinue: "%s"', [
       BoolToStr(CanContinue, True)

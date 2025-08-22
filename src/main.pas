@@ -44,16 +44,13 @@ type
     btnIdeReinstall: TButton;
     btnIdeUninstall: TButton;
     btnComponentsApply: TButton;
-    btnOfflineRuby: TButton;
     btnOfflineKallistiPorts: TButton;
     btnOfflineDreamcastToolSerial: TButton;
     btnOfflineDreamcastToolIP: TButton;
     btnOpenHelp: TButton;
     btnOpenHome: TButton;
-    btnRubyOpenHome: TButton;
     btnOpenMinGWManager: TButton;
     btnOpenMSYS: TButton;
-    btnRubyOpenMSYS: TButton;
     btnPortInstall: TButton;
     btnPortUninstall: TButton;
     btnPortUpdate: TButton;
@@ -61,16 +58,12 @@ type
     btnUpdateKallistiOS: TButton;
     btnCredits: TButton;
     btnDreamcastToolCustomExecutable: TButton;
-    btnUninstallMRuby: TButton;
-    btnInstallMRuby: TButton;
     btnOptionsShortcut: TButton;
     btnUrlKallisti: TButton;
     btnBrowseHomeBaseDirectory: TButton;
-    btnUrlRuby: TButton;
     btnUrlKallistiPorts: TButton;
     btnUrlDreamcastToolSerial: TButton;
     btnUrlDreamcastToolIP: TButton;
-    btnUpdateMRuby: TButton;
     btnOfflineKallisti: TButton;
     btnIdeCodeBlocksUsersAvailableInitialize: TButton;
     btnIdeCodeBlocksUsersAvailableRefresh: TButton;
@@ -86,7 +79,6 @@ type
     cbxUrlDreamcastToolIP: TComboBox;
     cbxUrlDreamcastToolSerial: TComboBox;
     cbxUrlKallisti: TComboBox;
-    cbxUrlRuby: TComboBox;
     cbxUrlKallistiPorts: TComboBox;
     ckxAutoCheckForUpdates: TCheckBox;
     ckxDreamcastToolInternetProtocolUseARP: TCheckBox;
@@ -99,9 +91,6 @@ type
     cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox;
     cbxDebugger: TComboBox;
     edtDreamcastToolSerialBaudrateCustom: TEdit;
-    gbxRubyFolder: TGroupBox;
-    gbxRubyRunShell: TGroupBox;
-    gbxUrlRuby: TGroupBox;
     gbxDebugger: TGroupBox;
     gbxWindowsTerminal: TGroupBox;
     lblManagerCompilerInfo: TLabel;
@@ -140,12 +129,7 @@ type
     lblTextToolchainBuildDate: TLabel;
     lblTextToolchainBuildDateARM: TLabel;
     lblToolchain: TLabel;
-    lblBuildDateMRuby: TLabel;
-    lblHomeFolder1: TLabel;
-    lblRubyShell: TLabel;
     lblIdeCodeBlocksUsersInstalled: TLabel;
-    lblTextBuildDateMRuby: TLabel;
-    lblTextMRuby: TLabel;
     lblTextRuby: TLabel;
     lblTextMeson: TLabel;
     lblTextVersionKallistiOS2: TLabel;
@@ -155,7 +139,6 @@ type
     lblOfflineStatusKallistiOS: TLabel;
     lblVersionChangeLogKallistiOS: TLabel;
     lblPortVersion: TLabel;
-    lblVersionMRuby: TLabel;
     lblVersionRuby: TLabel;
     lblVersionMeson: TLabel;
     lblVersionKallistiOS2: TLabel;
@@ -270,7 +253,6 @@ type
     opdDreamcastToolCustom: TOpenDialog;
     gbxIdeCodeBlocksUsersAvailableButtons: TPanel;
     pnlComponentsChange: TPanel;
-    pnlRuby: TPanel;
     pnlAbout: TPanel;
     pcMain: TPageControl;
     pnlActions: TPanel;
@@ -281,7 +263,6 @@ type
     rgxTerminalOption: TRadioGroup;
     sddIdeCodeBlocks: TSelectDirectoryDialog;
     tsDebug: TTabSheet;
-    tsRuby: TTabSheet;
     tsIDE: TTabSheet;
     tsComponents: TTabSheet;
     tsHome: TTabSheet;
@@ -304,15 +285,12 @@ type
     procedure btnDebugGetSelectedDebuggerClick(Sender: TObject);
     procedure btnDebugRaiseExceptionClick(Sender: TObject);
     procedure btnIdeCodeBlocksInstallDirClick(Sender: TObject);
-    procedure btnInstallMRubyClick(Sender: TObject);
     procedure btnOfflineKallistiClick(Sender: TObject);
     procedure btnOpenHelpClick(Sender: TObject);
     procedure btnOpenHomeClick(Sender: TObject);
     procedure btnOpenMinGWManagerClick(Sender: TObject);
     procedure btnOpenMSYSClick(Sender: TObject);
     procedure btnOptionsShortcutClick(Sender: TObject);
-    procedure btnRubyOpenHomeClick(Sender: TObject);
-    procedure btnRubyOpenMSYSClick(Sender: TObject);
     procedure btnPortInstallClick(Sender: TObject);
     procedure btnPortUninstallClick(Sender: TObject);
     procedure btnPortUpdateClick(Sender: TObject);
@@ -333,7 +311,6 @@ type
     procedure cbxUrlDreamcastToolSerialChange(Sender: TObject);
     procedure cbxUrlKallistiChange(Sender: TObject);
     procedure cbxUrlKallistiPortsChange(Sender: TObject);
-    procedure cbxUrlRubyChange(Sender: TObject);
     procedure ckxAutoCheckForUpdatesChange(Sender: TObject);
     procedure ckxDreamcastToolInternetProtocolUseARPChange(Sender: TObject);
     procedure edtDreamcastToolInternetProtocolAddressChange(Sender: TObject);
@@ -404,7 +381,6 @@ type
     procedure UpdateKallistiControls;
     procedure UpdateOptionsControls;
     procedure UpdateRepositories;
-    procedure UpdateRubyControls;
     procedure UpdateWindowsTerminalControls;
     procedure InstallDreamcastTool;
     procedure HandleUrlProtocol(Sender: TObject);
@@ -980,17 +956,6 @@ begin
     MsgBox(DialogWarningTitle, PleaseVerifyRepositories, mtWarning, [mbOK]);
     pcMain.ActivePage := tsOptions;
   end;
-
-  // Ruby
-  if Result and DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled then
-  begin
-    Result := CheckRepositoryUrl(cbxUrlRuby);
-    if not Result then
-    begin
-      MsgBox(DialogWarningTitle, PleaseVerifyRubyRepository, mtWarning, [mbOK]);
-      pcMain.ActivePage := tsRuby;
-    end;
-  end;
 end;
 
 function TfrmMain.CheckComponentsChangeAllowRequestedOperation: Boolean;
@@ -1083,14 +1048,6 @@ begin
 
     // Dreamcast Tool IP
     SetVersionLabel(lblVersionRepoToolIP, DreamcastTool.RepositoryInternetProtocol.Version);
-
-    // Ruby
-    SetVersionLabel(lblVersionMRuby, Ruby.Repository.Version);
-
-    // Ruby build date
-    SetLabelDate(lblBuildDateMRuby,
-      Environment.FileSystem.Ruby.RubyLibrary,
-      Versions.MRubyBuildDate);
 
     // SuperH toolchains build date
     SetLabelDate(lblBuildDateToolchain,
@@ -1604,13 +1561,6 @@ begin
     btnOfflineDreamcastToolIP.Enabled := not DreamcastTool.RepositoryInternetProtocol.Offline;
     if DreamcastTool.RepositoryInternetProtocol.Offline then
       cbxUrlDreamcastToolIP.Text := EmptyStr;
-
-    cbxUrlRuby.Enabled := (not Ruby.Repository.Ready)
-      and (not Ruby.Repository.Offline);
-    btnUrlRuby.Enabled := not cbxUrlRuby.Enabled;
-    btnOfflineRuby.Enabled := not Ruby.Repository.Offline;
-    if Ruby.Repository.Offline then
-      cbxUrlRuby.Text := EmptyStr;
   end;
   UpdateWindowsTerminalControls;
 end;
@@ -1621,19 +1571,6 @@ begin
   cbxUrlKallistiPortsChange(Self);
   cbxUrlDreamcastToolSerialChange(Self);
   cbxUrlDreamcastToolIPChange(Self);
-  cbxUrlRubyChange(Self);
-end;
-
-procedure TfrmMain.UpdateRubyControls;
-begin
-  with DreamcastSoftwareDevelopmentKitManager do
-  begin
-    btnInstallMRuby.Enabled := not Ruby.Built;
-    btnUpdateMRuby.Enabled := Ruby.Built;
-    btnUninstallMRuby.Enabled := Ruby.Built;
-    btnRubyOpenHome.Enabled := Ruby.Built;
-    btnRubyOpenMSYS.Enabled := Ruby.Built;
-  end;
 end;
 
 procedure TfrmMain.UpdateWindowsTerminalControls;
@@ -1747,7 +1684,6 @@ const
   REPOSITORY_CONFIG_KALLISTI_PORTS = 'kallisti-ports.conf';
   REPOSITORY_CONFIG_DCLOAD_SERIAL = 'dcload-serial.conf';
   REPOSITORY_CONFIG_DCLOAD_IP = 'dcload-ip.conf';
-  REPOSITORY_CONFIG_RUBY = 'mruby.conf';
 
 var
   RepositoriesDirectory: TFileName;
@@ -1765,7 +1701,6 @@ begin
   LoadControl(cbxUrlKallistiPorts, REPOSITORY_CONFIG_KALLISTI_PORTS);
   LoadControl(cbxUrlDreamcastToolSerial, REPOSITORY_CONFIG_DCLOAD_SERIAL);
   LoadControl(cbxUrlDreamcastToolIP, REPOSITORY_CONFIG_DCLOAD_IP);
-  LoadControl(cbxUrlRuby, REPOSITORY_CONFIG_RUBY);
 end;
 
 procedure TfrmMain.InitializeAboutScreen;
@@ -1901,15 +1836,13 @@ begin
       cbxUrlKallistiPorts.Text := KallistiPortsURL;
       cbxUrlDreamcastToolSerial.Text := DreamcastToolSerialURL;
       cbxUrlDreamcastToolIP.Text := DreamcastToolInternetProtocolURL;
-      cbxUrlRuby.Text := RubyURL;
 {$IFDEF DEBUG}
       DebugLog(
         '  InitializeOptionsScreen, Loaded URLs:' + sLineBreak +
         '    * Kallisti: ' + cbxUrlKallisti.Text + sLineBreak +
         '    * Kallisti Ports: ' + cbxUrlKallistiPorts.Text + sLineBreak +
         '    * Dreamcast-Tool Serial: ' + cbxUrlDreamcastToolSerial.Text + sLineBreak +
-        '    * Dreamcast-Tool IP: ' + cbxUrlDreamcastToolIP.Text + sLineBreak +
-        '    * Ruby: ' + cbxUrlRuby.Text
+        '    * Dreamcast-Tool IP: ' + cbxUrlDreamcastToolIP.Text
       );
 {$ENDIF}
     end;
@@ -2397,7 +2330,6 @@ begin
   Application.ProcessMessages;
 
   UpdateOptionsControls;
-  UpdateRubyControls;
   RefreshViewDreamcastTool;
   RefreshViewEnvironment(ForceRefresh); // TODO: Slow function, need to be cached
   RefreshViewKallistiPorts(ForceRefresh);
@@ -2436,7 +2368,7 @@ begin
   PackageManagerUpdateNeededType := pmuntUseless;
   if (ComponentSelectedOperation = pmrToolchain) then
     PackageManagerUpdateNeededType := pmuntToolchain
-  else if (ComponentSelectedOperation = pmrOffline) and (fPackageManagerSelectedOfflinePackage <> pmroRuby) then
+  else if (ComponentSelectedOperation = pmrOffline) then
     PackageManagerUpdateNeededType := pmuntOffline;
 
   // Update UI (ComponentSelectedOperation will be reset!)
@@ -2579,55 +2511,6 @@ begin
   end;
 end;
 
-procedure TfrmMain.btnInstallMRubyClick(Sender: TObject);
-var
-  InstallRequest: Boolean;
-
-begin
-  InstallRequest := ((Sender as TButton).Tag = 0);
-{$IFDEF DEBUG}
-  DebugLog('Ruby Install Request: ' + BoolToStr(InstallRequest));
-{$ENDIF}
-
-  if InstallRequest then
-  begin
-    // Check Ruby runtime
-    if (not DreamcastSoftwareDevelopmentKitManager.Versions.RubyInstalled) or
-      (not DreamcastSoftwareDevelopmentKitManager.Versions.MesonInstalled) then
-    begin
-      MsgBox(DialogWarningTitle, UnableToInstallRubyRuntimeText, mtWarning, [mbOK]);
-      Exit;
-    end;
-
-    // Check Git availability (if needed)
-    if not DreamcastSoftwareDevelopmentKitManager.Versions.GitInstalled and
-      not DreamcastSoftwareDevelopmentKitManager.Ruby.Repository.Offline then
-    begin
-      MsgBox(DialogWarningTitle, UnableToInstallRubyGitText, mtWarning, [mbOK]);
-      Exit;
-    end;
-
-    // Install can start!
-    if MsgBox(DialogWarningTitle, InstallRubyText, mtWarning, [mbYes, mbNo]) = mrYes then
-    begin
-      DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := True;
-      DoUpdateAll;
-    end;
-  end
-  else
-  begin
-    // Uninstall
-    // This is just basically removing compiled mruby binaries/libraries
-    if MsgBox(DialogWarningTitle, UninstallRubyText, mtWarning, [mbYes, mbNo], mbNo) = mrYes then
-    begin
-      DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Ruby.Enabled := False;
-      if not DreamcastSoftwareDevelopmentKitManager.Ruby.Uninstall then
-        MsgBox(DialogWarningTitle, UninstallRubyFailedText, mtWarning, [mbOK]);
-      RefreshEverything(True);
-    end;
-  end;
-end;
-
 procedure TfrmMain.btnOfflineKallistiClick(Sender: TObject);
 var
   Msg: string;
@@ -2644,8 +2527,6 @@ var
         Result := DreamcastToolSerialText;
       pmroDreamcastToolInternetProtocol:
         Result := DreamcastToolInternetProtocolText;
-      pmroRuby:
-        Result := RubyText;
     end;
   end;
 
@@ -2743,30 +2624,6 @@ begin
   pcMain.ActivePage := tsOptions;
 end;
 
-procedure TfrmMain.btnRubyOpenHomeClick(Sender: TObject);
-begin
-  with DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Ruby do
-  begin
-    if DirectoryExists(SamplesDirectory) then
-      RunShellExecute(SamplesDirectory)
-    else
-      MsgBoxDlg(Handle, DialogWarningTitle,
-        MsgBoxDlgTranslateString(RubySamplesNotInstalled), mtInformation, [mbOK]);
-  end;
-end;
-
-procedure TfrmMain.btnRubyOpenMSYSClick(Sender: TObject);
-begin
-  with DreamcastSoftwareDevelopmentKitManager.Environment.FileSystem.Ruby do
-  begin
-    if DirectoryExists(SamplesDirectory) then
-      RunMSYS(SamplesDirectory)
-    else
-      MsgBoxDlg(Handle, DialogWarningTitle,
-        MsgBoxDlgTranslateString(RubySamplesNotInstalled), mtInformation, [mbOK]);
-  end;
-end;
-
 procedure TfrmMain.btnPortInstallClick(Sender: TObject);
 begin
   if CheckKallistiSinglePortPossibleInstallation then
@@ -2814,7 +2671,6 @@ begin
     ResetText(cbxUrlKallistiPorts, GetDefaultUrlKallistiPorts);
     ResetText(cbxUrlDreamcastToolSerial, GetDefaultUrlDreamcastToolSerial);
     ResetText(cbxUrlDreamcastToolIP, GetDefaultUrlDreamcastToolInternetProtocol);
-    ResetText(cbxUrlRuby, GetDefaultUrlRuby);
 
     // Dreamcast Tool (only options, not RS232 cable/IP settings...)
     rgxDreamcastTool.ItemIndex := DREAMCAST_TOOL_DEFAULT_KIND;
@@ -2862,7 +2718,6 @@ var
       1: Result := rkKallistiPorts;
       2: Result := rkDreamcastToolSerial;
       3: Result := rkDreamcastToolInternetProtocol;
-      4: Result := rkRuby;
     end;
   end;
 
@@ -2874,7 +2729,6 @@ var
       1: Result := KallistiPortsText;
       2: Result := DreamcastToolSerialText;
       3: Result := DreamcastToolInternetProtocolText;
-      4: Result := RubyText;
     end;
   end;
 
@@ -2886,7 +2740,6 @@ var
       1: Result := cbxUrlKallistiPorts;
       2: Result := cbxUrlDreamcastToolSerial;
       3: Result := cbxUrlDreamcastToolIP;
-      4: Result := cbxUrlRuby;
     end;
   end;
 
@@ -2899,7 +2752,6 @@ var
         1: Result := KallistiPorts.Repository;
         2: Result := DreamcastTool.RepositorySerial;
         3: Result := DreamcastTool.RepositoryInternetProtocol;
-        4: Result := Ruby.Repository;
       end;
   end;
 
@@ -2936,8 +2788,7 @@ begin
       RefreshEverything(True);
 
       // Ask if the user wants to update now
-      if TagToRepositoryKind <> rkRuby then
-        AskForUpdate;
+      AskForUpdate;
     end
     else
       MsgBox(DialogWarningTitle, Format(FailedToResetRepository, [TagToString]),
@@ -3167,12 +3018,6 @@ procedure TfrmMain.cbxUrlKallistiPortsChange(Sender: TObject);
 begin
   DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
     .KallistiPortsURL := cbxUrlKallistiPorts.Text;
-end;
-
-procedure TfrmMain.cbxUrlRubyChange(Sender: TObject);
-begin
-  DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
-    .RubyURL := cbxUrlRuby.Text;
 end;
 
 procedure TfrmMain.ckxAutoCheckForUpdatesChange(Sender: TObject);
