@@ -432,9 +432,10 @@ var
 begin
   LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%}, ClassName);
   try
-    LogMessage(LogContext, Format('Success: "%s", Aborted: "%s"', [
+    LogMessage(LogContext, Format('Success: "%s", Aborted: "%s", ForcedAbort: "%s"', [
       BoolToStr(Success),
-      BoolToStr(Aborted)
+      BoolToStr(Aborted),
+      BoolToStr(ForcedAbort)
     ]));
 
     Finished := True;

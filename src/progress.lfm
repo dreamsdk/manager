@@ -8,11 +8,10 @@ object frmProgress: TfrmProgress
   Caption = 'Operation in progress...'
   ClientHeight = 450
   ClientWidth = 750
+  Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
-  Position = poScreenCenter
-  LCLVersion = '3.6.0.0'
   object memBufferOutput: TMemo
     Left = 2
     Height = 333
