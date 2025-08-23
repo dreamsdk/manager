@@ -674,7 +674,8 @@ begin
     fRunnerExecutable := fDreamSDKDirectory + DREAMSDK_RUNNER_EXECUTABLE;
     fConfigurationDirectory := GetConfigurationDirectory;
     fIntegratedDevelopmentEnvironmentConfigurationFile := GetConfigurationDirectory + 'ide.conf';
-    fHelpFileName := fDreamSDKDirectory + DREAMSDK_HELP_FILE;
+    fHelpFileName := fDreamSDKDirectory + 'docs' + DirectorySeparator
+      + DREAMSDK_HELP_FILE;
     fCodeBlocksPatcherExecutable := fDreamSDKDirectory +
       'packages\ide\codeblocks\codeblocks-patcher.exe';
   end;
