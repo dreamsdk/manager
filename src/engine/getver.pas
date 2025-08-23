@@ -48,11 +48,6 @@ type
     fVersionNewlib: string;
     fVersionPythonGDB: string;
     fOwner: TComponentVersion;
-  protected
-    (*function GetStringVersionToDebuggerVersionKind(
-      const Version: string): TDebuggerKind;
-    function GetStringVersionToPackageToolchainKind(
-      const Version: string): TToolchainVersionKind;*)
   public
     constructor Create(AOwner: TComponentVersion; ToolchainKind: TToolchainKind);
 
@@ -72,12 +67,17 @@ type
   TComponentVersion = class(TObject)
   private
     fBuildDateKallistiOS: TDateTime;
+    fCMakePath: TFileName;
     fEnvironment: TDreamcastSoftwareDevelopmentEnvironment;
+    fGitPath: TFileName;
+    fMesonPath: TFileName;
     fPythonInstalled: Boolean;
 	  fGitInstalled: Boolean;
     fMesonInstalled: Boolean;
+    fPythonPath: TFileName;
     fRubyInstalled: Boolean;
     fCMakeInstalled: Boolean;
+    fRubyPath: TFileName;
     fToolchainVersionARM: TToolchainVersion;
     fToolchainVersionSuperH: TToolchainVersion;
     fToolchainVersionWin32: TToolchainVersion;
@@ -97,6 +97,7 @@ type
     function RetrieveKallistiVersion: string;
     function RetrieveKallistiBuildDate: TDateTime;
     procedure RetrieveKallistiInformation;
+    procedure RetrievePaths;
     property Environment: TDreamcastSoftwareDevelopmentEnvironment
       read fEnvironment;
   public
@@ -109,10 +110,14 @@ type
 
     property Git: string read fVersionGit;
 	  property GitInstalled: Boolean read fGitInstalled;
+    property GitPath: TFileName read fGitPath;
     property CMake: string read fVersionCMake;
     property CMakeInstalled: Boolean read fCMakeInstalled;
+    property CMakePath: TFileName read fCMakePath;
+    property Foundation: string read fVersionFoundation;
     property Python: string read fVersionPython;
     property PythonInstalled: Boolean read fPythonInstalled;
+    property PythonPath: TFileName read fPythonPath;
     property ToolSerial: string read fVersionToolSerial;
     property ToolIP: string read fVersionToolIP;
     property KallistiOS: string read fVersionKallistiOS;
@@ -123,9 +128,10 @@ type
     property ToolchainWin32: TToolchainVersion read fToolchainVersionWin32;
     property Ruby: string read fVersionRuby;
     property RubyInstalled: Boolean read fRubyInstalled;
+    property RubyPath: TFileName read fRubyPath;
     property Meson: string read fVersionMeson;
     property MesonInstalled: Boolean read fMesonInstalled;
-    property Foundation: string read fVersionFoundation;
+    property MesonPath: TFileName read fMesonPath;
   end;
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
@@ -142,7 +148,8 @@ uses
   VerIntf,
   FSTools,
   PEUtils,
-  RefBase;
+  RefBase,
+  Runner;
 
 function ComponentNameToString(const ComponentName: TComponentName): string;
 var
@@ -160,50 +167,6 @@ begin
 end;
 
 { TToolchainVersion }
-
-(*function TToolchainVersion.GetStringVersionToDebuggerVersionKind(
-  const Version: string): TDebuggerVersionKind;
-var
-  i: Integer;
-
-begin
-  Result := dvkUndefined;
-  if fOwner.IsValidVersion(fVersionGDB) then
-  begin
-    Result := dvkPythonDisabled;
-    if fOwner.IsValidVersion(Version) then
-    begin
-      for i := Low(SUPPORTED_PYTHON_VERSIONS) to High(SUPPORTED_PYTHON_VERSIONS) do
-      begin
-        if SUPPORTED_PYTHON_VERSIONS[i] = Version then
-        begin
-          Result := TDebuggerVersionKind(i + 2); // 2 for Undefined+PythonDisabled
-          Break;
-        end;
-      end;
-    end;
-  end;
-end;
-
-function TToolchainVersion.GetStringVersionToPackageToolchainKind(
-  const Version: string): TToolchainVersionKind;
-var
-  i: Integer;
-
-begin
-  Result := tvkUndefined;
-  if fOwner.IsValidVersion(Version) then
-  begin
-    for i := Low(SUPPORTED_GCC_VERSIONS) to High(SUPPORTED_GCC_VERSIONS) do
-    begin
-      if StartsWith(SUPPORTED_GCC_VERSIONS[i] + '.', Version) then
-      begin
-        Result := TToolchainVersionKind(i + 1); // 1 for Undefined
-        Break;
-      end;
-    end;
-  end;
-end;*)
 
 constructor TToolchainVersion.Create(AOwner: TComponentVersion;
   ToolchainKind: TToolchainKind);
@@ -259,9 +222,71 @@ begin
   end;
 end;
 
+procedure TComponentVersion.RetrievePaths;
+const
+  COMMAND = 'executables=("git" "cmake" "python" "ruby" "meson");' +
+    'for exec in "${executables[@]}";' +
+    'do path=$(command -v "$exec" 2>/dev/null);' +
+    'if [ -n "$path" ];' +
+    'then echo "$exec=FOUND:$path";' +
+    'else echo "$exec=NOT_FOUND:";' +
+    'fi; done';
+
+var
+  ShellRunner: TDreamcastSoftwareDevelopmentKitRunner;
+  Buffer: string;
+
+  function _GetCommandPath(const Command: string): TFileName;
+  var
+    CommandOutput: string;
+
+  begin
+    Result := EmptyStr;
+    CommandOutput := ExtractStr(Concat(Command, '='), sLineBreak, Buffer);
+    if Left(':', CommandOutput) = 'FOUND' then
+      Result := Trim(Right(':', CommandOutput));
+  end;
+
+begin
+  Buffer := Default(string);
+  ShellRunner := TDreamcastSoftwareDevelopmentKitRunner.Create(True);
+  try
+    // Execute the script to get all components
+    ShellRunner.StartShellCommand(COMMAND, Buffer);
+
+    // Parse the Buffer output
+    fGitPath := _GetCommandPath('git');
+    fCMakePath := _GetCommandPath('cmake');
+    fPythonPath := _GetCommandPath('python');
+    fRubyPath := _GetCommandPath('ruby');
+    fMesonPath := _GetCommandPath('meson');
+
+{$IFDEF DEBUG}
+    DebugLog(Format('---' + sLineBreak +
+      'RetrievePaths:' + sLineBreak +
+      '---' + sLineBreak +
+      'Git: "%s"' + sLineBreak +
+      'CMake: "%s"' + sLineBreak +
+      'Python: "%s"' + sLineBreak +
+      'Ruby: "%s"' + sLineBreak +
+      'Meson: "%s"' + sLineBreak +
+      '---', [
+        fGitPath,
+        fCMakePath,
+        fPythonPath,
+        fRubyPath,
+        fMesonPath
+      ])
+    );
+{$ENDIF}
+  finally
+    ShellRunner.Free;
+  end;
+end;
+
 procedure TComponentVersion.RetrieveVersions;
 
-  function RetrievePythonGdb(const GdbExecutable: TFileName): string;
+  function _RetrievePythonGdb(const GdbExecutable: TFileName): string;
   var
     Buffer: TStringList;
     i: Integer;
@@ -288,7 +313,7 @@ procedure TComponentVersion.RetrieveVersions;
     end;
   end;
 
-  procedure RetrieveVersionToolchain(var AVersion: TToolchainVersion;
+  procedure _RetrieveVersionToolchain(var AVersion: TToolchainVersion;
     AEnvironment: TDreamcastSoftwareDevelopmentFileSystemToolchain);
   begin
     if Assigned(AVersion) then
@@ -310,7 +335,7 @@ procedure TComponentVersion.RetrieveVersions;
       if AEnvironment.Kind = tkSuperH then
       begin
         // Super-H only
-        AVersion.fVersionPythonGDB := RetrievePythonGdb(AEnvironment.GDBExecutable);
+        AVersion.fVersionPythonGDB := _RetrievePythonGdb(AEnvironment.GDBExecutable);
         AVersion.fPackageProfileGDB := AEnvironment.GetGdbProfileKeyFromFileName(
           AEnvironment.GDBExecutable);
 {$IFDEF DEBUG}
@@ -381,9 +406,9 @@ begin
     ]);
     fMesonInstalled := IsValidVersion(fVersionMeson);
 
-    RetrieveVersionToolchain(fToolchainVersionSuperH, ToolchainSuperH);
-    RetrieveVersionToolchain(fToolchainVersionARM, ToolchainARM);
-    RetrieveVersionToolchain(fToolchainVersionWin32, ToolchainWin32);
+    _RetrieveVersionToolchain(fToolchainVersionSuperH, ToolchainSuperH);
+    _RetrieveVersionToolchain(fToolchainVersionARM, ToolchainARM);
+    _RetrieveVersionToolchain(fToolchainVersionWin32, ToolchainWin32);
 
     fVersionToolSerial := RetrieveVersion(DreamcastTool.SerialExecutable,
       '-h', 'dc-tool', 'by ', [rvfRegister]);
@@ -391,6 +416,8 @@ begin
       '-h', 'dc-tool-ip', 'by ', [rvfRegister]);
 
     RetrieveKallistiInformation;
+
+    RetrievePaths;
   end;
 end;
 
