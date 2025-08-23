@@ -884,11 +884,11 @@ begin
 
         // All KallistiOS Ports were installed
         stoKallistiPortsInstall:
-          MsgBox(DialogInformationTitle, UpdateProcessAllKallistiPortsInstalled, mtInformation, [mbOk]);
+          MsgBox(DialogInformationTitle, MsgBoxDlgTranslateString(UpdateProcessAllKallistiPortsInstalled), mtInformation, [mbOk]);
 
         // All KallistiOS Ports were uninstalled
         stoKallistiPortsUninstall:
-          MsgBox(DialogInformationTitle, UpdateProcessAllKallistiPortsUninstalled, mtInformation, [mbOk]);
+          MsgBox(DialogInformationTitle, MsgBoxDlgTranslateString(UpdateProcessAllKallistiPortsUninstalled), mtInformation, [mbOk]);
 
         // A single KallistiOS Port was updated
         stoKallistiSinglePortUpdate:

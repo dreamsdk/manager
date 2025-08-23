@@ -27,8 +27,8 @@ resourcestring
   UpdateProcessUpdateSuccessText = '%s was successfully updated.';
   UpdateProcessUninstallSuccessText = '%s was successfully uninstalled.';
   UpdateProcessUpdateUselessText = '%s is up-to-date.';
-  UpdateProcessAllKallistiPortsInstalled = 'All KallistiOS Ports were successfully installed.';
-  UpdateProcessAllKallistiPortsUninstalled = 'All KallistiOS Ports were successfully uninstalled.';
+  UpdateProcessAllKallistiPortsInstalled = 'The request to install all KallistiOS Ports is complete.\nYou can check the actually installed ports in the KallistiOS Ports tab.';
+  UpdateProcessAllKallistiPortsUninstalled = 'The request to uninstall all KallistiOS Ports is complete.\nYou can check the actually uninstalled ports in the KallistiOS Ports tab.';
   InstallAllKallistiPorts = 'Are you sure to install all KallistiOS Ports at once?';
   UninstallAllKallistiPorts = 'Are you sure to uninstall all KallistiOS Ports at once?';
   InvalidInternetProtocolAddressFormat = 'Use 3 digits!';
