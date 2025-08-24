@@ -10,7 +10,6 @@ object frmMain: TfrmMain
   ClientWidth = 680
   Position = poScreenCenter
   ShowHint = True
-  LCLVersion = '4.2.0.0'
   OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -1413,7 +1412,6 @@ object frmMain: TfrmMain
           Height = 23
           Top = 4
           Width = 566
-          ParentColor = True
           ReadOnly = True
           TabOrder = 0
         end
