@@ -44,7 +44,8 @@ type
 implementation
 
 uses
-  SysTools;
+  SysTools,
+  PostInst;
 
 { TDreamcastSoftwareDevelopmentKitManager }
 
@@ -71,7 +72,8 @@ begin
     fEnvironment := TDreamcastSoftwareDevelopmentEnvironment.Create(AutoLoad);
     fIntegratedDevelopmentEnvironment := TIntegratedDevelopmentEnvironment
       .Create(fEnvironment);
-    fVersionRetriever := TComponentVersion.Create(fEnvironment, AutoLoad);
+    fVersionRetriever := TComponentVersion.Create(fEnvironment,
+      AutoLoad and (not IsPostInstallMode));
     fKallistiPortsManager := TKallistiPortManager.Create(fEnvironment,
       fIntegratedDevelopmentEnvironment, fVersionRetriever, AutoLoad);
     fKallistiManager := TKallistiManager.Create(fEnvironment);
