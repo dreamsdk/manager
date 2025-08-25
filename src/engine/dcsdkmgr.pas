@@ -44,8 +44,11 @@ type
 implementation
 
 uses
-  SysTools,
-  PostInst;
+  SysTools
+{$IFDEF GUI}
+  , PostInst
+{$ENDIF}
+  ;
 
 { TDreamcastSoftwareDevelopmentKitManager }
 
@@ -73,7 +76,7 @@ begin
     fIntegratedDevelopmentEnvironment := TIntegratedDevelopmentEnvironment
       .Create(fEnvironment);
     fVersionRetriever := TComponentVersion.Create(fEnvironment,
-      AutoLoad and (not IsPostInstallMode));
+      AutoLoad {$IFDEF GUI} and (not IsPostInstallMode) {$ENDIF});
     fKallistiPortsManager := TKallistiPortManager.Create(fEnvironment,
       fIntegratedDevelopmentEnvironment, fVersionRetriever, AutoLoad);
     fKallistiManager := TKallistiManager.Create(fEnvironment);
