@@ -739,7 +739,7 @@ begin
     fKallistiConfigurationFileName := KallistiDirectory + 'environ.sh';
     fPackages.fKallisti := PackagesBase + 'kallisti-offline-src.7z';
     fPackages.fKallistiPorts := PackagesBase + 'kallisti-ports-offline-src.7z';
-    fKallistiPortsLibraryInformationFile := GetReferentialDirectory + 'koslib.conf';
+    fKallistiPortsLibraryInformationFile := GetConfigurationDirectory + 'kos-libraries.conf';
     if not FileExists(fKallistiPortsLibraryInformationFile) then
       raise EKallistiReferentialNotAvailable.CreateFmt(
         'The KallistiOS Ports library referential file was not found: %s', [fKallistiPortsLibraryInformationFile]);
