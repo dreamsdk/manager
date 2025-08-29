@@ -2514,6 +2514,15 @@ object frmMain: TfrmMain
         TabOrder = 3
         OnClick = btnDebugGetSelectedDebuggerClick
       end
+      object btnDebugRenameFileOrDirectoryAsBackup: TButton
+        Left = 8
+        Height = 25
+        Top = 156
+        Width = 168
+        Caption = 'Rename For Backup'
+        TabOrder = 4
+        OnClick = btnDebugRenameFileOrDirectoryAsBackupClick
+      end
     end
   end
   object tmrShellThreadTerminate: TTimer

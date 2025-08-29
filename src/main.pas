@@ -73,6 +73,7 @@ type
     btnUrlKallistiPorts: TButton;
     btnWindowsTerminalInstall: TButton;
     btnWindowsTerminalUninstall: TButton;
+    btnDebugRenameFileOrDirectoryAsBackup: TButton;
     cbxDebugger: TComboBox;
     cbxDreamcastToolInternetProtocolNetworkAdapter: TComboBox;
     cbxDreamcastToolSerialBaudrate: TComboBox;
@@ -297,6 +298,7 @@ type
     procedure btnComponentsApplyClick(Sender: TObject);
     procedure btnDebugGetSelectedDebuggerClick(Sender: TObject);
     procedure btnDebugRaiseExceptionClick(Sender: TObject);
+    procedure btnDebugRenameFileOrDirectoryAsBackupClick(Sender: TObject);
     procedure btnIdeCodeBlocksInstallDirClick(Sender: TObject);
     procedure btnOfflineKallistiClick(Sender: TObject);
     procedure btnOpenHelpClick(Sender: TObject);
@@ -2517,6 +2519,21 @@ begin
 {$IFDEF DEBUG}
   raise Exception.Create('Test Exception');
 {$ENDIF}
+end;
+
+procedure TfrmMain.btnDebugRenameFileOrDirectoryAsBackupClick(Sender: TObject);
+var
+  OldTargetPath,
+  NewTargetPath: TFileName;
+
+begin
+  OldTargetPath := Default(TFileName);
+  NewTargetPath := Default(TFileName);
+  if InputQuery('RenameFileOrDirectoryAsBackup', 'TargetFileOrDirectory', OldTargetPath) then
+    if RenameFileOrDirectoryAsBackup(OldTargetPath, NewTargetPath) then
+      ShowMessage(Format('NewTargetPath: "%s"', [NewTargetPath]))
+    else
+      ShowMessage('Rename failed');
 end;
 
 procedure TfrmMain.btnIdeCodeBlocksInstallDirClick(Sender: TObject);

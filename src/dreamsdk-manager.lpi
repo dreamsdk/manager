@@ -1,249 +1,249 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="12" />
-    <PathDelim Value="\" />
+    <Version Value="12"/>
+    <PathDelim Value="\"/>
     <General>
       <Flags>
-        <CompatibilityMode Value="True" />
+        <CompatibilityMode Value="True"/>
       </Flags>
-      <SessionStorage Value="InProjectDir" />
-      <Title Value="DreamSDK Manager" />
-      <Scaled Value="True" />
-      <ResourceType Value="res" />
-      <UseXPManifest Value="True" />
+      <SessionStorage Value="InProjectDir"/>
+      <Title Value="DreamSDK Manager"/>
+      <Scaled Value="True"/>
+      <ResourceType Value="res"/>
+      <UseXPManifest Value="True"/>
       <XPManifest>
-        <DpiAware Value="True" />
-        <TextName Value="DreamSDK.Manager" />
-        <TextDesc Value="DreamSDK Manager" />
+        <DpiAware Value="True"/>
+        <TextName Value="DreamSDK.Manager"/>
+        <TextDesc Value="DreamSDK Manager"/>
       </XPManifest>
-      <Icon Value="0" />
+      <Icon Value="0"/>
     </General>
     <VersionInfo>
-      <UseVersionInfo Value="True" />
-      <AutoIncrementBuild Value="True" />
-      <MajorVersionNr Value="3" />
-      <RevisionNr Value="6" />
-      <BuildNr Value="1334" />
-      <StringTable Comments="https://dreamsdk.org/" CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" LegalCopyright="© Copyleft 2018-2025" LegalTrademarks="Sega and Dreamcast are registered trademark of Sega Games Co., Ltd." OriginalFilename="dreamsdk-manager.exe" ProductName="DreamSDK" ProductVersion="4.0.11.2508" />
+      <UseVersionInfo Value="True"/>
+      <AutoIncrementBuild Value="True"/>
+      <MajorVersionNr Value="3"/>
+      <RevisionNr Value="6"/>
+      <BuildNr Value="1335"/>
+      <StringTable Comments="https://dreamsdk.org/" CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" LegalCopyright="© Copyleft 2018-2025" LegalTrademarks="Sega and Dreamcast are registered trademark of Sega Games Co., Ltd." OriginalFilename="dreamsdk-manager.exe" ProductName="DreamSDK" ProductVersion="4.0.11.2508"/>
     </VersionInfo>
     <BuildModes Count="2">
-      <Item1 Name="Release" Default="True" />
+      <Item1 Name="Release" Default="True"/>
       <Item2 Name="Debug">
         <CompilerOptions>
-          <Version Value="11" />
-          <PathDelim Value="\" />
+          <Version Value="11"/>
+          <PathDelim Value="\"/>
           <Target>
-            <Filename Value="..\bin\dreamsdk-manager" />
+            <Filename Value="..\bin\dreamsdk-manager"/>
           </Target>
           <SearchPaths>
-            <IncludeFiles Value="$(ProjOutDir)" />
-            <OtherUnitFiles Value="engine;engine\helpers;..\..\common\src;..\..\common\src\sys" />
-            <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)" />
+            <IncludeFiles Value="$(ProjOutDir)"/>
+            <OtherUnitFiles Value="engine;engine\helpers;..\..\common\src;..\..\common\src\sys"/>
+            <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
             <SyntaxOptions>
-              <IncludeAssertionCode Value="True" />
+              <IncludeAssertionCode Value="True"/>
             </SyntaxOptions>
           </Parsing>
           <CodeGeneration>
             <Checks>
-              <IOChecks Value="True" />
-              <RangeChecks Value="True" />
-              <OverflowChecks Value="True" />
-              <StackChecks Value="True" />
+              <IOChecks Value="True"/>
+              <RangeChecks Value="True"/>
+              <OverflowChecks Value="True"/>
+              <StackChecks Value="True"/>
             </Checks>
-            <VerifyObjMethodCallValidity Value="True" />
-            <TargetCPU Value="i386" />
-            <TargetOS Value="win32" />
+            <VerifyObjMethodCallValidity Value="True"/>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="win32"/>
           </CodeGeneration>
           <Linking>
             <Debugging>
-              <DebugInfoType Value="dsDwarf2Set" />
-              <UseHeaptrc Value="True" />
-              <TrashVariables Value="True" />
-              <UseExternalDbgSyms Value="True" />
+              <DebugInfoType Value="dsDwarf2Set"/>
+              <UseHeaptrc Value="True"/>
+              <TrashVariables Value="True"/>
+              <UseExternalDbgSyms Value="True"/>
             </Debugging>
             <Options>
               <Win32>
-                <GraphicApplication Value="True" />
+                <GraphicApplication Value="True"/>
               </Win32>
             </Options>
           </Linking>
           <Other>
             <Verbosity>
-              <ShowDebugInfo Value="True" />
+              <ShowDebugInfo Value="True"/>
             </Verbosity>
-            <CustomOptions Value="-dDEBUG -dGUI -dCONSOLE" />
+            <CustomOptions Value="-dDEBUG -dGUI -dCONSOLE"/>
           </Other>
         </CompilerOptions>
       </Item2>
     </BuildModes>
     <PublishOptions>
-      <Version Value="2" />
+      <Version Value="2"/>
     </PublishOptions>
     <RunParams>
-      <FormatVersion Value="2" />
+      <FormatVersion Value="2"/>
       <Modes Count="1">
-        <Mode0 Name="default" />
+        <Mode0 Name="default"/>
       </Modes>
     </RunParams>
     <RequiredPackages Count="3">
       <Item1>
-        <PackageName Value="laz_synapse" />
+        <PackageName Value="laz_synapse"/>
       </Item1>
       <Item2>
-        <PackageName Value="FCL" />
+        <PackageName Value="FCL"/>
       </Item2>
       <Item3>
-        <PackageName Value="LCL" />
+        <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
     <Units Count="19">
       <Unit0>
-        <Filename Value="dreamsdk-manager.lpr" />
-        <IsPartOfProject Value="True" />
+        <Filename Value="dreamsdk-manager.lpr"/>
+        <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="main.pas" />
-        <IsPartOfProject Value="True" />
-        <ComponentName Value="frmMain" />
-        <HasResources Value="True" />
-        <ResourceBaseClass Value="Form" />
-        <UnitName Value="Main" />
+        <Filename Value="main.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmMain"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="Main"/>
       </Unit1>
       <Unit2>
-        <Filename Value="engine\getver.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="GetVer" />
+        <Filename Value="engine\getver.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="GetVer"/>
       </Unit2>
       <Unit3>
-        <Filename Value="engine\environ.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="Environ" />
+        <Filename Value="engine\environ.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Environ"/>
       </Unit3>
       <Unit4>
-        <Filename Value="engine\portmgr.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="PortMgr" />
+        <Filename Value="engine\portmgr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="PortMgr"/>
       </Unit4>
       <Unit5>
-        <Filename Value="engine\dcsdkmgr.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="DCSDKMgr" />
+        <Filename Value="engine\dcsdkmgr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DCSDKMgr"/>
       </Unit5>
       <Unit6>
-        <Filename Value="progress.pas" />
-        <IsPartOfProject Value="True" />
-        <ComponentName Value="frmProgress" />
-        <HasResources Value="True" />
-        <ResourceBaseClass Value="Form" />
-        <UnitName Value="Progress" />
+        <Filename Value="progress.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmProgress"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="Progress"/>
       </Unit6>
       <Unit7>
-        <Filename Value="engine\kosmgr.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="KOSMgr" />
+        <Filename Value="engine\kosmgr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="KOSMgr"/>
       </Unit7>
       <Unit8>
-        <Filename Value="engine\helpers\shellthd.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="ShellThd" />
+        <Filename Value="engine\helpers\shellthd.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ShellThd"/>
       </Unit8>
       <Unit9>
-        <Filename Value="engine\helpers\postinst.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="PostInst" />
+        <Filename Value="engine\helpers\postinst.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="PostInst"/>
       </Unit9>
       <Unit10>
-        <Filename Value="strres.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="StrRes" />
+        <Filename Value="strres.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="StrRes"/>
       </Unit10>
       <Unit11>
-        <Filename Value="engine\toolmgr.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="ToolMgr" />
+        <Filename Value="engine\toolmgr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ToolMgr"/>
       </Unit11>
       <Unit12>
-        <Filename Value="about.pas" />
-        <IsPartOfProject Value="True" />
-        <ComponentName Value="frmAbout" />
-        <HasResources Value="True" />
-        <ResourceBaseClass Value="Form" />
-        <UnitName Value="About" />
+        <Filename Value="about.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmAbout"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="About"/>
       </Unit12>
       <Unit13>
-        <Filename Value="engine\helpers\modver.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="ModVer" />
+        <Filename Value="engine\helpers\modver.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ModVer"/>
       </Unit13>
       <Unit14>
-        <Filename Value="engine\idemgr.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="IDEMgr" />
+        <Filename Value="engine\idemgr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="IDEMgr"/>
       </Unit14>
       <Unit15>
-        <Filename Value="splash.pas" />
-        <IsPartOfProject Value="True" />
-        <ComponentName Value="frmSplash" />
-        <HasResources Value="True" />
-        <ResourceBaseClass Value="Form" />
-        <UnitName Value="Splash" />
+        <Filename Value="splash.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmSplash"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="Splash"/>
       </Unit15>
       <Unit16>
-        <Filename Value="unpack.pas" />
-        <IsPartOfProject Value="True" />
-        <ComponentName Value="frmUnpack" />
-        <HasResources Value="True" />
-        <ResourceBaseClass Value="Form" />
-        <UnitName Value="Unpack" />
+        <Filename Value="unpack.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmUnpack"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="Unpack"/>
       </Unit16>
       <Unit17>
-        <Filename Value="engine\helpers\pkgmgr.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="PkgMgr" />
+        <Filename Value="engine\helpers\pkgmgr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="PkgMgr"/>
       </Unit17>
       <Unit18>
-        <Filename Value="global.pas" />
-        <IsPartOfProject Value="True" />
-        <UnitName Value="Global" />
+        <Filename Value="global.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Global"/>
       </Unit18>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="11" />
-    <PathDelim Value="\" />
+    <Version Value="11"/>
+    <PathDelim Value="\"/>
     <Target>
-      <Filename Value="..\bin\dreamsdk-manager" />
+      <Filename Value="..\bin\dreamsdk-manager"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)" />
-      <OtherUnitFiles Value="engine;engine\helpers;..\..\common\src;..\..\common\src\sys" />
-      <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)" />
+      <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="engine;engine\helpers;..\..\common\src;..\..\common\src\sys"/>
+      <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
-      <SmartLinkUnit Value="True" />
-      <TargetCPU Value="x86_64" />
-      <TargetOS Value="win64" />
+      <SmartLinkUnit Value="True"/>
+      <TargetCPU Value="x86_64"/>
+      <TargetOS Value="win64"/>
       <Optimizations>
-        <OptimizationLevel Value="3" />
+        <OptimizationLevel Value="3"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
       <Debugging>
-        <GenerateDebugInfo Value="False" />
-        <DebugInfoType Value="dsDwarf2Set" />
+        <GenerateDebugInfo Value="False"/>
+        <DebugInfoType Value="dsDwarf2Set"/>
       </Debugging>
-      <LinkSmart Value="True" />
+      <LinkSmart Value="True"/>
       <Options>
         <Win32>
-          <GraphicApplication Value="True" />
+          <GraphicApplication Value="True"/>
         </Win32>
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dRELEASE -dGUI" />
+      <CustomOptions Value="-dRELEASE -dGUI"/>
     </Other>
   </CompilerOptions>
 </CONFIG>
