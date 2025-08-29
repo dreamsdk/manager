@@ -211,9 +211,14 @@ begin
 end;
 
 function TKallistiPortItem.DoInstallOrUpdate: string;
+var
+  InstallExtraParameters: string;
+
 begin
   fOwner.InitializeEnvironment;
-  Result := ExecuteShellCommand('make install');
+  InstallExtraParameters := fOwner.fKallistiLibraryInformation
+    .ReadString('Install', fName, EmptyStr);
+  Result := ExecuteShellCommand(Format('make install %s', [InstallExtraParameters]));
   ExecuteShellCommand('make clean');
 end;
 
