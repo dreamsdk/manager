@@ -2530,7 +2530,7 @@ begin
   OldTargetPath := Default(TFileName);
   NewTargetPath := Default(TFileName);
   if InputQuery('RenameFileOrDirectoryAsBackup', 'TargetFileOrDirectory', OldTargetPath) then
-    if RenameFileOrDirectoryAsBackup(OldTargetPath, NewTargetPath) then
+    if RenameFileOrDirectoryAsBackup(OldTargetPath, NewTargetPath) = rfdbSuccess then
       ShowMessage(Format('NewTargetPath: "%s"', [NewTargetPath]))
     else
       ShowMessage('Rename failed');

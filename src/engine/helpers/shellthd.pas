@@ -743,6 +743,7 @@ var
     TempBuffer: string;
     IsSuccess: Boolean;
     WorkDirectory: TFileName;
+    RenameBackupResult: TRenameFileOrDirectoryAsBackupResult;
 
   begin
     IsSuccess := False;
@@ -765,9 +766,11 @@ var
           rkDreamcastTool:
             WorkDirectory := Manager.Environment.FileSystem.DreamcastTool.BaseDirectory;
         end;
-        IsSuccess := RenameFileOrDirectoryAsBackup(WorkDirectory);
-        LogMessage(LogSubContext, Format('PostInstall Mode, renaming directory [%s]: "%s"', [
+        RenameBackupResult := RenameFileOrDirectoryAsBackup(WorkDirectory);
+        IsSuccess := (RenameBackupResult = rfdbSuccess);
+        LogMessage(LogSubContext, Format('PostInstall Mode, renaming directory [IsSuccess: "%s", Reason: "%s"]: "%s"', [
           BoolToStr(IsSuccess, True),
+          GetEnumName(TypeInfo(TRenameFileOrDirectoryAsBackupResult), Ord(RenameBackupResult)),
           WorkDirectory
         ]));
         IsSuccess := False;
