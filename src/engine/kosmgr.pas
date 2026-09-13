@@ -90,7 +90,8 @@ begin
     ForceDirectories(Environment.FileSystem.ToolchainBase);
   Result := Environment.CloneRepository(Environment.Settings.Repositories.KallistiURL,
     KALLISTI_INSTALLATION_DIRECTORY,
-    Environment.FileSystem.ToolchainBase, BufferOutput);
+    Environment.FileSystem.ToolchainBase, BufferOutput,
+    Environment.Settings.Repositories.KallistiRef);
 end;
 
 function TKallistiManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;

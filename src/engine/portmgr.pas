@@ -1165,7 +1165,8 @@ begin
     ForceDirectories(Environment.FileSystem.ToolchainBase);
   Result := Environment.CloneRepository(Environment.Settings.Repositories.KallistiPortsURL,
     KALLISTI_PORTS_INSTALLATION_DIRECTORY,
-    Environment.FileSystem.ToolchainBase, BufferOutput);
+    Environment.FileSystem.ToolchainBase, BufferOutput,
+    Environment.Settings.Repositories.KallistiPortsRef);
 end;
 
 procedure TKallistiPortManager.GenerateIntegratedDevelopmentEnvironmentLibraryInformation;

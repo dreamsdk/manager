@@ -10,7 +10,7 @@ object frmMain: TfrmMain
   ClientWidth = 680
   Position = poScreenCenter
   ShowHint = True
-  LCLVersion = '4.2.0.0'
+  LCLVersion = '4.8.0.0'
   OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -1065,7 +1065,7 @@ object frmMain: TfrmMain
         Height = 52
         Top = 4
         Width = 650
-        Caption = 'KallistiOS Repository URL:'
+        Caption = 'KallistiOS Repository URL and Branch/Tag:'
         ClientHeight = 32
         ClientWidth = 646
         TabOrder = 0
@@ -1073,18 +1073,36 @@ object frmMain: TfrmMain
           Left = 4
           Height = 23
           Top = 4
-          Width = 496
+          Width = 304
           ItemHeight = 15
           TabOrder = 0
           OnChange = cbxUrlKallistiChange
         end
+        object cbxRefKallisti: TComboBox
+          Left = 312
+          Height = 23
+          Top = 4
+          Width = 126
+          ItemHeight = 15
+          TabOrder = 1
+          OnChange = cbxRefKallistiChange
+        end
+        object btnRefKallisti: TButton
+          Left = 442
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = 'Re&fresh...'
+          TabOrder = 2
+          OnClick = btnRefRefreshClick
+        end
         object btnUrlKallisti: TButton
-          Left = 508
+          Left = 510
           Height = 21
           Top = 4
           Width = 64
           Caption = '&Reset...'
-          TabOrder = 1
+          TabOrder = 3
           OnClick = btnUrlKallistiClick
         end
         object btnOfflineKallisti: TButton
@@ -1093,7 +1111,7 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = '&Offline...'
-          TabOrder = 2
+          TabOrder = 4
           OnClick = btnOfflineKallistiClick
         end
       end
@@ -1102,7 +1120,7 @@ object frmMain: TfrmMain
         Height = 52
         Top = 60
         Width = 650
-        Caption = 'KallistiOS Ports Repository URL:'
+        Caption = 'KallistiOS Ports Repository URL and Branch/Tag:'
         ClientHeight = 32
         ClientWidth = 646
         TabOrder = 1
@@ -1110,19 +1128,38 @@ object frmMain: TfrmMain
           Left = 4
           Height = 23
           Top = 4
-          Width = 496
+          Width = 304
           ItemHeight = 15
           TabOrder = 0
           OnChange = cbxUrlKallistiPortsChange
         end
+        object cbxRefKallistiPorts: TComboBox
+          Left = 312
+          Height = 23
+          Top = 4
+          Width = 126
+          ItemHeight = 15
+          TabOrder = 1
+          OnChange = cbxRefKallistiPortsChange
+        end
+        object btnRefKallistiPorts: TButton
+          Tag = 1
+          Left = 442
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = 'Refr&esh...'
+          TabOrder = 2
+          OnClick = btnRefRefreshClick
+        end
         object btnUrlKallistiPorts: TButton
           Tag = 1
-          Left = 508
+          Left = 510
           Height = 21
           Top = 4
           Width = 64
           Caption = 'R&eset...'
-          TabOrder = 1
+          TabOrder = 3
           OnClick = btnUrlKallistiClick
         end
         object btnOfflineKallistiPorts: TButton
@@ -1132,14 +1169,14 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = 'O&ffline...'
-          TabOrder = 2
+          TabOrder = 4
           OnClick = btnOfflineKallistiClick
         end
       end
       object rgxTerminalOption: TRadioGroup
         Left = 4
-        Height = 85
-        Top = 232
+        Height = 89
+        Top = 228
         Width = 160
         AutoFill = True
         Caption = 'Terminal:'
@@ -1150,7 +1187,7 @@ object frmMain: TfrmMain
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 65
+        ClientHeight = 69
         ClientWidth = 156
         ItemIndex = 0
         Items.Strings = (
@@ -1162,11 +1199,11 @@ object frmMain: TfrmMain
       end
       object pnlActions: TPanel
         Left = 332
-        Height = 85
-        Top = 232
+        Height = 89
+        Top = 228
         Width = 322
         BevelOuter = bvLowered
-        ClientHeight = 85
+        ClientHeight = 89
         ClientWidth = 322
         TabOrder = 2
         object btnOpenMinGWManager: TButton
@@ -1193,7 +1230,7 @@ object frmMain: TfrmMain
         Height = 52
         Top = 116
         Width = 650
-        Caption = 'Dreamcast Tool Serial (RS-232 / USB) URL:'
+        Caption = 'Dreamcast Tool Serial (RS-232 / USB) URL and Branch/Tag:'
         ClientHeight = 32
         ClientWidth = 646
         TabOrder = 3
@@ -1201,19 +1238,38 @@ object frmMain: TfrmMain
           Left = 4
           Height = 23
           Top = 4
-          Width = 496
+          Width = 304
           ItemHeight = 15
           TabOrder = 0
           OnChange = cbxUrlDreamcastToolSerialChange
         end
+        object cbxRefDreamcastToolSerial: TComboBox
+          Left = 312
+          Height = 23
+          Top = 4
+          Width = 126
+          ItemHeight = 15
+          TabOrder = 1
+          OnChange = cbxRefDreamcastToolSerialChange
+        end
+        object btnRefDreamcastToolSerial: TButton
+          Tag = 2
+          Left = 442
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = 'Refre&sh...'
+          TabOrder = 2
+          OnClick = btnRefRefreshClick
+        end
         object btnUrlDreamcastToolSerial: TButton
           Tag = 2
-          Left = 508
+          Left = 510
           Height = 21
           Top = 4
           Width = 64
           Caption = 'Re&set...'
-          TabOrder = 1
+          TabOrder = 3
           OnClick = btnUrlKallistiClick
         end
         object btnOfflineDreamcastToolSerial: TButton
@@ -1223,7 +1279,7 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = 'Off&line...'
-          TabOrder = 2
+          TabOrder = 4
           OnClick = btnOfflineKallistiClick
         end
       end
@@ -1232,7 +1288,7 @@ object frmMain: TfrmMain
         Height = 52
         Top = 172
         Width = 650
-        Caption = 'Dreamcast Tool Internet Protocol (IP) URL:'
+        Caption = 'Dreamcast Tool Internet Protocol (IP) URL and Branch/Tag:'
         ClientHeight = 32
         ClientWidth = 646
         TabOrder = 5
@@ -1240,19 +1296,38 @@ object frmMain: TfrmMain
           Left = 4
           Height = 23
           Top = 4
-          Width = 496
+          Width = 304
           ItemHeight = 15
           TabOrder = 0
           OnChange = cbxUrlDreamcastToolIPChange
         end
+        object cbxRefDreamcastToolIP: TComboBox
+          Left = 312
+          Height = 23
+          Top = 4
+          Width = 126
+          ItemHeight = 15
+          TabOrder = 1
+          OnChange = cbxRefDreamcastToolIPChange
+        end
+        object btnRefDreamcastToolIP: TButton
+          Tag = 3
+          Left = 442
+          Height = 21
+          Top = 4
+          Width = 64
+          Caption = 'Refres&h...'
+          TabOrder = 2
+          OnClick = btnRefRefreshClick
+        end
         object btnUrlDreamcastToolIP: TButton
           Tag = 3
-          Left = 508
+          Left = 510
           Height = 21
           Top = 4
           Width = 64
           Caption = 'Rese&t...'
-          TabOrder = 1
+          TabOrder = 3
           OnClick = btnUrlKallistiClick
         end
         object btnOfflineDreamcastToolIP: TButton
@@ -1262,17 +1337,17 @@ object frmMain: TfrmMain
           Top = 4
           Width = 64
           Caption = 'Offl&ine...'
-          TabOrder = 2
+          TabOrder = 4
           OnClick = btnOfflineKallistiClick
         end
       end
       object gbxWindowsTerminal: TGroupBox
         Left = 168
-        Height = 85
-        Top = 232
+        Height = 89
+        Top = 228
         Width = 160
         Caption = 'Windows Terminal:'
-        ClientHeight = 65
+        ClientHeight = 69
         ClientWidth = 156
         TabOrder = 6
         object btnWindowsTerminalInstall: TButton

@@ -93,7 +93,8 @@ function TDreamcastToolManager.DoRepositoryOperation(Kind: TDreamcastToolKind;
   var UpdateOperationState: TUpdateOperationState;
   var BufferOutput: string): Boolean;
 var
-  Url: string;
+  Url,
+  Ref: string;
   InstallationDirectoryName,
   InstallationDirectoryPath,
   InstallationBinaryFileName: TFileName;
@@ -107,6 +108,7 @@ begin
     ForceDirectories(Environment.FileSystem.DreamcastTool.BaseDirectory);
 
   Url := EmptyStr;
+  Ref := EmptyStr;
   InstallationDirectoryName := EmptyStr;
   InstallationDirectoryPath := EmptyStr;
   InstallationBinaryFileName := EmptyStr;
@@ -115,6 +117,7 @@ begin
     dtkSerial:
       begin
         Url := Environment.Settings.Repositories.DreamcastToolSerialURL;
+        Ref := Environment.Settings.Repositories.DreamcastToolSerialRef;
         InstallationDirectoryName := DCLOAD_SERIAL_INSTALLATION_DIRECTORY;
         InstallationDirectoryPath := Environment.FileSystem.DreamcastTool.SerialDirectory;
         InstallationBinaryFileName := Environment.FileSystem.DreamcastTool.SerialExecutable;
@@ -123,6 +126,7 @@ begin
     dtkInternetProtocol:
       begin
         Url := Environment.Settings.Repositories.DreamcastToolInternetProtocolURL;
+        Ref := Environment.Settings.Repositories.DreamcastToolInternetProtocolRef;
         InstallationDirectoryName := DCLOAD_IP_INSTALLATION_DIRECTORY;
         InstallationDirectoryPath := Environment.FileSystem.DreamcastTool.InternetProtocolDirectory;
         InstallationBinaryFileName := Environment.FileSystem.DreamcastTool.InternetProtocolExecutable;
@@ -155,7 +159,7 @@ begin
     begin
       // Initialize the repository
       Result := Environment.CloneRepository(Url, InstallationDirectoryName,
-        Environment.FileSystem.DreamcastTool.BaseDirectory, BufferOutput);
+        Environment.FileSystem.DreamcastTool.BaseDirectory, BufferOutput, Ref);
     end;
 end;
 

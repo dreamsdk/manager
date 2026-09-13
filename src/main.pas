@@ -67,6 +67,10 @@ type
     btnPortUpdate: TButton;
     btnRestoreDefaults: TButton;
     btnUpdateKallistiOS: TButton;
+    btnRefDreamcastToolIP: TButton;
+    btnRefDreamcastToolSerial: TButton;
+    btnRefKallisti: TButton;
+    btnRefKallistiPorts: TButton;
     btnUrlDreamcastToolIP: TButton;
     btnUrlDreamcastToolSerial: TButton;
     btnUrlKallisti: TButton;
@@ -79,6 +83,10 @@ type
     cbxDreamcastToolSerialBaudrate: TComboBox;
     cbxDreamcastToolSerialPort: TComboBox;
     cbxModuleSelection: TComboBox;
+    cbxRefDreamcastToolIP: TComboBox;
+    cbxRefDreamcastToolSerial: TComboBox;
+    cbxRefKallisti: TComboBox;
+    cbxRefKallistiPorts: TComboBox;
     cbxToolchain: TComboBox;
     cbxUrlDreamcastToolIP: TComboBox;
     cbxUrlDreamcastToolSerial: TComboBox;
@@ -309,6 +317,7 @@ type
     procedure btnPortInstallClick(Sender: TObject);
     procedure btnPortUninstallClick(Sender: TObject);
     procedure btnPortUpdateClick(Sender: TObject);
+    procedure btnRefRefreshClick(Sender: TObject);
     procedure btnRestoreDefaultsClick(Sender: TObject);
     procedure btnUpdateKallistiOSClick(Sender: TObject);
     procedure btnDreamcastToolCustomExecutableClick(Sender: TObject);
@@ -321,6 +330,10 @@ type
     procedure cbxDreamcastToolSerialBaudrateSelect(Sender: TObject);
     procedure cbxDreamcastToolSerialPortSelect(Sender: TObject);
     procedure cbxModuleSelectionChange(Sender: TObject);
+    procedure cbxRefDreamcastToolIPChange(Sender: TObject);
+    procedure cbxRefDreamcastToolSerialChange(Sender: TObject);
+    procedure cbxRefKallistiChange(Sender: TObject);
+    procedure cbxRefKallistiPortsChange(Sender: TObject);
     procedure cbxUrlDreamcastToolIPChange(Sender: TObject);
     procedure cbxUrlDreamcastToolSerialChange(Sender: TObject);
     procedure cbxUrlKallistiChange(Sender: TObject);
@@ -355,6 +368,7 @@ type
     fPackageProfileKeysMapGdb: TStringIntegerMap;
     fPackageManagerSelectedOfflinePackage: TPackageManagerRequestOffline;
     fPackageManagerOperation: TPackageManagerRequest;
+    fPendingRepositoryUpdate: Boolean;
     fLoadingConfiguration: Boolean;
     fKallistiPortsClearList: Boolean;
     fShellThreadExecutedAtLeastOnce: Boolean;
@@ -755,6 +769,14 @@ end;
 procedure TfrmMain.pcMainChanging(Sender: TObject; var AllowChange: Boolean);
 begin
   AllowChange := CheckComponentsChangeAllowRequestedOperation;
+
+  // Ask for a pending repository update only when leaving the Options tab,
+  // as the user may still be changing other repository settings there
+  if AllowChange and fPendingRepositoryUpdate and (pcMain.ActivePage = tsOptions) then
+  begin
+    fPendingRepositoryUpdate := False;
+    AskForUpdate;
+  end;
 end;
 
 procedure TfrmMain.rbnComponentsNoChangeChange(Sender: TObject);
@@ -1559,29 +1581,57 @@ begin
       and (not KallistiOS.Repository.Offline);
     btnUrlKallisti.Enabled := not cbxUrlKallisti.Enabled;
     btnOfflineKallisti.Enabled := not KallistiOS.Repository.Offline;
+    cbxRefKallisti.Enabled := cbxUrlKallisti.Enabled;
+    btnRefKallisti.Enabled := cbxUrlKallisti.Enabled;
     if KallistiOS.Repository.Offline then
+    begin
       cbxUrlKallisti.Text := EmptyStr;
+      cbxRefKallisti.Text := EmptyStr;
+    end;
+    if KallistiOS.Repository.Ready and IsEmpty(cbxRefKallisti.Text) then
+      cbxRefKallisti.Text := KallistiOS.Repository.Ref;
 
     cbxUrlKallistiPorts.Enabled := (not KallistiPorts.Repository.Ready)
       and (not KallistiPorts.Repository.Offline);
     btnUrlKallistiPorts.Enabled := not cbxUrlKallistiPorts.Enabled;
     btnOfflineKallistiPorts.Enabled := not KallistiPorts.Repository.Offline;
+    cbxRefKallistiPorts.Enabled := cbxUrlKallistiPorts.Enabled;
+    btnRefKallistiPorts.Enabled := cbxUrlKallistiPorts.Enabled;
     if KallistiPorts.Repository.Offline then
+    begin
       cbxUrlKallistiPorts.Text := EmptyStr;
+      cbxRefKallistiPorts.Text := EmptyStr;
+    end;
+    if KallistiPorts.Repository.Ready and IsEmpty(cbxRefKallistiPorts.Text) then
+      cbxRefKallistiPorts.Text := KallistiPorts.Repository.Ref;
 
     cbxUrlDreamcastToolSerial.Enabled := (not DreamcastTool.RepositorySerial.Ready)
       and (not DreamcastTool.RepositorySerial.Offline);
     btnUrlDreamcastToolSerial.Enabled := not cbxUrlDreamcastToolSerial.Enabled;
     btnOfflineDreamcastToolSerial.Enabled := not DreamcastTool.RepositorySerial.Offline;
+    cbxRefDreamcastToolSerial.Enabled := cbxUrlDreamcastToolSerial.Enabled;
+    btnRefDreamcastToolSerial.Enabled := cbxUrlDreamcastToolSerial.Enabled;
     if DreamcastTool.RepositorySerial.Offline then
+    begin
       cbxUrlDreamcastToolSerial.Text := EmptyStr;
+      cbxRefDreamcastToolSerial.Text := EmptyStr;
+    end;
+    if DreamcastTool.RepositorySerial.Ready and IsEmpty(cbxRefDreamcastToolSerial.Text) then
+      cbxRefDreamcastToolSerial.Text := DreamcastTool.RepositorySerial.Ref;
 
     cbxUrlDreamcastToolIP.Enabled := (not DreamcastTool.RepositoryInternetProtocol.Ready)
       and (not DreamcastTool.RepositoryInternetProtocol.Offline);
     btnUrlDreamcastToolIP.Enabled := not cbxUrlDreamcastToolIP.Enabled;
     btnOfflineDreamcastToolIP.Enabled := not DreamcastTool.RepositoryInternetProtocol.Offline;
+    cbxRefDreamcastToolIP.Enabled := cbxUrlDreamcastToolIP.Enabled;
+    btnRefDreamcastToolIP.Enabled := cbxUrlDreamcastToolIP.Enabled;
     if DreamcastTool.RepositoryInternetProtocol.Offline then
+    begin
       cbxUrlDreamcastToolIP.Text := EmptyStr;
+      cbxRefDreamcastToolIP.Text := EmptyStr;
+    end;
+    if DreamcastTool.RepositoryInternetProtocol.Ready and IsEmpty(cbxRefDreamcastToolIP.Text) then
+      cbxRefDreamcastToolIP.Text := DreamcastTool.RepositoryInternetProtocol.Ref;
   end;
   UpdateWindowsTerminalControls;
 end;
@@ -1592,6 +1642,10 @@ begin
   cbxUrlKallistiPortsChange(Self);
   cbxUrlDreamcastToolSerialChange(Self);
   cbxUrlDreamcastToolIPChange(Self);
+  cbxRefKallistiChange(Self);
+  cbxRefKallistiPortsChange(Self);
+  cbxRefDreamcastToolSerialChange(Self);
+  cbxRefDreamcastToolIPChange(Self);
 end;
 
 procedure TfrmMain.UpdateWindowsTerminalControls;
@@ -1853,10 +1907,17 @@ begin
     // Manage Repositories URL
     with Environment.Settings.Repositories do
     begin
+      // Manage URL
       cbxUrlKallisti.Text := KallistiURL;
       cbxUrlKallistiPorts.Text := KallistiPortsURL;
       cbxUrlDreamcastToolSerial.Text := DreamcastToolSerialURL;
       cbxUrlDreamcastToolIP.Text := DreamcastToolInternetProtocolURL;
+
+      // Manage Branch/Tag
+      cbxRefKallisti.Text := KallistiRef;
+      cbxRefKallistiPorts.Text := KallistiPortsRef;
+      cbxRefDreamcastToolSerial.Text := DreamcastToolSerialRef;
+      cbxRefDreamcastToolIP.Text := DreamcastToolInternetProtocolRef;
 {$IFDEF DEBUG}
       DebugLog(
         '  InitializeOptionsScreen, Loaded URLs:' + sLineBreak +
@@ -2708,11 +2769,17 @@ begin
     rgxTerminalOption.ItemIndex := 0;
     rgxTerminalOptionClick(Self);
 
-    // Repositories
+    // Repositories URL
     ResetText(cbxUrlKallisti, GetDefaultUrlKallisti);
     ResetText(cbxUrlKallistiPorts, GetDefaultUrlKallistiPorts);
     ResetText(cbxUrlDreamcastToolSerial, GetDefaultUrlDreamcastToolSerial);
     ResetText(cbxUrlDreamcastToolIP, GetDefaultUrlDreamcastToolInternetProtocol);
+
+    // Repositories branch/tag (empty means "default branch")
+    ResetText(cbxRefKallisti, EmptyStr);
+    ResetText(cbxRefKallistiPorts, EmptyStr);
+    ResetText(cbxRefDreamcastToolSerial, EmptyStr);
+    ResetText(cbxRefDreamcastToolIP, EmptyStr);
 
     // Dreamcast Tool (only options, not RS232 cable/IP settings...)
     rgxDreamcastTool.ItemIndex := DREAMCAST_TOOL_DEFAULT_KIND;
@@ -2780,6 +2847,28 @@ var
     end;
   end;
 
+  function TagToRefComboBox: TComboBox;
+  begin
+    Result := nil;
+    case Index of
+      0: Result := cbxRefKallisti;
+      1: Result := cbxRefKallistiPorts;
+      2: Result := cbxRefDreamcastToolSerial;
+      3: Result := cbxRefDreamcastToolIP;
+    end;
+  end;
+
+  function TagToRefreshButton: TButton;
+  begin
+    Result := nil;
+    case Index of
+      0: Result := btnRefKallisti;
+      1: Result := btnRefKallistiPorts;
+      2: Result := btnRefDreamcastToolSerial;
+      3: Result := btnRefDreamcastToolIP;
+    end;
+  end;
+
   function TagToRepository: TDreamcastSoftwareDevelopmentRepository;
   begin
     Result := nil;
@@ -2821,15 +2910,94 @@ begin
         UpdateRepositories;
       end;
 
+      // Setting up the default (empty) branch/tag
+      if Assigned(TagToRefComboBox) then
+      begin
+        TagToRefComboBox.Items.Clear;
+        TagToRefComboBox.Text := EmptyStr;
+        UpdateRepositories;
+      end;
+
+      // Load the available branches/tags for the freshly reset repository
+      if Assigned(TagToRefreshButton) then
+        btnRefRefreshClick(TagToRefreshButton);
+
       // Refresh version numbers and build date
       RefreshEverything(True);
 
-      // Ask if the user wants to update now
-      AskForUpdate;
+      // Defer asking for update: the user may still change other settings
+      // before applying them, so ask only when leaving the tab or closing
+      fPendingRepositoryUpdate := True;
     end
     else
       MsgBox(DialogWarningTitle, Format(FailedToResetRepository, [TagToString]),
         mtWarning, [mbOk])
+  end;
+end;
+
+procedure TfrmMain.btnRefRefreshClick(Sender: TObject);
+var
+  Index: Integer;
+  UrlComboBox,
+  RefComboBox: TComboBox;
+  PreviousRef: string;
+  Refs: TStringList;
+
+  function TagToUrlComboBox: TComboBox;
+  begin
+    Result := nil;
+    case Index of
+      0: Result := cbxUrlKallisti;
+      1: Result := cbxUrlKallistiPorts;
+      2: Result := cbxUrlDreamcastToolSerial;
+      3: Result := cbxUrlDreamcastToolIP;
+    end;
+  end;
+
+  function TagToRefComboBox: TComboBox;
+  begin
+    Result := nil;
+    case Index of
+      0: Result := cbxRefKallisti;
+      1: Result := cbxRefKallistiPorts;
+      2: Result := cbxRefDreamcastToolSerial;
+      3: Result := cbxRefDreamcastToolIP;
+    end;
+  end;
+
+begin
+  Index := (Sender as TButton).Tag;
+
+  if not DreamcastSoftwareDevelopmentKitManager.Versions.GitInstalled then
+  begin
+    MsgBox(DialogWarningTitle, GitNeeded, mtWarning, [mbOK]);
+    Exit;
+  end;
+
+  if not IsInternetConnectionAvailable then
+  begin
+    MsgBox(DialogWarningTitle, InternetConnectionNeeded, mtWarning, [mbOK]);
+    Exit;
+  end;
+
+  UrlComboBox := TagToUrlComboBox;
+  RefComboBox := TagToRefComboBox;
+
+  if Assigned(UrlComboBox) and Assigned(RefComboBox) then
+  begin
+    PreviousRef := RefComboBox.Text;
+
+    Screen.Cursor := crHourGlass;
+    Refs := DreamcastSoftwareDevelopmentKitManager.Environment
+      .GetRepositoryRefs(UrlComboBox.Text);
+    try
+      RefComboBox.Items.Assign(Refs);
+    finally
+      Refs.Free;
+    end;
+    Screen.Cursor := crDefault;
+
+    RefComboBox.Text := PreviousRef;
   end;
 end;
 
@@ -3033,6 +3201,30 @@ begin
   end;
 end;
 
+procedure TfrmMain.cbxRefDreamcastToolIPChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
+    .DreamcastToolInternetProtocolRef := cbxRefDreamcastToolIP.Text;
+end;
+
+procedure TfrmMain.cbxRefDreamcastToolSerialChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
+    .DreamcastToolSerialRef := cbxRefDreamcastToolSerial.Text;
+end;
+
+procedure TfrmMain.cbxRefKallistiChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
+    .KallistiRef := cbxRefKallisti.Text;
+end;
+
+procedure TfrmMain.cbxRefKallistiPortsChange(Sender: TObject);
+begin
+  DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
+    .KallistiPortsRef := cbxRefKallistiPorts.Text;
+end;
+
 procedure TfrmMain.cbxUrlDreamcastToolIPChange(Sender: TObject);
 begin
   DreamcastSoftwareDevelopmentKitManager.Environment.Settings.Repositories
@@ -3113,6 +3305,13 @@ end;
 procedure TfrmMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   CanClose := CheckComponentsChangeAllowRequestedOperation;
+
+  // Ask for a pending repository update before closing the window
+  if CanClose and fPendingRepositoryUpdate then
+  begin
+    fPendingRepositoryUpdate := False;
+    AskForUpdate;
+  end;
 end;
 
 (* This code is running in an elevated thread! *)

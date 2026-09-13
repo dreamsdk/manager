@@ -44,7 +44,8 @@ type
 implementation
 
 uses
-  SysTools
+  SysTools,
+  StrTools
 {$IFDEF GUI}
   , PostInst
 {$ENDIF}
@@ -53,6 +54,9 @@ uses
 { TDreamcastSoftwareDevelopmentKitManager }
 
 procedure TDreamcastSoftwareDevelopmentKitManager.UpdateRepositoriesURL;
+var
+  LiveRef: string;
+
 begin
   with Environment.Settings.Repositories do
   begin
@@ -60,6 +64,26 @@ begin
     KallistiPortsURL := KallistiPorts.Repository.URL;
     DreamcastToolSerialURL := DreamcastTool.RepositorySerial.URL;
     DreamcastToolInternetProtocolURL := DreamcastTool.RepositoryInternetProtocol.URL;
+
+    // Keep the branch/tag selection in sync with what's actually checked
+    // out once a repository exists. Leave the stored choice alone otherwise
+    // (not cloned yet, or the live ref couldn't be determined) so a pick
+    // that hasn't been applied yet survives a restart.
+    LiveRef := KallistiOS.Repository.Ref;
+    if not IsEmpty(LiveRef) then
+      KallistiRef := LiveRef;
+
+    LiveRef := KallistiPorts.Repository.Ref;
+    if not IsEmpty(LiveRef) then
+      KallistiPortsRef := LiveRef;
+
+    LiveRef := DreamcastTool.RepositorySerial.Ref;
+    if not IsEmpty(LiveRef) then
+      DreamcastToolSerialRef := LiveRef;
+
+    LiveRef := DreamcastTool.RepositoryInternetProtocol.Ref;
+    if not IsEmpty(LiveRef) then
+      DreamcastToolInternetProtocolRef := LiveRef;
   end;
 end;
 

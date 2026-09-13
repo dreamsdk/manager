@@ -378,6 +378,7 @@ type
     fRepositoryDirectory: TFileName;
     function GetOffline: Boolean;
     function GetReady: Boolean;
+    function GetRef: string;
     function GetURL: string;
     function GetVersion: string;
   protected
@@ -392,6 +393,7 @@ type
     property Offline: Boolean read GetOffline;
     property Version: string read GetVersion;
     property URL: string read GetURL;
+    property Ref: string read GetRef; // Branch or tag actually checked out on disk
   end;
 
   { TDreamcastSoftwareDevelopmentEnvironment }
@@ -424,7 +426,9 @@ type
     procedure PauseShellCommand;
     procedure ResumeShellCommand;
     function CloneRepository(const URL: string; const TargetDirectoryName,
-      WorkingDirectory: TFileName; var BufferOutput: string): Boolean;
+      WorkingDirectory: TFileName; var BufferOutput: string;
+      const Ref: string = ''): Boolean;
+    function GetRepositoryRefs(const URL: string): TStringList;
     function GetRepositoryVersion(const WorkingDirectory: TFileName): string;
     function IsComponentInstalled(const WorkingDirectory: TFileName): Boolean;
     function IsOfflineRepository(const RepositoryDirectory: TFileName): Boolean;
@@ -472,15 +476,34 @@ begin
   Result := Environment.IsRepositoryReady(fRepositoryDirectory);
 end;
 
+function TDreamcastSoftwareDevelopmentRepository.GetRef: string;
+begin
+  Result := EmptyStr;
+  if Ready then
+    try
+      // A real branch (e.g., master or a maintenance branch)
+      Result := Trim(Run('git', 'symbolic-ref -q --short HEAD', fRepositoryDirectory));
+      if IsEmpty(Result) then
+      begin
+        // Detached HEAD: resolve the tag pointing exactly at HEAD (if any)
+        Result := Trim(Run('git', 'describe --tags --exact-match', fRepositoryDirectory));
+        if IsInString(FAIL_TAG, Result) then
+          Result := EmptyStr;
+      end;
+    except
+      // Silent exception (not needed in that case)
+    end;
+end;
+
 function TDreamcastSoftwareDevelopmentRepository.GetURL: string;
 begin
   Result := EmptyStr;
   if Ready then
-	try
-		Result := Trim(Run('git', 'config --get remote.origin.url', fRepositoryDirectory));
-	except
-		// Silent exception (not needed in that case)
-	end;
+    try
+        Result := Trim(Run('git', 'config --get remote.origin.url', fRepositoryDirectory));
+    except
+        // Silent exception (not needed in that case)
+    end;
 end;
 
 function TDreamcastSoftwareDevelopmentRepository.GetVersion: string;
@@ -1091,9 +1114,10 @@ end;
 
 function TDreamcastSoftwareDevelopmentEnvironment.CloneRepository(
   const URL: string; const TargetDirectoryName, WorkingDirectory: TFileName;
-  var BufferOutput: string): Boolean;
+  var BufferOutput: string; const Ref: string): Boolean;
 var
   CommandLine,
+  RefCommandLineOption,
   TargetDirectoryFileName: TFileName;
 {$IFDEF DEBUG}
   OfflineVersion: string;
@@ -1105,10 +1129,12 @@ begin
 {$IFDEF DEBUG}
   DebugLog(Format('*** CloneRepository: ' + sLineBreak
     + '  URL: %s' + sLineBreak
+    + '  Ref: %s' + sLineBreak
     + '  TargetDirectoryName: %s' + sLineBreak
     + '  WorkingDirectory: %s' + sLineBreak
     + '  TargetDirectoryFileName: %s' + sLineBreak, [
       URL,
+      Ref,
       TargetDirectoryName,
       WorkingDirectory,
       TargetDirectoryFileName
@@ -1122,10 +1148,15 @@ begin
     if IsEmpty(URL) then
       DebugLog('Warning: CloneRepository: URL is empty!');
 {$ENDIF}
-    CommandLine := Format('git -C "%s" clone "%s" "%s" --progress', [
+    RefCommandLineOption := EmptyStr;
+    if not IsEmpty(Ref) then
+      RefCommandLineOption := Format('-b "%s" ', [Ref]);
+
+    CommandLine := Format('git -C "%s" clone "%s" "%s" %s--progress', [
       SystemToDreamSdkPath(WorkingDirectory),
       URL,
-      TargetDirectoryName
+      TargetDirectoryName,
+      RefCommandLineOption
     ]);
     BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
     Result := not IsInString(FAIL_TAG, BufferOutput);
@@ -1139,6 +1170,73 @@ begin
 {$ENDIF}
     // Offline (special case)
     Result := DirectoryExists(TargetDirectoryFileName);
+  end;
+end;
+
+function TDreamcastSoftwareDevelopmentEnvironment.GetRepositoryRefs(
+  const URL: string): TStringList;
+const
+  HEADS_PREFIX = 'refs/heads/';
+  TAGS_PREFIX = 'refs/tags/';
+  PEELED_TAG_SUFFIX = '^{}';
+
+var
+  Line,
+  RefName: string;
+  RawOutput,
+  Branches,
+  Tags: TStringList;
+  i: Integer;
+
+begin
+  Branches := TStringList.Create;
+  Tags := TStringList.Create;
+  RawOutput := TStringList.Create;
+  try
+    RawOutput.Text := Run('git', Format('ls-remote --heads --tags "%s"', [URL]), False);
+
+    for i := 0 to RawOutput.Count - 1 do
+    begin
+      Line := Trim(RawOutput[i]);
+      if EndsWith(PEELED_TAG_SUFFIX, Line) then
+        Continue;
+
+      if IsInString(HEADS_PREFIX, Line) then
+      begin
+        RefName := Right(HEADS_PREFIX, Line);
+        if not IsEmpty(RefName) then
+          Branches.Add(RefName);
+      end
+      else if IsInString(TAGS_PREFIX, Line) then
+      begin
+        RefName := Right(TAGS_PREFIX, Line);
+        if not IsEmpty(RefName) then
+          Tags.Add(RefName);
+      end;
+    end;
+
+    // Pin master/main at the top of the branch list, if present
+    for i := Branches.Count - 1 downto 0 do
+      if (CompareText(Branches[i], 'master') = 0)
+        or (CompareText(Branches[i], 'main') = 0) then
+      begin
+        Branches.Move(i, 0);
+        Break;
+      end;
+
+    // Best-effort "newest first" ordering for tags (reverse alphabetical;
+    // KOS tags follow a "vX.Y.Z" scheme so this approximates newest-first...)
+    Tags.Sort;
+    for i := 0 to (Tags.Count div 2) - 1 do
+      Tags.Exchange(i, Tags.Count - 1 - i);
+
+    Result := TStringList.Create;
+    Result.AddStrings(Branches);
+    Result.AddStrings(Tags);
+  finally
+    RawOutput.Free;
+    Tags.Free;
+    Branches.Free;
   end;
 end;
 
@@ -1204,6 +1302,7 @@ const
 var
   TempBuffer,
   CommandLine: string;
+  IsDetachedHead: Boolean;
 {$IFDEF DEBUG}
   OfflineVersion: string;
 {$ENDIF}
@@ -1215,17 +1314,30 @@ begin
   begin
     if IsRepositoryReady(WorkingDirectory) then
     begin
-      // Online (normal path)
-      CommandLine := Format('git -C "%s" pull', [
-        SystemToDreamSdkPath(WorkingDirectory)
-      ]);
-      BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
-      TempBuffer := StringReplace(BufferOutput, '-', ' ', [rfReplaceAll]);
+      // A repository checked out on a tag (rather than a branch) has a
+      // detached HEAD: it has nothing to pull since a tag never moves by design
+      IsDetachedHead := IsEmpty(Trim(Run('git',
+        'symbolic-ref -q --short HEAD', WorkingDirectory, False)));
 
-      if IsInString(USELESS_TAG, TempBuffer) then
-        Result := uosUpdateUseless
-      else if IsInString(SUCCESS_TAG, TempBuffer) then
-        Result := uosUpdateSuccess;
+      if IsDetachedHead then
+      begin
+        BufferOutput := USELESS_TAG;
+        Result := uosUpdateUseless;
+      end
+      else
+      begin
+        // Online (normal path)
+        CommandLine := Format('git -C "%s" pull', [
+          SystemToDreamSdkPath(WorkingDirectory)
+        ]);
+        BufferOutput := ExecuteShellCommand(CommandLine, WorkingDirectory);
+        TempBuffer := StringReplace(BufferOutput, '-', ' ', [rfReplaceAll]);
+
+        if IsInString(USELESS_TAG, TempBuffer) then
+          Result := uosUpdateUseless
+        else if IsInString(SUCCESS_TAG, TempBuffer) then
+          Result := uosUpdateSuccess;
+      end;
     end;
   end
   else
