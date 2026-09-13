@@ -86,9 +86,11 @@ const
   KALLISTI_INSTALLATION_DIRECTORY = 'kos';
 
 begin
+  if not DirectoryExists(Environment.FileSystem.ToolchainBase) then
+    ForceDirectories(Environment.FileSystem.ToolchainBase);
   Result := Environment.CloneRepository(Environment.Settings.Repositories.KallistiURL,
     KALLISTI_INSTALLATION_DIRECTORY,
-    Environment.FileSystem.Kallisti.KallistiDirectory + '..\', BufferOutput);
+    Environment.FileSystem.ToolchainBase, BufferOutput);
 end;
 
 function TKallistiManager.UpdateRepository(var BufferOutput: string): TUpdateOperationState;

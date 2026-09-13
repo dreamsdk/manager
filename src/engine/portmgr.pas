@@ -1161,9 +1161,11 @@ const
   KALLISTI_PORTS_INSTALLATION_DIRECTORY = 'kos-ports';
 
 begin
+  if not DirectoryExists(Environment.FileSystem.ToolchainBase) then
+    ForceDirectories(Environment.FileSystem.ToolchainBase);
   Result := Environment.CloneRepository(Environment.Settings.Repositories.KallistiPortsURL,
     KALLISTI_PORTS_INSTALLATION_DIRECTORY,
-    Environment.FileSystem.Kallisti.KallistiPortsDirectory + '..\', BufferOutput);
+    Environment.FileSystem.ToolchainBase, BufferOutput);
 end;
 
 procedure TKallistiPortManager.GenerateIntegratedDevelopmentEnvironmentLibraryInformation;
