@@ -344,8 +344,9 @@ procedure TComponentVersion.RetrieveVersions;
           AVersion.fPackageProfileGDB
         ]));
 {$ENDIF}
+        // Matches both "dc-chain" (legacy) and "kos-chain" (modern KOS)
         AVersion.fVersionNewlib := RetrieveVersionWithFind(AEnvironment.NewlibBinary,
-          '/dc-chain/newlib-', '/newlib/libc/');
+          'chain/newlib-', '/newlib/libc/');
       end;
 
       if AEnvironment.Kind = tkSuperH then
