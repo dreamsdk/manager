@@ -18,7 +18,6 @@ uses
   Forms,
   SysTools,
   ShellThd,
-  Settings,
   Global;
 
 var
@@ -67,14 +66,8 @@ begin
     begin
       if IsInstallOrUpdateRequired then
       begin
-        with DreamcastSoftwareDevelopmentKitManager.Environment.Settings
-          .Repositories do
-        begin
-          KallistiURL := GetDefaultUrlKallisti;
-          KallistiPortsURL := GetDefaultUrlKallistiPorts;
-          DreamcastToolSerialURL := GetDefaultUrlDreamcastToolSerial;
-          DreamcastToolInternetProtocolURL := GetDefaultUrlDreamcastToolInternetProtocol;
-        end;
+        // Repositories URL and branch/tag are read from the configuration
+        // file, as passed by DreamSDK Setup; empty URL means default URL
         ExecuteThreadOperation(stiKallistiManage);
       end
       else

@@ -55,15 +55,29 @@ uses
 
 procedure TDreamcastSoftwareDevelopmentKitManager.UpdateRepositoriesURL;
 var
+  LiveURL,
   LiveRef: string;
 
 begin
   with Environment.Settings.Repositories do
   begin
-    KallistiURL := KallistiOS.Repository.URL;
-    KallistiPortsURL := KallistiPorts.Repository.URL;
-    DreamcastToolSerialURL := DreamcastTool.RepositorySerial.URL;
-    DreamcastToolInternetProtocolURL := DreamcastTool.RepositoryInternetProtocol.URL;
+    // Same for the URL: keep the stored one (e.g., passed by DreamSDK Setup
+    // through the configuration file) until the repository is cloned.
+    LiveURL := KallistiOS.Repository.URL;
+    if not IsEmpty(LiveURL) then
+      KallistiURL := LiveURL;
+
+    LiveURL := KallistiPorts.Repository.URL;
+    if not IsEmpty(LiveURL) then
+      KallistiPortsURL := LiveURL;
+
+    LiveURL := DreamcastTool.RepositorySerial.URL;
+    if not IsEmpty(LiveURL) then
+      DreamcastToolSerialURL := LiveURL;
+
+    LiveURL := DreamcastTool.RepositoryInternetProtocol.URL;
+    if not IsEmpty(LiveURL) then
+      DreamcastToolInternetProtocolURL := LiveURL;
 
     // Keep the branch/tag selection in sync with what's actually checked
     // out once a repository exists. Leave the stored choice alone otherwise
