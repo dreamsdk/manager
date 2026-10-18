@@ -8,7 +8,6 @@ uses
   Classes,
   SysUtils;
 
-function IsPostInstallMode: Boolean;
 function IsInstallOrUpdateRequired: Boolean;
 procedure ExecutePostInstall;
 
@@ -18,12 +17,10 @@ uses
   Forms,
   SysTools,
   ShellThd,
-  Global;
+  Global,
+  InstMode;
 
-var
-  PostInstallMode: Boolean;
-
-procedure SetPostInstallMode;
+procedure InitializePostInstallMode;
 const
   POST_INSTALL_SWITCH = '--post-install';
 
@@ -32,18 +29,13 @@ var
   ParamValue: string;
 
 begin
-  PostInstallMode := False;
+  SetPostInstallMode(False);
   for i := 1 to ParamCount do
   begin
     ParamValue := LowerCase(ParamStr(i));
     if (ParamValue = POST_INSTALL_SWITCH) then
-      PostInstallMode := True;
+      SetPostInstallMode(True);
   end;
-end;
-
-function IsPostInstallMode: Boolean;
-begin
-  Result := PostInstallMode;
 end;
 
 function IsInstallOrUpdateRequired: Boolean;
@@ -62,7 +54,7 @@ begin
   try
 
     LogMessage(LogContext, Format('Main ThreadId: %d', [ThreadID]));
-    if PostInstallMode then
+    if IsPostInstallMode then
     begin
       if IsInstallOrUpdateRequired then
       begin
@@ -83,7 +75,7 @@ begin
 end;
 
 initialization
-  SetPostInstallMode;
+  InitializePostInstallMode;
 
 end.
 

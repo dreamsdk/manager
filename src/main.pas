@@ -492,6 +492,8 @@ uses
   UITools,
   GetVer,
   PostInst,
+  InstMode,
+  KOSInst,
   Settings,
   Version,
   VerIntf,
@@ -2524,7 +2526,7 @@ begin
     // Check if requested Python version is available
     SelectedPythonVersion := EmptyStr;
     IsValidPythonVersionSelected := IsDebuggerPythonVersionInstalled(
-      ComponentSelectedDebugger, SelectedPythonVersion);
+      DreamcastSoftwareDevelopmentKitManager, ComponentSelectedDebugger, SelectedPythonVersion);
 
 {$IFDEF DEBUG}
     WriteLn('Package Manager Operation: ', ComponentSelectedOperation);

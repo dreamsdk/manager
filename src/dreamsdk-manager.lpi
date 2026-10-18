@@ -24,7 +24,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="3"/>
       <RevisionNr Value="6"/>
-      <BuildNr Value="1341"/>
+      <BuildNr Value="1345"/>
       <StringTable Comments="https://dreamsdk.org/" CompanyName="The DreamSDK Team" FileDescription="DreamSDK Manager" InternalName="manager" LegalCopyright="© Copyleft 2018-2025" LegalTrademarks="Sega and Dreamcast are registered trademark of Sega Games Co., Ltd." OriginalFilename="dreamsdk-manager.exe" ProductName="DreamSDK" ProductVersion="4.0.11.2508"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -38,7 +38,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="engine;engine\helpers;..\..\common\src;..\..\common\src\sys"/>
+            <OtherUnitFiles Value="engine\helpers;..\..\common\src;..\..\common\src\sys;..\..\common\src\engine"/>
             <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -83,9 +83,16 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
+      <local>
+        <CommandLineParams Value="--post-install --home-dir=&quot;C:\DreamSDK&quot;"/>
+      </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
-        <Mode0 Name="default"/>
+        <Mode0 Name="default">
+          <local>
+            <CommandLineParams Value="--post-install --home-dir=&quot;C:\DreamSDK&quot;"/>
+          </local>
+        </Mode0>
       </Modes>
     </RunParams>
     <RequiredPackages Count="3">
@@ -99,7 +106,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="19">
+    <Units Count="22">
       <Unit0>
         <Filename Value="dreamsdk-manager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -113,22 +120,22 @@
         <UnitName Value="Main"/>
       </Unit1>
       <Unit2>
-        <Filename Value="engine\getver.pas"/>
+        <Filename Value="..\..\common\src\engine\getver.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="GetVer"/>
       </Unit2>
       <Unit3>
-        <Filename Value="engine\environ.pas"/>
+        <Filename Value="..\..\common\src\engine\environ.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Environ"/>
       </Unit3>
       <Unit4>
-        <Filename Value="engine\portmgr.pas"/>
+        <Filename Value="..\..\common\src\engine\portmgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="PortMgr"/>
       </Unit4>
       <Unit5>
-        <Filename Value="engine\dcsdkmgr.pas"/>
+        <Filename Value="..\..\common\src\engine\dcsdkmgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="DCSDKMgr"/>
       </Unit5>
@@ -141,7 +148,7 @@
         <UnitName Value="Progress"/>
       </Unit6>
       <Unit7>
-        <Filename Value="engine\kosmgr.pas"/>
+        <Filename Value="..\..\common\src\engine\kosmgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="KOSMgr"/>
       </Unit7>
@@ -161,7 +168,7 @@
         <UnitName Value="StrRes"/>
       </Unit10>
       <Unit11>
-        <Filename Value="engine\toolmgr.pas"/>
+        <Filename Value="..\..\common\src\engine\toolmgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="ToolMgr"/>
       </Unit11>
@@ -174,12 +181,12 @@
         <UnitName Value="About"/>
       </Unit12>
       <Unit13>
-        <Filename Value="engine\helpers\modver.pas"/>
+        <Filename Value="..\..\common\src\engine\modver.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="ModVer"/>
       </Unit13>
       <Unit14>
-        <Filename Value="engine\idemgr.pas"/>
+        <Filename Value="..\..\common\src\engine\idemgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="IDEMgr"/>
       </Unit14>
@@ -200,7 +207,7 @@
         <UnitName Value="Unpack"/>
       </Unit16>
       <Unit17>
-        <Filename Value="engine\helpers\pkgmgr.pas"/>
+        <Filename Value="..\..\common\src\engine\pkgmgr.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="PkgMgr"/>
       </Unit17>
@@ -209,6 +216,21 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Global"/>
       </Unit18>
+      <Unit19>
+        <Filename Value="..\..\common\src\engine\instmode.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="InstMode"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="..\..\common\src\engine\kosinst.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="KOSInst"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="..\..\common\src\engine\progline.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ProgLine"/>
+      </Unit21>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -219,7 +241,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="engine;engine\helpers;..\..\common\src;..\..\common\src\sys"/>
+      <OtherUnitFiles Value="engine\helpers;..\..\common\src;..\..\common\src\sys;..\..\common\src\engine"/>
       <UnitOutputDirectory Value="..\lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>

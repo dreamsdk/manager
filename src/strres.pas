@@ -5,10 +5,7 @@ unit StrRes;
 interface
 
 resourcestring
-  // Generic
-  KallistiText = 'KallistiOS';
-  KallistiPortsText = 'KallistiOS Ports';
-  DreamcastToolText = 'Dreamcast Tool';
+  // Generic (KallistiText, KallistiPortsText and DreamcastToolText are in KOSInst)
   DreamcastToolSerialText = 'Dreamcast Tool Serial (RS-232)';
   DreamcastToolInternetProtocolText = 'Dreamcast Tool Internet Protocol (IP)';
   DialogInformationTitle = 'Information';
@@ -91,36 +88,19 @@ resourcestring
     + sLineBreak + 'After saving the log, you may click on the ''Close'' button to continue the Setup process.';
   OperationErrorMemoText = '*** %s';
 
-  // ShellThd
-  FinalizingPostInstall = 'Executing post-install steps...';
-  InstallationProblem =
-    'Your installation have problems!!!' + sLineBreak +
-    'No required binaries were found in the InstallPath directory ("%s").' + sLineBreak +
-    'Please check the configuration file ("%s") and modify the InstallPath key if needed.';
+  // ShellThd (KallistiOS installation strings are in KOSInst)
   KallistiPortOperationText = 'KallistiOS Port %s %s';
   KallistiPortOperationInstallText = 'Installation of %s';
   KallistiPortOperationUpdateText = 'Update of %s';
   KallistiPortOperationUninstallText = 'Uninstallation of %s';
   KallistiOperationText = 'KallistiOS Management';
   KallistiPortsOperationText = 'KallistiOS Ports Management';
-  KallistiOperationNothingNeededText = 'KallistiOS is already installed and up-to-date.';
-  CloningOperation = 'Creating %s repository...';
-  UpdatingOperation = 'Updating %s repository...';
-  KallistiInitializeText = 'Initialize KallistiOS environment...';
-  KallistiBuildText = 'Building KallistiOS library...';
-  KallistiFixNewlibText = 'Fixing SuperH Newlib...';
-  DreamcastToolInitializeText = 'Initialize Dreamcast Tool environment...';
-  DreamcastToolBuildText = 'Building Dreamcast Tool components...';
-  DreamcastToolInstallText = 'Installing Dreamcast Tool...';
   KallistiPortInstallText = 'Installing the KallistiOS Port...';
   KallistiPortUninstallText = 'Uninstalling the KallistiOS Port...';
   KallistiPortUpdateText = 'Updating the KallistiOS Port...';
   KallistiPortsInstallText = 'Installing all KallistiOS Ports...';
   KallistiPortsUninstallText = 'Uninstalling all KallistiOS Ports...';
   PostInstallOperationText = '%s Setup';
-  ToolchainsUnpackingText = 'Unpacking toolchains packages...';
-  ToolchainsUnpackingPickupText = 'Processing: %s';
-  ToolchainsUnpackingProgressText = 'Package Manager: %d%% / Progress Event';
 
   // PackageManager | Unpack
   UnpackingText = 'Unpacking...';

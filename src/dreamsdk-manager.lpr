@@ -35,7 +35,10 @@ uses
   Unpack,
   PkgMgr,
   Global,
-  SysTools;
+  SysTools,
+  InstMode,
+  KOSInst,
+  ProgLine;
 
 {$R *.res}
 

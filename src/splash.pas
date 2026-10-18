@@ -27,7 +27,7 @@ implementation
 {$R *.lfm}
 
 uses
-  PostInst, UITools
+  InstMode, UITools
 {$IFDEF RELEASE}
   , SysTools
 {$ENDIF};
