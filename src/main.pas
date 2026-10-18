@@ -648,6 +648,9 @@ begin
 
   if not IsElevatedTaskRequested then
   begin
+    // Let the threads finish (and free themselves) before freeing everything
+    WaitForThreadOperations;
+
     if not fShellThreadExecutedAtLeastOnce then
     begin
       DreamcastSoftwareDevelopmentKitManager.KallistiPorts

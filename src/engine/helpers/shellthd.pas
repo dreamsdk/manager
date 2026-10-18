@@ -107,6 +107,12 @@ procedure PauseThreadOperation;
 procedure ResumeThreadOperation;
 procedure ExecuteThreadOperation(const AOperation: TShellThreadInputRequest);
 
+(* Wait for the threads that are still finishing (e.g., the application is
+   closed right after an operation), while executing their pending Synchronize
+   calls; if not, they couldn't free themselves. Call this before freeing the
+   global objects. *)
+procedure WaitForThreadOperations;
+
 implementation
 
 uses
@@ -122,6 +128,8 @@ uses
 const
   ABORT_SHELL_THREAD_INSTANCES_COUNT_MAX = 3;
   ABORT_SHELL_THREAD_MAX_ABORT_CALLS = 5;
+  WAIT_THREAD_OPERATIONS_TIMEOUT = 10000;
+  WAIT_THREAD_OPERATIONS_STEP = 100;
 
 type
   { TShellThreadHelper }
@@ -146,12 +154,38 @@ type
     procedure Execute; override;
   public
     constructor Create(CreateSuspended: Boolean);
+    destructor Destroy; override;
   end;
 
 var
   AbortShellThreadInstancesCount: Integer = 0;
+  AliveThreadsCount: LongInt = 0; // TShellThread and TAbortShellThread instances
   ShellThread: TShellThread;
   ShellThreadHelper: TShellThreadHelper;
+
+procedure WaitForThreadOperations;
+var
+  LogContext: TLogMessageContext;
+  Elapsed: Integer;
+
+begin
+  LogContext := LogMessageEnter({$I %FILE%}, {$I %CURRENTROUTINE%});
+  try
+    Elapsed := 0;
+    while (AliveThreadsCount > 0) and (Elapsed < WAIT_THREAD_OPERATIONS_TIMEOUT) do
+    begin
+      CheckSynchronize(WAIT_THREAD_OPERATIONS_STEP);
+      Inc(Elapsed, WAIT_THREAD_OPERATIONS_STEP);
+    end;
+
+    LogMessage(LogContext, Format('AliveThreadsCount: %d, Elapsed: %d', [
+      AliveThreadsCount,
+      Elapsed
+    ]));
+  finally
+    LogMessageExit(LogContext);
+  end;
+end;
 
 function GetShellThreadPackageManager: TPackageManager;
 begin
@@ -487,6 +521,13 @@ constructor TAbortShellThread.Create(CreateSuspended: Boolean);
 begin
   inherited Create(CreateSuspended);
   FreeOnTerminate := True;
+  InterLockedIncrement(AliveThreadsCount);
+end;
+
+destructor TAbortShellThread.Destroy;
+begin
+  inherited Destroy;
+  InterLockedDecrement(AliveThreadsCount);
 end;
 
 { TShellThreadHelper }
@@ -558,12 +599,14 @@ begin
   inherited Create(CreateSuspended);
   FreeOnTerminate := True;
   fInstaller := nil;
+  InterLockedIncrement(AliveThreadsCount);
 end;
 
 destructor TShellThread.Destroy;
 begin
   FreeAndNil(fInstaller);
   inherited Destroy;
+  InterLockedDecrement(AliveThreadsCount);
 end;
 
 procedure TShellThread.HandleInstallerProgressText(Sender: TObject;
