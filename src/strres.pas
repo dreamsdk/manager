@@ -109,7 +109,7 @@ resourcestring
   UnpackConfirmationPayAttentionText = ', but pay attention: ';
   UnpackConfirmationAndKeywordText = 'and';
   UnpackConfirmationInvalidToolchainsText = 'Stable toolchain is incompatible with your current OS';
-  UnpackConfirmationInvalidPythonText = 'Python %s 32-bits runtime was not detected';
+  UnpackConfirmationInvalidPythonText = 'Python %s %s-bit runtime was not detected';
   UnpackConfirmationQuestionAnywayText = ' anyway';
 
 implementation

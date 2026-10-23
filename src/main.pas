@@ -2520,7 +2520,8 @@ var
   AnywayText,
   PayAttentionText,
   MessageText,
-  SelectedPythonVersion: string;
+  SelectedPythonVersion,
+  SelectedPythonBitness: string;
   ErrorMessages: TStringList;
 
 begin
@@ -2528,8 +2529,10 @@ begin
   try
     // Check if requested Python version is available
     SelectedPythonVersion := EmptyStr;
+    SelectedPythonBitness := EmptyStr;
     IsValidPythonVersionSelected := IsDebuggerPythonVersionInstalled(
-      DreamcastSoftwareDevelopmentKitManager, ComponentSelectedDebugger, SelectedPythonVersion);
+      DreamcastSoftwareDevelopmentKitManager, ComponentSelectedDebugger, SelectedPythonVersion,
+      SelectedPythonBitness);
 
 {$IFDEF DEBUG}
     WriteLn('Package Manager Operation: ', ComponentSelectedOperation);
@@ -2537,12 +2540,13 @@ begin
     WriteLn('  Selected Debugger: ', ComponentSelectedDebugger, ' [', IsValidPythonVersionSelected, ']');
 {$ENDIF}
 
-    // Added if Python 32-bit runtime was not found
+    // Added if Python runtime (with the expected bitness) was not found
     if not IsValidPythonVersionSelected then
     begin
       if (ErrorMessages.Count > 0) then
         ErrorMessages.Add(UnpackConfirmationAndKeywordText);
-      ErrorMessages.Add(Format(UnpackConfirmationInvalidPythonText, [SelectedPythonVersion]));
+      ErrorMessages.Add(Format(UnpackConfirmationInvalidPythonText, [SelectedPythonVersion,
+        SelectedPythonBitness]));
     end;
 
     // Final message
