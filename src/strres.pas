@@ -51,6 +51,7 @@ resourcestring
   CodeBlocksInstallationDirectoryNotExists = 'The specified Code::Blocks installation directory does not exists.';
   CodeBlocksInstallationDirectoryInvalid = 'Code::Blocks is not installed in this directory.';
   CodeBlocksIncorrectHash = 'The installed Code::Blocks version was NOT recognized.\nThere is no guarantee that it will work. Continue anyway?';
+  CodeBlocksNoAvailableUsers = 'No user account has a Code::Blocks profile yet, so the integration wouldn''t be enabled for anyone.\nClick Initialize... first (or start Code::Blocks once in the user session), then Refresh and Install again.';
   CodeBlocksConfirmInitializeProfile = 'This will create the required files to enable Code::Blocks integration for all the users on this computer.\nAlternatively, you may start Code::Blocks once on the user session where you want to enable the integration.\nContinue?';
   UnknownElevatedTask = 'Unknown elevated task!';
   PleaseVerifyRepositories = 'Repositories settings are incorrect!';

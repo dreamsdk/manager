@@ -3073,6 +3073,15 @@ begin
             Exit;
           end;
 
+          // Check if at least one user has a Code::Blocks profile (default.conf),
+          // otherwise the patch would be installed but enabled for nobody
+          if AvailableUsers.Count = 0 then
+          begin
+            MsgBox(DialogWarningTitle, MsgBoxDlgTranslateString(CodeBlocksNoAvailableUsers),
+              mtWarning, [mbOK]);
+            Exit;
+          end;
+
           InstallTitle := DialogQuestionTitle;
           InstallMessage := Format(ConfirmCodeBlocksMessage, [ConfirmCodeBlocksInstallation]);
           InstallIcon := mtConfirmation;
