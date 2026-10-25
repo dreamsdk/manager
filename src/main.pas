@@ -26,6 +26,7 @@ uses
   ShellThd,
   DCSDKMgr,
   Environ,
+  IDEMgr,
   StrRes,
   PkgMgr;
 
@@ -53,6 +54,9 @@ type
     btnIdeRefresh: TButton;
     btnIdeReinstall: TButton;
     btnIdeUninstall: TButton;
+    btnIdeVisualStudioCodeInstall: TButton;
+    btnIdeVisualStudioCodeReinstall: TButton;
+    btnIdeVisualStudioCodeUninstall: TButton;
     btnOfflineDreamcastToolIP: TButton;
     btnOfflineDreamcastToolSerial: TButton;
     btnOfflineKallisti: TButton;
@@ -131,6 +135,10 @@ type
     gbxIdeCodeBlocksUsersAvailableButtons: TPanel;
     gbxIdeCodeBlocksUsersInstalled: TGroupBox;
     gbxIdeList: TGroupBox;
+    gbxIdeVisualStudioCodeActions: TGroupBox;
+    gbxIdeVisualStudioCodeInstallation: TGroupBox;
+    gbxIdeVisualStudioCodeUsersAvailable: TGroupBox;
+    gbxIdeVisualStudioCodeUsersInstalled: TGroupBox;
     gbxKallistiChangeLog: TGroupBox;
     gbxModuleInfo: TGroupBox;
     gbxPackageInfo: TGroupBox;
@@ -168,6 +176,9 @@ type
     lblHomeShell: TLabel;
     lblIdeCodeBlocksUsersAvailable: TLabel;
     lblIdeCodeBlocksUsersInstalled: TLabel;
+    lblIdeVisualStudioCodeInstallation: TLabel;
+    lblIdeVisualStudioCodeUsersAvailable: TLabel;
+    lblIdeVisualStudioCodeUsersInstalled: TLabel;
     lblIntroduction: TLabel;
     lblManagerCompilerInfo: TLabel;
     lblManagerLCLVersion: TLabel;
@@ -266,6 +277,11 @@ type
     lbxIdeCodeBlocksUsersAvailable: TListBox;
     lbxIdeCodeBlocksUsersInstalled: TListBox;
     lbxIdeList: TCheckListBox;
+    lbxIdeVisualStudioCodeUsersAvailable: TListBox;
+    lbxIdeVisualStudioCodeUsersInstalled: TListBox;
+    nbIde: TNotebook;
+    pgIdeCodeBlocks: TPage;
+    pgIdeVisualStudioCode: TPage;
     lbxPorts: TCheckListBox;
     memKallistiChangeLog: TMemo;
     memPortDescription: TMemo;
@@ -323,6 +339,7 @@ type
     procedure btnDreamcastToolCustomExecutableClick(Sender: TObject);
     procedure btnUrlKallistiClick(Sender: TObject);
     procedure btnIdeInstallClick(Sender: TObject);
+    procedure btnIdeVisualStudioCodeInstallClick(Sender: TObject);
     procedure btnWindowsTerminalInstallClick(Sender: TObject);
     procedure btnWindowsTerminalUninstallClick(Sender: TObject);
     procedure btnDebugEnvironmentFileSystemPrintAllValuesClick(Sender: TObject);
@@ -353,6 +370,7 @@ type
     procedure lblPortMaintainerMouseEnter(Sender: TObject);
     procedure lblPortMaintainerMouseLeave(Sender: TObject);
     procedure lbxIdeListClickCheck(Sender: TObject);
+    procedure lbxIdeListSelectionChange(Sender: TObject; User: Boolean);
     procedure lbxPortsClickCheck(Sender: TObject);
     procedure lbxPortsSelectionChange(Sender: TObject; User: Boolean);
     procedure pcMainChange(Sender: TObject);
@@ -434,6 +452,11 @@ type
     function HasNetworkAdapters: Boolean;
     function HasSerialPorts: Boolean;
     procedure RefreshIdeScreen;
+    function GetSelectedIdeVisualStudioCodeEditor: TVisualStudioCodeIntegratedDevelopmentEnvironment;
+    procedure RefreshIdeVisualStudioCodeEditors(const ForceRefresh: Boolean);
+    procedure RefreshIdeVisualStudioCodeScreen(const ForceRefresh: Boolean);
+    property SelectedIdeVisualStudioCodeEditor: TVisualStudioCodeIntegratedDevelopmentEnvironment
+      read GetSelectedIdeVisualStudioCodeEditor;
     procedure RunMSYS; overload;
     procedure RunMSYS(const WorkingDirectory: TFileName); overload;
     procedure AskForUpdate(const MandatoryAction: Boolean = False);
@@ -522,6 +545,12 @@ const
   ELEVATED_TASK_CODEBLOCKS_IDE_UNINSTALL = 'elevated_task_cb_ide_uninstall';
   ELEVATED_TASK_CODEBLOCKS_IDE_REFRESH = 'elevated_task_cb_ide_refresh';
   ELEVATED_TASK_CODEBLOCKS_IDE_INITIALIZE_PROFILES = 'elevated_task_cb_ide_initialize';
+  ELEVATED_TASK_VSCODE_IDE_INSTALL = 'elevated_task_vsc_ide_install';
+  ELEVATED_TASK_VSCODE_IDE_UNINSTALL = 'elevated_task_vsc_ide_uninstall';
+
+  // Item of the IDE list (lbxIdeList); the Visual Studio Code editors are
+  // added at runtime, from the VSCODE_EDITORS table (VSCTools unit)
+  IDE_LIST_CODEBLOCKS = 'Code::Blocks';
 
 type
   { TIntegerObject }
@@ -721,7 +750,22 @@ end;
 
 procedure TfrmMain.lbxIdeListClickCheck(Sender: TObject);
 begin
+  // The check boxes only display the installation state
   RefreshIdeScreen;
+  RefreshIdeVisualStudioCodeEditors(False);
+end;
+
+procedure TfrmMain.lbxIdeListSelectionChange(Sender: TObject; User: Boolean);
+begin
+  // Display the view of the selected IDE: the same page is used for all
+  // the Visual Studio Code editors (Visual Studio Code, VSCodium...)
+  if Assigned(SelectedIdeVisualStudioCodeEditor) then
+  begin
+    nbIde.PageIndex := pgIdeVisualStudioCode.PageIndex;
+    RefreshIdeVisualStudioCodeScreen(False);
+  end
+  else
+    nbIde.PageIndex := pgIdeCodeBlocks.PageIndex;
 end;
 
 procedure TfrmMain.lbxPortsClickCheck(Sender: TObject);
@@ -766,6 +810,8 @@ begin
     UpdateOptionsControls;
   if pcMain.ActivePage = tsKallistiOS then
     UpdateKallistiControls;
+  if pcMain.ActivePage = tsIDE then
+    RefreshIdeVisualStudioCodeEditors(False);
 
   if pcMain.ActivePage <> tsComponents then
     UpdateComponentControls;
@@ -1881,6 +1927,9 @@ begin
 end;
 
 procedure TfrmMain.InitializeIdeScreen;
+var
+  i: Integer;
+
 begin
   gbxIdeCodeBlocksUsersInstalled.Caption :=
     Format(gbxIdeCodeBlocksUsersInstalled.Caption, [GetProductName]);
@@ -1897,8 +1946,26 @@ begin
   SetButtonElevated(btnIdeCodeBlocksUsersAvailableRefresh.Handle);
   SetButtonElevated(btnIdeCodeBlocksInstallDetect.Handle);
 
-  lbxIdeList.ItemIndex := 0;
-  lbxIdeListClickCheck(Self);
+  // Visual Studio Code and its forks (the captions are set with the name of
+  // the selected editor, see RefreshIdeVisualStudioCodeScreen)
+  for i := Low(DreamcastSoftwareDevelopmentKitManager.IntegratedDevelopmentEnvironment
+    .VisualStudioCodeEditors) to High(DreamcastSoftwareDevelopmentKitManager
+    .IntegratedDevelopmentEnvironment.VisualStudioCodeEditors) do
+    lbxIdeList.Items.Add(DreamcastSoftwareDevelopmentKitManager
+      .IntegratedDevelopmentEnvironment.VisualStudioCodeEditors[i].Name);
+  lblIdeVisualStudioCodeUsersAvailable.Caption :=
+    Format(lblIdeVisualStudioCodeUsersAvailable.Caption, [GetProductName]);
+
+  SetButtonElevated(btnIdeVisualStudioCodeInstall.Handle);
+  SetButtonElevated(btnIdeVisualStudioCodeReinstall.Handle);
+  SetButtonElevated(btnIdeVisualStudioCodeUninstall.Handle);
+
+  // The Visual Studio Code editors are refreshed when displayed, as
+  // retrieving the users takes a while
+
+  lbxIdeList.ItemIndex := lbxIdeList.Items.IndexOf(IDE_LIST_CODEBLOCKS);
+  lbxIdeListSelectionChange(Self, False);
+  RefreshIdeScreen;
 end;
 
 procedure TfrmMain.InitializeOptionsScreen;
@@ -2238,7 +2305,97 @@ begin
     btnIdeCodeBlocksUsersAvailableInitialize.Enabled := not Installed;
     btnIdeReinstall.Enabled := Installed;
     btnIdeUninstall.Enabled := Installed;
-    lbxIdeList.State[lbxIdeList.ItemIndex] := BooleanToCheckboxState(Installed);
+    lbxIdeList.State[lbxIdeList.Items.IndexOf(IDE_LIST_CODEBLOCKS)] :=
+      BooleanToCheckboxState(Installed);
+  end;
+end;
+
+function TfrmMain.GetSelectedIdeVisualStudioCodeEditor: TVisualStudioCodeIntegratedDevelopmentEnvironment;
+begin
+  Result := nil;
+  if lbxIdeList.ItemIndex <> -1 then
+    Result := DreamcastSoftwareDevelopmentKitManager.IntegratedDevelopmentEnvironment
+      .GetVisualStudioCodeEditorByName(lbxIdeList.Items[lbxIdeList.ItemIndex]);
+end;
+
+// Refresh all the editors (if needed) and their state in the IDE list
+procedure TfrmMain.RefreshIdeVisualStudioCodeEditors(const ForceRefresh: Boolean);
+var
+  i,
+  ItemIndex: Integer;
+  Editor: TVisualStudioCodeIntegratedDevelopmentEnvironment;
+
+begin
+  Screen.Cursor := crHourGlass;
+  try
+    for i := Low(DreamcastSoftwareDevelopmentKitManager.IntegratedDevelopmentEnvironment
+      .VisualStudioCodeEditors) to High(DreamcastSoftwareDevelopmentKitManager
+      .IntegratedDevelopmentEnvironment.VisualStudioCodeEditors) do
+    begin
+      Editor := DreamcastSoftwareDevelopmentKitManager.IntegratedDevelopmentEnvironment
+        .VisualStudioCodeEditors[i];
+      if ForceRefresh or (not Editor.Refreshed) then
+        Editor.Refresh;
+      ItemIndex := lbxIdeList.Items.IndexOf(Editor.Name);
+      if ItemIndex <> -1 then
+        lbxIdeList.State[ItemIndex] := BooleanToCheckboxState(Editor.Installed);
+    end;
+  finally
+    Screen.Cursor := crDefault;
+  end;
+
+  if Assigned(SelectedIdeVisualStudioCodeEditor) then
+    RefreshIdeVisualStudioCodeScreen(False);
+end;
+
+// Display the selected editor (Visual Studio Code, VSCodium...)
+procedure TfrmMain.RefreshIdeVisualStudioCodeScreen(const ForceRefresh: Boolean);
+var
+  ItemIndex: Integer;
+  Editor: TVisualStudioCodeIntegratedDevelopmentEnvironment;
+
+begin
+  Editor := SelectedIdeVisualStudioCodeEditor;
+  if not Assigned(Editor) then
+    Exit;
+
+  with Editor do
+  begin
+    if ForceRefresh or (not Refreshed) then
+    begin
+      Screen.Cursor := crHourGlass;
+      try
+        Refresh;
+      finally
+        Screen.Cursor := crDefault;
+      end;
+    end;
+
+    gbxIdeVisualStudioCodeInstallation.Caption := Format(
+      VisualStudioCodeInstallationCaption, [Name]);
+    gbxIdeVisualStudioCodeUsersInstalled.Caption := Format(
+      VisualStudioCodeUsersInstalledCaption, [Name, GetProductName]);
+    lblIdeVisualStudioCodeUsersInstalled.Caption := Format(
+      VisualStudioCodeUsersInstalledLabel, [GetProductName, Name]);
+
+    if Detected then
+      lblIdeVisualStudioCodeInstallation.Caption := Format(
+        VisualStudioCodeDetectedLabel, [Name, Version, CommandLineInterface])
+    else
+      lblIdeVisualStudioCodeInstallation.Caption := Format(
+        VisualStudioCodeNotDetectedLabel, [Name]);
+
+    lbxIdeVisualStudioCodeUsersAvailable.Items.Assign(AvailableUsers);
+    lbxIdeVisualStudioCodeUsersInstalled.Items.Assign(InstalledUsers);
+
+    // Installing requires the editor, uninstalling doesn't
+    btnIdeVisualStudioCodeInstall.Enabled := Detected and (not Installed);
+    btnIdeVisualStudioCodeReinstall.Enabled := Detected and Installed;
+    btnIdeVisualStudioCodeUninstall.Enabled := Installed;
+
+    ItemIndex := lbxIdeList.Items.IndexOf(Name);
+    if ItemIndex <> -1 then
+      lbxIdeList.State[ItemIndex] := BooleanToCheckboxState(Installed);
   end;
 end;
 
@@ -2299,6 +2456,7 @@ var
   SwapExchangeFileName: TFileName;
   ElevatedParameters: string;
   RunElevatedResult: Cardinal;
+  i: Integer;
 
   procedure StartWait;
   begin
@@ -2347,6 +2505,11 @@ begin
       else
       begin
         Result := (GetLastError = ERROR_SUCCESS);
+        for i := Low(DreamcastSoftwareDevelopmentKitManager.IntegratedDevelopmentEnvironment
+          .VisualStudioCodeEditors) to High(DreamcastSoftwareDevelopmentKitManager
+          .IntegratedDevelopmentEnvironment.VisualStudioCodeEditors) do
+          DreamcastSoftwareDevelopmentKitManager.IntegratedDevelopmentEnvironment
+            .VisualStudioCodeEditors[i].UpdateStateFromElevatedTask(SwapExchangeFileName);
         with DreamcastSoftwareDevelopmentKitManager
           .IntegratedDevelopmentEnvironment.CodeBlocks do
         begin
@@ -3136,6 +3299,8 @@ begin
           if RunElevatedTask(ELEVATED_TASK_CODEBLOCKS_IDE_REFRESH) then
             if not LastOperationSuccess then
               MsgBox(DialogErrorTitle, GetLastErrorMessage(LastErrorMessage), mtError, [mbOK]);
+          if Sender = btnIdeRefresh then
+            RefreshIdeVisualStudioCodeEditors(True);
         end;
 
       4: // Initialize Profiles
@@ -3150,6 +3315,71 @@ begin
     end;
 
   SetCodeBlocksState(True);
+end;
+
+procedure TfrmMain.btnIdeVisualStudioCodeInstallClick(Sender: TObject);
+var
+  ElevatedTaskName,
+  ConfirmationMessage: string;
+  Editor: TVisualStudioCodeIntegratedDevelopmentEnvironment;
+  EncodedParameters: TStringList;
+
+begin
+  Editor := SelectedIdeVisualStudioCodeEditor;
+  if not Assigned(Editor) then
+    Exit;
+
+  with Editor do
+  begin
+    case (Sender as TButton).Tag of
+      0, 1: // Install, Reinstall (this also installs for new users)
+        begin
+          if not Detected then
+          begin
+            MsgBox(DialogWarningTitle, MsgBoxDlgTranslateString(
+              Format(VisualStudioCodeNotDetected, [Name])), mtWarning, [mbOK]);
+            Exit;
+          end;
+
+          if not FileExists(ExtensionFileName) then
+          begin
+            MsgBox(DialogWarningTitle, VisualStudioCodeExtensionNotFound
+              + sLineBreak + ExtensionFileName, mtWarning, [mbOK]);
+            Exit;
+          end;
+
+          ElevatedTaskName := ELEVATED_TASK_VSCODE_IDE_INSTALL;
+          ConfirmationMessage := ConfirmVisualStudioCodeInstall;
+          if (Sender as TButton).Tag = 1 then
+            ConfirmationMessage := ConfirmVisualStudioCodeReinstall;
+        end;
+
+      2: // Uninstall
+        begin
+          ElevatedTaskName := ELEVATED_TASK_VSCODE_IDE_UNINSTALL;
+          ConfirmationMessage := ConfirmVisualStudioCodeUninstall;
+        end;
+
+      else
+        Exit;
+    end;
+
+    if MsgBox(DialogQuestionTitle, MsgBoxDlgTranslateString(Format(
+      ConfirmationMessage, [Name])), mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
+    begin
+      // The elevated task receives the editor identifier
+      EncodedParameters := TStringList.Create;
+      try
+        EncodedParameters.Add(EditorId);
+        if RunElevatedTask(ElevatedTaskName, EncodedParameters) then
+          if not LastOperationSuccess then
+            MsgBox(DialogWarningTitle, LastErrorMessage, mtWarning, [mbOK]);
+      finally
+        EncodedParameters.Free;
+      end;
+      RefreshIdeVisualStudioCodeScreen(True);
+    end;
+  end;
 end;
 
 procedure TfrmMain.btnWindowsTerminalInstallClick(Sender: TObject);
@@ -3342,7 +3572,9 @@ type
     etCodeBlocksPatchUninstall,
     etCodeBlocksPatchReinstall,
     etCodeBlocksPatchRefresh,
-    etCodeBlocksPatchInitializeProfiles
+    etCodeBlocksPatchInitializeProfiles,
+    etVisualStudioCodeInstall,
+    etVisualStudioCodeUninstall
   );
 
 var
@@ -3351,6 +3583,7 @@ var
   SwapExchangeFileName: TFileName;
   ParamInstallationDirectory: TFileName;
   LogMessageCommandLineSwitchItemIndex: Integer;
+  VisualStudioCodeEditor: TVisualStudioCodeIntegratedDevelopmentEnvironment;
 
   function TaskNameToElavatedTask: TElevatedTask;
   begin
@@ -3364,7 +3597,11 @@ var
     else if (ATaskName = ELEVATED_TASK_CODEBLOCKS_IDE_REFRESH) then
       Result := etCodeBlocksPatchRefresh
     else if (ATaskName = ELEVATED_TASK_CODEBLOCKS_IDE_INITIALIZE_PROFILES) then
-      Result := etCodeBlocksPatchInitializeProfiles;
+      Result := etCodeBlocksPatchInitializeProfiles
+    else if (ATaskName = ELEVATED_TASK_VSCODE_IDE_INSTALL) then
+      Result := etVisualStudioCodeInstall
+    else if (ATaskName = ELEVATED_TASK_VSCODE_IDE_UNINSTALL) then
+      Result := etVisualStudioCodeUninstall;
   end;
 
   procedure WriteLibraryInformation;
@@ -3396,6 +3633,34 @@ begin
       TDreamcastSoftwareDevelopmentKitManager.Create(False);
 
     try
+      // Install/remove the extension in an editor (Visual Studio Code,
+      // VSCodium...) for all the users; the editor is the first parameter
+      if TaskNameToElavatedTask in [etVisualStudioCodeInstall,
+        etVisualStudioCodeUninstall] then
+      begin
+        VisualStudioCodeEditor := nil;
+        if AParameters.Count > 1 then
+          VisualStudioCodeEditor := ElevatedDreamcastSoftwareDevelopmentKitManager
+            .IntegratedDevelopmentEnvironment.GetVisualStudioCodeEditor(AParameters[1]);
+        if not Assigned(VisualStudioCodeEditor) then
+        begin
+          MsgBoxDlg(ASourceWindowHandle, sError, UnknownElevatedTask, mtError, [mbOK]);
+          Result := ERROR_GEN_FAILURE;
+        end
+        else
+        with VisualStudioCodeEditor do
+        begin
+          if TaskNameToElavatedTask = etVisualStudioCodeInstall then
+            Install
+          else
+            Uninstall;
+
+          // Handle the output
+          if not LastOperationSuccess then
+            SaveStringToFile(Trim(LastErrorMessage), SwapExchangeFileName);
+        end;
+      end
+      else
       with ElevatedDreamcastSoftwareDevelopmentKitManager
         .IntegratedDevelopmentEnvironment.CodeBlocks do
       begin

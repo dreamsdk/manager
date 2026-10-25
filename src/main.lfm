@@ -854,184 +854,10 @@ object frmMain: TfrmMain
           Sorted = True
           TabOrder = 0
           OnClickCheck = lbxIdeListClickCheck
+          OnSelectionChange = lbxIdeListSelectionChange
           Data = {
             0100000000
           }
-        end
-      end
-      object gbxIdeCodeBlocksActions: TGroupBox
-        Left = 252
-        Height = 53
-        Top = 264
-        Width = 402
-        Caption = 'Actions:'
-        ClientHeight = 33
-        ClientWidth = 398
-        TabOrder = 1
-        object btnIdeInstall: TButton
-          Left = 6
-          Height = 25
-          Top = 4
-          Width = 125
-          Caption = '&Install...'
-          TabOrder = 0
-          OnClick = btnIdeInstallClick
-        end
-        object btnIdeReinstall: TButton
-          Tag = 1
-          Left = 138
-          Height = 25
-          Top = 4
-          Width = 125
-          Caption = '&Reinstall...'
-          TabOrder = 1
-          OnClick = btnIdeInstallClick
-        end
-        object btnIdeUninstall: TButton
-          Tag = 2
-          Left = 269
-          Height = 25
-          Top = 4
-          Width = 125
-          Caption = '&Uninstall...'
-          TabOrder = 2
-          OnClick = btnIdeInstallClick
-        end
-      end
-      object gbxIdeCodeBlocksUsersAvailable: TGroupBox
-        Left = 252
-        Height = 97
-        Top = 160
-        Width = 402
-        Caption = 'System Available Users:'
-        ClientHeight = 77
-        ClientWidth = 398
-        TabOrder = 2
-        object gbxIdeCodeBlocksUsersAvailableButtons: TPanel
-          Left = 308
-          Height = 54
-          Top = 23
-          Width = 86
-          Align = alRight
-          BorderSpacing.Left = 4
-          BorderSpacing.Right = 4
-          BevelOuter = bvNone
-          ClientHeight = 54
-          ClientWidth = 86
-          ParentColor = False
-          TabOrder = 0
-          object btnIdeCodeBlocksUsersAvailableInitialize: TButton
-            Tag = 4
-            Left = 0
-            Height = 25
-            Top = 0
-            Width = 86
-            Align = alTop
-            Caption = 'Initiali&ze...'
-            TabOrder = 0
-            OnClick = btnIdeInstallClick
-          end
-          object btnIdeCodeBlocksUsersAvailableRefresh: TButton
-            Tag = 3
-            Left = 0
-            Height = 25
-            Top = 29
-            Width = 86
-            Align = alTop
-            BorderSpacing.Top = 4
-            Caption = 'Refr&esh'
-            TabOrder = 1
-            OnClick = btnIdeInstallClick
-          end
-        end
-        object lblIdeCodeBlocksUsersAvailable: TLabel
-          Left = 4
-          Height = 15
-          Top = 4
-          Width = 390
-          Align = alTop
-          BorderSpacing.Around = 4
-          Caption = 'Users below may use %s in Code::Blocks by installing the patch.'
-          ParentColor = False
-          WordWrap = True
-        end
-        object lbxIdeCodeBlocksUsersAvailable: TListBox
-          Left = 4
-          Height = 50
-          Top = 23
-          Width = 300
-          Align = alClient
-          BorderSpacing.Around = 4
-          ItemHeight = 0
-          TabOrder = 1
-        end
-      end
-      object gbxIdeCodeBlocksUsersInstalled: TGroupBox
-        Left = 252
-        Height = 97
-        Top = 60
-        Width = 402
-        Caption = 'Code::Blocks for %s Enabled Users:'
-        ClientHeight = 77
-        ClientWidth = 398
-        TabOrder = 3
-        object lbxIdeCodeBlocksUsersInstalled: TListBox
-          Left = 4
-          Height = 50
-          Top = 23
-          Width = 390
-          Align = alClient
-          BorderSpacing.Around = 4
-          ItemHeight = 0
-          TabOrder = 0
-        end
-        object lblIdeCodeBlocksUsersInstalled: TLabel
-          Left = 4
-          Height = 15
-          Top = 4
-          Width = 390
-          Align = alTop
-          BorderSpacing.Around = 4
-          Caption = 'Users below may use %s in Code::Blocks now.'
-          ParentColor = False
-          WordWrap = True
-        end
-      end
-      object gbxIdeCodeBlocksInstallDir: TGroupBox
-        Left = 252
-        Height = 52
-        Top = 4
-        Width = 402
-        Caption = 'Code::Blocks Installation Directory:'
-        ClientHeight = 32
-        ClientWidth = 398
-        TabOrder = 4
-        object btnIdeCodeBlocksInstallDetect: TButton
-          Tag = 3
-          Left = 320
-          Height = 21
-          Top = 4
-          Width = 74
-          Caption = '&Detect'
-          TabOrder = 0
-          OnClick = btnIdeInstallClick
-        end
-        object edtIdeCodeBlocksInstallDir: TEdit
-          Left = 4
-          Height = 23
-          Top = 4
-          Width = 230
-          TabOrder = 1
-          OnChange = edtIdeCodeBlocksInstallDirChange
-        end
-        object btnIdeCodeBlocksInstallDir: TButton
-          Left = 240
-          Height = 21
-          Top = 4
-          Width = 74
-          Caption = '&Browse...'
-          TabOrder = 2
-          OnClick = btnIdeCodeBlocksInstallDirClick
         end
       end
       object gbxIdeAll: TGroupBox
@@ -1053,6 +879,316 @@ object frmMain: TfrmMain
           Caption = 'Refres&h'
           TabOrder = 0
           OnClick = btnIdeInstallClick
+        end
+      end
+      object nbIde: TNotebook
+        Left = 252
+        Height = 320
+        Top = 0
+        Width = 406
+        PageIndex = 0
+        TabOrder = 6
+        object pgIdeCodeBlocks: TPage
+          object gbxIdeCodeBlocksActions: TGroupBox
+            Left = 0
+            Height = 53
+            Top = 264
+            Width = 402
+            Caption = 'Actions:'
+            ClientHeight = 33
+            ClientWidth = 398
+            TabOrder = 1
+            object btnIdeInstall: TButton
+              Left = 6
+              Height = 25
+              Top = 4
+              Width = 125
+              Caption = '&Install...'
+              TabOrder = 0
+              OnClick = btnIdeInstallClick
+            end
+            object btnIdeReinstall: TButton
+              Tag = 1
+              Left = 138
+              Height = 25
+              Top = 4
+              Width = 125
+              Caption = '&Reinstall...'
+              TabOrder = 1
+              OnClick = btnIdeInstallClick
+            end
+            object btnIdeUninstall: TButton
+              Tag = 2
+              Left = 269
+              Height = 25
+              Top = 4
+              Width = 125
+              Caption = '&Uninstall...'
+              TabOrder = 2
+              OnClick = btnIdeInstallClick
+            end
+          end
+          object gbxIdeCodeBlocksUsersAvailable: TGroupBox
+            Left = 0
+            Height = 97
+            Top = 160
+            Width = 402
+            Caption = 'System Available Users:'
+            ClientHeight = 77
+            ClientWidth = 398
+            TabOrder = 2
+            object gbxIdeCodeBlocksUsersAvailableButtons: TPanel
+              Left = 308
+              Height = 54
+              Top = 23
+              Width = 86
+              Align = alRight
+              BorderSpacing.Left = 4
+              BorderSpacing.Right = 4
+              BevelOuter = bvNone
+              ClientHeight = 54
+              ClientWidth = 86
+              ParentColor = False
+              TabOrder = 0
+              object btnIdeCodeBlocksUsersAvailableInitialize: TButton
+                Tag = 4
+                Left = 0
+                Height = 25
+                Top = 0
+                Width = 86
+                Align = alTop
+                Caption = 'Initiali&ze...'
+                TabOrder = 0
+                OnClick = btnIdeInstallClick
+              end
+              object btnIdeCodeBlocksUsersAvailableRefresh: TButton
+                Tag = 3
+                Left = 0
+                Height = 25
+                Top = 29
+                Width = 86
+                Align = alTop
+                BorderSpacing.Top = 4
+                Caption = 'Refr&esh'
+                TabOrder = 1
+                OnClick = btnIdeInstallClick
+              end
+            end
+            object lblIdeCodeBlocksUsersAvailable: TLabel
+              Left = 4
+              Height = 15
+              Top = 4
+              Width = 390
+              Align = alTop
+              BorderSpacing.Around = 4
+              Caption = 'Users below may use %s in Code::Blocks by installing the patch.'
+              ParentColor = False
+              WordWrap = True
+            end
+            object lbxIdeCodeBlocksUsersAvailable: TListBox
+              Left = 4
+              Height = 50
+              Top = 23
+              Width = 300
+              Align = alClient
+              BorderSpacing.Around = 4
+              ItemHeight = 0
+              TabOrder = 1
+            end
+          end
+          object gbxIdeCodeBlocksUsersInstalled: TGroupBox
+            Left = 0
+            Height = 97
+            Top = 60
+            Width = 402
+            Caption = 'Code::Blocks for %s Enabled Users:'
+            ClientHeight = 77
+            ClientWidth = 398
+            TabOrder = 3
+            object lbxIdeCodeBlocksUsersInstalled: TListBox
+              Left = 4
+              Height = 50
+              Top = 23
+              Width = 390
+              Align = alClient
+              BorderSpacing.Around = 4
+              ItemHeight = 0
+              TabOrder = 0
+            end
+            object lblIdeCodeBlocksUsersInstalled: TLabel
+              Left = 4
+              Height = 15
+              Top = 4
+              Width = 390
+              Align = alTop
+              BorderSpacing.Around = 4
+              Caption = 'Users below may use %s in Code::Blocks now.'
+              ParentColor = False
+              WordWrap = True
+            end
+          end
+          object gbxIdeCodeBlocksInstallDir: TGroupBox
+            Left = 0
+            Height = 52
+            Top = 4
+            Width = 402
+            Caption = 'Code::Blocks Installation Directory:'
+            ClientHeight = 32
+            ClientWidth = 398
+            TabOrder = 4
+            object btnIdeCodeBlocksInstallDetect: TButton
+              Tag = 3
+              Left = 320
+              Height = 21
+              Top = 4
+              Width = 74
+              Caption = '&Detect'
+              TabOrder = 0
+              OnClick = btnIdeInstallClick
+            end
+            object edtIdeCodeBlocksInstallDir: TEdit
+              Left = 4
+              Height = 23
+              Top = 4
+              Width = 230
+              TabOrder = 1
+              OnChange = edtIdeCodeBlocksInstallDirChange
+            end
+            object btnIdeCodeBlocksInstallDir: TButton
+              Left = 240
+              Height = 21
+              Top = 4
+              Width = 74
+              Caption = '&Browse...'
+              TabOrder = 2
+              OnClick = btnIdeCodeBlocksInstallDirClick
+            end
+          end
+        end
+        object pgIdeVisualStudioCode: TPage
+          object gbxIdeVisualStudioCodeInstallation: TGroupBox
+            Left = 0
+            Height = 52
+            Top = 4
+            Width = 402
+            Caption = 'Visual Studio Code Installation:'
+            ClientHeight = 32
+            ClientWidth = 398
+            TabOrder = 0
+            object lblIdeVisualStudioCodeInstallation: TLabel
+              Left = 4
+              Height = 24
+              Top = 4
+              Width = 390
+              Align = alClient
+              BorderSpacing.Around = 4
+              Caption = '-'
+              ParentColor = False
+              ShowAccelChar = False
+              WordWrap = True
+            end
+          end
+          object gbxIdeVisualStudioCodeUsersInstalled: TGroupBox
+            Left = 0
+            Height = 97
+            Top = 60
+            Width = 402
+            Caption = 'Visual Studio Code for %s Enabled Users:'
+            ClientHeight = 77
+            ClientWidth = 398
+            TabOrder = 1
+            object lbxIdeVisualStudioCodeUsersInstalled: TListBox
+              Left = 4
+              Height = 50
+              Top = 23
+              Width = 390
+              Align = alClient
+              BorderSpacing.Around = 4
+              ItemHeight = 0
+              TabOrder = 0
+            end
+            object lblIdeVisualStudioCodeUsersInstalled: TLabel
+              Left = 4
+              Height = 15
+              Top = 4
+              Width = 390
+              Align = alTop
+              BorderSpacing.Around = 4
+              Caption = 'Users below may use %s in Visual Studio Code now.'
+              ParentColor = False
+              WordWrap = True
+            end
+          end
+          object gbxIdeVisualStudioCodeUsersAvailable: TGroupBox
+            Left = 0
+            Height = 97
+            Top = 160
+            Width = 402
+            Caption = 'System Available Users:'
+            ClientHeight = 77
+            ClientWidth = 398
+            TabOrder = 2
+            object lbxIdeVisualStudioCodeUsersAvailable: TListBox
+              Left = 4
+              Height = 50
+              Top = 23
+              Width = 390
+              Align = alClient
+              BorderSpacing.Around = 4
+              ItemHeight = 0
+              TabOrder = 0
+            end
+            object lblIdeVisualStudioCodeUsersAvailable: TLabel
+              Left = 4
+              Height = 15
+              Top = 4
+              Width = 390
+              Align = alTop
+              BorderSpacing.Around = 4
+              Caption = 'The %s extension is installed for all the users below.'
+              ParentColor = False
+              WordWrap = True
+            end
+          end
+          object gbxIdeVisualStudioCodeActions: TGroupBox
+            Left = 0
+            Height = 53
+            Top = 264
+            Width = 402
+            Caption = 'Actions:'
+            ClientHeight = 33
+            ClientWidth = 398
+            TabOrder = 3
+            object btnIdeVisualStudioCodeInstall: TButton
+              Left = 6
+              Height = 25
+              Top = 4
+              Width = 125
+              Caption = '&Install...'
+              TabOrder = 0
+              OnClick = btnIdeVisualStudioCodeInstallClick
+            end
+            object btnIdeVisualStudioCodeReinstall: TButton
+              Tag = 1
+              Left = 138
+              Height = 25
+              Top = 4
+              Width = 125
+              Caption = '&Reinstall...'
+              TabOrder = 1
+              OnClick = btnIdeVisualStudioCodeInstallClick
+            end
+            object btnIdeVisualStudioCodeUninstall: TButton
+              Tag = 2
+              Left = 269
+              Height = 25
+              Top = 4
+              Width = 125
+              Caption = '&Uninstall...'
+              TabOrder = 2
+              OnClick = btnIdeVisualStudioCodeInstallClick
+            end
+          end
         end
       end
     end

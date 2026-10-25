@@ -53,6 +53,16 @@ resourcestring
   CodeBlocksIncorrectHash = 'The installed Code::Blocks version was NOT recognized.\nThere is no guarantee that it will work. Continue anyway?';
   CodeBlocksNoAvailableUsers = 'No user account has a Code::Blocks profile yet, so the integration wouldn''t be enabled for anyone.\nClick Initialize... first (or start Code::Blocks once in the user session), then Refresh and Install again.';
   CodeBlocksConfirmInitializeProfile = 'This will create the required files to enable Code::Blocks integration for all the users on this computer.\nAlternatively, you may start Code::Blocks once on the user session where you want to enable the integration.\nContinue?';
+  ConfirmVisualStudioCodeInstall = 'Are you sure to install the extension in %s for all the users of this computer?';
+  ConfirmVisualStudioCodeReinstall = 'Are you sure to reinstall the extension in %s?\nThis will also install it for the users who don''t have it yet (e.g. new user accounts).';
+  ConfirmVisualStudioCodeUninstall = 'Are you sure to uninstall definitely the extension from %s for all the users?';
+  VisualStudioCodeNotDetected = '%0:s was not detected on this computer.\nPlease install %0:s, then click Refresh.';
+  VisualStudioCodeExtensionNotFound = 'The extension package was not found, please reinstall DreamSDK:';
+  VisualStudioCodeDetectedLabel = '%s %s detected (%s).';
+  VisualStudioCodeNotDetectedLabel = '%s was not detected. Install it, then click Refresh.';
+  VisualStudioCodeInstallationCaption = '%s Installation:';
+  VisualStudioCodeUsersInstalledCaption = '%s for %s Enabled Users:';
+  VisualStudioCodeUsersInstalledLabel = 'Users below may use %s in %s now.';
   UnknownElevatedTask = 'Unknown elevated task!';
   PleaseVerifyRepositories = 'Repositories settings are incorrect!';
   GitNeeded = 'Git is needed to use this feature.';
