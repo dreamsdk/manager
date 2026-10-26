@@ -55,6 +55,7 @@ type
     procedure StartSafeAbort;
     procedure StopSafeAbort;
     procedure SetCloseButtonState(State: Boolean);
+    procedure AddOutputLine(const Message: string);
   public
     destructor Destroy; override;
     property Finished: Boolean read fFinished write SetFinished;
@@ -200,7 +201,7 @@ begin
     if not Finished then
     begin
       SetCloseButtonState(False);
-      memBufferOutput.Lines.Add(SendingCancelSignal);
+      AddOutputLine(SendingCancelSignal);
       lblProgressStep.Caption := SendingCancelSignal;
     end;
 
@@ -302,6 +303,68 @@ begin
     StartSafeAbort;
 end;
 
+// The output is followed only when the memo is scrolled to the bottom, so the
+// user can scroll up (or right) to read the output without being disturbed
+procedure TfrmProgress.AddOutputLine(const Message: string);
+{$IFDEF WINDOWS}
+var
+  OutputHandle: HWND;
+  FollowOutput: Boolean;
+  LastVisibleLine,
+  FirstVisibleLine,
+  HorizontalPosition,
+  SelectionStart,
+  SelectionLength,
+  TextLength: Integer;
+
+begin
+  OutputHandle := memBufferOutput.Handle;
+
+  // The memo is scrolled to the bottom when its last line is visible
+  LastVisibleLine := HiWord(SendMessage(OutputHandle, EM_CHARFROMPOS, 0,
+    MakeLParam(0, memBufferOutput.ClientHeight - 1)));
+  FollowOutput := LastVisibleLine >=
+    SendMessage(OutputHandle, EM_GETLINECOUNT, 0, 0) - 1;
+
+  FirstVisibleLine := SendMessage(OutputHandle, EM_GETFIRSTVISIBLELINE, 0, 0);
+  HorizontalPosition := GetScrollPos(OutputHandle, SB_HORZ);
+  SelectionStart := memBufferOutput.SelStart;
+  SelectionLength := memBufferOutput.SelLength;
+
+  // Adding a line moves the caret and scrolls the memo, so the redraw is
+  // disabled until the scroll position is restored
+  SendMessage(OutputHandle, WM_SETREDRAW, 0, 0);
+  try
+    memBufferOutput.Lines.Add(Message);
+
+    if FollowOutput then
+    begin
+      TextLength := SendMessage(OutputHandle, WM_GETTEXTLENGTH, 0, 0);
+      SendMessage(OutputHandle, EM_SETSEL, TextLength, TextLength);
+      SendMessage(OutputHandle, EM_SCROLLCARET, 0, 0);
+    end
+    else
+    begin
+      // Keep the selection and the visible lines where the user left them
+      memBufferOutput.SelStart := SelectionStart;
+      memBufferOutput.SelLength := SelectionLength;
+      SendMessage(OutputHandle, EM_LINESCROLL, 0, FirstVisibleLine
+        - SendMessage(OutputHandle, EM_GETFIRSTVISIBLELINE, 0, 0));
+    end;
+
+    // The horizontal position is always kept
+    SendMessage(OutputHandle, WM_HSCROLL,
+      MakeWParam(SB_THUMBPOSITION, HorizontalPosition), 0);
+  finally
+    SendMessage(OutputHandle, WM_SETREDRAW, 1, 0);
+    RedrawWindow(OutputHandle, nil, 0, RDW_INVALIDATE or RDW_ERASE or RDW_FRAME);
+  end;
+{$ELSE}
+begin
+  memBufferOutput.Lines.Add(Message);
+{$ENDIF}
+end;
+
 function TfrmProgress.GetAbortOperation: Boolean;
 begin
   Result := btnAbort.Tag <> CLOSE_TAG_VALUE;
@@ -374,7 +437,7 @@ begin
         LongMessage := Message;
 
       if not ForcedAbort then
-        memBufferOutput.Lines.Add(Format(OperationErrorMemoText, [LongMessage]));
+        AddOutputLine(Format(OperationErrorMemoText, [LongMessage]));
       lblProgressStep.Caption := Message;
     end
     else
@@ -396,7 +459,7 @@ end;
 procedure TfrmProgress.SetProgressText(const Message: string);
 begin
   lblProgressStep.Caption := Message;
-  frmProgress.memBufferOutput.Lines.Add(Message);
+  AddOutputLine(Message);
 end;
 
 destructor TfrmProgress.Destroy;
@@ -412,7 +475,7 @@ var
 begin
   // Display the line, except if it contains a single percentage (e.g., Git)
   if fProgressLineParser.Parse(Message, ProgressPosition) then
-    memBufferOutput.Lines.Add(Message);
+    AddOutputLine(Message);
 
   // Handle percent steps (0% to 100%)
   if (not IsSafeAbortRequested) then
