@@ -58,11 +58,12 @@ resourcestring
   ConfirmVisualStudioCodeUninstall = 'Are you sure to uninstall definitely the extension from %s for all the users?';
   VisualStudioCodeNotDetected = '%0:s was not detected on this computer.\nPlease install %0:s, then click Refresh.';
   VisualStudioCodeExtensionNotFound = 'The extension package was not found, please reinstall DreamSDK:';
-  VisualStudioCodeDetectedLabel = '%s %s detected (%s).';
+  VisualStudioCodeDetectedCaption = '%s Installation (version %s):';
   VisualStudioCodeNotDetectedLabel = '%s was not detected. Install it, then click Refresh.';
   VisualStudioCodeInstallationCaption = '%s Installation:';
   VisualStudioCodeUsersInstalledCaption = '%s for %s Enabled Users:';
   VisualStudioCodeUsersInstalledLabel = 'Users below may use %s in %s now.';
+  VisualStudioCodeUsersAvailableLabel = 'Users below may use %s in %s by installing the extension.';
   UnknownElevatedTask = 'Unknown elevated task!';
   PleaseVerifyRepositories = 'Repositories settings are incorrect!';
   GitNeeded = 'Git is needed to use this feature.';

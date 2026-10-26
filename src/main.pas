@@ -176,7 +176,7 @@ type
     lblHomeShell: TLabel;
     lblIdeCodeBlocksUsersAvailable: TLabel;
     lblIdeCodeBlocksUsersInstalled: TLabel;
-    lblIdeVisualStudioCodeInstallation: TLabel;
+    edtIdeVisualStudioCodeInstallation: TEdit;
     lblIdeVisualStudioCodeUsersAvailable: TLabel;
     lblIdeVisualStudioCodeUsersInstalled: TLabel;
     lblIntroduction: TLabel;
@@ -1953,8 +1953,6 @@ begin
     .IntegratedDevelopmentEnvironment.VisualStudioCodeEditors) do
     lbxIdeList.Items.Add(DreamcastSoftwareDevelopmentKitManager
       .IntegratedDevelopmentEnvironment.VisualStudioCodeEditors[i].Name);
-  lblIdeVisualStudioCodeUsersAvailable.Caption :=
-    Format(lblIdeVisualStudioCodeUsersAvailable.Caption, [GetProductName]);
 
   SetButtonElevated(btnIdeVisualStudioCodeInstall.Handle);
   SetButtonElevated(btnIdeVisualStudioCodeReinstall.Handle);
@@ -2371,19 +2369,27 @@ begin
       end;
     end;
 
-    gbxIdeVisualStudioCodeInstallation.Caption := Format(
-      VisualStudioCodeInstallationCaption, [Name]);
     gbxIdeVisualStudioCodeUsersInstalled.Caption := Format(
       VisualStudioCodeUsersInstalledCaption, [Name, GetProductName]);
     lblIdeVisualStudioCodeUsersInstalled.Caption := Format(
       VisualStudioCodeUsersInstalledLabel, [GetProductName, Name]);
+    lblIdeVisualStudioCodeUsersAvailable.Caption := Format(
+      VisualStudioCodeUsersAvailableLabel, [GetProductName, Name]);
 
     if Detected then
-      lblIdeVisualStudioCodeInstallation.Caption := Format(
-        VisualStudioCodeDetectedLabel, [Name, Version, CommandLineInterface])
+    begin
+      gbxIdeVisualStudioCodeInstallation.Caption := Format(
+        VisualStudioCodeDetectedCaption, [Name, Version]);
+      edtIdeVisualStudioCodeInstallation.Text :=
+        ExcludeTrailingPathDelimiter(InstallationDirectory);
+    end
     else
-      lblIdeVisualStudioCodeInstallation.Caption := Format(
+    begin
+      gbxIdeVisualStudioCodeInstallation.Caption := Format(
+        VisualStudioCodeInstallationCaption, [Name]);
+      edtIdeVisualStudioCodeInstallation.Text := Format(
         VisualStudioCodeNotDetectedLabel, [Name]);
+    end;
 
     lbxIdeVisualStudioCodeUsersAvailable.Items.Assign(AvailableUsers);
     lbxIdeVisualStudioCodeUsersInstalled.Items.Assign(InstalledUsers);

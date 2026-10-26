@@ -1075,17 +1075,16 @@ object frmMain: TfrmMain
             ClientHeight = 32
             ClientWidth = 398
             TabOrder = 0
-            object lblIdeVisualStudioCodeInstallation: TLabel
+            object edtIdeVisualStudioCodeInstallation: TEdit
               Left = 4
-              Height = 24
+              Height = 23
               Top = 4
               Width = 390
-              Align = alClient
-              BorderSpacing.Around = 4
-              Caption = '-'
-              ParentColor = False
-              ShowAccelChar = False
-              WordWrap = True
+              Anchors = [akTop, akLeft, akRight]
+              Color = clBtnFace
+              ReadOnly = True
+              TabStop = False
+              TabOrder = 0
             end
           end
           object gbxIdeVisualStudioCodeUsersInstalled: TGroupBox
@@ -1145,7 +1144,7 @@ object frmMain: TfrmMain
               Width = 390
               Align = alTop
               BorderSpacing.Around = 4
-              Caption = 'The %s extension is installed for all the users below.'
+              Caption = 'Users below may use %s by installing the extension.'
               ParentColor = False
               WordWrap = True
             end
