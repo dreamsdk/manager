@@ -36,8 +36,8 @@ resourcestring
   NoSerialPortAvailable = 'No Serial Port was found on your system.';
   UninstallKallistiSinglePort = 'Are you sure to uninstall %s?';
   InstallOrUpdateRequiredDoItNow = 'A management operation of KallistiOS components is necessary. Do it now?';
-  CMakeMissingKallistiSinglePort = 'Unable to install %s, as it needs CMake which wasn''t detected.';
-  CMakeMissingAllKallistiPorts = 'Note: CMake wasn''t detected and this may cause issues.';
+  HostToolsMissingKallistiSinglePort = 'Unable to install %s, as the following tools weren''t detected: %s.';
+  HostToolsMissingAllKallistiPorts = 'Note: %s couldn''t be detected, so these KallistiOS Ports will fail to install: %s.';
   ResetRepositoryQuestion = 'This will delete the %s repository on the disk, losing all your changes if any.\nYou will need to select an online repository URL then perform an Update operation.\nAre you sure to continue?';
   ResetRepositoryDone = '%s repository deleted.';
   ResetRepositoryConfirmUpdate = 'Perform the Update operation now?\nYou may do the Update operation later in the %s tab.';

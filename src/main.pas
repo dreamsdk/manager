@@ -440,8 +440,10 @@ type
     procedure InitializeOptionsScreen;
     procedure HandleAero;
     function GetMsgBoxWindowHandle: THandle;
+    function GetKallistiPortsMissingHostTools(out PortNames: string): TKallistiPortHostTools;
     function GetAllKallistiPortsIcon(const Operation: TShellThreadInputRequest): TMsgDlgType;
-    function GetAllKallistiPortsMessage(const Message: string): string;
+    function GetAllKallistiPortsMessage(const Operation: TShellThreadInputRequest;
+      const Message: string): string;
     function CheckKallistiSinglePortPossibleInstallation: Boolean;
     procedure CreateNetworkAdapterList;
     procedure CreateSerialPortList;
@@ -793,7 +795,7 @@ begin
       SelectedKallistiPort.Name + ': ' + sLineBreak +
       '  Installation Directory (Exists: ' + BoolToStr(DirectoryExists(SelectedKallistiPort.InstallDirectory), 'Yes', 'No') + '): '
         + SelectedKallistiPort.InstallDirectory + sLineBreak +
-      '  Use CMake: ' + BoolToStr(SelectedKallistiPort.UseCMake, 'Yes', 'No') + sLineBreak +
+      '  Host Tools: ' + HostToolsToString(SelectedKallistiPort.RequiredHostTools) + sLineBreak +
       '  Includes: ' + SelectedKallistiPort.Includes + sLineBreak +
       '  Include Directories: ' + SelectedKallistiPort.IncludeDirectory + sLineBreak +
       '  Libraries: ' + SelectedKallistiPort.Libraries + sLineBreak +
@@ -2108,32 +2110,68 @@ begin
     Result := frmUnpack.Handle;
 end;
 
+function TfrmMain.GetKallistiPortsMissingHostTools(
+  out PortNames: string): TKallistiPortHostTools;
+var
+  i: Integer;
+  PortInfo: TKallistiPortItem;
+
+begin
+  Result := [];
+  PortNames := EmptyStr;
+  for i := 0 to DreamcastSoftwareDevelopmentKitManager.KallistiPorts.Count - 1 do
+  begin
+    PortInfo := DreamcastSoftwareDevelopmentKitManager.KallistiPorts[i];
+    if (not PortInfo.Hidden) and (PortInfo.MissingHostTools <> []) then
+    begin
+      Result := Result + PortInfo.MissingHostTools;
+      if not IsEmpty(PortNames) then
+        PortNames := PortNames + ', ';
+      PortNames := PortNames + PortInfo.Name;
+    end;
+  end;
+end;
+
 function TfrmMain.GetAllKallistiPortsIcon(
   const Operation: TShellThreadInputRequest): TMsgDlgType;
+var
+  PortNames: string;
+
 begin
   Result := mtWarning;
   if (Operation = stiKallistiPortsInstall) and
-     (DreamcastSoftwareDevelopmentKitManager.Versions.CMakeInstalled) then
+     (GetKallistiPortsMissingHostTools(PortNames) = []) then
        Result := mtConfirmation;
 end;
 
-function TfrmMain.GetAllKallistiPortsMessage(const Message: string): string;
+function TfrmMain.GetAllKallistiPortsMessage(
+  const Operation: TShellThreadInputRequest; const Message: string): string;
+var
+  MissingHostTools: TKallistiPortHostTools;
+  PortNames: string;
+
 begin
   Result := Message;
-  if (not DreamcastSoftwareDevelopmentKitManager.Versions.CMakeInstalled) then
-     Result := Message + MsgBoxDlgWrapStr + CMakeMissingAllKallistiPorts;
+  if Operation = stiKallistiPortsInstall then
+  begin
+    MissingHostTools := GetKallistiPortsMissingHostTools(PortNames);
+    if MissingHostTools <> [] then
+      Result := Message + MsgBoxDlgWrapStr + Format(HostToolsMissingAllKallistiPorts,
+        [HostToolsToString(MissingHostTools), PortNames]);
+  end;
 end;
 
 function TfrmMain.CheckKallistiSinglePortPossibleInstallation: Boolean;
+var
+  MissingHostTools: TKallistiPortHostTools;
+
 begin
-  Result := True;
-  if SelectedKallistiPort.UseCMake
-    and (not DreamcastSoftwareDevelopmentKitManager.Versions.CMakeInstalled) then
-    begin
-      Result := False;
-      MsgBox(DialogWarningTitle, Format(CMakeMissingKallistiSinglePort,
-        [SelectedKallistiPort.Name]), mtWarning, [mbOK]);
-    end;
+  MissingHostTools := SelectedKallistiPort.MissingHostTools;
+  Result := MissingHostTools = [];
+  if not Result then
+    MsgBox(DialogWarningTitle, Format(HostToolsMissingKallistiSinglePort,
+      [SelectedKallistiPort.Name, HostToolsToString(MissingHostTools)]),
+      mtWarning, [mbOK]);
 end;
 
 procedure TfrmMain.CreateNetworkAdapterList;
@@ -2842,7 +2880,8 @@ end;
 
 procedure TfrmMain.btnAllPortInstallClick(Sender: TObject);
 begin
-  if MsgBox(DialogQuestionTitle, GetAllKallistiPortsMessage(InstallAllKallistiPorts),
+  if MsgBox(DialogQuestionTitle, GetAllKallistiPortsMessage(stiKallistiPortsInstall,
+     InstallAllKallistiPorts),
      GetAllKallistiPortsIcon(stiKallistiPortsInstall), [mbYes, mbNo]) = mrYes then
        ExecuteThreadOperation(stiKallistiPortsInstall);
 end;
@@ -2866,7 +2905,8 @@ end;
 
 procedure TfrmMain.btnAllPortUninstallClick(Sender: TObject);
 begin
-  if MsgBox(DialogWarningTitle, GetAllKallistiPortsMessage(UninstallAllKallistiPorts),
+  if MsgBox(DialogWarningTitle, GetAllKallistiPortsMessage(stiKallistiPortsUninstall,
+    UninstallAllKallistiPorts),
     GetAllKallistiPortsIcon(stiKallistiPortsUninstall), [mbYes, mbNo], mbNo) = mrYes then
       ExecuteThreadOperation(stiKallistiPortsUninstall);
 end;
