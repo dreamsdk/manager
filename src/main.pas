@@ -793,7 +793,7 @@ begin
       SelectedKallistiPort.Name + ': ' + sLineBreak +
       '  Installation Directory (Exists: ' + BoolToStr(DirectoryExists(SelectedKallistiPort.InstallDirectory), 'Yes', 'No') + '): '
         + SelectedKallistiPort.InstallDirectory + sLineBreak +
-      '  Use SVN: ' + BoolToStr(SelectedKallistiPort.UseSubversion, 'Yes', 'No') + sLineBreak +
+      '  Use CMake: ' + BoolToStr(SelectedKallistiPort.UseCMake, 'Yes', 'No') + sLineBreak +
       '  Includes: ' + SelectedKallistiPort.Includes + sLineBreak +
       '  Include Directories: ' + SelectedKallistiPort.IncludeDirectory + sLineBreak +
       '  Libraries: ' + SelectedKallistiPort.Libraries + sLineBreak +
@@ -2121,17 +2121,17 @@ function TfrmMain.GetAllKallistiPortsMessage(const Message: string): string;
 begin
   Result := Message;
   if (not DreamcastSoftwareDevelopmentKitManager.Versions.CMakeInstalled) then
-     Result := Message + MsgBoxDlgWrapStr + UseSubversionAllKallistiPorts;
+     Result := Message + MsgBoxDlgWrapStr + CMakeMissingAllKallistiPorts;
 end;
 
 function TfrmMain.CheckKallistiSinglePortPossibleInstallation: Boolean;
 begin
   Result := True;
-  if SelectedKallistiPort.UseSubversion
+  if SelectedKallistiPort.UseCMake
     and (not DreamcastSoftwareDevelopmentKitManager.Versions.CMakeInstalled) then
     begin
       Result := False;
-      MsgBox(DialogWarningTitle, Format(UseSubversionKallistiSinglePort,
+      MsgBox(DialogWarningTitle, Format(CMakeMissingKallistiSinglePort,
         [SelectedKallistiPort.Name]), mtWarning, [mbOK]);
     end;
 end;
@@ -2918,12 +2918,9 @@ var
 begin
   if Assigned(SelectedKallistiPort) then
   begin
-    if CheckKallistiSinglePortPossibleInstallation then
-    begin
-      Msg := Format(UninstallKallistiSinglePort, [SelectedKallistiPort.Name]);
-      if MsgBox(DialogQuestionTitle, Msg, mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
-        ExecuteThreadOperation(stiKallistiSinglePortUninstall);
-    end;
+    Msg := Format(UninstallKallistiSinglePort, [SelectedKallistiPort.Name]);
+    if MsgBox(DialogQuestionTitle, Msg, mtConfirmation, [mbYes, mbNo], mbNo) = mrYes then
+      ExecuteThreadOperation(stiKallistiSinglePortUninstall);
   end;
 end;
 
