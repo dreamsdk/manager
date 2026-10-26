@@ -311,7 +311,6 @@ var
   OutputHandle: HWND;
   FollowOutput: Boolean;
   LastVisibleLine,
-  LastLine,
   FirstVisibleLine,
   HorizontalPosition,
   SelectionStart,
@@ -324,15 +323,8 @@ begin
   // The memo is scrolled to the bottom when its last line is visible
   LastVisibleLine := HiWord(SendMessage(OutputHandle, EM_CHARFROMPOS, 0,
     MakeLParam(0, memBufferOutput.ClientHeight - 1)));
-
-  // Lines.Add ends the text with a line break, so the last line is empty (and
-  // holds the caret when following the output). EM_CHARFROMPOS never returns
-  // this line as there is no character on it, so the line before is used.
-  LastLine := SendMessage(OutputHandle, EM_GETLINECOUNT, 0, 0) - 1;
-  if (LastLine > 0) and (SendMessage(OutputHandle, EM_LINELENGTH,
-    SendMessage(OutputHandle, EM_LINEINDEX, LastLine, 0), 0) = 0) then
-    Dec(LastLine);
-  FollowOutput := LastVisibleLine >= LastLine;
+  FollowOutput := LastVisibleLine >=
+    SendMessage(OutputHandle, EM_GETLINECOUNT, 0, 0) - 1;
 
   FirstVisibleLine := SendMessage(OutputHandle, EM_GETFIRSTVISIBLELINE, 0, 0);
   HorizontalPosition := GetScrollPos(OutputHandle, SB_HORZ);
@@ -349,7 +341,10 @@ begin
     begin
       TextLength := SendMessage(OutputHandle, WM_GETTEXTLENGTH, 0, 0);
       SendMessage(OutputHandle, EM_SETSEL, TextLength, TextLength);
-      SendMessage(OutputHandle, EM_SCROLLCARET, 0, 0);
+      // EM_SCROLLCARET does nothing while the redraw is disabled, so scroll by
+      // the line count instead (the memo stops at its last line)
+      SendMessage(OutputHandle, EM_LINESCROLL, 0,
+        SendMessage(OutputHandle, EM_GETLINECOUNT, 0, 0));
     end
     else
     begin
