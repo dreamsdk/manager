@@ -3155,7 +3155,8 @@ var
   Index: Integer;
   UrlComboBox,
   RefComboBox: TComboBox;
-  PreviousRef: string;
+  PreviousRef,
+  DefaultBranch: string;
   Refs: TStringList;
 
   function TagToUrlComboBox: TComboBox;
@@ -3204,7 +3205,7 @@ begin
 
     Screen.Cursor := crHourGlass;
     Refs := DreamcastSoftwareDevelopmentKitManager.Environment
-      .GetRepositoryRefs(UrlComboBox.Text);
+      .GetRepositoryRefs(UrlComboBox.Text, DefaultBranch);
     try
       RefComboBox.Items.Assign(Refs);
     finally
@@ -3212,6 +3213,10 @@ begin
     end;
     Screen.Cursor := crDefault;
 
+    // Empty means "use the default branch": show which one it is. This
+    // doesn't trigger OnChange, so the setting itself stays empty.
+    if IsEmpty(PreviousRef) then
+      PreviousRef := DefaultBranch;
     RefComboBox.Text := PreviousRef;
   end;
 end;
